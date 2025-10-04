@@ -1,23 +1,26 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function Home() {
+export default function Login() {
+  const router = useRouter()
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     try {
       setLoading(true);
-      const r = await fetch("/api/auth/create-sso", {
+      const apiResponse = await fetch("/api/auth/create-sso", {
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
         headers: { Accept: "application/json" },
       });
-      const json = await r.json();
-      if (!json.success) throw new Error(json.message || "Cannot start SSO");
-      window.location.href = json.data.authorizeUrl;
-    } catch (e) {
-      console.error(e);
-      alert("SSO fail, please try again!");
+      const response = await apiResponse.json();
+
+      console.log("This is login", response)
+      if (!response.success) throw new Error(response.message || "Cannot start SSO");
+      router.push(response.data)
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 
 export async function GET(req: NextRequest) {
   try {
+    console.log("hello this is sso")
     const decodeBase = process.env.DECODE_BASE_URL;
     if (!decodeBase) {
       const statusCode = 500;
@@ -20,25 +21,24 @@ export async function GET(req: NextRequest) {
 
     const state = randomBytes(16).toString("base64url");
 
-    const authorizeUrl = new URL(`${decodeBase}/sso`);
-    authorizeUrl.searchParams.set("app", appId);
-    authorizeUrl.searchParams.set("redirect_uri", redirectUri);
-    authorizeUrl.searchParams.set("state", state);
-
-    const statusCode = 200;
-    const message = "Login URL created";
+    const ssoUrl = new URL(`${decodeBase}/sso`);
+    ssoUrl.searchParams.set("app", appId);
+    ssoUrl.searchParams.set("redirect_uri", redirectUri);
+    ssoUrl.searchParams.set("state", state);
 
     const res = NextResponse.json(
       {
         success: true,
-        statusCode,
-        message,
-        data: { authorizeUrl: authorizeUrl.toString() },
+        statusCode: 200,
+        message: "Login URL created",
+        data: ssoUrl,
       },
-      { status: statusCode, headers: { "Cache-Control": "no-store" } }
+      { status: 200 }
     );
 
-    res.cookies.set("sso_state", state, {
+    res.cookies.delete("ssoState")
+
+    res.cookies.set("ssoState", state, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
     });
 
     return res;
-  } catch (err: unknown) {
+  } catch (error: unknown) {
     return NextResponse.json(
       {
         success: false,

@@ -30,6 +30,8 @@ export default function Authorize() {
         toastError(response.message);
         return;
       }
+
+      console.log(apiResponse)
       router.push("/dashboard")
     } catch (err) {
       console.error(err);
