@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import { generateRequestId, apiPathName } from "@/utils/index.utils";
 
 export async function POST(req: Request) {

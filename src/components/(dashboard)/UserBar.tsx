@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSun,
@@ -18,13 +18,41 @@ export default function UserBar() {
   const [sound, setSound] = useState(false);
   const [microphone, setMicrophone] = useState(false);
 
+  const handleTheme = () => {
+    setTheme((prev) => !prev);
+    const next = theme ? "light" : "dark";
+    localStorage.setItem("theme", next);
+    if (next === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (!saved) {
+      localStorage.setItem("theme", "dark");
+      setTheme(false);
+      document.documentElement.classList.add("dark");
+      return;
+    }
+    if (saved === "light") {
+      setTheme(true);
+      document.documentElement.classList.remove("dark");
+      return;
+    }
+    setTheme(false);
+    document.documentElement.classList.add("dark");
+  }, []);
+
   return (
-    <div className="fixed rounded-xl bottom-0 m-4 left-0 z-10 bg-gray-800 p-2 w-70 h-30 border-white border-2">
+    <div className="fixed rounded-xl bottom-0 m-4 left-0 z-10 bg-[var(--background)] p-2 w-70 h-30 border-[var(--border-color)] border-2">
       <div className="flex flex-col justify-end w-full h-full">
         {/* Button area */}
         <div className="flex flex-row gap-2 mb-2 justify-center w-full">
           <button
-            onClick={() => setTheme((prev) => !prev)}
+            onClick={handleTheme}
             className="bg-gray-500 p-1 w-full rounded-md"
           >
             <FontAwesomeIcon icon={theme ? faSun : faMoon} />
@@ -33,7 +61,9 @@ export default function UserBar() {
             onClick={() => setMicrophone((prev) => !prev)}
             className="bg-gray-500 p-1 w-full rounded-md"
           >
-            <FontAwesomeIcon icon={microphone ? faMicrophone : faMicrophoneSlash} />
+            <FontAwesomeIcon
+              icon={microphone ? faMicrophone : faMicrophoneSlash}
+            />
           </button>
           <button
             onClick={() => setSound((prev) => !prev)}

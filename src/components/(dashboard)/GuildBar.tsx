@@ -1,5 +1,5 @@
 "use client";
-import ServerBarItem from "../ServerBaritem/index";
+import ServerBarItem from "../GuildBaritem/index";
 import { useState, useEffect, useCallback } from "react";
 import { toastSuccess, toastError } from "@/utils/toast.utils";
 import { faMessage } from "@fortawesome/free-solid-svg-icons";
@@ -25,8 +25,12 @@ interface ApiServer {
   tags: [];
 }
 
-export default function ServerBar() {
-  const [active, setActive] = useState<string>("dm");
+interface GuildBarProps {
+  activeId: string;
+  setActiveId: (id: string) => void;
+}
+
+export default function GuildBar({ activeId, setActiveId }: GuildBarProps) {
   const [servers, setServers] = useState<Server[]>([]);
 
   const handleGetServer = useCallback(async () => {
@@ -67,46 +71,48 @@ export default function ServerBar() {
   }, [handleGetServer]);
 
   return (
-    <aside className="fix flex flex-col gap-2 left-0 top-0 p-3 w-16 h-screen border-white border-r-1 bg-gray-800">
-      <div className="relative group w-10 h-10 bg-green-500 rounded-xl">
+    <aside className="fix flex flex-col gap-2 left-0 top-0 p-3 w-16 h-screen border-[var(--border-color)] border-r-2 bg-[var(--background)]">
+      <div className="relative group w-10 h-10 bg-gray-500 rounded-xl">
         <span
-          className={`absolute -left-3 top-1/2 -translate-y-1/2 rounded-r-full w-1 bg-white ${
-            active === "dm" ? "h-8" : "h-4"
+          className={`absolute -left-3 top-1/2 -translate-y-1/2 rounded-r-full w-1 bg-[var(--border-color)] ${
+            activeId === "dm" ? "h-8" : "h-4"
           }`}
         />
-        <button onClick={() => setActive("dm")} className={`w-full h-full`}>
+        <button onClick={() => setActiveId("dm")} className={`w-full h-full`}>
           <FontAwesomeIcon icon={faMessage} />
         </button>
 
-        <div className="absolute top-1/2 -translate-y-1/2 p-2 ml-2 bg-black text-white font-bold z-100 left-full whitespace-nowrap rounded-md opacity-0 group-hover:opacity-100">
+        <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 p-2 ml-2 bg-black text-white font-bold z-100 left-full whitespace-nowrap rounded-md opacity-0 group-hover:opacity-100">
           Direct Message
         </div>
       </div>
+
+      <div className="mx-auto my-2 h-1 w-8 rounded bg-[var(--foreground)]" />
 
       {servers.length > 0 &&
         servers.map((server) => (
           <div
             key={server.id}
-            className="relative group w-10 h-10 bg-pink-500 rounded-xl"
+            className="relative group w-10 h-10 bg-gray-500 rounded-xl"
           >
             <span
-              className={`absolute top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-white -left-3 ${
-                active === server.id ? "h-8" : "h-4"
+              className={`absolute top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-[var(--border-color)] -left-3 ${
+                activeId === server.id ? "h-8" : "h-4"
               }`}
             />
             <button
-              onClick={() => setActive(server.id)}
+              onClick={() => setActiveId(server.id)}
               className="w-full h-full font-bold"
             >
-              {server.name.slice(0,1).toUpperCase()}
+              {server.name.slice(0, 1).toUpperCase()}
             </button>
-            <div className="absolute rounded-md font-bold p-2 ml-2 left-full top-1/2 -translate-y-1/2 bg-black text-white opacity-0 z-100 group-hover:opacity-100 whitespace-nowrap">
+            <div className="pointer-events-none absolute rounded-md font-bold p-2 ml-2 left-full top-1/2 -translate-y-1/2 bg-black text-white opacity-0 z-100 group-hover:opacity-100 whitespace-nowrap">
               {server.name}
             </div>
           </div>
         ))}
 
-      <ServerBarItem.AddServer handleGetServer={handleGetServer}/>
+      <ServerBarItem.AddServer handleGetServer={handleGetServer} />
     </aside>
   );
 }

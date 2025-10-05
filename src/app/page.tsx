@@ -39,7 +39,7 @@ export default function Login() {
         </div>
 
         {/* Login Card */}
-        <div className="bg-black/40 backdrop-blur-lg border border-gray-700/50 rounded-2xl p-8 shadow-2xl">
+        <div className="bg-black/40 backdrop-blur-lg border-[var(--border-color)] rounded-2xl p-8 shadow-2xl">
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-2xl font-semibold text-white mb-2">

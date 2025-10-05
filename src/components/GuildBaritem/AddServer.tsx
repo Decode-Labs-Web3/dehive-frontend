@@ -10,7 +10,7 @@ interface Props{
 }
 
 export default function AddServer({handleGetServer}: Props) {
-  const [modelOpen, setModelOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const [serverForm, setServerForm] = useState({
     name: "",
@@ -60,26 +60,26 @@ export default function AddServer({handleGetServer}: Props) {
       console.error(error);
       toastError("Server Create Error");
     } finally {
-      setModelOpen(false);
+      setModalOpen(false);
     }
   };
 
   return (
     <>
-      <div className="relative group w-10 h-10 bg-blue-500 rounded-xl">
+      <div className="relative group w-10 h-10 bg-gray-500 rounded-xl">
         <button
           onClick={() => {
-            setModelOpen(true);
+            setModalOpen(true);
           }}
           className="w-full h-full"
         >
           <FontAwesomeIcon icon={faPlus} />
         </button>
-        <div className="z-10 absolute ml-2 font-bold top-1/2 -translate-y-1/2 p-2 left-full rounded-md bg-black text-white opacity-0 group-hover:opacity-100 whitespace-nowrap">
+        <div className="pointer-events-none z-10 absolute ml-2 font-bold top-1/2 -translate-y-1/2 p-2 left-full rounded-md bg-black text-white opacity-0 group-hover:opacity-100 whitespace-nowrap">
           Add Server
         </div>
       </div>
-      {modelOpen && (
+      {modalOpen && (
         <div
           role="dialog"
           aria-modal="true"
@@ -87,7 +87,7 @@ export default function AddServer({handleGetServer}: Props) {
         >
           <div
             className="absolute inset-0 bg-black/50"
-            onClick={() => setModelOpen(false)}
+            onClick={() => setModalOpen(false)}
           />
 
           <div className="relative z-10 w-full max-w-sm rounded-lg bg-white text-gray-900 border p-4">
@@ -123,7 +123,7 @@ export default function AddServer({handleGetServer}: Props) {
 
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => setModelOpen(false)}
+                onClick={() => setModalOpen(false)}
                 className="border rounded px-3 py-2"
               >
                 Cancel
