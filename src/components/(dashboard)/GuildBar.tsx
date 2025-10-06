@@ -71,7 +71,7 @@ export default function GuildBar({ activeId, setActiveId }: GuildBarProps) {
   }, [handleGetServer]);
 
   return (
-    <aside className="fixed left-0 top-0 z-10 flex flex-col gap-3 p-3 w-16 h-screen bg-[var(--background)] border-r-2 border-[var(--border-color)]">
+    <aside className="fixed left-0 top-0 z-12 flex flex-col gap-3 p-3 w-16 h-screen bg-[var(--background)] border-r-2 border-[var(--border-color)]">
       <div className="relative group w-10 h-10 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition">
         <span
           className={`absolute -left-3 top-1/2 -translate-y-1/2 w-1 rounded-r-full ${

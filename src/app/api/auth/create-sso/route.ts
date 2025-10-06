@@ -3,7 +3,7 @@ import { randomBytes } from "crypto";
 
 export async function GET(req: NextRequest) {
   try {
-    console.log("hello this is sso")
+    // console.log("hello this is sso")
     const decodeBase = process.env.DECODE_BASE_URL;
     if (!decodeBase) {
       const statusCode = 500;

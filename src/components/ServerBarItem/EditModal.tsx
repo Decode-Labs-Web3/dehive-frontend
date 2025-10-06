@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserPlus,
@@ -7,7 +9,6 @@ import {
   faTrash,
   faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
-import { useState } from "react";
 
 interface ServerProps {
   id: string;
@@ -50,14 +51,39 @@ export default function EditModal({ server }: { server: ServerProps }) {
   };
 
   const handleEditServer = () => {
+    if (
+      serverEditForm.name.trim() === server.name ||
+      serverEditForm.description.trim() === server.description ||
+      serverEditForm.name.trim() === "" ||
+      serverEditForm.description.trim() === ""
+    ) {
+      return;
+    }
+    setModal((prev) => ({
+      ...prev,
+      edit: false,
+    }));
     console.log("edit server");
   };
 
   const handleDeleteServer = () => {
+    if (serverDeleteForm.name.trim() !== server.name) {
+      toastError("The type the server name didn't macth");
+      return;
+    }
+    toastSuccess("Delete Successful");
+    setModal((prev) => ({
+      ...prev,
+      delete: false,
+    }));
     console.log("Delete server");
   };
 
   const handleLeaveServer = () => {
+    setModal((prev) => ({
+      ...prev,
+      leave: false,
+    }));
     console.log("Leave server");
   };
 
@@ -99,13 +125,13 @@ export default function EditModal({ server }: { server: ServerProps }) {
       {modal.edit && (
         <div
           role="dialog"
-          className="fixed inset-0 flex items-center justify-center z-20"
+          className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
             onClick={() => setModal((prev) => ({ ...prev, edit: false }))}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-30"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
-          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-40">
+          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
             <h1 className="text-base font-semibold mb-1">Edit your server</h1>
             <p className="text-sm text-[var(--muted-foreground)] mb-4">
               Update your server name and description.
@@ -165,7 +191,7 @@ export default function EditModal({ server }: { server: ServerProps }) {
                   "cursor-not-allowed"
                 }`}
               >
-                Create
+                Edit
               </button>
             </div>
           </div>
@@ -175,16 +201,16 @@ export default function EditModal({ server }: { server: ServerProps }) {
       {modal.delete && (
         <div
           role="dialog"
-          className="fixed inset-0 flex items-center justify-center z-20"
+          className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
             onClick={() => setModal((prev) => ({ ...prev, delete: false }))}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-30"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
-          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-40">
+          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
             <h1 className="text-base font-semibold mb-1">Delete Server</h1>
             <p className="text-sm text-[var(--muted-foreground)] mb-4">
-              Please type the name of {server.name} to confirm.
+              Please type the name of {`"${server.name}"`} to confirm.
             </p>
             <input
               id="name"
@@ -206,7 +232,10 @@ export default function EditModal({ server }: { server: ServerProps }) {
               >
                 Cancel
               </button>
-              <button className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90">
+              <button
+                onClick={handleDeleteServer}
+                className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
+              >
                 Delete
               </button>
             </div>
@@ -217,13 +246,13 @@ export default function EditModal({ server }: { server: ServerProps }) {
       {modal.leave && (
         <div
           role="dialog"
-          className="fixed inset-0 flex items-center justify-center z-20"
+          className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
             onClick={() => setModal((prev) => ({ ...prev, leave: false }))}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-30"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
-          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-40">
+          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
             <h1 className="text-base font-semibold mb-1">
               Leave {server.name}
             </h1>
@@ -238,7 +267,10 @@ export default function EditModal({ server }: { server: ServerProps }) {
               >
                 Cancel
               </button>
-              <button className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90">
+              <button
+                onClick={handleLeaveServer}
+                className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
+              >
                 Leave
               </button>
             </div>

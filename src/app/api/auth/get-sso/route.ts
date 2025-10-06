@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { generateRequestId, guardInternal, apiPathName} from "@/utils/index.utils"
+import { generateRequestId, apiPathName} from "@/utils/index.utils"
 
 function isoToMaxAgeSeconds(expiresAtISO: string): number {
   const now = Date.now();
@@ -15,8 +15,10 @@ export async function POST(req: Request) {
   // if(denied) return denied
 
   try {
-    const cookieStore = await cookies();
-    const ssoState = cookieStore.get("ssoState")?.value;
+    // const cookieStore = await cookies();
+    // const ssoState = cookieStore.get("ssoState")?.value;
+
+    const ssoState = (await cookies()).get("ssoState")?.value;
 
     if(!ssoState) {
       return NextResponse.json(
@@ -95,7 +97,7 @@ export async function POST(req: Request) {
     const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
 
     res.cookies.set("accessExp", String(accessExpSec),{
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
@@ -103,7 +105,7 @@ export async function POST(req: Request) {
     })
 
     res.cookies.set("sessionId", response.data.session_id, {
-        httpOnly: false,
+        httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",

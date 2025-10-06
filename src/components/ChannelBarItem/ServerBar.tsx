@@ -35,14 +35,14 @@ interface CategoryProps {
 
 export default function ServerBar({ activeId }: ServerBarProps) {
   const [loading, setLoading] = useState(false);
+  const [modalSetting, setModalSetting] = useState(false);
   const [server, setServer] = useState<ServerProps | null>(null);
   const [category, setCategory] = useState<CategoryProps | null>(null);
-  const [modalSetting, setModalSetting] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
   console.log(category);
 
   const fetchServerInfo = useCallback(async () => {
     setLoading(true);
+    setModalSetting(false)
     try {
       const apiResponse = await fetch("/api/server/server-info", {
         method: "POST",

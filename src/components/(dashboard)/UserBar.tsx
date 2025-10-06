@@ -114,11 +114,39 @@ export default function UserBar({ userData }: { userData: UserDataProps }) {
               {userData?.display_name}
             </h3>
             <h4 className="text-xs text-[var(--muted-foreground)] truncate">
-              {userData?.username}
+              {userData?.role}
             </h4>
           </div>
-          <div className="absolute bottom-full mb-20 bg-[var(--background)] border border-[var(--border-color)] w-10 h-10">
-            <h1 className="text-red-500">Hello</h1>
+
+          {/* hover group */}
+          <div className="absolute pointer-events-none opacity-0 group-hover:opacity-100 bottom-full mb-20 bg-[var(--background)] border border-[var(--border-color)] w-65 h-30">
+            <div className="flex flex-col">
+              <div className="flex flex-row">
+                <div className="w-20 h-20 rounded-full overflow-hidden">
+                  <Image
+                    src={
+                      userData
+                        ? `https://gateway.pinata.cloud/ipfs/${userData.avatar_ipfs_hash}`
+                        : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                    }
+                    alt={"Avatar"}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                    unoptimized
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <h1>{userData?.display_name}</h1>
+                  <h2>@{userData?.username}</h2>
+                  <div className="flex flex-row">
+                    <p>Followers: {userData?.followers_number}</p>
+                    <p>Following: {userData?.following_number}</p>
+                  </div>
+                </div>
+              </div>
+              <p>{userData?.bio}</p>
+            </div>
           </div>
         </div>
       </div>
