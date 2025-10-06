@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import ServerBarItem from "../ServerBarItem"
 
 interface ServerBarProps {
   activeId: string;
@@ -36,7 +37,8 @@ export default function ServerBar({ activeId }: ServerBarProps) {
   const [loading, setLoading] = useState(false);
   const [server, setServer] = useState<ServerProps | null>(null);
   const [category, setCategory] = useState<CategoryProps | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalSetting, setModalSetting] = useState(false);
+  const [ deleteModal, setDeleteModal ] = useState(false)
   console.log(category);
 
   const fetchServerInfo = useCallback(async () => {
@@ -102,23 +104,19 @@ export default function ServerBar({ activeId }: ServerBarProps) {
 
   return (
     <>
-      <div className="relative bg-red-500 p-2 font-bold">
-  <button
-    onClick={() => setModalOpen(prev => !prev)}
-    className="flex w-full items-center justify-between"
-  >
-    <span>{server?.name}</span>
-    <FontAwesomeIcon icon={modalOpen ? faX : faChevronDown} />
-  </button>
+      <div className="relative bg-gray-500 border-[var-(--foreground)] border-2 p-2 font-bold">
+        <button
+          onClick={() => setModalSetting((prev) => !prev)}
+          className="flex w-full items-center justify-between text-[var-(--foreground)]"
+        >
+          <span>{server?.name}</span>
+          <FontAwesomeIcon icon={modalSetting ? faX : faChevronDown} />
+        </button>
 
-  {modalOpen && (
-    <div
-      role="dialog"
-      className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-50 h-50 z-50 rounded bg-white text-black">
-      <h1>Hello</h1>
-    </div>
-  )}
-</div>
+        {modalSetting && (
+          <ServerBarItem.EditModal />
+        )}
+      </div>
     </>
   );
 }

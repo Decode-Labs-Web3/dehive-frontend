@@ -13,7 +13,19 @@ import {
   faVolumeXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function UserBar() {
+interface UserDataProps {
+  _id: string;
+  username: string;
+  display_name: string;
+  email: string;
+  avatar: string;
+  bio: string;
+  status: string;
+  mutual_servers_count: number;
+  mutual_servers: [];
+}
+
+export default function UserBar({userData}: {userData: UserDataProps}) {
   const [theme, setTheme] = useState(false);
   const [sound, setSound] = useState(false);
   const [microphone, setMicrophone] = useState(false);
@@ -46,8 +58,10 @@ export default function UserBar() {
     document.documentElement.classList.add("dark");
   }, []);
 
+  // console.log("this is userData", userData)
+
   return (
-    <div className="fixed rounded-xl bottom-0 m-4 left-0 z-10 bg-[var(--background)] p-2 w-70 h-30 border-[var(--border-color)] border-2">
+    <div className="fixed rounded-xl bottom-0 m-3 left-0 z-10 bg-[var(--background)] p-2 w-70 h-30 border-[var(--border-color)] border-2">
       <div className="flex flex-col justify-end w-full h-full">
         {/* Button area */}
         <div className="flex flex-row gap-2 mb-2 justify-center w-full">
@@ -81,7 +95,9 @@ export default function UserBar() {
           <div className="w-10 h-10">
             <Image
               src={
-                "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                userData
+                ? `https://gateway.pinata.cloud/ipfs/${userData.avatar}`
+                : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
               }
               alt={"Avatar"}
               width={5}
@@ -91,8 +107,8 @@ export default function UserBar() {
             />
           </div>
           <div>
-            <h3>Vũ Trần Quang Minh</h3>
-            <h4>User</h4>
+            <h3>{userData?.display_name}</h3>
+            <h4>{userData?.username}</h4>
           </div>
         </div>
       </div>

@@ -1,0 +1,74 @@
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { generateRequestId, apiPathName} from "@/utils/index.utils"
+
+export async function GET(req: Request) {
+  const requestId = generateRequestId()
+  const pathname = apiPathName(req)
+
+  try {
+    const sessionId = (await cookies()).get("sessionId")?.value
+
+    if(!sessionId) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 401,
+          message: "SessionId is not found",
+        },
+        { status: 401 }
+      );
+    }
+
+    // console.log("this is ssoToken and state from sso", ssoToken, state);
+
+    const backendRes = await fetch(
+      `${process.env.DEHIVE_USER_DEHIVE_SERVER}/api/memberships/profile/enriched/target/${sessionId}`,
+      {
+        method: "GET",
+        headers: {
+          "x-session-id": sessionId,
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+
+    if (!backendRes.ok) {
+      const err = await backendRes.json().catch(() => null);
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: backendRes.status || 401,
+          message: err?.message,
+        },
+        { status: backendRes.status || 401 }
+      );
+    }
+
+    const response = await backendRes.json();
+    console.log(response)
+
+    return NextResponse.json(
+      {
+        success: true,
+        statusCode: 200,
+        message: "Operation successful",
+        data: response.data,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("/api/user/user-info handler error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        statusCode: 500,
+        message: "Server get user info fail",
+      },
+      { status: 500 }
+    );
+  } finally {
+    console.info(`${pathname}: ${requestId}`);
+  }
+}

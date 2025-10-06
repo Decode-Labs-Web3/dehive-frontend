@@ -58,7 +58,7 @@ export default function GuildBar({ activeId, setActiveId }: GuildBarProps) {
       }));
 
       setServers(serverList);
-      console.log("This is server data", response.data);
+      // console.log("This is server data", response.data);
       toastSuccess(response.message);
     } catch (error) {
       console.log(error);
