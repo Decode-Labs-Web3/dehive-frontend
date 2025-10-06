@@ -6,13 +6,16 @@ import Dashboard from "@/components/(dashboard)";
 interface UserDataProps {
   _id: string;
   username: string;
-  display_name: string;
   email: string;
-  avatar: string;
+  display_name: string;
   bio: string;
-  status: string;
-  mutual_servers_count: number;
-  mutual_servers: [];
+  avatar_ipfs_hash: string;
+  role: string;
+  last_login: string;
+  is_active: boolean;
+  __v: number;
+  following_number: number;
+  followers_number: number;
 }
 
 export default function RootLayout({
@@ -21,12 +24,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [activeId, setActiveId] = useState<string>("dm");
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState<UserDataProps | null>(null);
-  // console.log("this is userdata from layout",userData)
+  console.log("this is userdata from layout", userData);
 
   const handleUserData = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const apiResponse = await fetch("api/user/user-info", {
         method: "GET",
@@ -34,16 +37,17 @@ export default function RootLayout({
         signal: AbortSignal.timeout(10000),
       });
 
-      if(!apiResponse){
-        console.error(apiResponse)
-        return
+      if (!apiResponse) {
+        console.error(apiResponse);
+        return;
       }
 
-      const response = await apiResponse.json()
-      setUserData(response.data)
-      setLoading(false)
+      const response = await apiResponse.json();
+      console.log("this is userdata response from layout", response.data);
+      setUserData(response.data);
+      setLoading(false);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }, []);
 
@@ -51,15 +55,15 @@ export default function RootLayout({
     handleUserData();
   }, [handleUserData]);
 
-  if(loading){
-    <>Loading...</>
+  if (loading) {
+    <>Loading...</>;
   }
 
   return (
     <>
       <Dashboard.GuildBar activeId={activeId} setActiveId={setActiveId} />
       <Dashboard.ChannelBar activeId={activeId} />
-      { userData && (<Dashboard.UserBar userData={userData}/>)}
+      {userData && <Dashboard.UserBar userData={userData} />}
       <div className="fixed top-0 left-[calc(4rem+15rem)]">{children}</div>
     </>
   );

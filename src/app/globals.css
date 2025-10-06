@@ -4,6 +4,24 @@
   --background: #ffffff;
   --foreground: #171717;
   --border-color: #111827;
+  /* Discord-like minimal palette */
+  --background-secondary: #f2f3f5; /* panels, channel list */
+  --muted-foreground: #6b7280; /* secondary text */
+  --accent: #5865f2; /* Discord blurple */
+  --accent-foreground: #ffffff; /* text on accent */
+  --link: #5865f2; /* links */
+}
+
+.dark {
+  --background: #111827;
+  --foreground: #ededed;
+  --border-color: #ffffff;
+  /* Discord-like minimal palette */
+  --background-secondary: #1f2937; /* panels, channel list */
+  --muted-foreground: #9ca3af; /* secondary text */
+  --accent: #5865f2; /* Discord blurple */
+  --accent-foreground: #ffffff; /* text on accent */
+  --link: #8da1f2; /* links */
 }
 
 @theme inline {
@@ -11,12 +29,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-.dark {
-  --background: #111827;
-  --foreground: #ededed;
-  --border-color: #ffffff;
 }
 
 body {

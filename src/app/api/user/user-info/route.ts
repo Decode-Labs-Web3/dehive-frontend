@@ -21,14 +21,18 @@ export async function GET(req: Request) {
     }
 
     // console.log("this is ssoToken and state from sso", ssoToken, state);
+    const requestBody = {
+      session_id: sessionId
+    }
 
     const backendRes = await fetch(
-      `${process.env.DEHIVE_USER_DEHIVE_SERVER}/api/memberships/profile/enriched/target/${sessionId}`,
+      `${process.env.DEHIVE_AUTH}/auth/session/check`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
-          "x-session-id": sessionId,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify(requestBody),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
@@ -53,8 +57,8 @@ export async function GET(req: Request) {
       {
         success: true,
         statusCode: 200,
-        message: "Operation successful",
-        data: response.data,
+        message: "Session found",
+        data: response.data.user,
       },
       { status: 200 }
     );

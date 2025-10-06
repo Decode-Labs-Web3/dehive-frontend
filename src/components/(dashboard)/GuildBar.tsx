@@ -71,42 +71,49 @@ export default function GuildBar({ activeId, setActiveId }: GuildBarProps) {
   }, [handleGetServer]);
 
   return (
-    <aside className="fix flex flex-col gap-2 left-0 top-0 p-3 w-16 h-screen border-[var(--border-color)] border-r-2 bg-[var(--background)]">
-      <div className="relative group w-10 h-10 bg-gray-500 rounded-xl">
+    <aside className="fixed left-0 top-0 z-10 flex flex-col gap-3 p-3 w-16 h-screen bg-[var(--background)] border-r-2 border-[var(--border-color)]">
+      <div className="relative group w-10 h-10 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition">
         <span
-          className={`absolute -left-3 top-1/2 -translate-y-1/2 rounded-r-full w-1 bg-[var(--border-color)] ${
-            activeId === "dm" ? "h-8" : "h-4"
+          className={`absolute -left-3 top-1/2 -translate-y-1/2 w-1 rounded-r-full ${
+            activeId === "dm"
+              ? "h-8 bg-[var(--accent)]"
+              : "h-4 bg-[var(--border-color)]"
           }`}
         />
-        <button onClick={() => setActiveId("dm")} className={`w-full h-full`}>
+        <button
+          onClick={() => setActiveId("dm")}
+          className="w-full h-full flex items-center justify-center"
+        >
           <FontAwesomeIcon icon={faMessage} />
         </button>
 
-        <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 p-2 ml-2 bg-black text-white font-bold z-100 left-full whitespace-nowrap rounded-md opacity-0 group-hover:opacity-100">
+        <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 px-2 py-1 ml-2 bg-[var(--foreground)] text-[var(--accent-foreground)] font-semibold z-1000 left-full whitespace-nowrap rounded-md shadow opacity-0 group-hover:opacity-100">
           Direct Message
         </div>
       </div>
 
-      <div className="mx-auto my-2 h-1 w-8 rounded bg-[var(--foreground)]" />
+      <div className="mx-auto my-1 h-px w-8 rounded bg-[var(--border-color)] opacity-30" />
 
       {servers.length > 0 &&
         servers.map((server) => (
           <div
             key={server.id}
-            className="relative group w-10 h-10 bg-gray-500 rounded-xl"
+            className="relative group w-10 h-10 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition"
           >
             <span
-              className={`absolute top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-[var(--border-color)] -left-3 ${
-                activeId === server.id ? "h-8" : "h-4"
+              className={`absolute top-1/2 -translate-y-1/2 w-1 rounded-r-full -left-3 ${
+                activeId === server.id
+                  ? "h-8 bg-[var(--accent)]"
+                  : "h-4 bg-[var(--border-color)]"
               }`}
             />
             <button
               onClick={() => setActiveId(server.id)}
-              className="w-full h-full font-bold"
+              className="w-full h-full font-bold flex items-center justify-center"
             >
               {server.name.slice(0, 1).toUpperCase()}
             </button>
-            <div className="pointer-events-none absolute rounded-md font-bold p-2 ml-2 left-full top-1/2 -translate-y-1/2 bg-black text-white opacity-0 z-100 group-hover:opacity-100 whitespace-nowrap">
+            <div className="pointer-events-none absolute rounded-md font-semibold px-2 py-1 ml-2 left-full top-1/2 -translate-y-1/2 bg-[var(--foreground)] text-[var(--accent-foreground)] opacity-0 z-100 group-hover:opacity-100 whitespace-nowrap shadow">
               {server.name}
             </div>
           </div>

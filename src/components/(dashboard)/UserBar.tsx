@@ -16,16 +16,19 @@ import {
 interface UserDataProps {
   _id: string;
   username: string;
-  display_name: string;
   email: string;
-  avatar: string;
+  display_name: string;
   bio: string;
-  status: string;
-  mutual_servers_count: number;
-  mutual_servers: [];
+  avatar_ipfs_hash: string;
+  role: string;
+  last_login: string;
+  is_active: boolean;
+  __v: number;
+  following_number: number;
+  followers_number: number;
 }
 
-export default function UserBar({userData}: {userData: UserDataProps}) {
+export default function UserBar({ userData }: { userData: UserDataProps }) {
   const [theme, setTheme] = useState(false);
   const [sound, setSound] = useState(false);
   const [microphone, setMicrophone] = useState(false);
@@ -61,19 +64,19 @@ export default function UserBar({userData}: {userData: UserDataProps}) {
   // console.log("this is userData", userData)
 
   return (
-    <div className="fixed rounded-xl bottom-0 m-3 left-0 z-10 bg-[var(--background)] p-2 w-70 h-30 border-[var(--border-color)] border-2">
-      <div className="flex flex-col justify-end w-full h-full">
-        {/* Button area */}
-        <div className="flex flex-row gap-2 mb-2 justify-center w-full">
+    <div className="fixed bottom-0 left-0 z-15 m-3 w-70 h-30 rounded-lg bg-[var(--background)] border border-[var(--border-color)] shadow">
+      <div className="flex flex-col justify-end w-full h-full p-2">
+        {/* Controls */}
+        <div className="grid grid-cols-4 gap-2 mb-2">
           <button
             onClick={handleTheme}
-            className="bg-gray-500 p-1 w-full rounded-md"
+            className="h-8 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90 flex items-center justify-center"
           >
             <FontAwesomeIcon icon={theme ? faSun : faMoon} />
           </button>
           <button
             onClick={() => setMicrophone((prev) => !prev)}
-            className="bg-gray-500 p-1 w-full rounded-md"
+            className="h-8 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90 flex items-center justify-center"
           >
             <FontAwesomeIcon
               icon={microphone ? faMicrophone : faMicrophoneSlash}
@@ -81,34 +84,41 @@ export default function UserBar({userData}: {userData: UserDataProps}) {
           </button>
           <button
             onClick={() => setSound((prev) => !prev)}
-            className="bg-gray-500 p-1 w-full rounded-md"
+            className="h-8 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90 flex items-center justify-center"
           >
             <FontAwesomeIcon icon={sound ? faVolumeHigh : faVolumeXmark} />
           </button>
-          <button className="bg-gray-500 p-1 w-full rounded-md">
-            <FontAwesomeIcon icon={faGear} className="hover:animate-spin" />
+          <button className="h-8 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90 flex items-center justify-center">
+            <FontAwesomeIcon icon={faGear} />
           </button>
         </div>
 
-        {/* User Info Area */}
-        <div className="flex gap-2">
-          <div className="w-10 h-10">
+        {/* User info */}
+        <div className="flex items-center gap-2 relative group">
+          <div className="w-10 h-10 rounded-full overflow-hidden">
             <Image
               src={
                 userData
-                ? `https://gateway.pinata.cloud/ipfs/${userData.avatar}`
-                : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                  ? `https://gateway.pinata.cloud/ipfs/${userData.avatar_ipfs_hash}`
+                  : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
               }
               alt={"Avatar"}
-              width={5}
-              height={5}
-              className="w-full h-full"
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
               unoptimized
             />
           </div>
-          <div>
-            <h3>{userData?.display_name}</h3>
-            <h4>{userData?.username}</h4>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold truncate">
+              {userData?.display_name}
+            </h3>
+            <h4 className="text-xs text-[var(--muted-foreground)] truncate">
+              {userData?.username}
+            </h4>
+          </div>
+          <div className="absolute bottom-full mb-20 bg-[var(--background)] border border-[var(--border-color)] w-10 h-10">
+            <h1 className="text-red-500">Hello</h1>
           </div>
         </div>
       </div>
