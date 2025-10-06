@@ -59,7 +59,7 @@ export default function RootLayout({
     <>
       <Dashboard.GuildBar activeId={activeId} setActiveId={setActiveId} />
       <Dashboard.ChannelBar activeId={activeId} />
-      <Dashboard.UserBar userData={userData}/>
+      { userData && (<Dashboard.UserBar userData={userData}/>)}
       <div className="fixed top-0 left-[calc(4rem+15rem)]">{children}</div>
     </>
   );

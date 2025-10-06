@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
-import ServerBarItem from "../ServerBarItem"
+import ServerBarItem from "../ServerBarItem";
 
 interface ServerBarProps {
   activeId: string;
@@ -38,7 +38,7 @@ export default function ServerBar({ activeId }: ServerBarProps) {
   const [server, setServer] = useState<ServerProps | null>(null);
   const [category, setCategory] = useState<CategoryProps | null>(null);
   const [modalSetting, setModalSetting] = useState(false);
-  const [ deleteModal, setDeleteModal ] = useState(false)
+  const [deleteModal, setDeleteModal] = useState(false);
   console.log(category);
 
   const fetchServerInfo = useCallback(async () => {
@@ -114,7 +114,9 @@ export default function ServerBar({ activeId }: ServerBarProps) {
         </button>
 
         {modalSetting && (
-          <ServerBarItem.EditModal />
+          <>
+          {server && <ServerBarItem.EditModal server={server} />}
+          </>
         )}
       </div>
     </>
