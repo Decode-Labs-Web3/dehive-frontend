@@ -83,6 +83,15 @@ export default function AddServer({ handleGetServer }: Props) {
         <div
           role="dialog"
           aria-modal="true"
+          tabIndex={-1}
+          ref={(element: HTMLDivElement) => {
+            element?.focus();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setModalOpen(false);
+            }
+          }}
           className="fixed inset-0 z-20 flex items-center justify-center p-4"
         >
           <div

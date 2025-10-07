@@ -189,44 +189,42 @@ export default function Categories() {
               </button>
             </div>
 
-
             {/* right mouse click category modal */}
             {categoryModal[category._id] && (
-              <div
-              className="absolute flex flex-col items-start left-1/2 -translate-x-1/2 bg-red-500 w-55 h-100 z-60"
-              >
-                <button onClick={() => {
-                  setCategoryModal(prev => ({
-                    ...prev,
-                    [category._id]: false
-                  }))
+              <div className="absolute flex flex-col items-start left-1/2 -translate-x-1/2 bg-red-500 w-55 h-100 z-60">
+                <button
+                  onClick={() => {
+                    setCategoryModal((prev) => ({
+                      ...prev,
+                      [category._id]: false,
+                    }));
 
-                  setOpen(prev => ({
-                    ...prev,
-                    [category._id]: false
-                  }))
-                }}>
+                    setOpen((prev) => ({
+                      ...prev,
+                      [category._id]: false,
+                    }));
+                  }}
+                >
                   Collapse Category
                 </button>
-                <button onClick={() => {
-                  setCategoryModal(prev => ({
-                    ...prev,
-                    [category._id]: false
-                  }))
+                <button
+                  onClick={() => {
+                    setCategoryModal((prev) => ({
+                      ...prev,
+                      [category._id]: false,
+                    }));
 
-                  setOpen(
-                    Object.fromEntries(categories.map(category => [category._id, false]))
-                  )
-                }}
+                    setOpen(
+                      Object.fromEntries(
+                        categories.map((category) => [category._id, false])
+                      )
+                    );
+                  }}
                 >
                   Collapse All Category
                 </button>
-                <button>
-                  Edit Category
-                </button>
-                <button
-                onClick={() => setDeleteCategory}
-                >
+                <button>Edit Category</button>
+                <button onClick={() => setDeleteCategory}>
                   Delete Category
                 </button>
               </div>

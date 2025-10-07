@@ -187,7 +187,10 @@ export default function EditModal({ server }: { server: ServerProps }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ serverId: server._id, name: categoryCreateForm.name }),
+        body: JSON.stringify({
+          serverId: server._id,
+          name: categoryCreateForm.name,
+        }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -216,6 +219,15 @@ export default function EditModal({ server }: { server: ServerProps }) {
     <>
       <div
         role="dialog"
+        tabIndex={-1}
+        ref={(element: HTMLDivElement) => {
+          element?.focus();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            setModal((prev) => ({ ...prev, leave: true }));
+          }
+        }}
         className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-10 rounded-md bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-lg overflow-hidden"
       >
         <button className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]">
@@ -271,6 +283,15 @@ export default function EditModal({ server }: { server: ServerProps }) {
       {modal.edit && (
         <div
           role="dialog"
+          tabIndex={-1}
+          ref={(element: HTMLDivElement) => {
+            element?.focus();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setModal((prev) => ({ ...prev, edit: false }));
+            }
+          }}
           className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
@@ -347,6 +368,15 @@ export default function EditModal({ server }: { server: ServerProps }) {
       {modal.delete && (
         <div
           role="dialog"
+          tabIndex={-1}
+          ref={(element: HTMLDivElement) => {
+            element?.focus();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setModal((prev) => ({ ...prev, delete: false }));
+            }
+          }}
           className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
@@ -392,6 +422,15 @@ export default function EditModal({ server }: { server: ServerProps }) {
       {modal.leave && (
         <div
           role="dialog"
+          tabIndex={-1}
+          ref={(element: HTMLDivElement) => {
+            element?.focus();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setModal((prev) => ({ ...prev, leave: false }));
+            }
+          }}
           className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
@@ -427,6 +466,15 @@ export default function EditModal({ server }: { server: ServerProps }) {
       {modal.roles && (
         <div
           role="dialog"
+          tabIndex={-1}
+          ref={(element: HTMLDivElement) => {
+            element?.focus();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setModal((prev) => ({ ...prev, roles: false }));
+            }
+          }}
           className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
@@ -457,6 +505,15 @@ export default function EditModal({ server }: { server: ServerProps }) {
       {modal.category && (
         <div
           role="dialog"
+          tabIndex={-1}
+          ref={(element: HTMLDivElement) => {
+            element?.focus();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              etModal((prev) => ({ ...prev, category: false }));
+            }
+          }}
           className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
