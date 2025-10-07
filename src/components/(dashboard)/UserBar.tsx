@@ -119,10 +119,10 @@ export default function UserBar({ userData }: { userData: UserDataProps }) {
           </div>
 
           {/* hover group */}
-          <div className="absolute pointer-events-none opacity-0 group-hover:opacity-100 bottom-full mb-20 bg-[var(--background)] border border-[var(--border-color)] w-65 h-30">
-            <div className="flex flex-col">
-              <div className="flex flex-row">
-                <div className="w-20 h-20 rounded-full overflow-hidden">
+          <div className="absolute left-0 bottom-full mb-22 opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto pointer-events-none transform translate-y-2 group-hover:translate-y-0 bg-[var(--background)] border border-[var(--border-color)] w-65 max-w-xs rounded-lg shadow-lg p-3 z-20">
+            <div className="flex flex-col gap-1">
+              <div className="flex flex-row gap-2">
+                <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-[var(--border-color)]">
                   <Image
                     src={
                       userData
@@ -130,22 +130,41 @@ export default function UserBar({ userData }: { userData: UserDataProps }) {
                         : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                     }
                     alt={"Avatar"}
-                    width={40}
-                    height={40}
+                    width={64}
+                    height={64}
                     className="w-full h-full object-cover"
                     unoptimized
                   />
                 </div>
-                <div className="flex flex-col">
-                  <h1>{userData?.display_name}</h1>
-                  <h2>@{userData?.username}</h2>
-                  <div className="flex flex-row">
-                    <p>Followers: {userData?.followers_number}</p>
-                    <p>Following: {userData?.following_number}</p>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold truncate">
+                        {userData?.display_name}
+                      </h3>
+                      <div className="text-xs text-[var(--muted-foreground)] truncate">
+                        @{userData?.username}
+                      </div>
+                    </div>
+                    <div className="text-xs px-2 py-0.5 rounded-full bg-[var(--background-secondary)] text-[var(--muted-foreground)]">
+                      {userData?.role}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 mt-2 text-xs">
+                    <div className="px-2 py-0.5 rounded-md bg-[var(--background)] border border-[var(--border-color)] text-[var(--muted-foreground)]">
+                      Followers: {userData?.followers_number}
+                    </div>
+                    <div className="px-2 py-0.5 rounded-md bg-[var(--background)] border border-[var(--border-color)] text-[var(--muted-foreground)]">
+                      Following: {userData?.following_number}
+                    </div>
                   </div>
                 </div>
               </div>
-              <p>{userData?.bio}</p>
+              <p className="mt-3 text-sm text-[var(--muted-foreground)] line-clamp-3">
+                {userData?.bio || "No bio yet."}
+              </p>
             </div>
           </div>
         </div>

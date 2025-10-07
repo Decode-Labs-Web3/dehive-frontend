@@ -10,6 +10,7 @@ import {
   faPlus,
   faHashtag,
   faVolumeHigh,
+  faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface CategoryProps {
@@ -35,7 +36,10 @@ interface ChannelProps {
 export default function Categories() {
   const { serverId } = useParams();
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  const [modalCategory, setModalCategory] = useState<Record<string, boolean>>(
+  const [createChannelModal, setCreateChannelModal] = useState<
+    Record<string, boolean>
+  >({});
+  const [categoryModal, setCategoryModal] = useState<Record<string, boolean>>(
     {}
   );
   const [channelForm, setChannelForm] = useState({
@@ -71,7 +75,13 @@ export default function Categories() {
         )
       );
 
-      setModalCategory(
+      setCreateChannelModal(
+        Object.fromEntries(
+          response.data.map((category: CategoryProps) => [category._id, false])
+        )
+      );
+
+      setCategoryModal(
         Object.fromEntries(
           response.data.map((category: CategoryProps) => [category._id, false])
         )
@@ -142,11 +152,13 @@ export default function Categories() {
               onContextMenuCapture={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log(
-                  "dewjdwehdvwedvwejdvewjdwevdjewvdewjdvewjdvjewdvewjdhhew"
-                );
+                // console.log("Test Mouse Right click");
+                setCategoryModal((prev) => ({
+                  ...prev,
+                  [category._id]: !prev[category._id],
+                }));
               }}
-              className="flex items-center justify-between px-3 py-1 rounded-md hover:bg-[var(--background-secondary)]"
+              className="relative group flex items-center justify-between px-3 py-1 rounded-md hover:bg-[var(--background-secondary)]"
             >
               <button
                 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]"
@@ -165,7 +177,7 @@ export default function Categories() {
               </button>
               <button
                 onClick={() =>
-                  setModalCategory((prev) => ({
+                  setCreateChannelModal((prev) => ({
                     ...prev,
                     [category._id]: !prev[category._id],
                   }))
@@ -176,6 +188,50 @@ export default function Categories() {
                 <FontAwesomeIcon icon={faPlus} />
               </button>
             </div>
+
+
+            {/* right mouse click category modal */}
+            {categoryModal[category._id] && (
+              <div
+              className="absolute flex flex-col items-start left-1/2 -translate-x-1/2 bg-red-500 w-55 h-100 z-60"
+              >
+                <button onClick={() => {
+                  setCategoryModal(prev => ({
+                    ...prev,
+                    [category._id]: false
+                  }))
+
+                  setOpen(prev => ({
+                    ...prev,
+                    [category._id]: false
+                  }))
+                }}>
+                  Collapse Category
+                </button>
+                <button onClick={() => {
+                  setCategoryModal(prev => ({
+                    ...prev,
+                    [category._id]: false
+                  }))
+
+                  setOpen(
+                    Object.fromEntries(categories.map(category => [category._id, false]))
+                  )
+                }}
+                >
+                  Collapse All Category
+                </button>
+                <button>
+                  Edit Category
+                </button>
+                <button
+                onClick={() => setDeleteCategory}
+                >
+                  Delete Category
+                </button>
+              </div>
+            )}
+
             {open[category._id] && (
               <>
                 {category.channels.length > 0 &&
@@ -195,15 +251,21 @@ export default function Categories() {
                         />
                         <p className="truncate text-sm">{channel.name}</p>
                       </div>
-                      <button className="p-1 text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
-                        <FontAwesomeIcon icon={faGear} />
-                      </button>
+
+                      <div className="flex flex-row gap-1">
+                        <button className="text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
+                          <FontAwesomeIcon icon={faUserPlus} />
+                        </button>
+                        <button className="p-1 text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
+                          <FontAwesomeIcon icon={faGear} />
+                        </button>
+                      </div>
                     </div>
                   ))}
               </>
             )}
 
-            {modalCategory[category._id] && (
+            {createChannelModal[category._id] && (
               <div
                 role="dialog"
                 tabIndex={-1}
@@ -212,7 +274,7 @@ export default function Categories() {
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
-                    setModalCategory((prev) => ({
+                    setCreateChannelModal((prev) => ({
                       ...prev,
                       [category._id]: false,
                     }));
@@ -222,7 +284,7 @@ export default function Categories() {
               >
                 <div
                   onClick={() =>
-                    setModalCategory((prev) => ({
+                    setCreateChannelModal((prev) => ({
                       ...prev,
                       [category._id]: false,
                     }))
@@ -294,7 +356,7 @@ export default function Categories() {
                   <div className="flex flex-row gap-2 justify-end">
                     <button
                       onClick={() =>
-                        setModalCategory((prev) => ({
+                        setCreateChannelModal((prev) => ({
                           ...prev,
                           [category._id]: false,
                         }))
