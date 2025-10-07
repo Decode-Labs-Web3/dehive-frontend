@@ -31,7 +31,7 @@ export default function AddServer({ handleGetServer }: Props) {
     }
     console.log(serverForm);
     try {
-      const apiResponse = await fetch("api/servers/server", {
+      const apiResponse = await fetch("/api/servers/server", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

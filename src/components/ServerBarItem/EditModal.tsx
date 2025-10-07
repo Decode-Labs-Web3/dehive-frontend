@@ -179,11 +179,37 @@ export default function EditModal({ server }: { server: ServerProps }) {
     }));
   };
 
-  const handleCreateCategory = () => {
-    setModal((prev) => ({
-      ...prev,
-      category: false,
-    }));
+  const handleCreateCategory = async () => {
+    if (categoryCreateForm.name.trim() === "") return;
+    try {
+      const apiResponse = await fetch("/api/servers/category/post", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ serverId: server._id, name: categoryCreateForm.name }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        console.log(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 201 &&
+        response.message === "Operation successful"
+      ) {
+        setModal((prev) => ({
+          ...prev,
+          category: false,
+        }));
+      }
+    } catch (error) {
+      console.log(error);
+      console.error("Server error create category");
+    }
   };
 
   return (

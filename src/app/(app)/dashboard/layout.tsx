@@ -43,9 +43,10 @@ export default function RootLayout({
   const handleUserData = useCallback(async () => {
     setLoading(true);
     try {
-      const apiResponse = await fetch("api/user/user-info", {
+      const apiResponse = await fetch("/api/user/user-info", {
         method: "GET",
         cache: "no-store",
+        credentials: "include",
         signal: AbortSignal.timeout(10000),
       });
 
@@ -68,7 +69,7 @@ export default function RootLayout({
   }, [handleUserData]);
 
   if (loading) {
-    <>Loading...</>;
+    return <>Loading...</>;
   }
 
   return (

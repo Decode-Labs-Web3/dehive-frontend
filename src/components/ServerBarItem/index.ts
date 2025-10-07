@@ -1,7 +1,9 @@
 import EditModal from "./EditModal";
+import Categories from "./Categories";
 
 const ServerBarItem = {
-  EditModal
+  EditModal,
+  Categories
 }
 
 export default ServerBarItem

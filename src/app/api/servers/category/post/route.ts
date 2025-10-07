@@ -22,16 +22,16 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { serverId, name } = body;
 
-    // console.log("get-category serverId response status", serverId)
+    // console.log("[category/post] incoming payload", { serverId, name });
 
     if (!serverId || !name) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
-          message: "Missing serverId",
+          statusCode: 400,
+          message: "Missing required fields: serverId and name are required",
         },
-        { status: 401 }
+        { status: 400 }
       );
     }
 
@@ -41,6 +41,7 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           "x-session-id": sessionId,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ name }),
         cache: "no-store",
@@ -48,14 +49,11 @@ export async function POST(req: Request) {
       }
     );
 
-    console.debug(
-      "get-server-info backend response status",
-      backendResponse.status
-    );
+    // console.debug( "create-category backend response status", backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/servers/category-post backend error:", error);
+      console.error("/api/servers/category/post backend error:", error);
       return NextResponse.json(
         {
           success: false,
@@ -79,7 +77,7 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("/api/servers/category-post handler error:", error);
+    console.error("/api/servers/category/post handler error:", error);
     return NextResponse.json(
       {
         success: false,

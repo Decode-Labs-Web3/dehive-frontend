@@ -22,27 +22,14 @@ interface ServerProps {
   _v: boolean;
 }
 
-interface CategoryProps {
-  _id: string;
-  name: string;
-  type: string;
-  category_id: string;
-  position: number;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
 export default function ServerBar({ activeId }: ServerBarProps) {
   const [loading, setLoading] = useState(false);
-  const [modalSetting, setModalSetting] = useState(false);
+  const [serverSetting, setServerSetting] = useState(false);
   const [server, setServer] = useState<ServerProps | null>(null);
-  const [category, setCategory] = useState<CategoryProps | null>(null);
-  console.log(category);
 
   const fetchServerInfo = useCallback(async () => {
     setLoading(true);
-    setModalSetting(false);
+    setServerSetting(false);
     try {
       const apiResponse = await fetch("/api/servers/server-info", {
         method: "POST",
@@ -67,36 +54,9 @@ export default function ServerBar({ activeId }: ServerBarProps) {
     }
   }, [activeId]);
 
-  const fetchCategoryInfo = useCallback(async () => {
-    setLoading(true);
-    try {
-      const apiResponse = await fetch("/api/servers/category/get", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ serverId: activeId }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-
-      if (!apiResponse.ok) {
-        console.log(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      setCategory(response.data);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeId]);
-
   useEffect(() => {
     fetchServerInfo();
-    fetchCategoryInfo();
-  }, [fetchServerInfo, fetchCategoryInfo]);
+  }, [fetchServerInfo]);
 
   if (loading) {
     return <>loading ...</>;
@@ -106,20 +66,18 @@ export default function ServerBar({ activeId }: ServerBarProps) {
     <>
       <div className="relative bg-gray-500 border-[var-(--foreground)] border-2 p-2 font-bold">
         <button
-          onClick={() => setModalSetting((prev) => !prev)}
+          onClick={() => setServerSetting((prev) => !prev)}
           className="flex w-full items-center justify-between text-[var-(--foreground)]"
         >
-          <div className="flex flex-col items-start">
-            <span>{server?.name}</span>
-            <span className="truncate">{server?.description}</span>
-          </div>
-          <FontAwesomeIcon icon={modalSetting ? faX : faChevronDown} />
+          <span>{server?.name}</span>
+          <FontAwesomeIcon icon={serverSetting ? faX : faChevronDown} />
         </button>
 
-        {modalSetting && (
+        {serverSetting && (
           <>{server && <ServerBarItem.EditModal server={server} />}</>
         )}
       </div>
+      <ServerBarItem.Categories />
     </>
   );
 }

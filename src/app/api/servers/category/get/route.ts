@@ -47,7 +47,7 @@ export async function POST(req: Request) {
       }
     );
 
-    console.debug("get-server-info backend response status", backendResponse.status);
+    // console.debug("get-server-info backend response status", backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);

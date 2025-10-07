@@ -14,8 +14,7 @@ interface ServerData {
 }
 
 export default function ServerPage() {
-  const params = useParams();
-  const serverId = params.server_id as string;
+  const { serverId } = useParams();
   const [server, setServer] = useState<ServerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

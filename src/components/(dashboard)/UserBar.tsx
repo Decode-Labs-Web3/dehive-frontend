@@ -89,7 +89,7 @@ export default function UserBar({ userData }: { userData: UserDataProps }) {
             <FontAwesomeIcon icon={sound ? faVolumeHigh : faVolumeXmark} />
           </button>
           <button className="h-8 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90 flex items-center justify-center">
-            <FontAwesomeIcon icon={faGear} />
+            <FontAwesomeIcon className="hover:animate-spin" icon={faGear} />
           </button>
         </div>
 
