@@ -53,6 +53,16 @@ export default function EditModal({ server }: { server: ServerProps }) {
     name: "",
   });
 
+  const [categoryCreateForm, setCategoryCreateFrom] = useState({
+    name: "",
+  });
+
+  const handleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCategoryCreateFrom(() => ({
+      [event.target.name]: event.target.value,
+    }));
+  };
+
   const handleEditChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setServerEditForm((prev) => ({
       ...prev,
@@ -136,7 +146,7 @@ export default function EditModal({ server }: { server: ServerProps }) {
         return;
       }
       const response = await apiResponse.json();
-      console.log("ewdweqedqwdeqwdwedwqdwedwedwedwedwedqwdwe", response);
+      // console.log("ewdweqedqwdeqwdwedwqdwedwedwedwedwedqwdwe", response);
       if (
         response.statusCode === 200 &&
         response.message === "Operation successful"
@@ -174,7 +184,7 @@ export default function EditModal({ server }: { server: ServerProps }) {
       ...prev,
       category: false,
     }));
-  }
+  };
 
   return (
     <>
@@ -430,9 +440,19 @@ export default function EditModal({ server }: { server: ServerProps }) {
           <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
             <h1 className="text-base font-semibold mb-1">Create Category</h1>
 
+            <input
+              id="name"
+              name="name"
+              value={categoryCreateForm.name}
+              onChange={handleCategoryChange}
+              className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
+            />
+
             <div className="flex flex-row justify-end gap-2">
               <button
-                onClick={() => setModal((prev) => ({ ...prev, category: false }))}
+                onClick={() =>
+                  setModal((prev) => ({ ...prev, category: false }))
+                }
                 className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
               >
                 Cancel

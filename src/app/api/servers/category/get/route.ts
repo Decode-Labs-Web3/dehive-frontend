@@ -28,10 +28,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: 401,
           message: "Missing serverId",
         },
-        { status: 400 }
+        { status: 401 }
       );
     }
 

@@ -70,7 +70,7 @@ export default function ServerBar({ activeId }: ServerBarProps) {
   const fetchCategoryInfo = useCallback(async () => {
     setLoading(true);
     try {
-      const apiResponse = await fetch("/api/servers/category", {
+      const apiResponse = await fetch("/api/servers/category/get", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

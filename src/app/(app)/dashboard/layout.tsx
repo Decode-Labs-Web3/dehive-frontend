@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import Dashboard from "@/components/(dashboard)";
 
 interface UserDataProps {
@@ -23,9 +24,21 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const [activeId, setActiveId] = useState<string>("dm");
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState<UserDataProps | null>(null);
+
+  useEffect(() => {
+    if (pathname === "/dashboard/dm") {
+      setActiveId("dm");
+    } else if (pathname.startsWith("/dashboard/server/")) {
+      const serverId = pathname.split("/dashboard/server/")[1];
+      if (serverId) {
+        setActiveId(serverId);
+      }
+    }
+  }, [pathname]);
 
   const handleUserData = useCallback(async () => {
     setLoading(true);

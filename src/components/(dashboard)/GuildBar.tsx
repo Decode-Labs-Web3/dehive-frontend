@@ -1,6 +1,7 @@
 "use client";
 import ServerBarItem from "../GuildBaritem/index";
 import { useState, useEffect, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { toastSuccess, toastError } from "@/utils/toast.utils";
 import { faMessage } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -31,6 +32,8 @@ interface GuildBarProps {
 }
 
 export default function GuildBar({ activeId, setActiveId }: GuildBarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [servers, setServers] = useState<Server[]>([]);
 
   const handleGetServer = useCallback(async () => {
@@ -81,7 +84,10 @@ export default function GuildBar({ activeId, setActiveId }: GuildBarProps) {
           }`}
         />
         <button
-          onClick={() => setActiveId("dm")}
+          onClick={() => {
+            setActiveId("dm");
+            router.push("/dashboard/dm");
+          }}
           className="w-full h-full flex items-center justify-center"
         >
           <FontAwesomeIcon icon={faMessage} />
@@ -108,7 +114,10 @@ export default function GuildBar({ activeId, setActiveId }: GuildBarProps) {
               }`}
             />
             <button
-              onClick={() => setActiveId(server.id)}
+              onClick={() => {
+                setActiveId(server.id);
+                router.push(`/dashboard/server/${server.id}`);
+              }}
               className="w-full h-full font-bold flex items-center justify-center"
             >
               {server.name.slice(0, 1).toUpperCase()}
