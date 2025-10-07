@@ -9,6 +9,7 @@ import {
   faTrash,
   faRightFromBracket,
   faUserShield,
+  faFolderPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerProps {
@@ -40,6 +41,7 @@ export default function EditModal({ server }: { server: ServerProps }) {
     delete: false,
     leave: false,
     roles: false,
+    category: false,
   });
 
   const [serverEditForm, setServerEditForm] = useState({
@@ -167,6 +169,13 @@ export default function EditModal({ server }: { server: ServerProps }) {
     }));
   };
 
+  const handleCreateCategory = () => {
+    setModal((prev) => ({
+      ...prev,
+      category: false,
+    }));
+  }
+
   return (
     <>
       <div
@@ -188,6 +197,14 @@ export default function EditModal({ server }: { server: ServerProps }) {
 
         {server.owner_id === userId && (
           <>
+            <button
+              onClick={() => setModal((prev) => ({ ...prev, category: true }))}
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+            >
+              Create Category
+              <FontAwesomeIcon icon={faFolderPlus} />
+            </button>
+
             <button
               onClick={() => setModal((prev) => ({ ...prev, roles: true }))}
               className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
@@ -394,7 +411,37 @@ export default function EditModal({ server }: { server: ServerProps }) {
                 onClick={handleRoleServer}
                 className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
               >
-                Leave
+                Assign
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal.category && (
+        <div
+          role="dialog"
+          className="fixed inset-0 flex items-center justify-center z-30"
+        >
+          <div
+            onClick={() => setModal((prev) => ({ ...prev, category: false }))}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          />
+          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
+            <h1 className="text-base font-semibold mb-1">Create Category</h1>
+
+            <div className="flex flex-row justify-end gap-2">
+              <button
+                onClick={() => setModal((prev) => ({ ...prev, category: false }))}
+                className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateCategory}
+                className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
+              >
+                Create
               </button>
             </div>
           </div>
