@@ -10,7 +10,7 @@ interface ServerBarProps {
 }
 
 interface ServerProps {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   owner_id: string;
@@ -42,9 +42,9 @@ export default function ServerBar({ activeId }: ServerBarProps) {
 
   const fetchServerInfo = useCallback(async () => {
     setLoading(true);
-    setModalSetting(false)
+    setModalSetting(false);
     try {
-      const apiResponse = await fetch("/api/server/server-info", {
+      const apiResponse = await fetch("/api/servers/server-info", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +70,7 @@ export default function ServerBar({ activeId }: ServerBarProps) {
   const fetchCategoryInfo = useCallback(async () => {
     setLoading(true);
     try {
-      const apiResponse = await fetch("/api/server/category", {
+      const apiResponse = await fetch("/api/servers/category", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -109,14 +109,15 @@ export default function ServerBar({ activeId }: ServerBarProps) {
           onClick={() => setModalSetting((prev) => !prev)}
           className="flex w-full items-center justify-between text-[var-(--foreground)]"
         >
-          <span>{server?.name}</span>
+          <div className="flex flex-col items-start">
+            <span>{server?.name}</span>
+            <span className="truncate">{server?.description}</span>
+          </div>
           <FontAwesomeIcon icon={modalSetting ? faX : faChevronDown} />
         </button>
 
         {modalSetting && (
-          <>
-          {server && <ServerBarItem.EditModal server={server} />}
-          </>
+          <>{server && <ServerBarItem.EditModal server={server} />}</>
         )}
       </div>
     </>

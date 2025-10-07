@@ -26,7 +26,6 @@ export default function RootLayout({
   const [activeId, setActiveId] = useState<string>("dm");
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState<UserDataProps | null>(null);
-  console.log("this is userdata from layout", userData);
 
   const handleUserData = useCallback(async () => {
     setLoading(true);
@@ -43,7 +42,7 @@ export default function RootLayout({
       }
 
       const response = await apiResponse.json();
-      console.log("this is userdata response from layout", response.data);
+      // console.log("this is userdata response from layout", response.data);
       setUserData(response.data);
       setLoading(false);
     } catch (error) {
@@ -62,7 +61,7 @@ export default function RootLayout({
   return (
     <>
       <Dashboard.GuildBar activeId={activeId} setActiveId={setActiveId} />
-      <Dashboard.ChannelBar activeId={activeId} />
+      {userData && <Dashboard.ChannelBar userData={userData} activeId={activeId} />}
       {userData && <Dashboard.UserBar userData={userData} />}
       <div className="fixed top-0 left-[calc(4rem+15rem)]">{children}</div>
     </>

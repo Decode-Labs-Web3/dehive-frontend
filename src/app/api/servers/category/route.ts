@@ -51,7 +51,7 @@ export async function POST(req: Request) {
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/server/server-info backend error:", error);
+      console.error("/api/servers/server-info backend error:", error);
       return NextResponse.json(
         {
           success: false,
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/server/server-info handler error:", error);
+    console.error("/api/servers/server-info handler error:", error);
     return NextResponse.json(
       {
         success: false,

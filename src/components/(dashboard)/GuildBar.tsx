@@ -35,7 +35,7 @@ export default function GuildBar({ activeId, setActiveId }: GuildBarProps) {
 
   const handleGetServer = useCallback(async () => {
     try {
-      const apiResponse = await fetch("/api/server/get-post-server", {
+      const apiResponse = await fetch("/api/servers/server", {
         method: "GET",
         cache: "no-store",
         signal: AbortSignal.timeout(10000),

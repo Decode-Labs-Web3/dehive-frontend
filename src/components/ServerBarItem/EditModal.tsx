@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { toastSuccess, toastError } from "@/utils/index.utils";
+import { useState, useEffect } from "react";
+import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserPlus,
   faPen,
   faTrash,
   faRightFromBracket,
+  faUserShield,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerProps {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   owner_id: string;
@@ -24,15 +25,28 @@ interface ServerProps {
 }
 
 export default function EditModal({ server }: { server: ServerProps }) {
+  // const [server, setServer] = useState<ServerProps>(server)
+  const [userId, setUserId] = useState("");
+
+  useEffect(() => {
+    const value = getCookie("userId");
+    if (value) {
+      setUserId(value);
+    }
+  }, []);
+
   const [modal, setModal] = useState({
     edit: false,
     delete: false,
     leave: false,
+    roles: false,
   });
+
   const [serverEditForm, setServerEditForm] = useState({
     name: server.name,
     description: server.description,
   });
+
   const [serverDeleteForm, setServerDeleteFrom] = useState({
     name: "",
   });
@@ -50,33 +64,92 @@ export default function EditModal({ server }: { server: ServerProps }) {
     }));
   };
 
-  const handleEditServer = () => {
-    if (
-      serverEditForm.name.trim() === server.name ||
-      serverEditForm.description.trim() === server.description ||
-      serverEditForm.name.trim() === "" ||
-      serverEditForm.description.trim() === ""
-    ) {
-      return;
+  const handleEditServer = async () => {
+    const name = serverEditForm.name.trim();
+    const description = serverEditForm.description.trim();
+
+    const missing = name === "" || description === "";
+    const nothingChanged =
+      name === server.name && description === server.description;
+
+    if (missing || nothingChanged) return;
+
+    try {
+      const apiResponse = await fetch("/api/servers/server", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          serverId: server._id,
+          name: serverEditForm.name,
+          description: serverEditForm.description,
+        }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+      console.log("this is response from edit server", response);
+
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        setModal((prev) => ({
+          ...prev,
+          edit: false,
+        }));
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server error for leave server");
     }
-    setModal((prev) => ({
-      ...prev,
-      edit: false,
-    }));
-    console.log("edit server");
   };
 
-  const handleDeleteServer = () => {
+  const handleDeleteServer = async () => {
     if (serverDeleteForm.name.trim() !== server.name) {
       toastError("The type the server name didn't macth");
       return;
     }
-    toastSuccess("Delete Successful");
-    setModal((prev) => ({
-      ...prev,
-      delete: false,
-    }));
-    console.log("Delete server");
+
+    try {
+      const apiResponse = await fetch("/api/servers/server", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ serverId: server._id }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      console.log("ewdweqedqwdeqwdwedwqdwedwedwedwedwedqwdwe", response);
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        toastSuccess("Delete Successful");
+        setModal((prev) => ({
+          ...prev,
+          delete: false,
+        }));
+        console.log("Delete server");
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server error for delete server");
+    }
   };
 
   const handleLeaveServer = () => {
@@ -85,6 +158,13 @@ export default function EditModal({ server }: { server: ServerProps }) {
       leave: false,
     }));
     console.log("Leave server");
+  };
+
+  const handleRoleServer = () => {
+    setModal((prev) => ({
+      ...prev,
+      roles: false,
+    }));
   };
 
   return (
@@ -106,22 +186,35 @@ export default function EditModal({ server }: { server: ServerProps }) {
           <FontAwesomeIcon icon={faRightFromBracket} />
         </button>
 
-        <button
-          onClick={() => setModal((prev) => ({ ...prev, edit: true }))}
-          className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
-        >
-          Edit Server
-          <FontAwesomeIcon icon={faPen} />
-        </button>
+        {server.owner_id === userId && (
+          <>
+            <button
+              onClick={() => setModal((prev) => ({ ...prev, roles: true }))}
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+            >
+              Manage roles
+              <FontAwesomeIcon icon={faUserShield} />
+            </button>
 
-        <button
-          onClick={() => setModal((prev) => ({ ...prev, delete: true }))}
-          className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
-        >
-          Delete Server
-          <FontAwesomeIcon icon={faTrash} />
-        </button>
+            <button
+              onClick={() => setModal((prev) => ({ ...prev, edit: true }))}
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+            >
+              Edit Server
+              <FontAwesomeIcon icon={faPen} />
+            </button>
+
+            <button
+              onClick={() => setModal((prev) => ({ ...prev, delete: true }))}
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+            >
+              Delete Server
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </>
+        )}
       </div>
+
       {modal.edit && (
         <div
           role="dialog"
@@ -269,6 +362,36 @@ export default function EditModal({ server }: { server: ServerProps }) {
               </button>
               <button
                 onClick={handleLeaveServer}
+                className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
+              >
+                Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal.roles && (
+        <div
+          role="dialog"
+          className="fixed inset-0 flex items-center justify-center z-30"
+        >
+          <div
+            onClick={() => setModal((prev) => ({ ...prev, roles: false }))}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          />
+          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
+            <h1 className="text-base font-semibold mb-1">Assign role</h1>
+
+            <div className="flex flex-row justify-end gap-2">
+              <button
+                onClick={() => setModal((prev) => ({ ...prev, roles: false }))}
+                className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRoleServer}
                 className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
               >
                 Leave

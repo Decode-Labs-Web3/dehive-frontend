@@ -6,6 +6,21 @@ interface ChannelBarProps {
   activeId: string;
 }
 
+interface UserDataProps {
+  _id: string;
+  username: string;
+  email: string;
+  display_name: string;
+  bio: string;
+  avatar_ipfs_hash: string;
+  role: string;
+  last_login: string;
+  is_active: boolean;
+  __v: number;
+  following_number: number;
+  followers_number: number;
+}
+
 export default function ChannelBar({ activeId }: ChannelBarProps) {
   const isDM = activeId === "dm";
 
