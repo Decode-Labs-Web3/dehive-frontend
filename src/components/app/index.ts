@@ -2,10 +2,10 @@ import UserBar from "./UserBar";
 import GuildBar from "./GuildBar";
 import ChannelBar from "./ChannelBar";
 
-const Dashboard = {
+const App = {
   UserBar,
   GuildBar,
   ChannelBar
 }
 
-export default Dashboard
+export default App

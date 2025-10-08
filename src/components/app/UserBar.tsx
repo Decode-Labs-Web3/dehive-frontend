@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSun,
@@ -28,10 +28,42 @@ interface UserDataProps {
   followers_number: number;
 }
 
-export default function UserBar({ userData }: { userData: UserDataProps }) {
+export default function UserBar() {
   const [theme, setTheme] = useState(false);
   const [sound, setSound] = useState(false);
   const [microphone, setMicrophone] = useState(false);
+  const [userData, setUserData] = useState<UserDataProps | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleUserData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const apiResponse = await fetch("/api/user/user-info", {
+        method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-store",
+        credentials: "include",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse) {
+        console.error(apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+      setUserData(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  useEffect(() => {
+    handleUserData();
+  }, [handleUserData]);
 
   const handleTheme = () => {
     setTheme((prev) => !prev);
@@ -61,12 +93,14 @@ export default function UserBar({ userData }: { userData: UserDataProps }) {
     document.documentElement.classList.add("dark");
   }, []);
 
-  // console.log("this is userData", userData)
+  if (loading) {
+    return <>Loading...</>;
+  }
 
   return (
-    <div className="fixed bottom-0 left-0 z-15 m-3 w-70 h-30 rounded-lg bg-[var(--background)] border border-[var(--border-color)] shadow">
-      <div className="flex flex-col justify-end w-full h-full p-2">
-        {/* Controls */}
+    <aside className="w-full h-full rounded-md p-2 bg-[var(--background)] border-2 border-[var(--border-color)]">
+      <div className="flex flex-col justify-end w-full h-full">
+        {/* controls */}
         <div className="grid grid-cols-4 gap-2 mb-2">
           <button
             onClick={handleTheme}
@@ -93,7 +127,7 @@ export default function UserBar({ userData }: { userData: UserDataProps }) {
           </button>
         </div>
 
-        {/* User info */}
+        {/* user info */}
         <div className="flex items-center gap-2 relative group">
           <div className="w-10 h-10 rounded-full overflow-hidden">
             <Image
@@ -119,7 +153,7 @@ export default function UserBar({ userData }: { userData: UserDataProps }) {
           </div>
 
           {/* hover group */}
-          <div className="absolute left-0 bottom-full mb-22 opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto pointer-events-none transform translate-y-2 group-hover:translate-y-0 bg-[var(--background)] border border-[var(--border-color)] w-65 max-w-xs rounded-lg shadow-lg p-3 z-20">
+          <div className="absolute -left-2 bottom-full mb-22 opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto pointer-events-none transform translate-y-2 group-hover:translate-y-0 bg-[var(--background)] border border-[var(--border-color)] w-65 max-w-xs rounded-lg shadow-lg p-3 z-20">
             <div className="flex flex-col gap-1">
               <div className="flex flex-row gap-2">
                 <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-[var(--border-color)]">
@@ -169,6 +203,6 @@ export default function UserBar({ userData }: { userData: UserDataProps }) {
           </div>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserPlus,
@@ -37,7 +37,7 @@ export default function EditModal({
 }: EditModalProps) {
   // const [server, setServer] = useState<ServerProps>(server)
   const [userId, setUserId] = useState("");
-  const router = useRouter();
+  // const router = useRouter();
 
   useEffect(() => {
     const value = getCookie("userId");
@@ -174,8 +174,8 @@ export default function EditModal({
           delete: false,
         }));
         console.log("Delete server");
-        // router.push("/dashboard")
-        // window.location.href = "/dashboard";
+        // router.push("/app")
+        // window.location.href = "/app";
       }
     } catch (error) {
       console.error(error);

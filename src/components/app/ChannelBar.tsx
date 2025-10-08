@@ -1,6 +1,6 @@
 "use client";
 
-import ChannelBarItem from "../ChannelBarItem";
+import ChannelBarItem from "../channelBarItem";
 
 interface ChannelBarProps {
   activeId: string;

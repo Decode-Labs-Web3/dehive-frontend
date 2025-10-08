@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
-import ServerBarItem from "../ServerBarItem";
+import ServerBarItem from "../serverBarItem";
 
 interface ServerBarProps {
   activeId: string;
