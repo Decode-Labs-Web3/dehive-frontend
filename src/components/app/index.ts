@@ -1,11 +1,13 @@
 import UserBar from "./UserBar";
 import GuildBar from "./GuildBar";
-import ChannelBar from "./ChannelBar";
+import ServerBar from "./ServerBar";
+import MeBar from "./MeBar";
 
 const App = {
   UserBar,
   GuildBar,
-  ChannelBar
-}
+  ServerBar,
+  MeBar,
+};
 
-export default App
+export default App;

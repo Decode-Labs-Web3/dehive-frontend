@@ -188,7 +188,7 @@ export default function Categories() {
   };
 
   return (
-    <>
+    <div>
       {categories.length > 0 &&
         categories.map((category) => (
           <div key={category._id}>
@@ -231,96 +231,101 @@ export default function Categories() {
               >
                 <FontAwesomeIcon icon={faPlus} />
               </button>
-            </div>
 
-            {/* right mouse click category modal */}
-            {categoryModal[category._id] && (
-              <>
-                <div
-                role="dialog"
-                tabIndex={-1}
-                ref={(element: HTMLDivElement) => {
-                  element?.focus()
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Escape"){
-                    setCategoryModal(prev => ({
-                      ...prev,
-                      [category._id]: false
-                    }))
-                  }
-                }}
-                onClick={() => setCategoryModal(prev => ({
-                  ...prev,
-                  [category._id]: false
-                }))}
-                className="fixed inset-0 bg-black/50"/>
-                <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-60">
-                  <div className="w-56 bg-[var(--background)] border border-[var(--border-color)] rounded-md shadow-xl overflow-hidden text-sm">
-                    <div className="flex flex-col">
-                      <button
-                        onClick={() => {
-                          setCategoryModal((prev) => ({
-                            ...prev,
-                            [category._id]: false,
-                          }));
+              {/* right mouse click category modal */}
+              {categoryModal[category._id] && (
+                <>
+                  <div
+                    role="dialog"
+                    tabIndex={-1}
+                    ref={(element: HTMLDivElement) => {
+                      element?.focus();
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape") {
+                        setCategoryModal((prev) => ({
+                          ...prev,
+                          [category._id]: false,
+                        }));
+                      }
+                    }}
+                    onClick={() =>
+                      setCategoryModal((prev) => ({
+                        ...prev,
+                        [category._id]: false,
+                      }))
+                    }
+                    className="fixed inset-0 bg-black/50"
+                  />
 
-                          setOpen((prev) => ({
-                            ...prev,
-                            [category._id]: false,
-                          }));
-                        }}
-                        className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
-                      >
-                        Collapse Category
-                      </button>
+                  {/* <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-60"> */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-60">
+                    <div className="w-56 bg-[var(--background)] border border-[var(--border-color)] rounded-md shadow-xl overflow-hidden text-sm">
+                      <div className="flex flex-col">
+                        <button
+                          onClick={() => {
+                            setCategoryModal((prev) => ({
+                              ...prev,
+                              [category._id]: false,
+                            }));
 
-                      <button
-                        onClick={() => {
-                          setCategoryModal((prev) => ({
-                            ...prev,
-                            [category._id]: false,
-                          }));
+                            setOpen((prev) => ({
+                              ...prev,
+                              [category._id]: false,
+                            }));
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                        >
+                          Collapse Category
+                        </button>
 
-                          setOpen(
-                            Object.fromEntries(
-                              categories.map((category) => [
-                                category._id,
-                                false,
-                              ])
-                            )
-                          );
-                        }}
-                        className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
-                      >
-                        Collapse All Categories
-                      </button>
+                        <button
+                          onClick={() => {
+                            setCategoryModal((prev) => ({
+                              ...prev,
+                              [category._id]: false,
+                            }));
 
-                      <button className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]">
-                        Edit Category
-                      </button>
+                            setOpen(
+                              Object.fromEntries(
+                                categories.map((category) => [
+                                  category._id,
+                                  false,
+                                ])
+                              )
+                            );
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                        >
+                          Collapse All Categories
+                        </button>
 
-                      <button
-                        onClick={() => {
-                          setDeleteCategoryModal((prev) => ({
-                            ...prev,
-                            [category._id]: true,
-                          }));
+                        <button className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]">
+                          Edit Category
+                        </button>
 
-                          setCategoryModal((prev) => ({
-                            ...prev,
-                            [category._id]: false,
-                          }));
-                        }}
-                        className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
-                      >
-                        Delete Category
-                      </button>
+                        <button
+                          onClick={() => {
+                            setDeleteCategoryModal((prev) => ({
+                              ...prev,
+                              [category._id]: true,
+                            }));
+
+                            setCategoryModal((prev) => ({
+                              ...prev,
+                              [category._id]: false,
+                            }));
+                          }}
+                          className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
+                        >
+                          Delete Category
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
 
             {/* deleted category */}
             {/* new knowledge the category right here if it is the dialog modal it will ingore the current and get the items when end of map */}
@@ -356,7 +361,9 @@ export default function Categories() {
                     <div className="min-w-0">
                       <h3 className="text-lg font-semibold">Delete Category</h3>
                       <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                        Are you sure you want to delete <span className="font-bold">{category.name}</span>? This action {"can't"} be undone.
+                        Are you sure you want to delete{" "}
+                        <span className="font-bold">{category.name}</span>? This
+                        action {"can't"} be undone.
                       </p>
                     </div>
                   </div>
@@ -508,6 +515,6 @@ export default function Categories() {
             )}
           </div>
         ))}
-    </>
+    </div>
   );
 }

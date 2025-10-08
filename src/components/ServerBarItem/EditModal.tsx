@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserPlus,
@@ -37,7 +37,7 @@ export default function EditModal({
 }: EditModalProps) {
   // const [server, setServer] = useState<ServerProps>(server)
   const [userId, setUserId] = useState("");
-  // const router = useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     const value = getCookie("userId");
@@ -173,9 +173,7 @@ export default function EditModal({
           ...prev,
           delete: false,
         }));
-        console.log("Delete server");
-        // router.push("/app")
-        // window.location.href = "/app";
+        router.push("/app/channels/me");
       }
     } catch (error) {
       console.error(error);
@@ -256,7 +254,7 @@ export default function EditModal({
         //     setModal((prev) => ({ ...prev, leave: false }));
         //   }
         // }}
-        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-10 rounded-md bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-lg overflow-hidden"
+        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-20 rounded-md bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-lg overflow-hidden"
       >
         <button className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]">
           Invite Friend

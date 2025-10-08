@@ -79,34 +79,34 @@ export default function Channels({ channel }: { channel: ChannelProps }) {
             <FontAwesomeIcon icon={faGear} />
           </button>
         </div>
+
+        {channelModal && (
+          <>
+            <div
+              tabIndex={-1}
+              ref={(el) => el?.focus()}
+              onClick={() => setChannelModal(false)}
+              onKeyDown={(e) => e.key === "Escape" && setChannelModal(false)}
+              className="fixed inset-0 bg-black/50 z-20"
+            />
+
+            <div className="absolute top-full z-30 left-1/2 -translate-x-1/2 w-55 rounded-md bg-[var(--background)] text-[var(--foreground)]">
+              <button className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]">
+                Edit Channel
+              </button>
+              <button
+                onClick={() => {
+                  setChannelModal(false);
+                  setDeleteChannelModal(true);
+                }}
+                className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
+              >
+                Delete Channel
+              </button>
+            </div>
+          </>
+        )}
       </div>
-
-      {channelModal && (
-        <>
-          <div
-            tabIndex={-1}
-            ref={(el) => el?.focus()}
-            onClick={() => setChannelModal(false)}
-            onKeyDown={(e) => e.key === "Escape" && setChannelModal(false)}
-            className="fixed inset-0 bg-black/50 z-20"
-          />
-
-          <div className="absolute z-30 left-1/2 -translate-x-1/2 w-55 rounded-md bg-[var(--background)] text-[var(--foreground)]">
-            <button className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]">
-              Edit Channel
-            </button>
-            <button
-              onClick={() => {
-                setChannelModal(false);
-                setDeleteChannelModal(true);
-              }}
-              className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
-            >
-              Delete Channel
-            </button>
-          </div>
-        </>
-      )}
 
       {deleteChannelModal && (
         <div

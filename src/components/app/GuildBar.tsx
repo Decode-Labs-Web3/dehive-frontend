@@ -1,5 +1,5 @@
 "use client";
-import ServerBarItem from "../guildBaritem/index";
+import ServerBarItem from "../guildeBaritem/index";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { faMessage } from "@fortawesome/free-solid-svg-icons";
@@ -23,6 +23,14 @@ export default function GuildBar() {
   const router = useRouter();
   const pathname = usePathname();
   const [servers, setServers] = useState<Server[]>([]);
+
+  const getActiveId = () => {
+    if (pathname.includes("/me")) return "me";
+    const serverMatch = pathname.match(/\/channels\/([^\/]+)/);
+    return serverMatch ? serverMatch[1] : "";
+  };
+
+  const activeId = getActiveId();
 
   const handleGetServer = useCallback(async () => {
     try {
@@ -53,27 +61,19 @@ export default function GuildBar() {
     handleGetServer();
   }, [handleGetServer]);
 
-  const getActiveId = () => {
-    if (pathname.includes("/@me")) return "@me";
-    const serverMatch = pathname.match(/\/channels\/([^\/]+)/);
-    return serverMatch ? serverMatch[1] : "";
-  };
-
-  const activeId = getActiveId();
-
   return (
     <aside className="flex flex-col gap-2 p-3 w-full h-full bg-[var(--background)] border-r-2 border-[var(--border-color)]">
       <div className="relative group w-10 h-10 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition">
         <span
           className={`absolute -left-3 top-1/2 -translate-y-1/2 w-1 rounded-r-full ${
-            activeId === "@me"
+            activeId === "me"
               ? "h-8 bg-[var(--accent)]"
               : "h-4 bg-[var(--border-color)]"
           }`}
         />
         <button
           onClick={() => {
-            router.push("/app/channels/@me");
+            router.push("/app/channels/me");
           }}
           className="w-full h-full flex items-center justify-center"
         >

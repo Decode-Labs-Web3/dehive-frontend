@@ -1,18 +1,9 @@
 "use client";
 
 import App from "@/components/app";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (pathname === "/app") {
-      router.replace("/app/channels/@me");
-    }
-  }, [pathname, router]);
 
   return (
     <div className="relative flex h-screen">
