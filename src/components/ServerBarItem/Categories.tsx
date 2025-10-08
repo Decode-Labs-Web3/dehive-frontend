@@ -48,6 +48,9 @@ export default function Categories() {
   });
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<CategoryProps[]>([]);
+  const [deleteCategoryModal, setDeleteCategoryModal] = useState<
+    Record<string, boolean>
+  >({});
   // console.log(category);
 
   const fetchCategoryInfo = useCallback(async () => {
@@ -82,6 +85,12 @@ export default function Categories() {
       );
 
       setCategoryModal(
+        Object.fromEntries(
+          response.data.map((category: CategoryProps) => [category._id, false])
+        )
+      );
+
+      setDeleteCategoryModal(
         Object.fromEntries(
           response.data.map((category: CategoryProps) => [category._id, false])
         )
@@ -143,6 +152,40 @@ export default function Categories() {
     return <h1>Loading ...</h1>;
   }
 
+  const handleDeleteCategory = async (categoryId: string) => {
+    // console.log("this is categories id", categoryId);
+    try {
+      const apiResponse = await fetch("/api/servers/category/delete", {
+        method: "Delete",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ categoryId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        setDeleteCategoryModal((prev) => ({
+          ...prev,
+          categoryId: false,
+        }));
+        fetchCategoryInfo();
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("server delete category error");
+    }
+  };
+
   return (
     <>
       {categories.length > 0 &&
@@ -191,42 +234,107 @@ export default function Categories() {
 
             {/* right mouse click category modal */}
             {categoryModal[category._id] && (
-              <div className="absolute flex flex-col items-start left-1/2 -translate-x-1/2 bg-red-500 w-55 h-100 z-60">
-                <button
-                  onClick={() => {
-                    setCategoryModal((prev) => ({
+              <>
+                <div className="absolute flex flex-col items-start left-1/2 -translate-x-1/2 bg-red-500 w-55 h-100 z-60">
+                  <button
+                    onClick={() => {
+                      setCategoryModal((prev) => ({
+                        ...prev,
+                        [category._id]: false,
+                      }));
+
+                      setOpen((prev) => ({
+                        ...prev,
+                        [category._id]: false,
+                      }));
+                    }}
+                  >
+                    Collapse Category
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCategoryModal((prev) => ({
+                        ...prev,
+                        [category._id]: false,
+                      }));
+
+                      setOpen(
+                        Object.fromEntries(
+                          categories.map((category) => [category._id, false])
+                        )
+                      );
+                    }}
+                  >
+                    Collapse All Category
+                  </button>
+                  <button>Edit Category</button>
+                  <button
+                    onClick={() => {
+                      setDeleteCategoryModal((prev) => ({
+                        ...prev,
+                        [category._id]: true,
+                      }));
+
+                      setCategoryModal((prev) => ({
+                        ...prev,
+                        [category._id]: false,
+                      }));
+                    }}
+                  >
+                    Delete Category
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* deleted category */}
+            {/* new knowledge the category right here if it is the dialog modal it will ingore the current and get the items when end of map */}
+            {deleteCategoryModal[category._id] && (
+              <div
+                role="dialog"
+                tabIndex={-1}
+                ref={(element: HTMLDivElement) => {
+                  element?.focus();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    setDeleteCategoryModal((prev) => ({
                       ...prev,
                       [category._id]: false,
                     }));
-
-                    setOpen((prev) => ({
+                  }
+                }}
+                className="fixed inset-0 flex items-center justify-center z-30"
+              >
+                <div
+                  onClick={() => {
+                    setDeleteCategoryModal((prev) => ({
                       ...prev,
                       [category._id]: false,
                     }));
                   }}
-                >
-                  Collapse Category
-                </button>
-                <button
-                  onClick={() => {
-                    setCategoryModal((prev) => ({
-                      ...prev,
-                      [category._id]: false,
-                    }));
-
-                    setOpen(
-                      Object.fromEntries(
-                        categories.map((category) => [category._id, false])
-                      )
-                    );
-                  }}
-                >
-                  Collapse All Category
-                </button>
-                <button>Edit Category</button>
-                <button onClick={() => setDeleteCategory}>
-                  Delete Category
-                </button>
+                  className="fixed inset-0 bg-black/50 z-40"
+                />
+                <div className="w-100 h-100 bg-red-500 z-50">
+                  <h1>Delete Category</h1>
+                  <p>Are you sure you want to delete {category.name}?</p>
+                  <p>This {"cann't"} be undone</p>
+                  <div className="flex flex-row justify-end gap-2">
+                    <button
+                      onClick={() => {
+                        setDeleteCategoryModal((prev) => ({
+                          ...prev,
+                          [category._id]: false,
+                        }));
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button onClick={() => handleDeleteCategory(category._id)}>
+                      Delete
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 

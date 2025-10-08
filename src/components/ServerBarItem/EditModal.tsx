@@ -511,7 +511,7 @@ export default function EditModal({ server }: { server: ServerProps }) {
           }}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
-              etModal((prev) => ({ ...prev, category: false }));
+              setModal((prev) => ({ ...prev, category: false }));
             }
           }}
           className="fixed inset-0 flex items-center justify-center z-30"
