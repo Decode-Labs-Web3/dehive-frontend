@@ -1,16 +1,13 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import ServerBarItem from "./index";
 import { useState, useCallback, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronRight,
   faChevronDown,
-  faGear,
   faPlus,
-  faHashtag,
-  faVolumeHigh,
-  faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface CategoryProps {
@@ -51,6 +48,7 @@ export default function Categories() {
   const [deleteCategoryModal, setDeleteCategoryModal] = useState<
     Record<string, boolean>
   >({});
+  // const [ channelModal, setChannelModal ] = useState<Record<string, boolean>>({})
   // console.log(category);
 
   const fetchCategoryInfo = useCallback(async () => {
@@ -235,54 +233,69 @@ export default function Categories() {
             {/* right mouse click category modal */}
             {categoryModal[category._id] && (
               <>
-                <div className="absolute flex flex-col items-start left-1/2 -translate-x-1/2 bg-red-500 w-55 h-100 z-60">
-                  <button
-                    onClick={() => {
-                      setCategoryModal((prev) => ({
-                        ...prev,
-                        [category._id]: false,
-                      }));
+                <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-60">
+                  <div className="w-56 bg-[var(--background)] border border-[var(--border-color)] rounded-md shadow-xl overflow-hidden text-sm">
+                    <div className="flex flex-col">
+                      <button
+                        onClick={() => {
+                          setCategoryModal((prev) => ({
+                            ...prev,
+                            [category._id]: false,
+                          }));
 
-                      setOpen((prev) => ({
-                        ...prev,
-                        [category._id]: false,
-                      }));
-                    }}
-                  >
-                    Collapse Category
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCategoryModal((prev) => ({
-                        ...prev,
-                        [category._id]: false,
-                      }));
+                          setOpen((prev) => ({
+                            ...prev,
+                            [category._id]: false,
+                          }));
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                      >
+                        Collapse Category
+                      </button>
 
-                      setOpen(
-                        Object.fromEntries(
-                          categories.map((category) => [category._id, false])
-                        )
-                      );
-                    }}
-                  >
-                    Collapse All Category
-                  </button>
-                  <button>Edit Category</button>
-                  <button
-                    onClick={() => {
-                      setDeleteCategoryModal((prev) => ({
-                        ...prev,
-                        [category._id]: true,
-                      }));
+                      <button
+                        onClick={() => {
+                          setCategoryModal((prev) => ({
+                            ...prev,
+                            [category._id]: false,
+                          }));
 
-                      setCategoryModal((prev) => ({
-                        ...prev,
-                        [category._id]: false,
-                      }));
-                    }}
-                  >
-                    Delete Category
-                  </button>
+                          setOpen(
+                            Object.fromEntries(
+                              categories.map((category) => [
+                                category._id,
+                                false,
+                              ])
+                            )
+                          );
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                      >
+                        Collapse All Categories
+                      </button>
+
+                      <button className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]">
+                        Edit Category
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setDeleteCategoryModal((prev) => ({
+                            ...prev,
+                            [category._id]: true,
+                          }));
+
+                          setCategoryModal((prev) => ({
+                            ...prev,
+                            [category._id]: false,
+                          }));
+                        }}
+                        className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
+                      >
+                        Delete Category
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </>
             )}
@@ -315,11 +328,28 @@ export default function Categories() {
                   }}
                   className="fixed inset-0 bg-black/50 z-40"
                 />
-                <div className="w-100 h-100 bg-red-500 z-50">
-                  <h1>Delete Category</h1>
-                  <p>Are you sure you want to delete {category.name}?</p>
-                  <p>This {"cann't"} be undone</p>
-                  <div className="flex flex-row justify-end gap-2">
+
+                <div className="bg-[var(--background)] text-[var(--foreground)] rounded-lg p-5 w-full max-w-md z-50 shadow-2xl border border-[var(--border-color)]">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white">
+                      !
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-semibold">Delete Category</h3>
+                      <p className="text-sm text-[var(--muted-foreground)] mt-1 truncate">
+                        Are you sure you want to delete{" "}
+                        <span className="font-medium text-[var(--foreground)]">
+                          {category.name}
+                        </span>
+                        ?
+                      </p>
+                      <p className="text-sm text-[var(--muted-foreground)] mt-2">
+                        This action can&apos;t be undone.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-row justify-end gap-3 mt-5">
                     <button
                       onClick={() => {
                         setDeleteCategoryModal((prev) => ({
@@ -327,10 +357,14 @@ export default function Categories() {
                           [category._id]: false,
                         }));
                       }}
+                      className="px-3 py-2 rounded-md text-sm bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90"
                     >
                       Cancel
                     </button>
-                    <button onClick={() => handleDeleteCategory(category._id)}>
+                    <button
+                      onClick={() => handleDeleteCategory(category._id)}
+                      className="px-3 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700"
+                    >
                       Delete
                     </button>
                   </div>
@@ -338,34 +372,13 @@ export default function Categories() {
               </div>
             )}
 
+            {/* create channal */}
             {open[category._id] && (
               <>
                 {category.channels.length > 0 &&
                   category.channels.map((channel) => (
-                    <div
-                      key={channel._id}
-                      className={
-                        "flex items-center justify-between px-4 py-1 rounded-md hover:bg-[var(--background-secondary)] group"
-                      }
-                    >
-                      <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
-                        <FontAwesomeIcon
-                          icon={
-                            channel.type === "TEXT" ? faHashtag : faVolumeHigh
-                          }
-                          className="w-4 h-4 text-[var(--muted-foreground)]"
-                        />
-                        <p className="truncate text-sm">{channel.name}</p>
-                      </div>
-
-                      <div className="flex flex-row gap-1">
-                        <button className="text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
-                          <FontAwesomeIcon icon={faUserPlus} />
-                        </button>
-                        <button className="p-1 text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
-                          <FontAwesomeIcon icon={faGear} />
-                        </button>
-                      </div>
+                    <div key={channel._id}>
+                      <ServerBarItem.Channels channel={channel} />
                     </div>
                   ))}
               </>
