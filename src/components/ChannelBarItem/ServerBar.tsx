@@ -24,12 +24,12 @@ interface ServerProps {
 
 export default function ServerBar({ activeId }: ServerBarProps) {
   const [loading, setLoading] = useState(false);
-  const [serverSetting, setServerSetting] = useState(false);
+  const [serverSettingModal, setServerSettingModal] = useState(false);
   const [server, setServer] = useState<ServerProps | null>(null);
 
   const fetchServerInfo = useCallback(async () => {
     setLoading(true);
-    setServerSetting(false);
+    setServerSettingModal(false);
     try {
       const apiResponse = await fetch("/api/servers/server-info", {
         method: "POST",
@@ -66,15 +66,30 @@ export default function ServerBar({ activeId }: ServerBarProps) {
     <>
       <div className="relative bg-gray-500 border-[var-(--foreground)] border-2 p-2 font-bold">
         <button
-          onClick={() => setServerSetting((prev) => !prev)}
+          onClick={() => setServerSettingModal(true)}
           className="flex w-full items-center justify-between text-[var-(--foreground)]"
         >
           <span>{server?.name}</span>
-          <FontAwesomeIcon icon={serverSetting ? faX : faChevronDown} />
+          <FontAwesomeIcon icon={serverSettingModal ? faX : faChevronDown} />
         </button>
 
-        {serverSetting && (
-          <>{server && <ServerBarItem.EditModal server={server} />}</>
+        {serverSettingModal && (
+          <>
+            <div
+              role="presentation"
+              tabIndex={-1}
+              ref={(el) => el?.focus()}
+              onKeyDown={(e) =>
+                e.key === "Escape" && setServerSettingModal(false)
+              }
+              onClick={() => setServerSettingModal(false)}
+              className="fixed inset-0 bg-black/50 z-10"
+            />
+
+            <div>
+              {server && <ServerBarItem.EditModal server={server} setServerSettingModal={setServerSettingModal}/>}
+            </div>
+          </>
         )}
       </div>
       <ServerBarItem.Categories />

@@ -25,7 +25,15 @@ interface ServerProps {
   _v: boolean;
 }
 
-export default function EditModal({ server }: { server: ServerProps }) {
+interface EditModalProps {
+  server: ServerProps;
+  setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export default function EditModal({
+  server,
+  setServerSettingModal,
+}: EditModalProps) {
   // const [server, setServer] = useState<ServerProps>(server)
   const [userId, setUserId] = useState("");
 
@@ -220,14 +228,41 @@ export default function EditModal({ server }: { server: ServerProps }) {
       <div
         role="dialog"
         tabIndex={-1}
-        ref={(element: HTMLDivElement) => {
-          element?.focus();
+        ref={(el) => {
+          if (
+            el &&
+            !(
+              modal.edit ||
+              modal.delete ||
+              modal.leave ||
+              modal.roles ||
+              modal.category
+            )
+          )
+            el.focus();
         }}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            setModal((prev) => ({ ...prev, leave: true }));
+        onKeyDown={(e) => {
+          if (
+            e.key === "Escape" &&
+            !(
+              modal.edit ||
+              modal.delete ||
+              modal.leave ||
+              modal.roles ||
+              modal.category
+            )
+          ) {
+            setServerSettingModal(false);
           }
         }}
+        // ref={(element: HTMLDivElement) => {
+        //   element?.focus();
+        // }}
+        // onKeyDown={(event) => {
+        //   if (event.key === "Escape") {
+        //     setModal((prev) => ({ ...prev, leave: false }));
+        //   }
+        // }}
         className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-10 rounded-md bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-lg overflow-hidden"
       >
         <button className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]">

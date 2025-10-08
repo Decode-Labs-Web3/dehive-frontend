@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-1. Make sure you have the Decode SSO server running on `localhost:3000`
+1. Make sure you have the Decode SSO server running on `localhost:9000`
 2. Register your "dehive" application with the SSO server
 3. Obtain your app secret from the SSO server
 

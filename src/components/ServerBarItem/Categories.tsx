@@ -100,7 +100,7 @@ export default function Categories() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [serverId]);
 
   useEffect(() => {
     fetchCategoryInfo();
@@ -233,6 +233,25 @@ export default function Categories() {
             {/* right mouse click category modal */}
             {categoryModal[category._id] && (
               <>
+                <div
+                role="dialog"
+                tabIndex={-1}
+                ref={(element: HTMLDivElement) => {
+                  element?.focus()
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape"){
+                    setCategoryModal(prev => ({
+                      ...prev,
+                      [category._id]: false
+                    }))
+                  }
+                }}
+                onClick={() => setCategoryModal(prev => ({
+                  ...prev,
+                  [category._id]: false
+                }))}
+                className="fixed inset-0 bg-black/50"/>
                 <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-60">
                   <div className="w-56 bg-[var(--background)] border border-[var(--border-color)] rounded-md shadow-xl overflow-hidden text-sm">
                     <div className="flex flex-col">
@@ -331,20 +350,10 @@ export default function Categories() {
 
                 <div className="bg-[var(--background)] text-[var(--foreground)] rounded-lg p-5 w-full max-w-md z-50 shadow-2xl border border-[var(--border-color)]">
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white">
-                      !
-                    </div>
                     <div className="min-w-0">
                       <h3 className="text-lg font-semibold">Delete Category</h3>
-                      <p className="text-sm text-[var(--muted-foreground)] mt-1 truncate">
-                        Are you sure you want to delete{" "}
-                        <span className="font-medium text-[var(--foreground)]">
-                          {category.name}
-                        </span>
-                        ?
-                      </p>
-                      <p className="text-sm text-[var(--muted-foreground)] mt-2">
-                        This action can&apos;t be undone.
+                      <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                        Are you sure you want to delete <span className="font-bold">{category.name}</span>? This action {"can't"} be undone.
                       </p>
                     </div>
                   </div>

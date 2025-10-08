@@ -38,7 +38,7 @@ export default function Authorize() {
       toastError("SSO server error");
       return;
     }
-  }, [ssoToken, state]);
+  }, [ssoToken, state, router]);
 
   useEffect(() => {
     handleAuthorize();

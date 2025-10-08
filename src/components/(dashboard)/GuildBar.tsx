@@ -1,7 +1,7 @@
 "use client";
 import ServerBarItem from "../GuildBaritem/index";
 import { useState, useEffect, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toastSuccess, toastError } from "@/utils/toast.utils";
 import { faMessage } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -33,7 +33,6 @@ interface GuildBarProps {
 
 export default function GuildBar({ activeId, setActiveId }: GuildBarProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const [servers, setServers] = useState<Server[]>([]);
 
   const handleGetServer = useCallback(async () => {

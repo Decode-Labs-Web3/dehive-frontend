@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
 
-    res.cookies.delete("ssoState")
+    res.cookies.delete("ssoState");
 
     res.cookies.set("ssoState", state, {
       httpOnly: true,
@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
 
     return res;
   } catch (error: unknown) {
+    console.error(error);
     return NextResponse.json(
       {
         success: false,
