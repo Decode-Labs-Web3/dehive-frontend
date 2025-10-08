@@ -31,6 +31,7 @@ export default function ServerPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-Frontend-Internal-Request": "true",
           },
           body: JSON.stringify({ serverId }),
           cache: "no-store",

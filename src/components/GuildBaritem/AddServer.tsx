@@ -35,6 +35,7 @@ export default function AddServer({ handleGetServer }: Props) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
           name: serverForm.name,

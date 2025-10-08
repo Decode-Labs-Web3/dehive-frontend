@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
-  const router = useRouter()
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -12,13 +12,17 @@ export default function Login() {
       const apiResponse = await fetch("/api/auth/create-sso", {
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
-        headers: { Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
       });
       const response = await apiResponse.json();
 
-      console.log("This is login", response)
-      if (!response.success) throw new Error(response.message || "Cannot start SSO");
-      router.push(response.data)
+      console.log("This is login", response);
+      if (!response.success)
+        throw new Error(response.message || "Cannot start SSO");
+      router.push(response.data);
     } catch (error) {
       console.error(error);
     } finally {

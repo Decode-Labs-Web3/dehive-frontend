@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { generateRequestId, apiPathName} from "@/utils/index.utils"
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
 function isoToMaxAgeSeconds(expiresAtISO: string): number {
   const now = Date.now();
@@ -9,10 +13,10 @@ function isoToMaxAgeSeconds(expiresAtISO: string): number {
 }
 
 export async function POST(req: Request) {
-  const requestId = generateRequestId()
-  const pathname = apiPathName(req)
-  // const denied = guardInternal(req)
-  // if(denied) return denied
+  const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
 
   try {
     // const cookieStore = await cookies();
@@ -20,7 +24,7 @@ export async function POST(req: Request) {
 
     const ssoState = (await cookies()).get("ssoState")?.value;
 
-    if(!ssoState) {
+    if (!ssoState) {
       return NextResponse.json(
         {
           success: false,
@@ -34,7 +38,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { ssoToken, state } = body;
 
-    if(ssoState !== state) {
+    if (ssoState !== state) {
       return NextResponse.json(
         {
           success: false,
@@ -57,7 +61,7 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Request-Id": requestId
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -78,7 +82,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendRes.json();
-    console.log(response)
+    console.log(response);
 
     const res = NextResponse.json(
       {
@@ -89,28 +93,28 @@ export async function POST(req: Request) {
       { status: 200 }
     );
 
-    res.cookies.delete("ssoState")
-    res.cookies.delete("accessExp")
-    res.cookies.delete("sessionId")
+    res.cookies.delete("ssoState");
+    res.cookies.delete("accessExp");
+    res.cookies.delete("sessionId");
     const accessExpISO = response.data.expires_at as string;
     const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
     const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
 
-    res.cookies.set("accessExp", String(accessExpSec),{
+    res.cookies.set("accessExp", String(accessExpSec), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: accessMaxAge,
-    })
+    });
 
     res.cookies.set("sessionId", response.data.session_id, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: accessMaxAge,
-      });
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: accessMaxAge,
+    });
 
     return res;
   } catch (error) {

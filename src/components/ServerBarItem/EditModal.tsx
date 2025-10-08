@@ -99,6 +99,7 @@ export default function EditModal({
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
           serverId: server._id,
@@ -143,6 +144,7 @@ export default function EditModal({
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({ serverId: server._id }),
         cache: "no-store",
@@ -194,6 +196,7 @@ export default function EditModal({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
           serverId: server._id,

@@ -1,7 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
 import { randomBytes } from "crypto";
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
+  const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
+
   try {
     // console.log("hello this is sso")
     const decodeBase = process.env.DECODE_BASE_URL;
@@ -57,5 +67,7 @@ export async function GET(req: NextRequest) {
       },
       { status: 500 }
     );
+  } finally {
+    console.log(`${pathname} - ${requestId}`);
   }
 }

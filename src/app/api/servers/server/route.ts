@@ -1,10 +1,17 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { generateRequestId, apiPathName } from "@/utils/index.utils";
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
+
   try {
     const sessionId = (await cookies()).get("sessionId")?.value;
     const body = await req.json();
@@ -239,7 +246,7 @@ export async function PATCH(req: Request) {
       { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error(error)
+    console.error(error);
     return NextResponse.json({
       status: false,
       statusCode: 500,
@@ -316,7 +323,7 @@ export async function DELETE(req: Request) {
       { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error(error)
+    console.error(error);
     return NextResponse.json({
       status: false,
       statusCode: 500,

@@ -45,6 +45,9 @@ export default function RootLayout({
     try {
       const apiResponse = await fetch("/api/user/user-info", {
         method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true"
+        },
         cache: "no-store",
         credentials: "include",
         signal: AbortSignal.timeout(10000),

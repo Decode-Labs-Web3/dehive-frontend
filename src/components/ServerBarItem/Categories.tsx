@@ -58,6 +58,7 @@ export default function Categories() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({ serverId }),
         cache: "no-store",
@@ -119,6 +120,7 @@ export default function Categories() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
           serverId,
@@ -154,9 +156,10 @@ export default function Categories() {
     // console.log("this is categories id", categoryId);
     try {
       const apiResponse = await fetch("/api/servers/category/delete", {
-        method: "Delete",
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({ categoryId }),
         cache: "no-cache",

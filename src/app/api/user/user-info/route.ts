@@ -1,10 +1,16 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { generateRequestId, apiPathName } from "@/utils/index.utils";
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
 export async function GET(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
 
   try {
     const sessionId = (await cookies()).get("sessionId")?.value;
@@ -63,15 +69,15 @@ export async function GET(req: Request) {
       { status: 200 }
     );
 
-    res.cookies.set("userId", response.data.user._id,{
+    res.cookies.set("userId", response.data.user._id, {
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      path: '/',
+      path: "/",
       maxAge: 60 * 60 * 24 * 30,
-    })
+    });
 
-    return res
+    return res;
   } catch (error) {
     console.error("/api/user/user-info handler error:", error);
     return NextResponse.json(

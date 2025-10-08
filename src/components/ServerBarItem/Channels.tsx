@@ -28,6 +28,7 @@ export default function Channels({ channel }: { channel: ChannelProps }) {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({ channelId }),
         cache: "no-cache",

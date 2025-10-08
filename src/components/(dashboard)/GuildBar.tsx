@@ -39,6 +39,9 @@ export default function GuildBar({ activeId, setActiveId }: GuildBarProps) {
     try {
       const apiResponse = await fetch("/api/servers/server", {
         method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });

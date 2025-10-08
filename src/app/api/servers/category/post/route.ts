@@ -1,10 +1,17 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { generateRequestId, apiPathName } from "@/utils/index.utils";
+import { NextResponse } from "next/server";
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
+
   try {
     const sessionId = (await cookies()).get("sessionId")?.value;
 

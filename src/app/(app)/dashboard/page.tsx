@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
   const router = useRouter();
-
   useEffect(() => {
     router.replace("/dashboard/dm");
   }, [router]);

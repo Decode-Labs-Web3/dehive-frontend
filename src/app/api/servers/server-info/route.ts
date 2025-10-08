@@ -1,10 +1,17 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { generateRequestId, apiPathName } from "@/utils/index.utils";
+import { NextResponse } from "next/server";
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
+
   try {
     const sessionId = (await cookies()).get("sessionId")?.value;
 
@@ -19,8 +26,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const body = await req.json()
-    const { serverId } = body
+    const body = await req.json();
+    const { serverId } = body;
 
     // console.log("get-server-info serverId response status", serverId)
 
@@ -47,7 +54,10 @@ export async function POST(req: Request) {
       }
     );
 
-    console.debug("get-server-info backend response status", backendResponse.status);
+    console.debug(
+      "get-server-info backend response status",
+      backendResponse.status
+    );
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
@@ -70,7 +80,7 @@ export async function POST(req: Request) {
         success: true,
         statusCode: response.statusCode || 200,
         message: response.message || "Operation successful",
-        data: response.data
+        data: response.data,
       },
       { status: 200 }
     );
