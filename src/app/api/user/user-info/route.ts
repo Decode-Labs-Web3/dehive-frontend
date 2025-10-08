@@ -57,8 +57,6 @@ export async function GET(req: Request) {
     }
 
     const response = await backendRes.json();
-    console.log(response);
-
     const res = NextResponse.json(
       {
         success: true,

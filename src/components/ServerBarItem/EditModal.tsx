@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserPlus,
   faPen,
   faTrash,
   faRightFromBracket,
-  faUserShield,
+  faGear,
   faFolderPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -36,6 +37,7 @@ export default function EditModal({
 }: EditModalProps) {
   // const [server, setServer] = useState<ServerProps>(server)
   const [userId, setUserId] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const value = getCookie("userId");
@@ -48,45 +50,50 @@ export default function EditModal({
     edit: false,
     delete: false,
     leave: false,
-    roles: false,
     category: false,
   });
 
-  const [serverEditForm, setServerEditForm] = useState({
+  const [editServerForm, setEditServerForm] = useState({
     name: server.name,
     description: server.description,
   });
 
-  const [serverDeleteForm, setServerDeleteFrom] = useState({
+  const [deleteServerForm, setDeleteServerFrom] = useState({
     name: "",
   });
 
-  const [categoryCreateForm, setCategoryCreateFrom] = useState({
+  const [createCategoryForm, setCreateCategoryFrom] = useState({
     name: "",
   });
 
-  const handleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCategoryCreateFrom(() => ({
+  const handleCreateCategoryChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setCreateCategoryFrom(() => ({
       [event.target.name]: event.target.value,
     }));
   };
 
-  const handleEditChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setServerEditForm((prev) => ({
+  const handleEditServerChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setEditServerForm((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
     }));
   };
 
-  const handleDeleteChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setServerDeleteFrom(() => ({
+  const handleDeleteServerChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setDeleteServerFrom(() => ({
       [event.target.name]: event.target.value,
     }));
   };
 
   const handleEditServer = async () => {
-    const name = serverEditForm.name.trim();
-    const description = serverEditForm.description.trim();
+    const name = editServerForm.name.trim();
+    const description = editServerForm.description.trim();
 
     const missing = name === "" || description === "";
     const nothingChanged =
@@ -103,8 +110,8 @@ export default function EditModal({
         },
         body: JSON.stringify({
           serverId: server._id,
-          name: serverEditForm.name,
-          description: serverEditForm.description,
+          name: editServerForm.name,
+          description: editServerForm.description,
         }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -134,7 +141,7 @@ export default function EditModal({
   };
 
   const handleDeleteServer = async () => {
-    if (serverDeleteForm.name.trim() !== server.name) {
+    if (deleteServerForm.name.trim() !== server.name) {
       toastError("The type the server name didn't macth");
       return;
     }
@@ -167,6 +174,8 @@ export default function EditModal({
           delete: false,
         }));
         console.log("Delete server");
+        // router.push("/dashboard")
+        // window.location.href = "/dashboard";
       }
     } catch (error) {
       console.error(error);
@@ -182,15 +191,8 @@ export default function EditModal({
     console.log("Leave server");
   };
 
-  const handleRoleServer = () => {
-    setModal((prev) => ({
-      ...prev,
-      roles: false,
-    }));
-  };
-
   const handleCreateCategory = async () => {
-    if (categoryCreateForm.name.trim() === "") return;
+    if (createCategoryForm.name.trim() === "") return;
     try {
       const apiResponse = await fetch("/api/servers/category/post", {
         method: "POST",
@@ -200,7 +202,7 @@ export default function EditModal({
         },
         body: JSON.stringify({
           serverId: server._id,
-          name: categoryCreateForm.name,
+          name: createCategoryForm.name,
         }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -234,26 +236,14 @@ export default function EditModal({
         ref={(el) => {
           if (
             el &&
-            !(
-              modal.edit ||
-              modal.delete ||
-              modal.leave ||
-              modal.roles ||
-              modal.category
-            )
+            !(modal.edit || modal.delete || modal.leave || modal.category)
           )
             el.focus();
         }}
         onKeyDown={(e) => {
           if (
             e.key === "Escape" &&
-            !(
-              modal.edit ||
-              modal.delete ||
-              modal.leave ||
-              modal.roles ||
-              modal.category
-            )
+            !(modal.edit || modal.delete || modal.leave || modal.category)
           ) {
             setServerSettingModal(false);
           }
@@ -291,12 +281,9 @@ export default function EditModal({
               <FontAwesomeIcon icon={faFolderPlus} />
             </button>
 
-            <button
-              onClick={() => setModal((prev) => ({ ...prev, roles: true }))}
-              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
-            >
-              Manage roles
-              <FontAwesomeIcon icon={faUserShield} />
+            <button className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]">
+              Server Setting
+              <FontAwesomeIcon icon={faGear} />
             </button>
 
             <button
@@ -352,8 +339,8 @@ export default function EditModal({
               id="name"
               name="name"
               type="text"
-              value={serverEditForm.name}
-              onChange={handleEditChange}
+              value={editServerForm.name}
+              onChange={handleEditServerChange}
               className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-3 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
               placeholder="Write your title"
               required
@@ -369,8 +356,8 @@ export default function EditModal({
               id="description"
               name="description"
               type="text"
-              value={serverEditForm.description}
-              onChange={handleEditChange}
+              value={editServerForm.description}
+              onChange={handleEditServerChange}
               className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
               placeholder="Write your description"
               required
@@ -387,12 +374,12 @@ export default function EditModal({
               <button
                 onClick={handleEditServer}
                 disabled={
-                  serverEditForm.name.trim() === "" ||
-                  serverEditForm.description.trim() === ""
+                  editServerForm.name.trim() === "" ||
+                  editServerForm.description.trim() === ""
                 }
                 className={`bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90 disabled:opacity-50 ${
-                  serverEditForm.name.trim() === "" &&
-                  serverEditForm.description.trim() === "" &&
+                  editServerForm.name.trim() === "" &&
+                  editServerForm.description.trim() === "" &&
                   "cursor-not-allowed"
                 }`}
               >
@@ -429,8 +416,8 @@ export default function EditModal({
             <input
               id="name"
               name="name"
-              value={serverDeleteForm.name}
-              onChange={handleDeleteChange}
+              value={deleteServerForm.name}
+              onChange={handleDeleteServerChange}
               className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
             />
 
@@ -501,45 +488,6 @@ export default function EditModal({
         </div>
       )}
 
-      {modal.roles && (
-        <div
-          role="dialog"
-          tabIndex={-1}
-          ref={(element: HTMLDivElement) => {
-            element?.focus();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              setModal((prev) => ({ ...prev, roles: false }));
-            }
-          }}
-          className="fixed inset-0 flex items-center justify-center z-30"
-        >
-          <div
-            onClick={() => setModal((prev) => ({ ...prev, roles: false }))}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-          />
-          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
-            <h1 className="text-base font-semibold mb-1">Assign role</h1>
-
-            <div className="flex flex-row justify-end gap-2">
-              <button
-                onClick={() => setModal((prev) => ({ ...prev, roles: false }))}
-                className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRoleServer}
-                className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
-              >
-                Assign
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {modal.category && (
         <div
           role="dialog"
@@ -564,8 +512,8 @@ export default function EditModal({
             <input
               id="name"
               name="name"
-              value={categoryCreateForm.name}
-              onChange={handleCategoryChange}
+              value={createCategoryForm.name}
+              onChange={handleCreateCategoryChange}
               className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
             />
 
