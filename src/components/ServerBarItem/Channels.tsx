@@ -1,7 +1,8 @@
 "use client";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
+import ServerBarItem from "./index";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGear,
   faHashtag,
@@ -18,9 +19,16 @@ interface ChannelProps {
   updatedAt: string;
   __v: number;
 }
-
-export default function Channels({ channel }: { channel: ChannelProps }) {
+interface ChannelPageProps {
+  channel: ChannelProps;
+  fetchCategoryInfo: () => void;
+}
+export default function Channels({
+  channel,
+  fetchCategoryInfo,
+}: ChannelPageProps) {
   const [channelModal, setChannelModal] = useState(false);
+  const [channelPannel, setChannelPannel] = useState(false);
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
   const handleDeleteChannel = async (channelId: string) => {
     try {
@@ -44,6 +52,8 @@ export default function Channels({ channel }: { channel: ChannelProps }) {
         response.message === "Operation successful"
       ) {
         setDeleteChannelModal(false);
+        setChannelPannel(false);
+        fetchCategoryInfo?.();
       }
     } catch (error) {
       console.error(error);
@@ -79,32 +89,49 @@ export default function Channels({ channel }: { channel: ChannelProps }) {
             <FontAwesomeIcon icon={faGear} />
           </button>
         </div>
+
+        {channelModal && (
+          <>
+            <div
+              tabIndex={-1}
+              ref={(el) => el?.focus()}
+              onClick={() => setChannelModal(false)}
+              onKeyDown={(e) => e.key === "Escape" && setChannelModal(false)}
+              className="fixed inset-0 bg-black/50 z-20"
+            />
+
+            <div className="absolute top-full z-30 left-1/2 -translate-x-1/2 w-55 rounded-md bg-[var(--background)] text-[var(--foreground)]">
+              <button
+                onClick={() => {
+                  setChannelPannel(true);
+                  setChannelModal(false);
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+              >
+                Edit Channel
+              </button>
+              <button
+                onClick={() => {
+                  setChannelModal(false);
+                  setDeleteChannelModal(true);
+                }}
+                className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
+              >
+                Delete Channel
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
-      {channelModal && (
+      {channelPannel && (
         <>
-          <div
-            tabIndex={-1}
-            ref={(el) => el?.focus()}
-            onClick={() => setChannelModal(false)}
-            onKeyDown={(e) => e.key === "Escape" && setChannelModal(false)}
-            className="fixed inset-0 bg-black/50 z-20"
+          <ServerBarItem.ChannelPannel
+            channel={channel}
+            setChannelPannel={setChannelPannel}
+            fetchCategoryInfo={fetchCategoryInfo}
+            handleDeleteChannel={handleDeleteChannel}
           />
-
-          <div className="absolute z-30 left-1/2 -translate-x-1/2 w-55 rounded-md bg-[var(--background)] text-[var(--foreground)]">
-            <button className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]">
-              Edit Channel
-            </button>
-            <button
-              onClick={() => {
-                setChannelModal(false);
-                setDeleteChannelModal(true);
-              }}
-              className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
-            >
-              Delete Channel
-            </button>
-          </div>
         </>
       )}
 

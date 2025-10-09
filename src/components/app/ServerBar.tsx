@@ -1,13 +1,10 @@
 "use client";
 
+import { useParams } from "next/navigation";
+import ServerBarItem from "../serverBarItem";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
-import ServerBarItem from "../ServerBarItem";
-
-interface ServerBarProps {
-  activeId: string;
-}
 
 interface ServerProps {
   _id: string;
@@ -22,7 +19,8 @@ interface ServerProps {
   _v: boolean;
 }
 
-export default function ServerBar({ activeId }: ServerBarProps) {
+export default function ServerBar() {
+  const { serverId } = useParams();
   const [loading, setLoading] = useState(false);
   const [serverSettingModal, setServerSettingModal] = useState(false);
   const [server, setServer] = useState<ServerProps | null>(null);
@@ -37,7 +35,7 @@ export default function ServerBar({ activeId }: ServerBarProps) {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify({ serverId: activeId }),
+        body: JSON.stringify({ serverId }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -53,7 +51,7 @@ export default function ServerBar({ activeId }: ServerBarProps) {
     } finally {
       setLoading(false);
     }
-  }, [activeId]);
+  }, [serverId]);
 
   useEffect(() => {
     fetchServerInfo();
@@ -64,8 +62,8 @@ export default function ServerBar({ activeId }: ServerBarProps) {
   }
 
   return (
-    <>
-      <div className="relative bg-gray-500 border-[var-(--foreground)] border-2 p-2 font-bold">
+    <div className="w-full h-full bg-[var(--background)] border-2 border-[var(--border-color)]">
+      <div className="relative bg-gray-500 border-[var-(--foreground)] border-2 p-2 font-bold z-20">
         <button
           onClick={() => setServerSettingModal(true)}
           className="flex w-full items-center justify-between text-[var-(--foreground)]"
@@ -84,17 +82,23 @@ export default function ServerBar({ activeId }: ServerBarProps) {
                 e.key === "Escape" && setServerSettingModal(false)
               }
               onClick={() => setServerSettingModal(false)}
-              className="fixed inset-0 bg-black/50 z-10"
+              className="fixed inset-0 bg-black/50 z-30"
             />
 
             <div>
-              {server && <ServerBarItem.EditModal server={server} setServerSettingModal={setServerSettingModal}/>}
+              {server && (
+                <ServerBarItem.EditModal
+                  server={server}
+                  setServerSettingModal={setServerSettingModal}
+                  fetchServerInfo={fetchServerInfo}
+                />
+              )}
             </div>
           </>
         )}
       </div>
       <ServerBarItem.Categories />
-    </>
+    </div>
   );
 }
 

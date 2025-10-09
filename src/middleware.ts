@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
     const hasSession = request.cookies.get("sessionId")?.value;
     if (hasSession) {
       const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
+      url.pathname = "/app/channels/me";
       return NextResponse.redirect(url);
     }
   }

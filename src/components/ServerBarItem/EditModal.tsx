@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
+import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
 import {
   faUserPlus,
   faPen,
@@ -29,15 +30,18 @@ interface ServerProps {
 interface EditModalProps {
   server: ServerProps;
   setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
+  fetchServerInfo: () => void;
 }
 
 export default function EditModal({
   server,
   setServerSettingModal,
+  fetchServerInfo,
 }: EditModalProps) {
   // const [server, setServer] = useState<ServerProps>(server)
-  const [userId, setUserId] = useState("");
   const router = useRouter();
+  const { refreshServers } = useServerContext();
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     const value = getCookie("userId");
@@ -102,7 +106,7 @@ export default function EditModal({
     if (missing || nothingChanged) return;
 
     try {
-      const apiResponse = await fetch("/api/servers/server", {
+      const apiResponse = await fetch("/api/servers/server/patch", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -133,6 +137,7 @@ export default function EditModal({
           ...prev,
           edit: false,
         }));
+        fetchServerInfo?.();
       }
     } catch (error) {
       console.error(error);
@@ -147,7 +152,7 @@ export default function EditModal({
     }
 
     try {
-      const apiResponse = await fetch("/api/servers/server", {
+      const apiResponse = await fetch("/api/servers/server/delete", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -173,9 +178,8 @@ export default function EditModal({
           ...prev,
           delete: false,
         }));
-        console.log("Delete server");
-        // router.push("/dashboard")
-        // window.location.href = "/dashboard";
+        router.push("/app/channels/me");
+        refreshServers?.();
       }
     } catch (error) {
       console.error(error);
@@ -221,6 +225,7 @@ export default function EditModal({
           ...prev,
           category: false,
         }));
+        fetchServerInfo();
       }
     } catch (error) {
       console.log(error);
@@ -256,7 +261,7 @@ export default function EditModal({
         //     setModal((prev) => ({ ...prev, leave: false }));
         //   }
         // }}
-        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-10 rounded-md bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-lg overflow-hidden"
+        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-30 rounded-md bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-lg overflow-hidden"
       >
         <button className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]">
           Invite Friend
@@ -323,6 +328,7 @@ export default function EditModal({
             onClick={() => setModal((prev) => ({ ...prev, edit: false }))}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
+
           <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
             <h1 className="text-base font-semibold mb-1">Edit your server</h1>
             <p className="text-sm text-[var(--muted-foreground)] mb-4">

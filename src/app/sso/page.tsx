@@ -38,7 +38,7 @@ export default function Authorize() {
       }
 
       console.log(apiResponse);
-      router.push("/dashboard");
+      router.push("/app");
     } catch (err) {
       console.error(err);
       toastError("SSO server error");
