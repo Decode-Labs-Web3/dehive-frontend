@@ -51,6 +51,7 @@ export default function Categories() {
   const [editCategoryModal, setEditCategoryModal] = useState<
     Record<string, boolean>
   >({});
+  const [channelPanel, setChannelPanel] = useState<Record<string, boolean>>({});
   // const [ channelModal, setChannelModal ] = useState<Record<string, boolean>>({})
   // console.log(category);
 
@@ -119,6 +120,18 @@ export default function Categories() {
         )
       );
 
+      setChannelPanel((prev) =>
+        Object.fromEntries(
+          response.data.flatMap((category: CategoryProps) =>
+            category.channels.map((channel) => [
+              channel._id,
+              prev[channel._id] ?? false,
+            ])
+          )
+        )
+      );
+
+      // note: flatMap is combine between map and flat method
       // note: fromEntries turn pair of array like [[123, true], [456, true]] to pair of key value { 123: true, 456: true}
     } catch (error) {
       console.log(error);
@@ -382,9 +395,9 @@ export default function Categories() {
             {editCategoryModal[category._id] && (
               <ServerBarItem.CategoryPanel
                 category={category}
+                fetchCategoryInfo={fetchCategoryInfo}
                 setEditCategoryModal={setEditCategoryModal}
                 handleDeleteCategory={handleDeleteCategory}
-                fetchCategoryInfo={fetchCategoryInfo}
               />
             )}
 
@@ -460,6 +473,8 @@ export default function Categories() {
                     <div key={channel._id}>
                       <ServerBarItem.Channels
                         channel={channel}
+                        channelPanel={channelPanel}
+                        setChannelPannel={setChannelPanel}
                         fetchCategoryInfo={fetchCategoryInfo}
                       />
                     </div>

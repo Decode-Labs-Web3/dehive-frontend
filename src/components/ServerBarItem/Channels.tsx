@@ -22,13 +22,18 @@ interface ChannelProps {
 interface ChannelPageProps {
   channel: ChannelProps;
   fetchCategoryInfo: () => void;
+  channelPanel: Record<string, boolean>;
+  setChannelPannel: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
 }
 export default function Channels({
   channel,
+  channelPanel,
+  setChannelPannel,
   fetchCategoryInfo,
 }: ChannelPageProps) {
   const [channelModal, setChannelModal] = useState(false);
-  const [channelPannel, setChannelPannel] = useState(false);
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
   const handleDeleteChannel = async (channelId: string) => {
     try {
@@ -52,7 +57,10 @@ export default function Channels({
         response.message === "Operation successful"
       ) {
         setDeleteChannelModal(false);
-        setChannelPannel(false);
+        setChannelPannel((prev) => ({
+          ...prev,
+          [channel._id]: false,
+        }));
         fetchCategoryInfo?.();
       }
     } catch (error) {
@@ -103,7 +111,10 @@ export default function Channels({
             <div className="absolute top-full z-30 left-1/2 -translate-x-1/2 w-55 rounded-md bg-[var(--background)] text-[var(--foreground)]">
               <button
                 onClick={() => {
-                  setChannelPannel(true);
+                  setChannelPannel((prev) => ({
+                    ...prev,
+                    [channel._id]: true,
+                  }));
                   setChannelModal(false);
                 }}
                 className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
@@ -124,7 +135,7 @@ export default function Channels({
         )}
       </div>
 
-      {channelPannel && (
+      {channelPanel[channel._id] && (
         <>
           <ServerBarItem.ChannelPannel
             channel={channel}
