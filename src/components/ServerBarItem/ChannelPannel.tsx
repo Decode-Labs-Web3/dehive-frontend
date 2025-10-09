@@ -23,7 +23,9 @@ interface ChannelPannelProps {
   channel: ChannelProps;
   fetchCategoryInfo: () => void;
   handleDeleteChannel: (channelId: string) => void;
-  setChannelPannel: React.Dispatch<React.SetStateAction<boolean>>;
+  setChannelPannel: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
 }
 
 export default function ChannelPannel({
@@ -60,7 +62,10 @@ export default function ChannelPannel({
         setDeleteChannelModal(false);
         return;
       }
-      setChannelPannel(false);
+      setChannelPannel((prev) => ({
+        ...prev,
+        [channel._id]: false,
+      }));
     };
     document.addEventListener("keydown", onEsc);
     return () => document.removeEventListener("keydown", onEsc);
@@ -93,7 +98,10 @@ export default function ChannelPannel({
         response.message === "Operation successful"
       ) {
         fetchCategoryInfo?.();
-        // Panel vẫn mở, không cần set lại
+        setChannelPannel((prev) => ({
+          ...prev,
+          [channel._id]: true,
+        }));
       }
     } catch (error) {
       console.error(error);
@@ -239,7 +247,10 @@ export default function ChannelPannel({
               disabled={channelNameChange}
               onClick={() => {
                 if (channelNameChange) return;
-                setChannelPannel(false);
+                setChannelPannel((prev) => ({
+                  ...prev,
+                  [channel._id]: false,
+                }));
               }}
               className={`flex flex-col items-center gap-1 text-xs uppercase tracking-wide transition ${
                 channelNameChange
