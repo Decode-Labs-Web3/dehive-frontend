@@ -48,6 +48,9 @@ export default function Categories() {
   const [deleteCategoryModal, setDeleteCategoryModal] = useState<
     Record<string, boolean>
   >({});
+  const [editCategoryModal, setEditCategoryModal] = useState<
+    Record<string, boolean>
+  >({});
   // const [ channelModal, setChannelModal ] = useState<Record<string, boolean>>({})
   // console.log(category);
 
@@ -71,27 +74,48 @@ export default function Categories() {
       }
       const response = await apiResponse.json();
       setCategories(response.data);
-      setOpen(
+      setOpen((prev) =>
         Object.fromEntries(
-          response.data.map((category: CategoryProps) => [category._id, true])
+          response.data.map((category: CategoryProps) => [
+            category._id,
+            prev[category._id] ?? true,
+          ])
         )
       );
 
-      setCreateChannelModal(
+      setCreateChannelModal((prev) =>
         Object.fromEntries(
-          response.data.map((category: CategoryProps) => [category._id, false])
+          response.data.map((category: CategoryProps) => [
+            category._id,
+            prev[category._id] ?? false,
+          ])
         )
       );
 
-      setCategoryModal(
+      setCategoryModal((prev) =>
         Object.fromEntries(
-          response.data.map((category: CategoryProps) => [category._id, false])
+          response.data.map((category: CategoryProps) => [
+            category._id,
+            prev[category._id] ?? false,
+          ])
         )
       );
 
-      setDeleteCategoryModal(
+      setDeleteCategoryModal((prev) =>
         Object.fromEntries(
-          response.data.map((category: CategoryProps) => [category._id, false])
+          response.data.map((category: CategoryProps) => [
+            category._id,
+            prev[category._id] ?? false,
+          ])
+        )
+      );
+
+      setEditCategoryModal((prev) =>
+        Object.fromEntries(
+          response.data.map((category: CategoryProps) => [
+            category._id,
+            prev[category._id] ?? false,
+          ])
         )
       );
 
@@ -179,6 +203,12 @@ export default function Categories() {
           ...prev,
           categoryId: false,
         }));
+
+        setEditCategoryModal((prev) => ({
+          ...prev,
+          categoryId: false,
+        }));
+
         fetchCategoryInfo();
       }
     } catch (error) {
@@ -300,7 +330,20 @@ export default function Categories() {
                           Collapse All Categories
                         </button>
 
-                        <button className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]">
+                        <button
+                          onClick={() => {
+                            setCategoryModal((prev) => ({
+                              ...prev,
+                              [category._id]: false,
+                            }));
+
+                            setEditCategoryModal((prev) => ({
+                              ...prev,
+                              [category._id]: true,
+                            }));
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                        >
                           Edit Category
                         </button>
 
@@ -326,6 +369,16 @@ export default function Categories() {
                 </>
               )}
             </div>
+
+            {/* edit category show category pannel*/}
+            {editCategoryModal[category._id] && (
+              <ServerBarItem.CategoryPanel
+                category={category}
+                setEditCategoryModal={setEditCategoryModal}
+                handleDeleteCategory={handleDeleteCategory}
+                fetchCategoryInfo={fetchCategoryInfo}
+              />
+            )}
 
             {/* deleted category */}
             {/* new knowledge the category right here if it is the dialog modal it will ingore the current and get the items when end of map */}

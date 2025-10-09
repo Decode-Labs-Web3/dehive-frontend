@@ -1,11 +1,13 @@
+import Channels from "./Channels"
 import EditModal from "./EditModal";
 import Categories from "./Categories";
-import Channels from "./Channels"
+import CategoryPanel from "./CategoryPannel"
 
 const ServerBarItem = {
+  Channels,
   EditModal,
   Categories,
-  Channels
+  CategoryPanel
 }
 
 export default ServerBarItem

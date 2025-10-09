@@ -261,7 +261,7 @@ export default function EditModal({
         //     setModal((prev) => ({ ...prev, leave: false }));
         //   }
         // }}
-        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-20 rounded-md bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-lg overflow-hidden"
+        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-30 rounded-md bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-lg overflow-hidden"
       >
         <button className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]">
           Invite Friend
@@ -328,6 +328,7 @@ export default function EditModal({
             onClick={() => setModal((prev) => ({ ...prev, edit: false }))}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
+
           <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
             <h1 className="text-base font-semibold mb-1">Edit your server</h1>
             <p className="text-sm text-[var(--muted-foreground)] mb-4">

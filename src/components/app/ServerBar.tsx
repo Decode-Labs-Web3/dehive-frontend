@@ -63,7 +63,7 @@ export default function ServerBar() {
 
   return (
     <div className="w-full h-full bg-[var(--background)] border-2 border-[var(--border-color)]">
-      <div className="relative bg-gray-500 border-[var-(--foreground)] border-2 p-2 font-bold z-10">
+      <div className="relative bg-gray-500 border-[var-(--foreground)] border-2 p-2 font-bold z-20">
         <button
           onClick={() => setServerSettingModal(true)}
           className="flex w-full items-center justify-between text-[var-(--foreground)]"
@@ -82,7 +82,7 @@ export default function ServerBar() {
                 e.key === "Escape" && setServerSettingModal(false)
               }
               onClick={() => setServerSettingModal(false)}
-              className="fixed inset-0 bg-black/50 z-20"
+              className="fixed inset-0 bg-black/50 z-30"
             />
 
             <div>
