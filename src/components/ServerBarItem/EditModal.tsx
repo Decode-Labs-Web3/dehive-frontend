@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
+import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
 import {
   faUserPlus,
   faPen,
@@ -29,15 +30,18 @@ interface ServerProps {
 interface EditModalProps {
   server: ServerProps;
   setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
+  fetchServerInfo: () => void;
 }
 
 export default function EditModal({
   server,
   setServerSettingModal,
+  fetchServerInfo,
 }: EditModalProps) {
   // const [server, setServer] = useState<ServerProps>(server)
-  const [userId, setUserId] = useState("");
   const router = useRouter();
+  const { refreshServers } = useServerContext();
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     const value = getCookie("userId");
@@ -102,7 +106,7 @@ export default function EditModal({
     if (missing || nothingChanged) return;
 
     try {
-      const apiResponse = await fetch("/api/servers/server", {
+      const apiResponse = await fetch("/api/servers/server/patch", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -133,6 +137,7 @@ export default function EditModal({
           ...prev,
           edit: false,
         }));
+        fetchServerInfo?.();
       }
     } catch (error) {
       console.error(error);
@@ -147,7 +152,7 @@ export default function EditModal({
     }
 
     try {
-      const apiResponse = await fetch("/api/servers/server", {
+      const apiResponse = await fetch("/api/servers/server/delete", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -174,6 +179,7 @@ export default function EditModal({
           delete: false,
         }));
         router.push("/app/channels/me");
+        refreshServers?.();
       }
     } catch (error) {
       console.error(error);
@@ -219,6 +225,7 @@ export default function EditModal({
           ...prev,
           category: false,
         }));
+        fetchServerInfo();
       }
     } catch (error) {
       console.log(error);

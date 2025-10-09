@@ -19,7 +19,11 @@ interface Server {
   __v: number;
 }
 
-export default function GuildBar() {
+export default function GuildBar({
+  refreshVersion,
+}: {
+  refreshVersion: number;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [servers, setServers] = useState<Server[]>([]);
@@ -34,7 +38,7 @@ export default function GuildBar() {
 
   const handleGetServer = useCallback(async () => {
     try {
-      const apiResponse = await fetch("/api/servers/server", {
+      const apiResponse = await fetch("/api/servers/server/get", {
         method: "GET",
         headers: {
           "X-Frontend-Internal-Request": "true",
@@ -59,7 +63,7 @@ export default function GuildBar() {
 
   useEffect(() => {
     handleGetServer();
-  }, [handleGetServer]);
+  }, [handleGetServer, refreshVersion]);
 
   return (
     <aside className="flex flex-col gap-2 p-3 w-full h-full bg-[var(--background)] border-r-2 border-[var(--border-color)]">
@@ -108,7 +112,7 @@ export default function GuildBar() {
             >
               {server.name.slice(0, 1).toUpperCase()}
             </button>
-            <div className="pointer-events-none absolute rounded-md font-semibold px-2 py-1 ml-2 left-full top-1/2 -translate-y-1/2 bg-[var(--foreground)] text-[var(--accent-foreground)] opacity-0 z-100 group-hover:opacity-100 whitespace-nowrap shadow">
+            <div className="pointer-events-none absolute rounded-md font-semibold px-2 py-1 ml-2 left-full top-1/2 -translate-y-1/2 bg-[var(--foreground)] text-[var(--accent-foreground)] opacity-0 z-1000 group-hover:opacity-100 whitespace-nowrap shadow">
               {server.name}
             </div>
           </div>

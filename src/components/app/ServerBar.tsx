@@ -90,6 +90,7 @@ export default function ServerBar() {
                 <ServerBarItem.EditModal
                   server={server}
                   setServerSettingModal={setServerSettingModal}
+                  fetchServerInfo={fetchServerInfo}
                 />
               )}
             </div>

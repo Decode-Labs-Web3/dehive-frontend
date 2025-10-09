@@ -255,11 +255,11 @@ export default function Categories() {
                         [category._id]: false,
                       }))
                     }
-                    className="fixed inset-0 bg-black/50"
+                    className="fixed inset-0 bg-black/50 z-40"
                   />
 
-                  {/* <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-60"> */}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-60">
+                  {/* <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50"> */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50">
                     <div className="w-56 bg-[var(--background)] border border-[var(--border-color)] rounded-md shadow-xl overflow-hidden text-sm">
                       <div className="flex flex-col">
                         <button
