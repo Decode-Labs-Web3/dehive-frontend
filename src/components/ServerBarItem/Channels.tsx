@@ -1,7 +1,8 @@
 "use client";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
+import ServerBarItem from "./index";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGear,
   faHashtag,
@@ -18,9 +19,16 @@ interface ChannelProps {
   updatedAt: string;
   __v: number;
 }
-
-export default function Channels({ channel }: { channel: ChannelProps }) {
+interface ChannelPageProps {
+  channel: ChannelProps;
+  fetchCategoryInfo: () => void;
+}
+export default function Channels({
+  channel,
+  fetchCategoryInfo,
+}: ChannelPageProps) {
   const [channelModal, setChannelModal] = useState(false);
+  const [channelPannel, setChannelPannel] = useState(false);
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
   const handleDeleteChannel = async (channelId: string) => {
     try {
@@ -44,6 +52,8 @@ export default function Channels({ channel }: { channel: ChannelProps }) {
         response.message === "Operation successful"
       ) {
         setDeleteChannelModal(false);
+        setChannelPannel(false);
+        fetchCategoryInfo?.();
       }
     } catch (error) {
       console.error(error);
@@ -91,7 +101,13 @@ export default function Channels({ channel }: { channel: ChannelProps }) {
             />
 
             <div className="absolute top-full z-30 left-1/2 -translate-x-1/2 w-55 rounded-md bg-[var(--background)] text-[var(--foreground)]">
-              <button className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]">
+              <button
+                onClick={() => {
+                  setChannelPannel(true);
+                  setChannelModal(false);
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+              >
                 Edit Channel
               </button>
               <button
@@ -107,6 +123,17 @@ export default function Channels({ channel }: { channel: ChannelProps }) {
           </>
         )}
       </div>
+
+      {channelPannel && (
+        <>
+          <ServerBarItem.ChannelPannel
+            channel={channel}
+            setChannelPannel={setChannelPannel}
+            fetchCategoryInfo={fetchCategoryInfo}
+            handleDeleteChannel={handleDeleteChannel}
+          />
+        </>
+      )}
 
       {deleteChannelModal && (
         <div

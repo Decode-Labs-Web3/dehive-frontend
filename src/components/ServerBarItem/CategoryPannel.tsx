@@ -24,7 +24,7 @@ interface ChannelProps {
   __v: number;
 }
 
-interface CategoryPanel {
+interface CategoryPanelProps {
   category: CategoryProps;
   setEditCategoryModal: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
@@ -38,7 +38,7 @@ export default function CategoryPanel({
   setEditCategoryModal,
   handleDeleteCategory,
   fetchCategoryInfo,
-}: CategoryPanel) {
+}: CategoryPanelProps) {
   const allFalse = { overview: false, permissions: false };
   const [editCategoryForm, setEditCategoryForm] = useState({
     name: category.name,
@@ -112,14 +112,26 @@ export default function CategoryPanel({
   };
 
   return (
-    <div className="fixed inset-0 z-[100]">
-      <div className="flex relative h-screen">
-        <div className="flex w-100 bg-green-500">
-          <div className="flex flex-col items-end justify-start w-full gap-3 p-4">
-            <h1 className="flex mt-10 justify-start items-center font-bold gap-2 w-50">
-              <FontAwesomeIcon icon={faFolder} />
-              {editCategoryForm.name.toUpperCase()}
-            </h1>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+      <div className="relative z-[101] flex h-full w-full border border-[var(--border-subtle)] bg-[var(--surface-primary)] text-[var(--foreground)]">
+        <aside className="flex w-64 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
+          <div className="px-6 pb-5 pt-7">
+            <div className="mt-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface-tertiary)] text-[var(--foreground)]">
+                <FontAwesomeIcon icon={faFolder} />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-[var(--foreground)]">
+                  {editCategoryForm.name}
+                </p>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Category Pannel Settings
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <nav className="mt-2 flex-1 space-y-1 px-3">
             <button
               onClick={() => {
                 setTabOption({
@@ -127,9 +139,18 @@ export default function CategoryPanel({
                   overview: true,
                 });
               }}
-              className="flex justify-start items-center font-bold rounded-md p-2 hover:bg-gray-400 w-50"
+              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
+                tabOption.overview
+                  ? "bg-[var(--surface-active)] text-[var(--foreground)]"
+                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface-hover)]"
+              }`}
             >
               Overview
+              {tabOption.overview && (
+                <span className="rounded-full bg-[var(--success)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[var(--accent-foreground)]">
+                  Active
+                </span>
+              )}
             </button>
             <button
               onClick={() => {
@@ -138,44 +159,48 @@ export default function CategoryPanel({
                   permissions: true,
                 });
               }}
-              className="flex justify-start items-center font-bold rounded-md p-2 hover:bg-gray-400 w-50"
+              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
+                tabOption.permissions
+                  ? "bg-[var(--surface-active)] text-[var(--foreground)]"
+                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface-hover)]"
+              }`}
             >
               Permissions
+              {tabOption.permissions && (
+                <span className="rounded-full bg-[var(--accent)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[var(--accent-foreground)]">
+                  Beta
+                </span>
+              )}
             </button>
-            <div className="h-px w-50 rounded bg-[var(--border-color)]" />
+
+            <div className="border-1 my-4 border-[var(--foreground)]" />
+
             <button
               onClick={() => {
                 setDeleteCategoryModal(true);
               }}
-              className="flex justify-between items-center text-red-500 font-bold rounded-md p-2 hover:bg-gray-400 w-50"
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-[var(--danger)] transition hover:bg-[var(--danger-soft)]"
             >
-              Delete category
+              Delete Category
               <FontAwesomeIcon icon={faTrashCan} />
             </button>
-          </div>
-        </div>
-        <div className="flex-1 bg-blue-500">
-          <div className="flex justify-between px-20 mt-10">
-            {/* Overview */}
-            {tabOption.overview && (
-              <div className="flex flex-col">
-                <h1>Overview</h1>
-                <label htmlFor="name">Category Name</label>
-                <input
-                  id="name"
-                  name="name"
-                  value={editCategoryForm.name}
-                  onChange={handleEditCategoryChange}
-                  autoFocus
-                />
-              </div>
-            )}
-            {tabOption.permissions && <h1>Hello Permissions</h1>}
+          </nav>
+        </aside>
+
+        <section className="relative flex flex-1 flex-col bg-[var(--surface-primary)]">
+          <header className="flex items-center justify-between border-b border-[var(--border-subtle)] px-10 py-7">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                {tabOption.overview ? "Overview" : "Permissions"}
+              </p>
+              <h2 className="text-2xl font-semibold text-[var(--foreground)]">
+                {tabOption.overview
+                  ? "Customize your category"
+                  : "Control who can access these channels"}
+              </h2>
+            </div>
+
             <button
-              // tabIndex={-1}
-              // ref={(element: HTMLButtonElement) => {
-              //   element?.focus();
-              // }}
               disabled={categoryNameChange}
               onClick={() => {
                 if (categoryNameChange) return;
@@ -184,80 +209,131 @@ export default function CategoryPanel({
                   [category._id]: false,
                 }));
               }}
-              className="flex flex-col"
+              className={`flex flex-col items-center gap-1 text-xs uppercase tracking-wide transition ${
+                categoryNameChange
+                  ? "cursor-not-allowed text-[var(--muted-foreground)] opacity-60"
+                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              }`}
             >
-              <FontAwesomeIcon className="border rounded-full p-2" icon={faX} />
-              ESC
+              <span className="rounded-full border border-[var(--border-subtle)] p-2">
+                <FontAwesomeIcon icon={faX} />
+              </span>
+              Esc
             </button>
+          </header>
 
-            {categoryNameChange && (
-              <div className="fixed inset-z-0 bottom-0 bg-red-500 w-200 h-10 m-10">
-                <div className="flex flex-row justify-between items-center">
-                  <h1>Careful - you have unsaved changes!</h1>
-                  <div className="flex flex-row gap-2 items-center">
-                    <button
-                      onClick={() => {
-                        setEditCategoryForm({ name: category.name });
-                      }}
-                    >
-                      Reset
-                    </button>
-                    <button onClick={() => handleEditCategory(category._id)}>
-                      Save Changes
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {deleteCategoryModal && (
-              <div
-                role="dialog"
-                className="fixed inset-0 flex items-center justify-center z-30"
-              >
-                <div
-                  onClick={() => {
-                    setDeleteCategoryModal(false);
-                  }}
-                  className="fixed inset-0 bg-black/50 z-40"
-                />
-
-                <div className="bg-[var(--background)] text-[var(--foreground)] rounded-lg p-5 w-full max-w-md z-50 shadow-2xl border border-[var(--border-color)]">
-                  <div className="flex items-start gap-3">
-                    <div className="min-w-0">
-                      <h3 className="text-lg font-semibold">Delete Category</h3>
-                      <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                        Are you sure you want to delete{" "}
-                        <span className="font-bold">{category.name}</span>? This
-                        action {"can't"} be undone.
-                      </p>
+          <div className="flex-1 overflow-y-auto px-10 py-8">
+            {tabOption.overview && (
+              <div className="max-w-xl space-y-6">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]"
+                  >
+                    Category Name
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="name"
+                      name="name"
+                      value={editCategoryForm.name}
+                      onChange={handleEditCategoryChange}
+                      autoFocus
+                      className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--background)] px-4 py-3 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]"
+                    />
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[var(--muted-foreground)]">
+                      <FontAwesomeIcon icon={faFolder} />
                     </div>
-                  </div>
-
-                  <div className="flex flex-row justify-end gap-3 mt-5">
-                    <button
-                      onClick={() => {
-                        setDeleteCategoryModal(false);
-                      }}
-                      className="px-3 py-2 rounded-md text-sm bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleDeleteCategory(category._id);
-                      }}
-                      className="px-3 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700"
-                    >
-                      Delete
-                    </button>
                   </div>
                 </div>
               </div>
             )}
           </div>
-        </div>
+
+          {categoryNameChange && (
+            <div className="pointer-events-auto absolute inset-x-8 bottom-6 rounded-2xl border border-[var(--success-border)] bg-[var(--success-soft)] px-6 py-4 text-sm text-[var(--foreground)]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-[var(--foreground)]">
+                    Careful — you have unsaved changes!
+                  </p>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Save or reset your edits before closing this panel.
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-3">
+                  <button
+                    onClick={() => {
+                      setEditCategoryForm({ name: category.name });
+                    }}
+                    className="rounded-lg border border-[var(--border-subtle)] px-4 py-2 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => handleEditCategory(category._id)}
+                    className="rounded-lg bg-[var(--success)] px-4 py-2 text-xs font-semibold text-[var(--accent-foreground)] transition hover:opacity-90"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
       </div>
+
+      {deleteCategoryModal && (
+        <div
+          role="dialog"
+          className="fixed inset-0 z-[102] flex items-center justify-center"
+        >
+          <div
+            onClick={() => {
+              setDeleteCategoryModal(false);
+            }}
+            className="absolute inset-0 bg-[var(--overlay)]"
+          />
+
+          <div className="relative z-[103] w-full max-w-md rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-6 text-[var(--foreground)] shadow-2xl">
+            <div className="flex items-start gap-4">
+              <div className="rounded-2xl bg-[var(--danger-soft)] p-3 text-[var(--danger)]">
+                <FontAwesomeIcon icon={faTrashCan} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold">Delete Category</h3>
+                <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                  Are you sure you want to delete{" "}
+                  <span className="font-semibold text-[var(--foreground)]">
+                    {category.name}
+                  </span>
+                  ? This can&apos;t be undone and all channels inside will be
+                  removed.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setDeleteCategoryModal(false);
+                }}
+                className="rounded-lg bg-[var(--surface-hover)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition hover:opacity-90"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteCategory(category._id);
+                }}
+                className="rounded-lg bg-[var(--danger)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

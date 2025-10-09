@@ -166,6 +166,14 @@ export default function Categories() {
         response.message === "Operation successful"
       ) {
         fetchCategoryInfo();
+        setCreateChannelModal((prev) => ({
+          ...prev,
+          [categoryId]: false,
+        }));
+        setChannelForm({
+          name: "",
+          type: "TEXT",
+        });
       }
     } catch (error) {
       console.log(error);
@@ -450,7 +458,10 @@ export default function Categories() {
                 {category.channels.length > 0 &&
                   category.channels.map((channel) => (
                     <div key={channel._id}>
-                      <ServerBarItem.Channels channel={channel} />
+                      <ServerBarItem.Channels
+                        channel={channel}
+                        fetchCategoryInfo={fetchCategoryInfo}
+                      />
                     </div>
                   ))}
               </>
