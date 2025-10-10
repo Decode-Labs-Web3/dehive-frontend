@@ -7,7 +7,7 @@ import {
   guardInternal,
 } from "@/utils/index.utils";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
   const denied = guardInternal(req);
@@ -27,12 +27,15 @@ export async function GET(req: Request) {
       );
     }
 
+    const body = await req.json();
+    const { conversationId } = body;
+
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
     console.log(fingerprint_hashed);
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/following?page=0&limit=100`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/messages/${conversationId}?page=0&limit=10`,
       {
         method: "GET",
         headers: {
@@ -51,7 +54,10 @@ export async function GET(req: Request) {
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/user/user-following backend error:", error);
+      console.error(
+        "/api/me/conversation/conversation-list backend error:",
+        error
+      );
       return NextResponse.json(
         {
           success: false,
@@ -63,7 +69,7 @@ export async function GET(req: Request) {
     }
 
     const response = await backendResponse.json();
-    console.info("user-following success response", response.data.items);
+    console.info("conversation-list success response", response.data.items);
 
     return NextResponse.json(
       {
@@ -75,7 +81,7 @@ export async function GET(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/user/user-following handler error:", error);
+    console.error("/api/me/conversation/conversation-list handler error:", error);
     return NextResponse.json(
       {
         success: false,

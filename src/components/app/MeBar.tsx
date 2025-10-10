@@ -43,9 +43,9 @@ export default function MeBar() {
       // console.log("This is response data", response)
       if (
         response.statusCode === 200 &&
-        response.message === "Following users fetched successfully"
+        response.message === "OK"
       ) {
-        setUserData(response.data.users);
+        setUserData(response.data);
         // console.log("this is inside try catch",response.data)
       }
     } catch (error) {

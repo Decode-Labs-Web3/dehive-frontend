@@ -1,0 +1,172 @@
+"use client";
+
+import { getSocketIO } from "@/library/socketio";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+
+interface Message {
+  _id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  attachments: [];
+  isEdited: boolean;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number | 0;
+}
+
+export function useDirectMessage(conversationId?: string) {
+  const socket = useRef(getSocketIO()).current;
+
+  const [sending, setSending] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  console.log(messages);
+
+  const latestConversationId = useRef<string | undefined>(conversationId);
+  useEffect(() => {
+    latestConversationId.current = conversationId;
+    setMessages([]);
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const onNewMessage = (newMessage: Message) => {
+      // console.log(newMessage)
+      if (
+        String(newMessage.conversationId) !==
+        String(latestConversationId.current)
+      )
+        return;
+      setMessages((prev) =>
+        prev.some((m) => m._id === newMessage._id)
+          ? prev
+          : [...prev, newMessage]
+      );
+    };
+
+    const onMessageEdited = (editMessage: Message & { isEdited?: boolean }) => {
+      if (
+        String(editMessage.conversationId) !==
+        String(latestConversationId.current)
+      )
+        return;
+      setMessages((prev) =>
+        prev.map((m) =>
+          m._id === editMessage._id
+            ? ({ ...m, content: editMessage.content } as Message)
+            : m
+        )
+      );
+    };
+
+    const onMessageDeleted = (
+      deleteMessage: Message & { isDeleted?: boolean }
+    ) => {
+      if (
+        String(deleteMessage.conversationId) !==
+        String(latestConversationId.current)
+      )
+        return;
+      setMessages((prev) => prev.filter((m) => m._id !== deleteMessage._id));
+    };
+
+    const onWebsocketError = (error: { message: string }) =>
+      setErr(error?.message ?? "WS error");
+
+    socket.on("newMessage", onNewMessage);
+    socket.on("messageEdited", onMessageEdited);
+    socket.on("messageDeleted", onMessageDeleted);
+    socket.on("error", onWebsocketError);
+
+    return () => {
+      socket.off("newMessage", onNewMessage);
+      socket.off("messageEdited", onMessageEdited);
+      socket.off("messageDeleted", onMessageDeleted);
+      socket.off("error", onWebsocketError);
+    };
+  }, [socket, conversationId]);
+
+  const loadHistory = useCallback(async () => {
+    if (!latestConversationId.current) return;
+
+    try {
+      setErr(null);
+      const apiResponse = await fetch(
+        "/api/me/conversation/conversation-list",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Frontend-Internal": "true",
+          },
+          body: JSON.stringify({ conversationId }),
+          cache: "no-cache",
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+      const response = await apiResponse.json();
+      setMessages(response.data.items);
+    } catch (error) {
+      console.error(error);
+      setErr("Failed to load history");
+    }
+  }, [conversationId]);
+
+  const send = useCallback(
+    async (content: string) => {
+      if (!latestConversationId.current) return;
+      if (!content.trim() || content.length > 2000) return;
+      try {
+        setSending(true);
+        setErr(null);
+        socket.emit("sendMessage", {
+          conversationId: String(latestConversationId.current),
+          content,
+          uploadIds: [],
+        });
+      } finally {
+        setSending(false);
+      }
+    },
+    [socket]
+  );
+
+  const edit = useCallback(
+    (messageId: string, content: string) => {
+      if (!latestConversationId.current) return;
+      if (!messageId || !content.trim()) return;
+      socket.emit("editMessage", { messageId, content });
+    },
+    [socket]
+  );
+
+  const remove = useCallback(
+    (messageId: string) => {
+      if (!latestConversationId.current) return;
+      if (!messageId) return;
+      socket.emit("deleteMessage", { messageId });
+    },
+    [socket]
+  );
+
+  const sorted = useMemo(
+    () =>
+      [...messages].sort(
+        (a, b) => +new Date(a.createdAt) - +new Date(b.createdAt)
+      ),
+    [messages]
+  );
+
+  return {
+    messages: sorted,
+    send,
+    edit,
+    remove,
+    loadHistory,
+    sending,
+    err,
+  };
+}

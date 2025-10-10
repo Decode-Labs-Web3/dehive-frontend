@@ -3,29 +3,17 @@ export type IdentityConfirmed = {
   userDehiveId: string;
 };
 
-export type NewMessage = {
+export type Message = {
   _id: string;
   conversationId: string;
   senderId: string;
   content: string;
-  attachments?: unknown;
-  createdAt: string | Date;
-};
-
-export type MessageEdited = {
-  _id: string;
-  messageId: string;
-  conversationId: string;
-  content: string;
-  isEdited: true;
-  editedAt?: string | Date;
-};
-
-export type MessageDeleted = {
-  _id: string;
-  messageId: string;
-  conversationId: string;
-  isDeleted: true;
+  attachments: [];
+  isEdited: boolean;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number | 0;
 };
 
 export type WsErrorPayload = {
@@ -54,9 +42,9 @@ export type DeleteMessageDto = {
 // server to client
 export interface ServerToClientEvents {
   identityConfirmed: (p: IdentityConfirmed) => void;
-  newMessage: (m: NewMessage) => void;
-  messageEdited: (m: MessageEdited) => void;
-  messageDeleted: (m: MessageDeleted) => void;
+  newMessage: (m: Message) => void;
+  messageEdited: (m: Message) => void;
+  messageDeleted: (m: Message) => void;
   error: (e: WsErrorPayload) => void;
 }
 

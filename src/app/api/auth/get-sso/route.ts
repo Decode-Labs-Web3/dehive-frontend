@@ -53,7 +53,8 @@ export async function POST(req: Request) {
     // console.log("this is ssoToken and state from sso", ssoToken, state);
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
-    console.log("this is fingerprint hash from get sso: ", fingerprint_hashed)
+    // console.log("this is fingerprint hash from get sso: ", fingerprint_hashed)
+
     const requestBody = {
       sso_token: ssoToken,
       fingerprint_hashed,
@@ -72,6 +73,8 @@ export async function POST(req: Request) {
         signal: AbortSignal.timeout(10000),
       }
     );
+
+    console.log(backendRes)
 
     if (!backendRes.ok) {
       const err = await backendRes.json().catch(() => null);

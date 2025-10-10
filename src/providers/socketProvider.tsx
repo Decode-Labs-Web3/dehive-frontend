@@ -4,9 +4,7 @@ import { useEffect, useRef } from "react";
 import { getSocketIO } from "@/library/socketio";
 import type {
   IdentityConfirmed,
-  NewMessage,
-  MessageEdited,
-  MessageDeleted,
+  Message,
   WsErrorPayload,
 } from "@/interfaces/index.interfaces";
 
@@ -42,12 +40,12 @@ export default function SocketProvider({ userId, children }: Props) {
       console.warn("[ws reconnect_failed]");
     };
 
-    const onConnectError = (e: Error) => {
-      console.warn("[ws connect_error]", e);
+    const onConnectError = (error: Error) => {
+      console.warn("[ws connect_error]", error);
     };
 
-    const onError = (e: WsErrorPayload) => {
-      console.warn("[ws error]", e);
+    const onError = (error: WsErrorPayload) => {
+      console.warn("[ws error]", error);
     };
 
     const onDisconnect = (reason: string) => {
@@ -58,16 +56,16 @@ export default function SocketProvider({ userId, children }: Props) {
       console.log("[ws identityConfirmed]", p);
     };
 
-    const onNewMessage = (m: NewMessage) => {
-      console.log("[ws newMessage]", m);
+    const onNewMessage = (message: Message) => {
+      console.log("[ws newMessage]", message);
     };
 
-    const onMessageEdited = (m: MessageEdited) => {
-      console.log("[ws messageEdited]", m);
+    const onMessageEdited = (message: Message) => {
+      console.log("[ws messageEdited]", message);
     };
 
-    const onMessageDeleted = (m: MessageDeleted) => {
-      console.log("[ws messageDeleted]", m);
+    const onMessageDeleted = (message: Message) => {
+      console.log("[ws messageDeleted]", message);
     };
 
     socket.on("connect", onConnect);
@@ -76,7 +74,6 @@ export default function SocketProvider({ userId, children }: Props) {
     socket.on("error", onError);
     socket.on("disconnect", onDisconnect);
 
-    // Manager-level reconnection events
     socket.io.on("reconnect", onManagerReconnect);
     socket.io.on("reconnect_attempt", onManagerReconnectAttempt);
     socket.io.on("reconnect_error", onManagerReconnectError);
@@ -96,7 +93,6 @@ export default function SocketProvider({ userId, children }: Props) {
       socket.off("error", onError);
       socket.off("disconnect", onDisconnect);
 
-      // Cleanup manager-level listeners
       socket.io.off("reconnect", onManagerReconnect);
       socket.io.off("reconnect_attempt", onManagerReconnectAttempt);
       socket.io.off("reconnect_error", onManagerReconnectError);
