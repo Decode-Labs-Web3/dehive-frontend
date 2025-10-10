@@ -5,6 +5,7 @@ import {
   apiPathName,
   guardInternal,
 } from "@/utils/index.utils";
+import { fingerprintService } from "@/services/index.services";
 
 function isoToMaxAgeSeconds(expiresAtISO: string): number {
   const now = Date.now();
@@ -50,9 +51,12 @@ export async function POST(req: Request) {
     }
 
     // console.log("this is ssoToken and state from sso", ssoToken, state);
-
+    const userAgent = req.headers.get("user-agent") || "";
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
+    console.log("this is fingerprint hash from get sso: ", fingerprint_hashed)
     const requestBody = {
       sso_token: ssoToken,
+      fingerprint_hashed,
     };
 
     const backendRes = await fetch(

@@ -222,12 +222,12 @@ export default function Categories() {
       ) {
         setDeleteCategoryModal((prev) => ({
           ...prev,
-          categoryId: false,
+          [categoryId]: false,
         }));
 
         setEditCategoryModal((prev) => ({
           ...prev,
-          categoryId: false,
+          [categoryId]: false,
         }));
 
         fetchCategoryInfo();
@@ -486,9 +486,9 @@ export default function Categories() {
               <div
                 role="dialog"
                 tabIndex={-1}
-                ref={(element: HTMLDivElement) => {
-                  element?.focus();
-                }}
+                // ref={(element: HTMLDivElement) => {
+                //   element?.focus();
+                // }}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
                     setCreateChannelModal((prev) => ({
@@ -566,6 +566,7 @@ export default function Categories() {
                       type="text"
                       value={channelForm.name}
                       onChange={handleChannelForm}
+                      autoFocus
                       className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
                     />
                   </div>

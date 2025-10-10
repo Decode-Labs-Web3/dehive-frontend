@@ -7,7 +7,7 @@ import {
   guardInternal,
 } from "@/utils/index.utils";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
   const denied = guardInternal(req);
@@ -27,18 +27,24 @@ export async function GET(req: Request) {
       );
     }
 
+    const body = await req.json();
+    const { otherUserDehiveId } = body;
+    console.log( "Helllo" ,otherUserDehiveId)
+
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
     console.log(fingerprint_hashed);
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/following?page=0&limit=10`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/conversation`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "x-session-id": sessionId,
           "x-fingerprint-hashed": fingerprint_hashed,
         },
+        body: JSON.stringify({ otherUserDehiveId }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
@@ -69,7 +75,7 @@ export async function GET(req: Request) {
       {
         success: true,
         statusCode: response.statusCode || 200,
-        message: response.message || "Following users fetched successfully",
+        message: response.message || "OK",
         data: response.data,
       },
       { status: 200 }

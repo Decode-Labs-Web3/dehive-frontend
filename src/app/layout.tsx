@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "Dehive",
   description:
     "Chatting and security with dehive chat apply the blockchain technology",
+  icons: {
+    icon: "/dehive.png",
+  },
 };
 
 export default function RootLayout({

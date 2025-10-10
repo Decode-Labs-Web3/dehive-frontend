@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/")) {
-    const mark = request.headers.get("x-frontend-internal-request");
+    const mark = request.headers.get("X-Frontend-Internal-Request");
     if (mark !== "true") {
       return new NextResponse(
         JSON.stringify({

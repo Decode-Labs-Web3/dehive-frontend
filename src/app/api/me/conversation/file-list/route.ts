@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
-    console.log(fingerprint_hashed);
+    console.log(fingerprint_hashed)
 
     const backendResponse = await fetch(
       `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/following?page=0&limit=10`,
