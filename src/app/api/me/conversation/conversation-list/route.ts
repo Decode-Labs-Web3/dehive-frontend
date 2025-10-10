@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     console.log(fingerprint_hashed);
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/messages/${conversationId}?page=0&limit=10`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/messages/${conversationId}?page=0&limit=20`,
       {
         method: "GET",
         headers: {

@@ -22,7 +22,7 @@ export function useDirectMessage(conversationId?: string) {
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  console.log(messages);
+  // console.log(messages);
 
   const latestConversationId = useRef<string | undefined>(conversationId);
   useEffect(() => {
@@ -100,7 +100,7 @@ export function useDirectMessage(conversationId?: string) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Frontend-Internal": "true",
+            "X-Frontend-Internal-Request": "true",
           },
           body: JSON.stringify({ conversationId }),
           cache: "no-cache",
@@ -108,7 +108,7 @@ export function useDirectMessage(conversationId?: string) {
         }
       );
       const response = await apiResponse.json();
-      setMessages(response.data.items);
+      setMessages(response.data);
     } catch (error) {
       console.error(error);
       setErr("Failed to load history");
@@ -152,7 +152,7 @@ export function useDirectMessage(conversationId?: string) {
     [socket]
   );
 
-  const sorted = useMemo(
+  const messagesSorted = useMemo(
     () =>
       [...messages].sort(
         (a, b) => +new Date(a.createdAt) - +new Date(b.createdAt)
@@ -161,7 +161,7 @@ export function useDirectMessage(conversationId?: string) {
   );
 
   return {
-    messages: sorted,
+    messages: messagesSorted,
     send,
     edit,
     remove,
