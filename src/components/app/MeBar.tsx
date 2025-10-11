@@ -22,7 +22,7 @@ interface UserDataProps {
 
 export default function MeBar() {
   const [userData, setUserData] = useState<UserDataProps[]>([]);
-  console.log("this is out side try catch", userData.length);
+  // console.log("this is out side try catch", userData.length);
   const fetchUserData = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/user/user-following", {
@@ -46,7 +46,6 @@ export default function MeBar() {
         response.message === "OK"
       ) {
         setUserData(response.data);
-        // console.log("this is inside try catch",response.data)
       }
     } catch (error) {
       console.error(error);

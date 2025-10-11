@@ -42,7 +42,7 @@ export function useDirectMessage(conversationId?: string) {
       )
         return;
       setMessages((prev) =>
-        prev.some((m) => m._id === newMessage._id)
+        prev.some((oldMessage) => oldMessage._id === newMessage._id)
           ? prev
           : [...prev, newMessage]
       );
@@ -55,10 +55,10 @@ export function useDirectMessage(conversationId?: string) {
       )
         return;
       setMessages((prev) =>
-        prev.map((m) =>
-          m._id === editMessage._id
-            ? ({ ...m, content: editMessage.content } as Message)
-            : m
+        prev.map((oldMessage) =>
+          oldMessage._id === editMessage._id
+            ? ({ ...oldMessage, content: editMessage.content } as Message)
+            : oldMessage
         )
       );
     };
@@ -71,7 +71,9 @@ export function useDirectMessage(conversationId?: string) {
         String(latestConversationId.current)
       )
         return;
-      setMessages((prev) => prev.filter((m) => m._id !== deleteMessage._id));
+      setMessages((prev) =>
+        prev.filter((oldMessage) => oldMessage._id !== deleteMessage._id)
+      );
     };
 
     const onWebsocketError = (error: { message: string }) =>

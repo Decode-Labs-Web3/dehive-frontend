@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import { UserDataProps, UserChatWith } from "@/interfaces/index.interfaces";
 import {
   useState,
   useEffect,
@@ -31,6 +33,8 @@ export default function MessagePage({
   conversation: Conversation;
 }) {
   const { userId } = useParams();
+  const [currentUser, setCurrentUser] = useState<UserDataProps | null>();
+  const [UserChatWith, setUserChatWith] = useState<UserChatWith | null>();
   const [newMessage, setNewMessage] = useState("");
   const [editMessageField, setEditMessageField] = useState<
     Record<string, boolean>
@@ -59,6 +63,13 @@ export default function MessagePage({
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
+
+  useEffect(() => {
+    const currentUserData = localStorage.getItem("userData");
+    if (currentUserData) {
+      setCurrentUser(JSON.parse(currentUserData));
+    }
+  }, []);
 
   const handleNewMessageChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
@@ -121,6 +132,36 @@ export default function MessagePage({
     editMessageModal();
   }, [editMessageModal]);
 
+  const fetchChatUser = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/user/user-other", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ userId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (response.statusCode === 200 && response.message === "User found") {
+        setUserChatWith(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server fetch user chatting with errror");
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    fetchChatUser();
+  }, [fetchChatUser]);
+
   const listRef = useRef<HTMLDivElement | null>(null);
   const prevScrollHeightRef = useRef(0);
   const prevScrollTopRef = useRef(0);
@@ -168,38 +209,31 @@ export default function MessagePage({
     <div className="flex h-screen w-full flex-col bg-[var(--surface-primary)] text-[var(--foreground)]">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-6 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)] text-base font-semibold uppercase text-[var(--accent-foreground)]">
-            {conversation?.userA?.charAt(0) ?? "?"}
+          <div className="flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold uppercase text-[var(--accent-foreground)]">
+            <Image
+              src={
+                UserChatWith
+                  ? `http://35.247.142.76:8080/ipfs/${UserChatWith.avatar_ipfs_hash}`
+                  : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+              }
+              alt={"Avatar"}
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+              unoptimized
+            />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-[var(--foreground)]">
-                {conversation?.userA}
+                {UserChatWith?.display_name}
               </h1>
-              <span className="h-2 w-2 rounded-full bg-[var(--success)]" />
-              <span className="text-xs text-[var(--muted-foreground)]">
-                Online
-              </span>
             </div>
-            <span className="text-xs uppercase tracking-wide text-[var(--muted-foreground)]">
-              Direct Message
-            </span>
           </div>
         </div>
-        <div className="flex items-center gap-3 text-[var(--muted-foreground)]">
-          <button className="rounded-md px-2 py-1 hover:text-[var(--accent-foreground)]">
-            Call
-          </button>
-          <button className="rounded-md px-2 py-1 hover:text-[var(--accent-foreground)]">
-            Video
-          </button>
-          <button className="rounded-md px-2 py-1 hover:text-[var(--accent-foreground)]">
-            Pin
-          </button>
-          <span className="text-xs text-[var(--muted-foreground)]">
-            Page {currentPage + 1}
-          </span>
-        </div>
+        <span className="text-xs text-[var(--muted-foreground)]">
+          Page {currentPage + 1}
+        </span>
       </div>
 
       <div
@@ -215,15 +249,45 @@ export default function MessagePage({
                 key={message._id}
                 className="group relative flex w-full items-start gap-3 rounded-md px-3 py-1 transition hover:bg-[var(--surface-hover)]"
               >
-                <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-semibold uppercase text-[var(--accent-foreground)]">
-                  {message.senderId?.charAt(0) ?? "?"}
+                <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase text-[var(--accent-foreground)]">
+                  {currentUser?._id === message.senderId ? (
+                    <Image
+                      src={
+                        currentUser
+                          ? `http://35.247.142.76:8080/ipfs/${currentUser.avatar_ipfs_hash}`
+                          : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                      }
+                      alt={"Avatar"}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <Image
+                      src={
+                        UserChatWith
+                          ? `http://35.247.142.76:8080/ipfs/${UserChatWith.avatar_ipfs_hash}`
+                          : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                      }
+                      alt={"Avatar"}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
+                  )}
                 </div>
                 <div className="flex w-full max-w-3xl flex-col items-start gap-1">
                   {!editMessageField[message._id] ? (
                     <>
                       <div className="flex items-baseline gap-2">
                         <h2 className="text-sm font-semibold text-[var(--foreground)]">
-                          {message.senderId}
+                          {message.senderId === currentUser?._id ? (
+                            <>{currentUser?.display_name}</>
+                          ) : (
+                            <>{UserChatWith?.display_name}</>
+                          )}
                         </h2>
                         <span className="text-xs text-[var(--muted-foreground)]">
                           {new Date(message.createdAt).toLocaleString()}
@@ -346,20 +410,9 @@ export default function MessagePage({
               onChange={handleNewMessageChange}
               onKeyDown={handleNewMessageKeyDown}
               placeholder="Message"
-              className="h-24 w-full resize-none rounded-xl border border-transparent bg-transparent px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)]"
+              className="h-10 w-full rounded-xl border border-transparent bg-transparent px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)]"
               disabled={sending}
             />
-          </div>
-          <div className="flex h-11 items-center gap-2 text-[var(--muted-foreground)]">
-            <button className="rounded px-2 py-1 hover:text-[var(--accent-foreground)]">
-              GIF
-            </button>
-            <button className="rounded px-2 py-1 hover:text-[var(--accent-foreground)]">
-              Sticker
-            </button>
-            <button className="rounded px-2 py-1 hover:text-[var(--accent-foreground)]">
-              Emoji
-            </button>
           </div>
         </div>
       </div>

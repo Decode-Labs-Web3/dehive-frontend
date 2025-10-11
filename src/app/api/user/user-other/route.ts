@@ -7,7 +7,7 @@ import {
   guardInternal,
 } from "@/utils/index.utils";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
   const denied = guardInternal(req);
@@ -27,13 +27,16 @@ export async function GET(req: Request) {
       );
     }
 
+    const body = await req.json();
+    const { userId } = body;
+
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
     console.log(fingerprint_hashed);
 
     // console.log("this is ssoToken and state from sso", ssoToken, state);
 
-    const backendRes = await fetch(`${process.env.DEHIVE_AUTH}/auth/profile`, {
+    const backendRes = await fetch(`${process.env.DEHIVE_AUTH}/auth/profile/${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -57,7 +60,7 @@ export async function GET(req: Request) {
     }
 
     const response = await backendRes.json();
-    const res = NextResponse.json(
+    return NextResponse.json(
       {
         success: true,
         statusCode: response.statusCode || 200,
@@ -66,16 +69,6 @@ export async function GET(req: Request) {
       },
       { status: 200 }
     );
-
-    res.cookies.set("userId", response.data._id, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30,
-    });
-
-    return res;
   } catch (error) {
     console.error("/api/user/user-info handler error:", error);
     return NextResponse.json(

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
+import { UserDataProps } from "@/interfaces/index.interfaces";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSun,
@@ -12,21 +13,6 @@ import {
   faVolumeHigh,
   faVolumeXmark,
 } from "@fortawesome/free-solid-svg-icons";
-
-interface UserDataProps {
-  _id: string;
-  username: string;
-  email: string;
-  display_name: string;
-  bio: string;
-  avatar_ipfs_hash: string;
-  role: string;
-  last_login: string;
-  is_active: boolean;
-  __v: number;
-  following_number: number;
-  followers_number: number;
-}
 
 export default function UserBar() {
   const [theme, setTheme] = useState(false);
@@ -55,6 +41,8 @@ export default function UserBar() {
 
       const response = await apiResponse.json();
       setUserData(response.data);
+      // console.log("this is user data",response.data )
+      localStorage.setItem("userData", JSON.stringify(response.data));
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -148,7 +136,7 @@ export default function UserBar() {
               {userData?.display_name}
             </h3>
             <h4 className="text-xs text-[var(--muted-foreground)] truncate">
-              {userData?.role}
+              {userData?.dehive_role}
             </h4>
           </div>
 
@@ -182,7 +170,7 @@ export default function UserBar() {
                       </div>
                     </div>
                     <div className="text-xs px-2 py-0.5 rounded-full bg-[var(--background-secondary)] text-[var(--muted-foreground)]">
-                      {userData?.role}
+                      {userData?.dehive_role}
                     </div>
                   </div>
 
