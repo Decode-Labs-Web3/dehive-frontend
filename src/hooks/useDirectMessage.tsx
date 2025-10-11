@@ -11,9 +11,17 @@ interface Message {
   attachments: [];
   isEdited: boolean;
   isDeleted: boolean;
+  replyTo: ReplyMessage | null;
   createdAt: string;
   updatedAt: string;
   __v?: number | 0;
+}
+
+interface ReplyMessage {
+  _id: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
 }
 
 export function useDirectMessage(conversationId?: string) {
@@ -57,7 +65,12 @@ export function useDirectMessage(conversationId?: string) {
       setMessages((prev) =>
         prev.map((oldMessage) =>
           oldMessage._id === editMessage._id
-            ? ({ ...oldMessage, content: editMessage.content } as Message)
+            ? ({
+                ...oldMessage,
+                content: editMessage.content,
+                isEdited: editMessage.isEdited,
+                updatedAt: editMessage.updatedAt,
+              } as Message)
             : oldMessage
         )
       );
@@ -74,6 +87,13 @@ export function useDirectMessage(conversationId?: string) {
       setMessages((prev) =>
         prev.filter((oldMessage) => oldMessage._id !== deleteMessage._id)
       );
+      // setMessages((prev) =>
+      //   prev.map((oldMessage) =>
+      //     oldMessage._id === deleteMessage._id
+      //       ? ({ ...oldMessage, isDeleted: oldMessage.isDeleted } as Message)
+      //       : oldMessage
+      //   )
+      // );
     };
 
     const onWebsocketError = (error: { message: string }) =>
@@ -128,7 +148,11 @@ export function useDirectMessage(conversationId?: string) {
   }, [conversationId, page]);
 
   const send = useCallback(
-    async (content: string) => {
+    async (
+      content: string,
+      uploadIds: string[] = [],
+      replyTo: string | null = null
+    ) => {
       if (!latestConversationId.current) return;
       if (!content.trim() || content.length > 2000) return;
       try {
@@ -137,7 +161,8 @@ export function useDirectMessage(conversationId?: string) {
         socket.emit("sendMessage", {
           conversationId: String(latestConversationId.current),
           content,
-          uploadIds: [],
+          uploadIds,
+          replyTo,
         });
       } finally {
         setSending(false);

@@ -63,7 +63,7 @@ export async function GET(req: Request) {
     }
 
     const response = await backendResponse.json();
-    console.info("user-following success response", response.data.items);
+    // console.info("user-following success response", response.data.items);
 
     return NextResponse.json(
       {

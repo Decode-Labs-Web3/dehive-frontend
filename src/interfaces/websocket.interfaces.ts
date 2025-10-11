@@ -11,10 +11,18 @@ export type Message = {
   attachments: [];
   isEdited: boolean;
   isDeleted: boolean;
+  replyTo: ReplyMessage | null;
   createdAt: string;
   updatedAt: string;
   __v?: number | 0;
 };
+
+interface ReplyMessage {
+  _id: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+}
 
 export type WsErrorPayload = {
   message: string;
@@ -26,6 +34,7 @@ export type SendDirectMessageDto = {
   conversationId: string;
   content: string;
   uploadIds: string[];
+  replyTo: string | null;
 };
 
 export type EditMessageDto = {

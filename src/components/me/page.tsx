@@ -27,15 +27,49 @@ interface Conversation {
   __v: number;
 }
 
+interface NewMessage {
+  content: string;
+  uploadIds: string[];
+  replyTo: string | null;
+}
+
+interface Message {
+  _id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  attachments: [];
+  isEdited: boolean;
+  isDeleted: boolean;
+  replyTo: ReplyMessage | null;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number | 0;
+}
+
+interface ReplyMessage {
+  _id: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+}
+
 export default function MessagePage({
   conversation,
 }: {
   conversation: Conversation;
 }) {
+  console.log("edwedwedwed", conversation);
   const { userId } = useParams();
   const [currentUser, setCurrentUser] = useState<UserDataProps | null>();
   const [UserChatWith, setUserChatWith] = useState<UserChatWith | null>();
-  const [newMessage, setNewMessage] = useState("");
+  const [messageReply, setMessageReply] = useState<Message | null>(null);
+  const [newMessage, setNewMessage] = useState<NewMessage>({
+    content: "",
+    uploadIds: [],
+    replyTo: null,
+  });
+
   const [editMessageField, setEditMessageField] = useState<
     Record<string, boolean>
   >({});
@@ -72,9 +106,12 @@ export default function MessagePage({
   }, []);
 
   const handleNewMessageChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
+    event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
-    setNewMessage(e.target.value);
+    setNewMessage((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
   };
 
   const handleEditMessageKeyDown = (
@@ -107,10 +144,15 @@ export default function MessagePage({
   ) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      const message = newMessage.trim();
+      const message = newMessage.content.trim();
       if (message && !sending) {
-        send(message);
-        setNewMessage("");
+        send(message, newMessage.uploadIds, newMessage.replyTo);
+        setNewMessage({
+          content: "",
+          uploadIds: [],
+          replyTo: null,
+        });
+        setMessageReply(null);
         return;
       }
     }
@@ -162,6 +204,19 @@ export default function MessagePage({
     fetchChatUser();
   }, [fetchChatUser]);
 
+  const handleMessageReply = (messageReply: Message) => {
+    setMessageReply(messageReply);
+    setNewMessage((prev) => ({
+      ...prev,
+      replyTo: messageReply._id,
+    }));
+    setEditMessageField(
+      Object.fromEntries(messages.map((message) => [message._id, false]))
+    );
+
+    newMessageRef.current?.focus();
+  };
+
   const listRef = useRef<HTMLDivElement | null>(null);
   const prevScrollHeightRef = useRef(0);
   const prevScrollTopRef = useRef(0);
@@ -204,6 +259,26 @@ export default function MessagePage({
       if (element) element.scrollTop = element.scrollHeight;
     }
   }, [sending, loadingMore]);
+
+  const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
+  const editMessageRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const autoResize = (element: HTMLTextAreaElement | null) => {
+    if (!element) return;
+    element.style.height = "auto";
+    element.style.height = `${element.scrollHeight}px`;
+  };
+
+  const resizeNew = useCallback(() => autoResize(newMessageRef.current), []);
+  const resizeEdit = useCallback(() => autoResize(editMessageRef.current), []);
+
+  useLayoutEffect(() => {
+    resizeNew();
+  }, [newMessage, resizeNew]);
+
+  useLayoutEffect(() => {
+    resizeEdit();
+  }, [editMessageRef, resizeEdit]);
 
   return (
     <div className="flex h-screen w-full flex-col bg-[var(--surface-primary)] text-[var(--foreground)]">
@@ -249,6 +324,29 @@ export default function MessagePage({
                 key={message._id}
                 className="group relative flex w-full items-start gap-3 rounded-md px-3 py-1 transition hover:bg-[var(--surface-hover)]"
               >
+                {message.replyTo?._id && (
+                  <>
+                    {messages
+                      .filter((m) => m._id === message.replyTo?._id)
+                      .map((replied) => (
+                        <div
+                          key={replied._id}
+                          className="mb-1 max-w-full rounded-md border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-2 text-xs"
+                        >
+                          <div className="mb-1 font-medium text-[var(--muted-foreground)]">
+                            Reply to{" "}
+                            {replied.senderId === currentUser?._id
+                              ? currentUser?.display_name
+                              : UserChatWith?.display_name}
+                          </div>
+                          <div className="line-clamp-3 whitespace-pre-wrap text-[var(--muted-foreground)]">
+                            {replied.content}
+                          </div>
+                        </div>
+                      ))}
+                  </>
+                )}
+
                 <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase text-[var(--accent-foreground)]">
                   {currentUser?._id === message.senderId ? (
                     <Image
@@ -304,13 +402,16 @@ export default function MessagePage({
                       {userId === message.senderId && (
                         <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
                           <div className="relative">
-                            <button className="peer rounded px-2 py-1">
+                            <button
+                              onClick={() => handleMessageReply(message)}
+                              className="peer rounded px-2 py-1"
+                            >
                               <FontAwesomeIcon
                                 icon={faArrowTurnUp}
                                 rotation={270}
                               />
                             </button>
-                            <div className="absolute -top-10 rounded left-1/2 -translate-x-1/2  peer-hover:opacity-100 p-2 text-white bg-black">
+                            <div className="absolute -top-10 rounded left-1/2 -translate-x-1/2 opacity-0  peer-hover:opacity-100 p-2 text-white bg-black">
                               Reply
                             </div>
                           </div>
@@ -319,7 +420,10 @@ export default function MessagePage({
                       {userId !== message.senderId && (
                         <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
                           <div className="relative">
-                            <button className="peer rounded px-2 py-1">
+                            <button
+                              onClick={() => handleMessageReply(message)}
+                              className="peer rounded px-2 py-1"
+                            >
                               <FontAwesomeIcon
                                 icon={faArrowTurnUp}
                                 rotation={270}
@@ -374,15 +478,16 @@ export default function MessagePage({
                   ) : (
                     <textarea
                       tabIndex={-1}
-                      ref={(element: HTMLTextAreaElement) => {
-                        element?.focus();
-                      }}
+                      // ref={(element: HTMLTextAreaElement) => {
+                      //   element?.focus();
+                      // }}
                       name="editMessage"
+                      ref={editMessageRef}
                       value={editMessage.messageEdit}
                       onChange={handleEditMessageChange}
                       onKeyDown={handleEditMessageKeyDown}
                       placeholder="Edit message"
-                      className="min-h-[96px] w-full rounded-xl border border-[var(--accent-border)] bg-[var(--surface-secondary)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--accent)]"
+                      className="min-h-5 max-h-50 resize-none w-full rounded-xl border border-[var(--accent-border)] bg-[var(--surface-secondary)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--accent)]"
                       autoFocus
                       disabled={sending}
                     />
@@ -404,13 +509,32 @@ export default function MessagePage({
             +
           </button>
           <div className="flex-1">
+            {messageReply && (
+              <div className="flex flex-row">
+                <h1>
+                  {messageReply.senderId === currentUser?._id
+                    ? currentUser.display_name
+                    : UserChatWith?.display_name}
+                </h1>
+                {" : "}
+                <h1>{messageReply.content}</h1>
+              </div>
+            )}
             <textarea
-              name="newMessage"
-              value={newMessage}
+              ref={newMessageRef}
+              name="content"
+              value={newMessage.content}
               onChange={handleNewMessageChange}
               onKeyDown={handleNewMessageKeyDown}
+              onClick={() =>
+                setEditMessageField(
+                  Object.fromEntries(
+                    messages.map((message) => [message._id, false])
+                  )
+                )
+              }
               placeholder="Message"
-              className="h-10 w-full rounded-xl border border-transparent bg-transparent px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)]"
+              className="min-h-5 max-h-50 resize-none w-full rounded-xl border border-transparent bg-transparent px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)]"
               disabled={sending}
             />
           </div>
