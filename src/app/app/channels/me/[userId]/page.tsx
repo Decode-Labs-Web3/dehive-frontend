@@ -51,5 +51,5 @@ export default function DirectMessagePage() {
     fetchConversation();
   }, [fetchConversation]);
 
-  return conversation ? <MessagePage conversation={conversation} /> : null;
+  return conversation ? (<MessagePage conversation={conversation} />) : null;
 }
