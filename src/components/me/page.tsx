@@ -9,6 +9,12 @@ import {
 } from "react";
 import { useParams } from "next/navigation";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowTurnUp,
+  faPen,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface Conversation {
   userA: string;
@@ -159,92 +165,202 @@ export default function MessagePage({
   }, [sending, loadingMore]);
 
   return (
-    <div className="h-screen w-full bg-blue-500 flex flex-col">
-      <div className="sticky top-0 left-0 right-0 bg-white/90 backdrop-blur border-t px-4 py-3">
-        <h1>User A: {conversation?.userA}</h1>
-        <h1>Current Page: {currentPage}</h1>
+    <div className="flex h-screen w-full flex-col bg-[var(--surface-primary)] text-[var(--foreground)]">
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-6 py-3 backdrop-blur">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)] text-base font-semibold uppercase text-[var(--accent-foreground)]">
+            {conversation?.userA?.charAt(0) ?? "?"}
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-semibold text-[var(--foreground)]">
+                {conversation?.userA}
+              </h1>
+              <span className="h-2 w-2 rounded-full bg-[var(--success)]" />
+              <span className="text-xs text-[var(--muted-foreground)]">
+                Online
+              </span>
+            </div>
+            <span className="text-xs uppercase tracking-wide text-[var(--muted-foreground)]">
+              Direct Message
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-[var(--muted-foreground)]">
+          <button className="rounded-md px-2 py-1 hover:text-[var(--accent-foreground)]">
+            Call
+          </button>
+          <button className="rounded-md px-2 py-1 hover:text-[var(--accent-foreground)]">
+            Video
+          </button>
+          <button className="rounded-md px-2 py-1 hover:text-[var(--accent-foreground)]">
+            Pin
+          </button>
+          <span className="text-xs text-[var(--muted-foreground)]">
+            Page {currentPage + 1}
+          </span>
+        </div>
       </div>
 
       <div
         ref={listRef}
         onScroll={handleListScroll}
-        className="flex-1 overflow-y-auto p-4 flex flex-col gap-2"
+        className="flex-1 overflow-y-auto px-6 py-6"
       >
-        {messages
-          .filter((message) => message.isDeleted === false)
-          .map((message) => (
-            <div key={message._id} className="bg-red-400">
-              {!editMessageField[message._id] ? (
-                <>
-                  <h1>{message.senderId}</h1>
-                  <div className="flex flex-row gap-2">
-                    <p>{message.content}</p>
-                    {message.isEdited && (
-                      <p className="text-blue-300">{"(edited)"}</p>
-                    )}
-                  </div>
-                  <p>{String(message.createdAt)}</p>
-                  {userId !== message.senderId && (
+        <div className="flex flex-col gap-2">
+          {messages
+            .filter((message) => message.isDeleted === false)
+            .map((message) => (
+              <div
+                key={message._id}
+                className="group relative flex w-full items-start gap-3 rounded-md px-3 py-1 transition hover:bg-[var(--surface-hover)]"
+              >
+                <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-semibold uppercase text-[var(--accent-foreground)]">
+                  {message.senderId?.charAt(0) ?? "?"}
+                </div>
+                <div className="flex w-full max-w-3xl flex-col items-start gap-1">
+                  {!editMessageField[message._id] ? (
                     <>
-                      <button
-                        className="bg-yellow-400 "
-                        onClick={() => remove(message._id)}
-                      >
-                        Delete
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditMessageField(
-                            Object.fromEntries(
-                              messages.map((messagelist) => [
-                                messagelist._id,
-                                messagelist._id === message._id,
-                              ])
-                            )
-                          );
-                          setEditMessage({
-                            id: message._id,
-                            messageEdit: message.content,
-                          });
-                        }}
-                      >
-                        Edit
-                      </button>
+                      <div className="flex items-baseline gap-2">
+                        <h2 className="text-sm font-semibold text-[var(--foreground)]">
+                          {message.senderId}
+                        </h2>
+                        <span className="text-xs text-[var(--muted-foreground)]">
+                          {new Date(message.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm leading-6 text-left">
+                        {message.content}
+                        {message.isEdited && (
+                          <span className="ml-2 text-xs text-[var(--muted-foreground)]">
+                            (edited)
+                          </span>
+                        )}
+                      </div>
+                      {userId === message.senderId && (
+                        <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
+                          <div className="relative">
+                            <button className="peer rounded px-2 py-1">
+                              <FontAwesomeIcon
+                                icon={faArrowTurnUp}
+                                rotation={270}
+                              />
+                            </button>
+                            <div className="absolute -top-10 rounded left-1/2 -translate-x-1/2  peer-hover:opacity-100 p-2 text-white bg-black">
+                              Reply
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {userId !== message.senderId && (
+                        <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
+                          <div className="relative">
+                            <button className="peer rounded px-2 py-1">
+                              <FontAwesomeIcon
+                                icon={faArrowTurnUp}
+                                rotation={270}
+                              />
+                            </button>
+
+                            <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 rounded bg-black p-2 text-white z-50 opacity-0 peer-hover:opacity-100">
+                              Reply
+                            </div>
+                          </div>
+
+                          <div className="relative">
+                            <button
+                              className="peer rounded px-2 py-1"
+                              onClick={() => {
+                                setEditMessageField(
+                                  Object.fromEntries(
+                                    messages.map((messagelist) => [
+                                      messagelist._id,
+                                      messagelist._id === message._id,
+                                    ])
+                                  )
+                                );
+                                setEditMessage({
+                                  id: message._id,
+                                  messageEdit: message.content,
+                                });
+                              }}
+                            >
+                              <FontAwesomeIcon icon={faPen} />
+                            </button>
+
+                            <div className="pointer-event-none absolute -top-10 left-1/2 -translate-x-1/2 rounded p-2 opacity-0 peer-hover:opacity-100 bg-black text-white z-50">
+                              Edit
+                            </div>
+                          </div>
+
+                          <div className="relative">
+                            <button
+                              className="peer rounded px-2 py-1 text-[var(--danger)]"
+                              onClick={() => remove(message._id)}
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                            <div className="pointer-event-none absolute -top-10 left-1/2 -translate-x-1/2 text-white bg-black z-50 rounded p-2 opacity-0 peer-hover:opacity-100">
+                              Delete
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </>
+                  ) : (
+                    <textarea
+                      tabIndex={-1}
+                      ref={(element: HTMLTextAreaElement) => {
+                        element?.focus();
+                      }}
+                      name="editMessage"
+                      value={editMessage.messageEdit}
+                      onChange={handleEditMessageChange}
+                      onKeyDown={handleEditMessageKeyDown}
+                      placeholder="Edit message"
+                      className="min-h-[96px] w-full rounded-xl border border-[var(--accent-border)] bg-[var(--surface-secondary)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--accent)]"
+                      autoFocus
+                      disabled={sending}
+                    />
                   )}
-                </>
-              ) : (
-                <textarea
-                  tabIndex={-1}
-                  ref={(element: HTMLTextAreaElement) => {
-                    element?.focus();
-                  }}
-                  name="editMessage"
-                  value={editMessage.messageEdit}
-                  onChange={handleEditMessageChange}
-                  onKeyDown={handleEditMessageKeyDown}
-                  placeholder="Type your message"
-                  className="flex-1 rounded-md border px-3 outline-none"
-                  autoFocus
-                  disabled={sending}
-                />
-              )}
-            </div>
-          ))}
-        {sending && <span>Sending...</span>}
+                </div>
+              </div>
+            ))}
+          {sending && (
+            <span className="px-3 text-xs text-[var(--muted-foreground)]">
+              Sending...
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="sticky bottom-0 left-0 right-0 bg-white/90 border-t px-4 py-3">
-        <div className="flex gap-2">
-          <textarea
-            name="newMessage"
-            value={newMessage}
-            onChange={handleNewMessageChange}
-            onKeyDown={handleNewMessageKeyDown}
-            placeholder="Type your message"
-            className="flex-1 rounded-md border px-3 outline-none"
-            disabled={sending}
-          />
+      <div className="sticky bottom-0 left-0 right-0 border-t border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-6 py-4 backdrop-blur">
+        <div className="flex items-end gap-3 rounded-2xl bg-[var(--surface-primary)] p-3 shadow-lg">
+          <button className="h-11 w-11 shrink-0 rounded-full bg-[var(--surface-secondary)] text-lg text-[var(--foreground)] hover:bg-[var(--surface-tertiary)]">
+            +
+          </button>
+          <div className="flex-1">
+            <textarea
+              name="newMessage"
+              value={newMessage}
+              onChange={handleNewMessageChange}
+              onKeyDown={handleNewMessageKeyDown}
+              placeholder="Message"
+              className="h-24 w-full resize-none rounded-xl border border-transparent bg-transparent px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)]"
+              disabled={sending}
+            />
+          </div>
+          <div className="flex h-11 items-center gap-2 text-[var(--muted-foreground)]">
+            <button className="rounded px-2 py-1 hover:text-[var(--accent-foreground)]">
+              GIF
+            </button>
+            <button className="rounded px-2 py-1 hover:text-[var(--accent-foreground)]">
+              Sticker
+            </button>
+            <button className="rounded px-2 py-1 hover:text-[var(--accent-foreground)]">
+              Emoji
+            </button>
+          </div>
         </div>
       </div>
     </div>
