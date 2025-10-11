@@ -102,9 +102,9 @@ export default function Channels({
           <>
             <div
               tabIndex={-1}
-              ref={(el) => el?.focus()}
+              ref={(element) => element?.focus()}
               onClick={() => setChannelModal(false)}
-              onKeyDown={(e) => e.key === "Escape" && setChannelModal(false)}
+              onKeyDown={(event) => event.key === "Escape" && setChannelModal(false)}
               className="fixed inset-0 bg-black/50 z-20"
             />
 

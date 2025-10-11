@@ -245,9 +245,9 @@ export default function EditModal({
           )
             el.focus();
         }}
-        onKeyDown={(e) => {
+        onKeyDown={(event) => {
           if (
-            e.key === "Escape" &&
+            event.key === "Escape" &&
             !(modal.edit || modal.delete || modal.leave || modal.category)
           ) {
             setServerSettingModal(false);

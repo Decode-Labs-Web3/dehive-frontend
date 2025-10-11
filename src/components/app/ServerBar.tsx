@@ -77,9 +77,9 @@ export default function ServerBar() {
             <div
               role="presentation"
               tabIndex={-1}
-              ref={(el) => el?.focus()}
-              onKeyDown={(e) =>
-                e.key === "Escape" && setServerSettingModal(false)
+              ref={(element) => element?.focus()}
+              onKeyDown={(event) =>
+                event.key === "Escape" && setServerSettingModal(false)
               }
               onClick={() => setServerSettingModal(false)}
               className="fixed inset-0 bg-black/50 z-30"

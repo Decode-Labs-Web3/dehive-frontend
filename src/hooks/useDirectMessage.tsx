@@ -18,7 +18,8 @@ interface Message {
 
 export function useDirectMessage(conversationId?: string) {
   const socket = useRef(getSocketIO()).current;
-
+  const [page, setPage] = useState<number>(0);
+  const [isLastPage, setIsLastPage] = useState(false);
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -102,18 +103,27 @@ export function useDirectMessage(conversationId?: string) {
             "Content-Type": "application/json",
             "X-Frontend-Internal-Request": "true",
           },
-          body: JSON.stringify({ conversationId }),
+          body: JSON.stringify({ conversationId, page }),
           cache: "no-cache",
           signal: AbortSignal.timeout(10000),
         }
       );
+      if (!apiResponse.ok) {
+        console.error("API RESPONSE FROM useDirectMessage", apiResponse);
+        return;
+      }
       const response = await apiResponse.json();
-      setMessages(response.data);
+      if (response.statusCode === 200 && response.message === "OK") {
+        setMessages((prev) =>
+          page === 0 ? response.data.items : [...response.data.items, ...prev]
+        );
+        setIsLastPage(response.data.metadata.is_last_page);
+      }
     } catch (error) {
       console.error(error);
       setErr("Failed to load history");
     }
-  }, [conversationId]);
+  }, [conversationId, page]);
 
   const send = useCallback(
     async (content: string) => {
@@ -167,6 +177,8 @@ export function useDirectMessage(conversationId?: string) {
     remove,
     loadHistory,
     sending,
+    isLastPage,
+    setPage,
     err,
   };
 }

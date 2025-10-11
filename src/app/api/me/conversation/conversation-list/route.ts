@@ -28,14 +28,14 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { conversationId } = body;
+    const { conversationId, page } = body;
 
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
     console.log(fingerprint_hashed);
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/messages/${conversationId}?page=0&limit=20`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/messages/${conversationId}?page=${page}&limit=15`,
       {
         method: "GET",
         headers: {
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
         success: true,
         statusCode: response.statusCode || 200,
         message: response.message || "OK",
-        data: response.data.items,
+        data: response.data,
       },
       { status: 200 }
     );
