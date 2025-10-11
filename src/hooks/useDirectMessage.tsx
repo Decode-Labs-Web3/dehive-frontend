@@ -2,27 +2,7 @@
 
 import { getSocketIO } from "@/library/socketio";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-
-interface Message {
-  _id: string;
-  conversationId: string;
-  senderId: string;
-  content: string;
-  attachments: [];
-  isEdited: boolean;
-  isDeleted: boolean;
-  replyTo: ReplyMessage | null;
-  createdAt: string;
-  updatedAt: string;
-  __v?: number | 0;
-}
-
-interface ReplyMessage {
-  _id: string;
-  senderId: string;
-  content: string;
-  createdAt: string;
-}
+import { Message } from "@/interfaces/websocket.interfaces";
 
 export function useDirectMessage(conversationId?: string) {
   const socket = useRef(getSocketIO()).current;
@@ -31,7 +11,7 @@ export function useDirectMessage(conversationId?: string) {
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  // console.log(messages);
+  // console.log("dwedwedwedwedwedwqsqwsqwswed",messages);
 
   const latestConversationId = useRef<string | undefined>(conversationId);
   useEffect(() => {

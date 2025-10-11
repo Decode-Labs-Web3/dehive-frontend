@@ -17,6 +17,7 @@ import {
   faPen,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { Message } from "@/interfaces/index.interfaces";
 
 interface Conversation {
   userA: string;
@@ -33,33 +34,12 @@ interface NewMessage {
   replyTo: string | null;
 }
 
-interface Message {
-  _id: string;
-  conversationId: string;
-  senderId: string;
-  content: string;
-  attachments: [];
-  isEdited: boolean;
-  isDeleted: boolean;
-  replyTo: ReplyMessage | null;
-  createdAt: string;
-  updatedAt: string;
-  __v?: number | 0;
-}
-
-interface ReplyMessage {
-  _id: string;
-  senderId: string;
-  content: string;
-  createdAt: string;
-}
-
 export default function MessagePage({
   conversation,
 }: {
   conversation: Conversation;
 }) {
-  console.log("edwedwedwed", conversation);
+  // console.log("edwedwedwed", conversation);
   const { userId } = useParams();
   const [currentUser, setCurrentUser] = useState<UserDataProps | null>();
   const [UserChatWith, setUserChatWith] = useState<UserChatWith | null>();
@@ -322,7 +302,7 @@ export default function MessagePage({
             .map((message) => (
               <div
                 key={message._id}
-                className="group relative flex w-full items-start gap-3 rounded-md px-3 py-1 transition hover:bg-[var(--surface-hover)]"
+                className="group relative flex flex-col w-full items-start gap-3 rounded-md px-3 py-1 transition hover:bg-[var(--surface-hover)]"
               >
                 {message.replyTo?._id && (
                   <>
@@ -331,167 +311,169 @@ export default function MessagePage({
                       .map((replied) => (
                         <div
                           key={replied._id}
-                          className="mb-1 max-w-full rounded-md border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-2 text-xs"
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--surface-tertiary)] border-l-4 border-[var(--accent)] mb-1 max-w-full"
                         >
-                          <div className="mb-1 font-medium text-[var(--muted-foreground)]">
-                            Reply to{" "}
+                          <span className="text-xs font-semibold text-[var(--accent)] mr-2">
+                            Replying to{" "}
                             {replied.senderId === currentUser?._id
                               ? currentUser?.display_name
                               : UserChatWith?.display_name}
-                          </div>
-                          <div className="line-clamp-3 whitespace-pre-wrap text-[var(--muted-foreground)]">
+                          </span>
+                          <span className="truncate text-xs text-[var(--muted-foreground)]">
                             {replied.content}
-                          </div>
+                          </span>
                         </div>
                       ))}
                   </>
                 )}
 
-                <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase text-[var(--accent-foreground)]">
-                  {currentUser?._id === message.senderId ? (
-                    <Image
-                      src={
-                        currentUser
-                          ? `http://35.247.142.76:8080/ipfs/${currentUser.avatar_ipfs_hash}`
-                          : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                      }
-                      alt={"Avatar"}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <Image
-                      src={
-                        UserChatWith
-                          ? `http://35.247.142.76:8080/ipfs/${UserChatWith.avatar_ipfs_hash}`
-                          : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                      }
-                      alt={"Avatar"}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                    />
-                  )}
-                </div>
-                <div className="flex w-full max-w-3xl flex-col items-start gap-1">
-                  {!editMessageField[message._id] ? (
-                    <>
-                      <div className="flex items-baseline gap-2">
-                        <h2 className="text-sm font-semibold text-[var(--foreground)]">
-                          {message.senderId === currentUser?._id ? (
-                            <>{currentUser?.display_name}</>
-                          ) : (
-                            <>{UserChatWith?.display_name}</>
-                          )}
-                        </h2>
-                        <span className="text-xs text-[var(--muted-foreground)]">
-                          {new Date(message.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm leading-6 text-left">
-                        {message.content}
-                        {message.isEdited && (
-                          <span className="ml-2 text-xs text-[var(--muted-foreground)]">
-                            (edited)
+                <div className="flex">
+                  <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase text-[var(--accent-foreground)]">
+                    {currentUser?._id === message.senderId ? (
+                      <Image
+                        src={
+                          currentUser
+                            ? `http://35.247.142.76:8080/ipfs/${currentUser.avatar_ipfs_hash}`
+                            : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        }
+                        alt={"Avatar"}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <Image
+                        src={
+                          UserChatWith
+                            ? `http://35.247.142.76:8080/ipfs/${UserChatWith.avatar_ipfs_hash}`
+                            : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        }
+                        alt={"Avatar"}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                      />
+                    )}
+                  </div>
+                  <div className="flex w-full max-w-3xl flex-col items-start gap-1">
+                    {!editMessageField[message._id] ? (
+                      <>
+                        <div className="flex items-baseline gap-2">
+                          <h2 className="text-sm font-semibold text-[var(--foreground)]">
+                            {message.senderId === currentUser?._id ? (
+                              <>{currentUser?.display_name}</>
+                            ) : (
+                              <>{UserChatWith?.display_name}</>
+                            )}
+                          </h2>
+                          <span className="text-xs text-[var(--muted-foreground)]">
+                            {new Date(message.createdAt).toLocaleString()}
                           </span>
+                        </div>
+                        <div className="whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm leading-6 text-left">
+                          {message.content}
+                          {message.isEdited && (
+                            <span className="ml-2 text-xs text-[var(--muted-foreground)]">
+                              (edited)
+                            </span>
+                          )}
+                        </div>
+                        {userId === message.senderId && (
+                          <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
+                            <div className="relative">
+                              <button
+                                onClick={() => handleMessageReply(message)}
+                                className="peer rounded px-2 py-1"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faArrowTurnUp}
+                                  rotation={270}
+                                />
+                              </button>
+                              <div className="absolute -top-10 rounded left-1/2 -translate-x-1/2 opacity-0  peer-hover:opacity-100 p-2 text-white bg-black">
+                                Reply
+                              </div>
+                            </div>
+                          </div>
                         )}
-                      </div>
-                      {userId === message.senderId && (
-                        <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
-                          <div className="relative">
-                            <button
-                              onClick={() => handleMessageReply(message)}
-                              className="peer rounded px-2 py-1"
-                            >
-                              <FontAwesomeIcon
-                                icon={faArrowTurnUp}
-                                rotation={270}
-                              />
-                            </button>
-                            <div className="absolute -top-10 rounded left-1/2 -translate-x-1/2 opacity-0  peer-hover:opacity-100 p-2 text-white bg-black">
-                              Reply
+                        {userId !== message.senderId && (
+                          <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
+                            <div className="relative">
+                              <button
+                                onClick={() => handleMessageReply(message)}
+                                className="peer rounded px-2 py-1"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faArrowTurnUp}
+                                  rotation={270}
+                                />
+                              </button>
+
+                              <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 rounded bg-black p-2 text-white z-50 opacity-0 peer-hover:opacity-100">
+                                Reply
+                              </div>
+                            </div>
+
+                            <div className="relative">
+                              <button
+                                className="peer rounded px-2 py-1"
+                                onClick={() => {
+                                  setEditMessageField(
+                                    Object.fromEntries(
+                                      messages.map((messagelist) => [
+                                        messagelist._id,
+                                        messagelist._id === message._id,
+                                      ])
+                                    )
+                                  );
+                                  setEditMessage({
+                                    id: message._id,
+                                    messageEdit: message.content,
+                                  });
+                                }}
+                              >
+                                <FontAwesomeIcon icon={faPen} />
+                              </button>
+
+                              <div className="pointer-event-none absolute -top-10 left-1/2 -translate-x-1/2 rounded p-2 opacity-0 peer-hover:opacity-100 bg-black text-white z-50">
+                                Edit
+                              </div>
+                            </div>
+
+                            <div className="relative">
+                              <button
+                                className="peer rounded px-2 py-1 text-[var(--danger)]"
+                                onClick={() => remove(message._id)}
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                              <div className="pointer-event-none absolute -top-10 left-1/2 -translate-x-1/2 text-white bg-black z-50 rounded p-2 opacity-0 peer-hover:opacity-100">
+                                Delete
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
-                      {userId !== message.senderId && (
-                        <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
-                          <div className="relative">
-                            <button
-                              onClick={() => handleMessageReply(message)}
-                              className="peer rounded px-2 py-1"
-                            >
-                              <FontAwesomeIcon
-                                icon={faArrowTurnUp}
-                                rotation={270}
-                              />
-                            </button>
-
-                            <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 rounded bg-black p-2 text-white z-50 opacity-0 peer-hover:opacity-100">
-                              Reply
-                            </div>
-                          </div>
-
-                          <div className="relative">
-                            <button
-                              className="peer rounded px-2 py-1"
-                              onClick={() => {
-                                setEditMessageField(
-                                  Object.fromEntries(
-                                    messages.map((messagelist) => [
-                                      messagelist._id,
-                                      messagelist._id === message._id,
-                                    ])
-                                  )
-                                );
-                                setEditMessage({
-                                  id: message._id,
-                                  messageEdit: message.content,
-                                });
-                              }}
-                            >
-                              <FontAwesomeIcon icon={faPen} />
-                            </button>
-
-                            <div className="pointer-event-none absolute -top-10 left-1/2 -translate-x-1/2 rounded p-2 opacity-0 peer-hover:opacity-100 bg-black text-white z-50">
-                              Edit
-                            </div>
-                          </div>
-
-                          <div className="relative">
-                            <button
-                              className="peer rounded px-2 py-1 text-[var(--danger)]"
-                              onClick={() => remove(message._id)}
-                            >
-                              <FontAwesomeIcon icon={faTrash} />
-                            </button>
-                            <div className="pointer-event-none absolute -top-10 left-1/2 -translate-x-1/2 text-white bg-black z-50 rounded p-2 opacity-0 peer-hover:opacity-100">
-                              Delete
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <textarea
-                      tabIndex={-1}
-                      // ref={(element: HTMLTextAreaElement) => {
-                      //   element?.focus();
-                      // }}
-                      name="editMessage"
-                      ref={editMessageRef}
-                      value={editMessage.messageEdit}
-                      onChange={handleEditMessageChange}
-                      onKeyDown={handleEditMessageKeyDown}
-                      placeholder="Edit message"
-                      className="min-h-5 max-h-50 resize-none w-full rounded-xl border border-[var(--accent-border)] bg-[var(--surface-secondary)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--accent)]"
-                      autoFocus
-                      disabled={sending}
-                    />
-                  )}
+                        )}
+                      </>
+                    ) : (
+                      <textarea
+                        tabIndex={-1}
+                        // ref={(element: HTMLTextAreaElement) => {
+                        //   element?.focus();
+                        // }}
+                        name="editMessage"
+                        ref={editMessageRef}
+                        value={editMessage.messageEdit}
+                        onChange={handleEditMessageChange}
+                        onKeyDown={handleEditMessageKeyDown}
+                        placeholder="Edit message"
+                        className="min-h-5 max-h-50 resize-none w-full rounded-xl border border-[var(--accent-border)] bg-[var(--surface-secondary)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--accent)]"
+                        autoFocus
+                        disabled={sending}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -510,14 +492,16 @@ export default function MessagePage({
           </button>
           <div className="flex-1">
             {messageReply && (
-              <div className="flex flex-row">
-                <h1>
+              <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-[var(--surface-tertiary)] border-l-4 border-[var(--accent)]">
+                <span className="text-xs font-semibold text-[var(--accent)]">
+                  Replying to{" "}
                   {messageReply.senderId === currentUser?._id
                     ? currentUser.display_name
                     : UserChatWith?.display_name}
-                </h1>
-                {" : "}
-                <h1>{messageReply.content}</h1>
+                </span>
+                <span className="truncate text-xs text-[var(--muted-foreground)]">
+                  {messageReply.content}
+                </span>
               </div>
             )}
             <textarea
