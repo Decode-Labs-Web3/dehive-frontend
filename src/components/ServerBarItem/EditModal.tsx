@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
 import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
+import ServerBarItems from "./index";
 import {
   faUserPlus,
   faPen,
@@ -40,8 +41,9 @@ export default function EditModal({
 }: EditModalProps) {
   // const [server, setServer] = useState<ServerProps>(server)
   const router = useRouter();
-  const { refreshServers } = useServerContext();
+  const [serverPannel, setServerPannel] = useState(false);
   const [userId, setUserId] = useState("");
+  const { refreshServers } = useServerContext();
 
   useEffect(() => {
     const value = getCookie("userId");
@@ -52,8 +54,8 @@ export default function EditModal({
 
   const [modal, setModal] = useState({
     edit: false,
-    delete: false,
     leave: false,
+    delete: false,
     category: false,
   });
 
@@ -286,7 +288,18 @@ export default function EditModal({
               <FontAwesomeIcon icon={faFolderPlus} />
             </button>
 
-            <button className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]">
+            <button
+              onClick={() => {
+                setServerPannel(true);
+                setModal({
+                  edit: false,
+                  leave: false,
+                  delete: false,
+                  category: false,
+                });
+              }}
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+            >
               Server Setting
               <FontAwesomeIcon icon={faGear} />
             </button>
@@ -309,6 +322,8 @@ export default function EditModal({
           </>
         )}
       </div>
+
+      {serverPannel && <ServerBarItems.ServerPannel server={server} />}
 
       {modal.edit && (
         <div
