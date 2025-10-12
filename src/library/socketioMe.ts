@@ -4,7 +4,7 @@ import type {
   ClientToServerEvents,
 } from "../interfaces/index.interfaces";
 
-const URL = process.env.NEXT_PUBLIC_SIO_URL!;
+const URL = process.env.NEXT_PUBLIC_ME_SIO_URL!;
 let _socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
 
 export function getSocketIO(): Socket<

@@ -16,6 +16,7 @@ import {
   faArrowTurnUp,
   faPen,
   faTrash,
+  faX,
 } from "@fortawesome/free-solid-svg-icons";
 import { Message } from "@/interfaces/index.interfaces";
 
@@ -315,9 +316,7 @@ export default function MessagePage({
                         >
                           <span className="text-xs font-semibold text-[var(--accent)] mr-2">
                             Replying to{" "}
-                            {replied.senderId === currentUser?._id
-                              ? currentUser?.display_name
-                              : UserChatWith?.display_name}
+                            {replied.sender.display_name}
                           </span>
                           <span className="truncate text-xs text-[var(--muted-foreground)]">
                             {replied.content}
@@ -329,11 +328,10 @@ export default function MessagePage({
 
                 <div className="flex">
                   <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase text-[var(--accent-foreground)]">
-                    {currentUser?._id === message.senderId ? (
                       <Image
                         src={
-                          currentUser
-                            ? `http://35.247.142.76:8080/ipfs/${currentUser.avatar_ipfs_hash}`
+                          message.sender
+                            ? `http://35.247.142.76:8080/ipfs/${message.sender.avatar_ipfs_hash}`
                             : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                         }
                         alt={"Avatar"}
@@ -342,31 +340,13 @@ export default function MessagePage({
                         className="w-full h-full object-cover"
                         unoptimized
                       />
-                    ) : (
-                      <Image
-                        src={
-                          UserChatWith
-                            ? `http://35.247.142.76:8080/ipfs/${UserChatWith.avatar_ipfs_hash}`
-                            : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                        }
-                        alt={"Avatar"}
-                        width={40}
-                        height={40}
-                        className="w-full h-full object-cover"
-                        unoptimized
-                      />
-                    )}
                   </div>
                   <div className="flex w-full max-w-3xl flex-col items-start gap-1">
                     {!editMessageField[message._id] ? (
                       <>
                         <div className="flex items-baseline gap-2">
                           <h2 className="text-sm font-semibold text-[var(--foreground)]">
-                            {message.senderId === currentUser?._id ? (
-                              <>{currentUser?.display_name}</>
-                            ) : (
-                              <>{UserChatWith?.display_name}</>
-                            )}
+                            {message.sender.display_name}
                           </h2>
                           <span className="text-xs text-[var(--muted-foreground)]">
                             {new Date(message.createdAt).toLocaleString()}
@@ -380,7 +360,7 @@ export default function MessagePage({
                             </span>
                           )}
                         </div>
-                        {userId === message.senderId && (
+                        {userId === message.sender.dehive_id && (
                           <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
                             <div className="relative">
                               <button
@@ -398,7 +378,7 @@ export default function MessagePage({
                             </div>
                           </div>
                         )}
-                        {userId !== message.senderId && (
+                        {userId !== message.sender.dehive_id && (
                           <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
                             <div className="relative">
                               <button
@@ -492,16 +472,27 @@ export default function MessagePage({
           </button>
           <div className="flex-1">
             {messageReply && (
-              <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-[var(--surface-tertiary)] border-l-4 border-[var(--accent)]">
-                <span className="text-xs font-semibold text-[var(--accent)]">
-                  Replying to{" "}
-                  {messageReply.senderId === currentUser?._id
-                    ? currentUser.display_name
-                    : UserChatWith?.display_name}
-                </span>
-                <span className="truncate text-xs text-[var(--muted-foreground)]">
-                  {messageReply.content}
-                </span>
+              <div className="flex justify-between items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-[var(--surface-tertiary)] border-l-4 border-[var(--accent)]">
+                <div>
+                  <span className="text-xs font-semibold text-[var(--accent)]">
+                    Replying to{" "}
+                    {messageReply.sender.display_name}
+                  </span>
+                  <span className="truncate text-xs text-[var(--muted-foreground)]">
+                    {messageReply.content}
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    setNewMessage((prev) => ({
+                      ...prev,
+                      replyTo: null,
+                    }));
+                    setMessageReply(null);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faX} />
+                </button>
               </div>
             )}
             <textarea

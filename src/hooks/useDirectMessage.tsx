@@ -1,6 +1,6 @@
 "use client";
 
-import { getSocketIO } from "@/library/socketio";
+import { getSocketIO } from "@/library/socketioMe";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Message } from "@/interfaces/websocket.interfaces";
 

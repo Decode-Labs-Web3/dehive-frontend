@@ -6,7 +6,7 @@ export type IdentityConfirmed = {
 export type Message = {
   _id: string;
   conversationId: string;
-  senderId: string;
+  sender: Sender;
   content: string;
   attachments: [];
   isEdited: boolean;
@@ -16,6 +16,13 @@ export type Message = {
   updatedAt: string;
   __v?: number | 0;
 };
+
+interface Sender {
+  dehive_id: "string";
+  username: "string";
+  display_name: "string";
+  avatar_ipfs_hash: "string";
+}
 
 interface ReplyMessage {
   _id: string;
