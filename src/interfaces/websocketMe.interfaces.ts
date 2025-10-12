@@ -18,10 +18,10 @@ export type Message = {
 };
 
 interface Sender {
-  dehive_id: "string";
-  username: "string";
-  display_name: "string";
-  avatar_ipfs_hash: "string";
+  dehive_id: string;
+  username: string;
+  display_name: string;
+  avatar_ipfs_hash: string | null;
 }
 
 interface ReplyMessage {
@@ -56,7 +56,7 @@ export type DeleteMessageDto = {
 // ===== Event name maps  =====
 
 // server to client
-export interface ServerToClientEvents {
+export interface ServerToClientMeEvents {
   identityConfirmed: (p: IdentityConfirmed) => void;
   newMessage: (m: Message) => void;
   messageEdited: (m: Message) => void;
@@ -65,7 +65,7 @@ export interface ServerToClientEvents {
 }
 
 // client to server
-export interface ClientToServerEvents {
+export interface ClientToServerMeEvents {
   identity: (userDehiveId: string) => void;
   sendMessage: (dto: SendDirectMessageDto) => void;
   editMessage: (dto: EditMessageDto) => void;

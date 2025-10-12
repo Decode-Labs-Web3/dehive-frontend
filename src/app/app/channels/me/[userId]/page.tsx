@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import MessagePage from "@/components/me/page";
+import MessageMePage from "@/components/meChat/page";
 
 interface Conversation {
   userA: string;
@@ -51,5 +51,5 @@ export default function DirectMessagePage() {
     fetchConversation();
   }, [fetchConversation]);
 
-  return conversation ? (<MessagePage conversation={conversation} />) : null;
+  return conversation ? (<MessageMePage conversation={conversation} />) : null;
 }

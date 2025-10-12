@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { UserDataProps, UserChatWith } from "@/interfaces/index.interfaces";
+import { UserChatWith } from "@/interfaces/index.interfaces";
 import {
   useState,
   useEffect,
@@ -10,7 +10,7 @@ import {
   useLayoutEffect,
 } from "react";
 import { useParams } from "next/navigation";
-import { useDirectMessage } from "@/hooks/useDirectMessage";
+import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowTurnUp,
@@ -18,16 +18,7 @@ import {
   faTrash,
   faX,
 } from "@fortawesome/free-solid-svg-icons";
-import { Message } from "@/interfaces/index.interfaces";
-
-interface Conversation {
-  userA: string;
-  userB: string;
-  _id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
+import { MessageChannel } from "@/interfaces/websocketChannel.interfaces";
 
 interface NewMessage {
   content: string;
@@ -35,16 +26,11 @@ interface NewMessage {
   replyTo: string | null;
 }
 
-export default function MessagePage({
-  conversation,
-}: {
-  conversation: Conversation;
-}) {
+export default function MessageChannelPage( {conversationId} : {conversationId: string}) {
   // console.log("edwedwedwed", conversation);
   const { userId } = useParams();
-  const [currentUser, setCurrentUser] = useState<UserDataProps | null>();
   const [UserChatWith, setUserChatWith] = useState<UserChatWith | null>();
-  const [messageReply, setMessageReply] = useState<Message | null>(null);
+  const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
     content: "",
     uploadIds: [],
@@ -69,7 +55,7 @@ export default function MessagePage({
     setPage,
     sending,
     err,
-  } = useDirectMessage(conversation?._id);
+  } = useChannelMessage(conversationId);
   console.log("This is error", err);
   useEffect(() => {
     setPage(currentPage);
@@ -78,13 +64,6 @@ export default function MessagePage({
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
-
-  useEffect(() => {
-    const currentUserData = localStorage.getItem("userData");
-    if (currentUserData) {
-      setCurrentUser(JSON.parse(currentUserData));
-    }
-  }, []);
 
   const handleNewMessageChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>
@@ -185,7 +164,7 @@ export default function MessagePage({
     fetchChatUser();
   }, [fetchChatUser]);
 
-  const handleMessageReply = (messageReply: Message) => {
+  const handleMessageReply = (messageReply: MessageChannel) => {
     setMessageReply(messageReply);
     setNewMessage((prev) => ({
       ...prev,
@@ -269,8 +248,8 @@ export default function MessagePage({
             <Image
               src={
                 UserChatWith
-                  ? `http://35.247.142.76:8080/ipfs/${UserChatWith.avatar_ipfs_hash}`
-                  : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                  ? `https://ipfs.de-id.xyz/ipfs/${UserChatWith.avatar_ipfs_hash}`
+                  : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
               }
               alt={"Avatar"}
               width={40}
@@ -315,8 +294,7 @@ export default function MessagePage({
                           className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--surface-tertiary)] border-l-4 border-[var(--accent)] mb-1 max-w-full"
                         >
                           <span className="text-xs font-semibold text-[var(--accent)] mr-2">
-                            Replying to{" "}
-                            {replied.sender.display_name}
+                            Replying to {replied.sender.display_name}
                           </span>
                           <span className="truncate text-xs text-[var(--muted-foreground)]">
                             {replied.content}
@@ -328,18 +306,18 @@ export default function MessagePage({
 
                 <div className="flex">
                   <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase text-[var(--accent-foreground)]">
-                      <Image
-                        src={
-                          message.sender
-                            ? `http://35.247.142.76:8080/ipfs/${message.sender.avatar_ipfs_hash}`
-                            : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                        }
-                        alt={"Avatar"}
-                        width={40}
-                        height={40}
-                        className="w-full h-full object-cover"
-                        unoptimized
-                      />
+                    <Image
+                      src={
+                        message.sender
+                          ? `https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`
+                          : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                      }
+                      alt={"Avatar"}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
                   </div>
                   <div className="flex w-full max-w-3xl flex-col items-start gap-1">
                     {!editMessageField[message._id] ? (
@@ -475,8 +453,7 @@ export default function MessagePage({
               <div className="flex justify-between items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-[var(--surface-tertiary)] border-l-4 border-[var(--accent)]">
                 <div>
                   <span className="text-xs font-semibold text-[var(--accent)]">
-                    Replying to{" "}
-                    {messageReply.sender.display_name}
+                    Replying to {messageReply.sender.display_name}
                   </span>
                   <span className="truncate text-xs text-[var(--muted-foreground)]">
                     {messageReply.content}

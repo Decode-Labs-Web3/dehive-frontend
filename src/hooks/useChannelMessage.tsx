@@ -1,16 +1,16 @@
 "use client";
 
-import { getMeSocketIO } from "@/library/socketioMe";
+import { getChannelSocketIO } from "@/library/socketioChannel";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Message } from "@/interfaces/websocketMe.interfaces";
+import { MessageChannel } from "@/interfaces/websocketChannel.interfaces";
 
-export function useDirectMessage(conversationId?: string) {
-  const socket = useRef(getMeSocketIO()).current;
+export function useChannelMessage(conversationId?: string) {
+  const socket = useRef(getChannelSocketIO()).current;
   const [page, setPage] = useState<number>(0);
   const [isLastPage, setIsLastPage] = useState(false);
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<MessageChannel[]>([]);
   // console.log("dwedwedwedwedwedwqsqwsqwswed",messages);
 
   const latestConversationId = useRef<string | undefined>(conversationId);
@@ -30,7 +30,7 @@ export function useDirectMessage(conversationId?: string) {
   useEffect(() => {
     if (!conversationId) return;
 
-    const onNewMessage = (newMessage: Message) => {
+    const onNewMessage = (newMessage: MessageChannel) => {
       // console.log(newMessage)
       if (
         String(newMessage.conversationId) !==
@@ -44,7 +44,7 @@ export function useDirectMessage(conversationId?: string) {
       );
     };
 
-    const onMessageEdited = (editMessage: Message & { isEdited?: boolean }) => {
+    const onMessageEdited = (editMessage: MessageChannel & { isEdited?: boolean }) => {
       if (
         String(editMessage.conversationId) !==
         String(latestConversationId.current)
@@ -58,14 +58,14 @@ export function useDirectMessage(conversationId?: string) {
                 content: editMessage.content,
                 isEdited: editMessage.isEdited,
                 updatedAt: editMessage.updatedAt,
-              } as Message)
+              } as MessageChannel)
             : oldMessage
         )
       );
     };
 
     const onMessageDeleted = (
-      deleteMessage: Message & { isDeleted?: boolean }
+      deleteMessage: MessageChannel & { isDeleted?: boolean }
     ) => {
       if (
         String(deleteMessage.conversationId) !==

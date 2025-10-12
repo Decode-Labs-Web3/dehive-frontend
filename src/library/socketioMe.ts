@@ -1,15 +1,16 @@
 import { io, Socket } from "socket.io-client";
 import type {
-  ServerToClientEvents,
-  ClientToServerEvents,
-} from "../interfaces/index.interfaces";
+  ServerToClientMeEvents,
+  ClientToServerMeEvents,
+} from "../interfaces/websocketMe.interfaces";
 
 const URL = process.env.NEXT_PUBLIC_ME_SIO_URL!;
-let _socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
+let _socket: Socket<ServerToClientMeEvents, ClientToServerMeEvents> | null =
+  null;
 
-export function getSocketIO(): Socket<
-  ServerToClientEvents,
-  ClientToServerEvents
+export function getMeSocketIO(): Socket<
+  ServerToClientMeEvents,
+  ClientToServerMeEvents
 > {
   if (_socket) return _socket;
   _socket = io(URL, {

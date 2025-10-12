@@ -41,10 +41,7 @@ export default function MeBar() {
 
       const response = await apiResponse.json();
       // console.log("This is response data", response)
-      if (
-        response.statusCode === 200 &&
-        response.message === "OK"
-      ) {
+      if (response.statusCode === 200 && response.message === "OK") {
         setUserData(response.data);
       }
     } catch (error) {
@@ -74,8 +71,8 @@ export default function MeBar() {
                 <Image
                   src={
                     userData
-                      ? `http://35.247.142.76:8080/ipfs/${user.avatar_ipfs_hash}`
-                      : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                      ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
+                      : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
                   alt={"Avatar"}
                   width={40}
