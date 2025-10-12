@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import ServerBarItem from "./index";
+import { useParams } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGear,
@@ -33,6 +35,7 @@ export default function Channels({
   setChannelPannel,
   fetchCategoryInfo,
 }: ChannelPageProps) {
+  const { serverId } = useParams();
   const [channelModal, setChannelModal] = useState(false);
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
   const handleDeleteChannel = async (channelId: string) => {
@@ -81,22 +84,24 @@ export default function Channels({
           "relative flex items-center justify-between px-4 py-1 rounded-md hover:bg-[var(--background-secondary)] group w-full h-full"
         }
       >
-        <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
-          <FontAwesomeIcon
-            icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
-            className="w-4 h-4 text-[var(--muted-foreground)]"
-          />
-          <p className="truncate text-sm">{channel.name}</p>
-        </div>
+        <Link href={`/app/channels/${serverId}/${channel._id}`} className=" flex flex-row justify-between items-center w-full h-full">
+          <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
+            <FontAwesomeIcon
+              icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
+              className="w-4 h-4 text-[var(--muted-foreground)]"
+            />
+            <p className="truncate text-sm">{channel.name}</p>
+          </div>
 
-        <div className="flex flex-row gap-1">
-          <button className="text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
-            <FontAwesomeIcon icon={faUserPlus} />
-          </button>
-          <button className="p-1 text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
-            <FontAwesomeIcon icon={faGear} />
-          </button>
-        </div>
+          <div className="flex flex-row gap-1">
+            <button className="text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
+              <FontAwesomeIcon icon={faUserPlus} />
+            </button>
+            <button className="p-1 text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
+              <FontAwesomeIcon icon={faGear} />
+            </button>
+          </div>
+        </Link>
 
         {channelModal && (
           <>
@@ -104,7 +109,9 @@ export default function Channels({
               tabIndex={-1}
               ref={(element) => element?.focus()}
               onClick={() => setChannelModal(false)}
-              onKeyDown={(event) => event.key === "Escape" && setChannelModal(false)}
+              onKeyDown={(event) =>
+                event.key === "Escape" && setChannelModal(false)
+              }
               className="fixed inset-0 bg-black/50 z-20"
             />
 

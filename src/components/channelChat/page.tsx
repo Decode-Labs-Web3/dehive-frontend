@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { UserChatWith } from "@/interfaces/index.interfaces";
 import {
   useState,
   useEffect,
@@ -26,10 +25,13 @@ interface NewMessage {
   replyTo: string | null;
 }
 
-export default function MessageChannelPage( {conversationId} : {conversationId: string}) {
+export default function MessageChannelPage({
+  conversationId,
+}: {
+  conversationId: string;
+}) {
   // console.log("edwedwedwed", conversation);
   const { userId } = useParams();
-  const [UserChatWith, setUserChatWith] = useState<UserChatWith | null>();
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
     content: "",
@@ -134,36 +136,6 @@ export default function MessageChannelPage( {conversationId} : {conversationId: 
     editMessageModal();
   }, [editMessageModal]);
 
-  const fetchChatUser = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/user/user-other", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
-        body: JSON.stringify({ userId }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!apiResponse.ok) {
-        console.error(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      if (response.statusCode === 200 && response.message === "User found") {
-        setUserChatWith(response.data);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Server fetch user chatting with errror");
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    fetchChatUser();
-  }, [fetchChatUser]);
-
   const handleMessageReply = (messageReply: MessageChannel) => {
     setMessageReply(messageReply);
     setNewMessage((prev) => ({
@@ -245,23 +217,12 @@ export default function MessageChannelPage( {conversationId} : {conversationId: 
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-6 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold uppercase text-[var(--accent-foreground)]">
-            <Image
-              src={
-                UserChatWith
-                  ? `https://ipfs.de-id.xyz/ipfs/${UserChatWith.avatar_ipfs_hash}`
-                  : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-              }
-              alt={"Avatar"}
-              width={40}
-              height={40}
-              className="w-full h-full object-cover"
-              unoptimized
-            />
+            <h1>Channel chat</h1>
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-[var(--foreground)]">
-                {UserChatWith?.display_name}
+                {conversationId}
               </h1>
             </div>
           </div>

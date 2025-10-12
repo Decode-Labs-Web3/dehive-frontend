@@ -106,7 +106,7 @@ export function useChannelMessage(conversationId?: string) {
     try {
       setErr(null);
       const apiResponse = await fetch(
-        "/api/me/conversation/conversation-list",
+        "/api/servers/conversation/conversation-list",
         {
           method: "POST",
           headers: {
