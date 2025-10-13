@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
 import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
-import ServerBarItems from "./index";
 import {
   faUserPlus,
   faPen,
@@ -30,18 +29,19 @@ interface ServerProps {
 
 interface EditModalProps {
   server: ServerProps;
-  setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
   fetchServerInfo: () => void;
+  setServerPannel: React.Dispatch<React.SetStateAction<boolean>>;
+  setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function EditModal({
   server,
-  setServerSettingModal,
   fetchServerInfo,
+  setServerPannel,
+  setServerSettingModal,
 }: EditModalProps) {
   // const [server, setServer] = useState<ServerProps>(server)
   const router = useRouter();
-  const [serverPannel, setServerPannel] = useState(false);
   const [userId, setUserId] = useState("");
   const { refreshServers } = useServerContext();
 
@@ -143,7 +143,7 @@ export default function EditModal({
       }
     } catch (error) {
       console.error(error);
-      console.log("Server error for leave server");
+      console.log("Server error for edit server");
     }
   };
 
@@ -271,7 +271,10 @@ export default function EditModal({
         </button>
 
         <button
-          onClick={() => setModal((prev) => ({ ...prev, leave: true }))}
+          onClick={() => {
+            setServerSettingModal(false);
+            setModal((prev) => ({ ...prev, leave: true }));
+          }}
           className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
         >
           Leave Server
@@ -281,7 +284,9 @@ export default function EditModal({
         {server.owner_id === userId && (
           <>
             <button
-              onClick={() => setModal((prev) => ({ ...prev, category: true }))}
+              onClick={() => {
+                setModal((prev) => ({ ...prev, category: true }));
+              }}
               className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
             >
               Create Category
@@ -305,7 +310,9 @@ export default function EditModal({
             </button>
 
             <button
-              onClick={() => setModal((prev) => ({ ...prev, edit: true }))}
+              onClick={() => {
+                setModal((prev) => ({ ...prev, edit: true }));
+              }}
               className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
             >
               Edit Server
@@ -313,7 +320,9 @@ export default function EditModal({
             </button>
 
             <button
-              onClick={() => setModal((prev) => ({ ...prev, delete: true }))}
+              onClick={() => {
+                setModal((prev) => ({ ...prev, delete: true }));
+              }}
               className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
             >
               Delete Server
@@ -322,8 +331,6 @@ export default function EditModal({
           </>
         )}
       </div>
-
-      {serverPannel && <ServerBarItems.ServerPannel server={server} />}
 
       {modal.edit && (
         <div
@@ -386,7 +393,10 @@ export default function EditModal({
 
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => setModal((prev) => ({ ...prev, edit: false }))}
+                onClick={() => {
+                  setServerSettingModal(false);
+                  setModal((prev) => ({ ...prev, edit: false }));
+                }}
                 className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
               >
                 Cancel
@@ -444,12 +454,13 @@ export default function EditModal({
 
             <div className="flex flex-row justify-end gap-2">
               <button
-                onClick={() =>
+                onClick={() => {
+                  setServerSettingModal(false);
                   setModal((prev) => ({
                     ...prev,
                     delete: false,
-                  }))
-                }
+                  }));
+                }}
                 className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
               >
                 Cancel
@@ -493,7 +504,10 @@ export default function EditModal({
             </p>
             <div className="flex flex-row justify-end gap-2">
               <button
-                onClick={() => setModal((prev) => ({ ...prev, leave: false }))}
+                onClick={() => {
+                  setServerSettingModal(false);
+                  setModal((prev) => ({ ...prev, leave: false }));
+                }}
                 className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
               >
                 Cancel
@@ -540,9 +554,10 @@ export default function EditModal({
 
             <div className="flex flex-row justify-end gap-2">
               <button
-                onClick={() =>
-                  setModal((prev) => ({ ...prev, category: false }))
-                }
+                onClick={() => {
+                  setServerSettingModal(false);
+                  setModal((prev) => ({ ...prev, category: false }));
+                }}
                 className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
               >
                 Cancel

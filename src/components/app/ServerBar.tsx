@@ -22,12 +22,14 @@ interface ServerProps {
 export default function ServerBar() {
   const { serverId } = useParams();
   const [loading, setLoading] = useState(false);
-  const [serverSettingModal, setServerSettingModal] = useState(false);
+  const [serverPannel, setServerPannel] = useState(false);
   const [server, setServer] = useState<ServerProps | null>(null);
+  const [serverSettingModal, setServerSettingModal] = useState(false);
 
   const fetchServerInfo = useCallback(async () => {
     setLoading(true);
     setServerSettingModal(false);
+
     try {
       const apiResponse = await fetch("/api/servers/server-info", {
         method: "POST",
@@ -89,8 +91,9 @@ export default function ServerBar() {
               {server && (
                 <ServerBarItem.EditModal
                   server={server}
-                  setServerSettingModal={setServerSettingModal}
                   fetchServerInfo={fetchServerInfo}
+                  setServerPannel={setServerPannel}
+                  setServerSettingModal={setServerSettingModal}
                 />
               )}
             </div>
@@ -98,6 +101,15 @@ export default function ServerBar() {
         )}
       </div>
       <ServerBarItem.Categories />
+
+      {serverPannel && server && (
+        <ServerBarItem.ServerPannel
+          server={server}
+          fetchServerInfo={fetchServerInfo}
+          setServerPannel={setServerPannel}
+          setServerSettingModal={setServerSettingModal}
+        />
+      )}
     </div>
   );
 }
