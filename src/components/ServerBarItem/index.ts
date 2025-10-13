@@ -4,14 +4,16 @@ import ChannelPannel from "./ChannelPannel";
 import Categories from "./Categories";
 import CategoryPanel from "./CategoryPannel";
 import ServerPannel from "./ServerPannel";
+import ServerMembers from "./ServerMembers";
 
-const ServerBarItem = {
+const ServerBarItems = {
   Channels,
   ChannelPannel,
   EditModal,
   Categories,
   CategoryPanel,
   ServerPannel,
+  ServerMembers,
 };
 
-export default ServerBarItem;
+export default ServerBarItems;

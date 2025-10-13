@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import ServerBarItem from "./index";
+import ServerBarItems from "./index";
 import { useState, useCallback, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -393,7 +393,7 @@ export default function Categories() {
 
             {/* edit category show category pannel*/}
             {editCategoryModal[category._id] && (
-              <ServerBarItem.CategoryPanel
+              <ServerBarItems.CategoryPanel
                 category={category}
                 fetchCategoryInfo={fetchCategoryInfo}
                 setEditCategoryModal={setEditCategoryModal}
@@ -471,7 +471,7 @@ export default function Categories() {
                 {category.channels.length > 0 &&
                   category.channels.map((channel) => (
                     <div key={channel._id}>
-                      <ServerBarItem.Channels
+                      <ServerBarItems.Channels
                         channel={channel}
                         channelPanel={channelPanel}
                         setChannelPannel={setChannelPanel}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import ServerBarItem from "../serverBarItem";
+import ServerBarItems from "../serverBarItem";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
@@ -89,7 +89,7 @@ export default function ServerBar() {
 
             <div>
               {server && (
-                <ServerBarItem.EditModal
+                <ServerBarItems.EditModal
                   server={server}
                   fetchServerInfo={fetchServerInfo}
                   setServerPannel={setServerPannel}
@@ -100,10 +100,10 @@ export default function ServerBar() {
           </>
         )}
       </div>
-      <ServerBarItem.Categories />
+      <ServerBarItems.Categories />
 
       {serverPannel && server && (
-        <ServerBarItem.ServerPannel
+        <ServerBarItems.ServerPannel
           server={server}
           fetchServerInfo={fetchServerInfo}
           setServerPannel={setServerPannel}

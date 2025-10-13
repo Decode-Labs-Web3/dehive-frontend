@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ServerBarItems from "./index"
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan, faX } from "@fortawesome/free-solid-svg-icons";
@@ -277,6 +278,12 @@ export default function ServerPannel({
           </header>
 
           <div className="flex-1 overflow-y-auto px-10 py-8">
+            {serverPannelSetting.members && (
+              <>
+                <ServerBarItems.ServerMembers server={server}/>
+              </>
+            )}
+
             {serverPannelSetting.profile && (
               <>
                 <div className="max-w-xl mt-4 space-y-6">

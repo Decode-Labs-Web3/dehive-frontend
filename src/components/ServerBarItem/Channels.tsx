@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import ServerBarItem from "./index";
+import ServerBarItems from "./index";
 import { useParams } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -84,7 +84,10 @@ export default function Channels({
           "relative flex items-center justify-between px-4 py-1 rounded-md hover:bg-[var(--background-secondary)] group w-full h-full"
         }
       >
-        <Link href={`/app/channels/${serverId}/${channel._id}`} className=" flex flex-row justify-between items-center w-full h-full">
+        <Link
+          href={`/app/channels/${serverId}/${channel._id}`}
+          className=" flex flex-row justify-between items-center w-full h-full"
+        >
           <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
             <FontAwesomeIcon
               icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
@@ -144,7 +147,7 @@ export default function Channels({
 
       {channelPanel[channel._id] && (
         <>
-          <ServerBarItem.ChannelPannel
+          <ServerBarItems.ChannelPannel
             channel={channel}
             setChannelPannel={setChannelPannel}
             fetchCategoryInfo={fetchCategoryInfo}

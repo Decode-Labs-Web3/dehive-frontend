@@ -1,7 +1,7 @@
-import AddServer from "./AddServer"
+import AddServer from "./AddServer";
 
-const ServerBarItem = {
+const ServerBarItems = {
   AddServer,
-}
+};
 
-export default ServerBarItem
+export default ServerBarItems;
