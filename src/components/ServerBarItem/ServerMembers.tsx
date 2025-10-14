@@ -1,10 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
+import ServerBarItems from "./index";
 import { getCookie } from "@/utils/cookie.utils";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
+import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
+import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerProps {
   _id: string;
@@ -39,6 +42,7 @@ interface MembershipsProps {
 }
 
 export default function ServerMembers({ server }: ServerMembersProps) {
+  const { refreshServers } = useServerContext();
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string>();
   const [kickForm, setKickForm] = useState({
@@ -56,6 +60,9 @@ export default function ServerMembers({ server }: ServerMembersProps) {
   const [ownershipModal, setOwnershipModal] = useState<Record<string, boolean>>(
     {}
   );
+  const [userProfileModal, setUserProfileModal] = useState<
+    Record<string, boolean>
+  >({});
   const [memberships, setMemberships] = useState<MembershipsProps[]>([]);
   const [userSettingModal, setUserSettingModal] = useState<
     Record<string, boolean>
@@ -115,6 +122,14 @@ export default function ServerMembers({ server }: ServerMembersProps) {
           )
         );
         setOwnershipModal(
+          Object.fromEntries(
+            response.data.map((membership: MembershipsProps) => [
+              membership._id,
+              false,
+            ])
+          )
+        );
+        setUserProfileModal(
           Object.fromEntries(
             response.data.map((membership: MembershipsProps) => [
               membership._id,
@@ -233,10 +248,44 @@ export default function ServerMembers({ server }: ServerMembersProps) {
   };
 
   const handleTransferOwnership = async (memberId: string) => {
-    setOwnershipModal((prev) => ({
-      ...prev,
-      [memberId]: false,
-    }));
+    if (!ownershipAgree) return;
+    try {
+      const apiResponse = await fetch(
+        "/api/servers/members/transfer-ownership",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Frontend-Internal-Request": "true",
+          },
+          body: JSON.stringify({
+            serverId: server._id,
+            memberId,
+          }),
+          cache: "no-cache",
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+      if (!apiResponse) {
+        console.error(apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 200 &&
+        response.message === "Ownership transferred successfully."
+      ) {
+        setOwnershipModal((prev) => ({
+          ...prev,
+          [memberId]: false,
+        }));
+        refreshServers?.();
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server error ban user");
+    }
   };
 
   if (loading) {
@@ -315,8 +364,11 @@ export default function ServerMembers({ server }: ServerMembersProps) {
               <FontAwesomeIcon icon={faEllipsisVertical} />
             </button>
           </div>
+
+          {/* user setting modal */}
           {userSettingModal[membership._id] && (
-            <div role="dialog">
+            <div role="dialog" aria-modal="true">
+              {/* backdrop to close on click or Escape */}
               <div
                 tabIndex={-1}
                 ref={(element: HTMLDivElement) => {
@@ -336,83 +388,123 @@ export default function ServerMembers({ server }: ServerMembersProps) {
                     [membership._id]: false,
                   }));
                 }}
-                className="fixed inset-0 bg-black/50 z-[150]"
+                className="fixed inset-0 bg-transparent z-[150]"
               />
-              <div className="absolute flex flex-col right-0 mr-15 z-[200]">
-                {userId !== membership._id && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setUserSettingModal((prev) => ({
-                          ...prev,
-                          [membership._id]: false,
-                        }));
-                        setBanModal((prev) => ({
-                          ...prev,
-                          [membership._id]: true,
-                        }));
-                        setBanForm((prev) => ({
-                          ...prev,
-                          target_user_dehive_id: membership._id,
-                          reason: "Suspicious or spam account",
-                        }));
-                      }}
-                    >
-                      Ban {membership.username}
-                    </button>
 
-                    <button
-                      onClick={() => {
-                        setUserSettingModal((prev) => ({
-                          ...prev,
-                          [membership._id]: false,
-                        }));
-                        setKickModal((prev) => ({
-                          ...prev,
-                          [membership._id]: true,
-                        }));
-                        setKickForm((prev) => ({
-                          ...prev,
-                          target_user_dehive_id: membership._id,
-                          reason: "",
-                        }));
-                      }}
-                    >
-                      Kick {membership.username}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setUserSettingModal((prev) => ({
-                          ...prev,
-                          [membership._id]: false,
-                        }));
-                        setOwnershipModal((prev) => ({
-                          ...prev,
-                          [membership._id]: true,
-                        }));
-                        setOwnershipAgree(false);
-                      }}
-                    >
-                      Transfer Ownnership
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={async (
-                    event: React.MouseEvent<HTMLButtonElement>
-                  ) => {
-                    const button = event.currentTarget;
-                    const oldText = button.textContent;
-                    await navigator.clipboard.writeText(membership._id);
+              <div className="absolute right-0 mr-4 mt-2 z-[200]">
+                <div className="w-56 bg-[#2f3136] text-sm rounded-md shadow-lg ring-1 ring-black/40 overflow-hidden">
+                  <div
+                    onClick={() => {
+                      setUserProfileModal((prev) => ({
+                        ...prev,
+                        [membership._id]: true,
+                      }));
+                      setUserSettingModal((prev) => ({
+                        ...prev,
+                        [membership._id]: false,
+                      }));
+                    }}
+                    className="px-4 py-3 text-white font-semibold"
+                  >
+                    Profile
+                  </div>
 
-                    button.textContent = "Copied!";
-                    setTimeout(() => {
-                      button.textContent = oldText;
-                    }, 1000);
-                  }}
-                >
-                  Copy User ID
-                </button>
+                  {/* Moderation actions */}
+                  <div className="border-t border-black/20 px-1 py-1">
+                    {userId !== membership._id && (
+                      <>
+                        <Link
+                          href={`/app/channels/me/${membership._id}`}
+                          className="block w-full text-left px-4 py-3 text-gray-200 hover:bg-[#36373a]"
+                        >
+                          Message
+                        </Link>
+
+                        <button
+                          onClick={() => {
+                            setUserSettingModal((prev) => ({
+                              ...prev,
+                              [membership._id]: false,
+                            }));
+                            setKickModal((prev) => ({
+                              ...prev,
+                              [membership._id]: true,
+                            }));
+                            setKickForm((prev) => ({
+                              ...prev,
+                              target_user_dehive_id: membership._id,
+                              reason: "",
+                            }));
+                          }}
+                          className="block w-full text-left px-4 py-2 text-red-400 hover:bg-[#3b1f1f] rounded-md"
+                        >
+                          Kick {membership.username}
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setUserSettingModal((prev) => ({
+                              ...prev,
+                              [membership._id]: false,
+                            }));
+                            setBanModal((prev) => ({
+                              ...prev,
+                              [membership._id]: true,
+                            }));
+                            setBanForm((prev) => ({
+                              ...prev,
+                              target_user_dehive_id: membership._id,
+                              reason: "Suspicious or spam account",
+                            }));
+                          }}
+                          className="block w-full text-left px-4 py-2 text-red-500 hover:bg-[#3b1f1f] rounded-md"
+                        >
+                          Ban {membership.username}
+                        </button>
+
+                        <div className="border-t border-black/10 my-1" />
+
+                        <button
+                          onClick={() => {
+                            setUserSettingModal((prev) => ({
+                              ...prev,
+                              [membership._id]: false,
+                            }));
+                            setOwnershipModal((prev) => ({
+                              ...prev,
+                              [membership._id]: true,
+                            }));
+                            setOwnershipAgree(false);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-gray-200 hover:bg-[#36373a] rounded-md"
+                        >
+                          Transfer Ownership
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="border-t border-black/20">
+                    <button
+                      onClick={async (
+                        event: React.MouseEvent<HTMLButtonElement>
+                      ) => {
+                        const button = event.currentTarget;
+                        const oldText = button.textContent;
+                        await navigator.clipboard.writeText(membership._id);
+
+                        button.textContent = "Copied!";
+                        setTimeout(() => {
+                          button.textContent = oldText;
+                        }, 1000);
+                      }}
+                      className="flex items-center justify-between w-full px-4 py-3 text-gray-300 hover:bg-[#36373a]"
+                    >
+                      Copy User ID
+                      <FontAwesomeIcon icon={faCopy} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -708,6 +800,10 @@ export default function ServerMembers({ server }: ServerMembersProps) {
                 </div>
               </div>
             </div>
+          )}
+
+          {userProfileModal[membership._id] && (
+            <ServerBarItems.ServerUserProfile membership={membership} />
           )}
         </div>
       ))}

@@ -6,6 +6,7 @@ import CategoryPanel from "./CategoryPannel";
 import ServerPannel from "./ServerPannel";
 import ServerMembers from "./ServerMembers";
 import ServerBans from "./ServerBans";
+import ServerUserProfile from "./ServerUserProfile";
 
 const ServerBarItems = {
   Channels,
@@ -16,6 +17,7 @@ const ServerBarItems = {
   ServerPannel,
   ServerMembers,
   ServerBans,
+  ServerUserProfile,
 };
 
 export default ServerBarItems;

@@ -54,8 +54,8 @@ interface UserProfile {
 
 export default function ServerBans({ server }: ServerBansProps) {
   const [loading, setLoading] = useState(false);
-  const [membersBan, setMembersBan] = useState<MembersBanProps[]>([]);
-  console.log("wqdqwdvjqwdvqwhjdvqwudjqvwduqwvd", membersBan);
+  const [membersBans, setMembersBans] = useState<MembersBanProps[]>([]);
+  console.log("wqdqwdvjqwdvqwhjdvqwudjqvwduqwvd", membersBans);
   const fetchBanList = useCallback(async () => {
     setLoading(true);
     try {
@@ -79,7 +79,7 @@ export default function ServerBans({ server }: ServerBansProps) {
         response.message === "Operation successful"
       ) {
         console.log(response.data);
-        setMembersBan(response.data.banned_users);
+        setMembersBans(response.data.banned_users);
       }
     } catch (error) {
       console.error(error);
@@ -99,7 +99,8 @@ export default function ServerBans({ server }: ServerBansProps) {
 
   return (
     <>
-      {membersBan.map((member) => (
+      {membersBans.length === 0 && <h1>No member ban in this server.</h1>}
+      {membersBans.map((member) => (
         <div key={member.user_dehive_id}>
           <h1>{member.user_dehive_id}</h1>
         </div>
