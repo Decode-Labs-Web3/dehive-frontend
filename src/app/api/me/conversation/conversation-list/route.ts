@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    console.info("conversation-list success response", response.data.items);
+    // console.info("conversation-list success response", response.data.items);
 
     return NextResponse.json(
       {

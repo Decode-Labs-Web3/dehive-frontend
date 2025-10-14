@@ -111,7 +111,7 @@ export default function UserBar() {
             <FontAwesomeIcon icon={sound ? faVolumeHigh : faVolumeXmark} />
           </button>
           <button className="h-8 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90 flex items-center justify-center">
-            <FontAwesomeIcon className="hover:animate-spin" icon={faGear} />
+            <FontAwesomeIcon className="hover:animate-[spin_1s]" icon={faGear} />
           </button>
         </div>
 

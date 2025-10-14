@@ -245,9 +245,9 @@ export default function Categories() {
         categories.map((category) => (
           <div key={category._id}>
             <div
-              onContextMenuCapture={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+              onContextMenuCapture={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
                 // console.log("Test Mouse Right click");
                 setCategoryModal((prev) => ({
                   ...prev,
