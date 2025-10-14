@@ -12,6 +12,7 @@ import {
   faRightFromBracket,
   faGear,
   faFolderPlus,
+  faCopy,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerProps {
@@ -327,6 +328,25 @@ export default function EditModal({
             >
               Delete Server
               <FontAwesomeIcon icon={faTrash} />
+            </button>
+
+            <button
+              onClick={async (event: React.MouseEvent<HTMLButtonElement>) => {
+                const button = event.currentTarget;
+                const oldText = button.textContent;
+
+                await navigator.clipboard.writeText(server._id);
+
+                button.textContent = "Copied!";
+
+                setTimeout(() => {
+                  button.textContent = oldText;
+                }, 1000);
+              }}
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+            >
+              Copy Server ID
+              <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />
             </button>
           </>
         )}

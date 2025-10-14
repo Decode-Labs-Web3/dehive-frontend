@@ -41,6 +41,7 @@ interface MembershipsProps {
 export default function ServerMembers({ server }: ServerMembersProps) {
   const [memberships, setMemberships] = useState<MembershipsProps[]>([]);
   const [userId, setUserId] = useState<string>();
+  const [userModal, setUserModal] = useState<Record<string, boolean>>({});
   useEffect(() => {
     const currentUserId = getCookie("userId");
     if (currentUserId) {
@@ -69,6 +70,14 @@ export default function ServerMembers({ server }: ServerMembersProps) {
         response.message === "Operation successful"
       ) {
         setMemberships(response.data);
+        setUserModal(
+          Object.fromEntries(
+            response.data.map((membership: MembershipsProps) => [
+              membership._id,
+              false,
+            ])
+          )
+        );
       }
     } catch (error) {
       console.error(error);
@@ -85,82 +94,133 @@ export default function ServerMembers({ server }: ServerMembersProps) {
   }
 
   return (
-    // <div className="space-y-1">
-    //   <div className="mb-4">
-    //     <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)] mb-2">
-    //       Members — {memberships.length}
-    //     </h3>
-    //   </div>
-
-    //   {memberships.map((membership) => (
-    //     <div
-    //       key={membership._id}
-    //       className="flex justify-between items-center gap-3 px-2 py-2 rounded-md hover:bg-[var(--surface-hover)]"
-    //     >
-    //       <div className="flex flex-row w-100">
-    //         <div className="flex flex-row gap-2">
-    //           <div className="w-8 h-8 rounded-full overflow-hidden">
-    //             <Image
-    //               src={
-    //                 membership
-    //                   ? `https://ipfs.de-id.xyz/ipfs/${membership.avatar}`
-    //                   : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-    //               }
-    //               alt={`${membership.display_name}'s avatar`}
-    //               width={32}
-    //               height={32}
-    //               className="w-full h-full object-contain"
-    //               unoptimized
-    //             />
-    //           </div>
-
-    //           <div className="flex flex-col">
-    //             <span className="text-sm font-medium text-[var(--foreground)] truncate">
-    //               {membership.display_name}
-    //             </span>
-
-    //             <span className="text-xs text-[var(--muted-foreground)] truncate">
-    //               @{membership.username}
-    //             </span>
-    //           </div>
-
-    //           <span className="text-xs text-[var(--muted-foreground)]">
-    //             Joined
-    //             <br />
-    //             {new Date(membership.joined_at).toLocaleDateString()}
-    //           </span>
-    //           <div>
-    //             <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--accent)] text-[var(--accent-foreground)] font-medium">
-    //               {membership.role.charAt(0).toUpperCase() +
-    //                 membership.role.slice(1)}
-    //             </span>
-    //             {membership.is_muted && (
-    //               <span className="text-xs px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-medium">
-    //                 MUTED
-    //               </span>
-    //             )}
-    //             {membership.is_banned && (
-    //               <span className="text-xs px-1.5 py-0.5 rounded bg-red-600 text-white font-medium">
-    //                 BANNED
-    //               </span>
-    //             )}
-    //           </div>
-    //         </div>
-    //       </div>
-    //       <button>
-    //         <FontAwesomeIcon icon={faEllipsisVertical} />
-    //       </button>
-    //     </div>
-    //   ))}
-    // </div>
-
-    <div className="grid grid-cols-2 items-center gap-4 px-3 py-2 w-full">
-      <div className="justify-start grid grid-cols-3">
-        <div>1</div>
-        <div>2</div>
-        <div>3</div>
+    <div className="space-y-1">
+      <div className="mb-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)] mb-2">
+          Members — {memberships.length}
+        </h3>
       </div>
-      <div className="justify-end">4</div>
+
+      {memberships.map((membership) => (
+        <div key={membership._id}>
+          <div className="grid grid-cols-2 items-center gap-3 px-2 py-2 rounded-md hover:bg-[var(--surface-hover)]">
+            <div className="justify-start grid grid-cols-[1fr_2fr_1fr_1fr]">
+              <div className="w-8 h-8 rounded-full overflow-hidden">
+                <Image
+                  src={
+                    membership
+                      ? `https://ipfs.de-id.xyz/ipfs/${membership.avatar}`
+                      : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                  }
+                  alt={`${membership.display_name}'s avatar`}
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-contain"
+                  unoptimized
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                  {membership.display_name}
+                </span>
+
+                <span className="text-xs text-[var(--muted-foreground)] truncate">
+                  @{membership.username}
+                </span>
+              </div>
+
+              <span className="text-xs text-[var(--muted-foreground)]">
+                Joined
+                <br />
+                {new Date(membership.joined_at).toLocaleDateString()}
+              </span>
+
+              <div>
+                <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--accent)] text-[var(--accent-foreground)] font-medium">
+                  {membership.role.charAt(0).toUpperCase() +
+                    membership.role.slice(1)}
+                </span>
+                {membership.is_muted && (
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-medium">
+                    MUTED
+                  </span>
+                )}
+                {membership.is_banned && (
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-red-600 text-white font-medium">
+                    BANNED
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() =>
+                setUserModal((prev) => ({
+                  ...prev,
+                  [membership._id]: true,
+                }))
+              }
+              className="justify-self-end"
+            >
+              <FontAwesomeIcon icon={faEllipsisVertical} />
+            </button>
+          </div>
+          {userModal[membership._id] && (
+            <div role="dialog">
+              <div
+                tabIndex={-1}
+                ref={(element: HTMLDivElement) => {
+                  element?.focus();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    setUserModal((prev) => ({
+                      ...prev,
+                      [membership._id]: false,
+                    }));
+                  }
+                }}
+                onClick={() => {
+                  setUserModal((prev) => ({
+                    ...prev,
+                    [membership._id]: false,
+                  }));
+                }}
+                className="fixed inset-0 bg-black/50 z-[150]"
+              />
+              <div className="absolute flex flex-col right-0 mr-15 z-[200]">
+                {userId !== membership._id && (
+                  <>
+                    {membership.is_banned ? (
+                      <button>Unban {membership.username}</button>
+                    ) : (
+                      <button>Ban {membership.username}</button>
+                    )}
+                    <button>Kick {membership.username}</button>
+                    <button>Transfer Ownnership</button>
+                  </>
+                )}
+                <button
+                  onClick={async (
+                    event: React.MouseEvent<HTMLButtonElement>
+                  ) => {
+                    const button = event.currentTarget;
+                    const oldText = button.textContent;
+                    await navigator.clipboard.writeText(membership._id);
+
+                    button.textContent = "Copied!";
+                    setTimeout(() => {
+                      button.textContent = oldText;
+                    }, 1000);
+                  }}
+                >
+                  Copy User ID
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }

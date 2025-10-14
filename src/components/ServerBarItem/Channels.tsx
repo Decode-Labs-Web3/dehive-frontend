@@ -10,6 +10,7 @@ import {
   faHashtag,
   faVolumeHigh,
   faUserPlus,
+  faCopy,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ChannelProps {
@@ -139,6 +140,23 @@ export default function Channels({
                 className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
               >
                 Delete Channel
+              </button>
+              <button
+                onClick={async (event: React.MouseEvent<HTMLButtonElement>) => {
+                  const button = event.currentTarget;
+                  const oldText = button.textContent;
+
+                  await navigator.clipboard.writeText(channel._id);
+
+                  button.textContent = "Copied!";
+                  setTimeout(() => {
+                    button.textContent = oldText;
+                  }, 1000);
+                }}
+                className="w-full flex justify-between text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+              >
+                Copy Channel ID
+                <FontAwesomeIcon icon={faCopy} />
               </button>
             </div>
           </>

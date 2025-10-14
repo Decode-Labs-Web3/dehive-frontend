@@ -8,6 +8,7 @@ import {
   faChevronRight,
   faChevronDown,
   faPlus,
+  faCopy,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface CategoryProps {
@@ -383,6 +384,25 @@ export default function Categories() {
                           className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
                         >
                           Delete Category
+                        </button>
+
+                        <button
+                          onClick={async (
+                            event: React.MouseEvent<HTMLButtonElement>
+                          ) => {
+                            const button = event.currentTarget;
+                            const oldText = button.textContent;
+                            await navigator.clipboard.writeText(category._id);
+
+                            button.textContent = "Copied!";
+                            setTimeout(() => {
+                              button.textContent = oldText;
+                            }, 1000);
+                          }}
+                          className="w-full flex justify-between text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                        >
+                          Copy Category ID
+                          <FontAwesomeIcon icon={faCopy} />
                         </button>
                       </div>
                     </div>
