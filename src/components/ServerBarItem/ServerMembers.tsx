@@ -53,10 +53,14 @@ export default function ServerMembers({ server }: ServerMembersProps) {
   });
   const [kickModal, setKickModal] = useState<Record<string, boolean>>({});
   const [banModal, setBanModal] = useState<Record<string, boolean>>({});
+  const [ownershipModal, setOwnershipModal] = useState<Record<string, boolean>>(
+    {}
+  );
   const [memberships, setMemberships] = useState<MembershipsProps[]>([]);
   const [userSettingModal, setUserSettingModal] = useState<
     Record<string, boolean>
   >({});
+  const [ownershipAgree, setOwnershipAgree] = useState(false);
   useEffect(() => {
     const currentUserId = getCookie("userId");
     if (currentUserId) {
@@ -103,6 +107,14 @@ export default function ServerMembers({ server }: ServerMembersProps) {
           )
         );
         setBanModal(
+          Object.fromEntries(
+            response.data.map((membership: MembershipsProps) => [
+              membership._id,
+              false,
+            ])
+          )
+        );
+        setOwnershipModal(
           Object.fromEntries(
             response.data.map((membership: MembershipsProps) => [
               membership._id,
@@ -218,6 +230,13 @@ export default function ServerMembers({ server }: ServerMembersProps) {
       console.error(error);
       console.log("Server error ban user");
     }
+  };
+
+  const handleTransferOwnership = async (memberId: string) => {
+    setOwnershipModal((prev) => ({
+      ...prev,
+      [memberId]: false,
+    }));
   };
 
   if (loading) {
@@ -361,7 +380,21 @@ export default function ServerMembers({ server }: ServerMembersProps) {
                     >
                       Kick {membership.username}
                     </button>
-                    <button>Transfer Ownnership</button>
+                    <button
+                      onClick={() => {
+                        setUserSettingModal((prev) => ({
+                          ...prev,
+                          [membership._id]: false,
+                        }));
+                        setOwnershipModal((prev) => ({
+                          ...prev,
+                          [membership._id]: true,
+                        }));
+                        setOwnershipAgree(false);
+                      }}
+                    >
+                      Transfer Ownnership
+                    </button>
                   </>
                 )}
                 <button
@@ -594,6 +627,83 @@ export default function ServerMembers({ server }: ServerMembersProps) {
                     className="rounded-md px-3 py-1.5 text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
                   >
                     Kick
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ownership modal */}
+          {ownershipModal[membership._id] && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="fixed inset-0 z-[250] flex items-center justify-center px-4"
+            >
+              <div
+                onClick={() => {
+                  setOwnershipModal((prev) => ({
+                    ...prev,
+                    [membership._id]: false,
+                  }));
+                  setOwnershipAgree(false);
+                }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              />
+
+              <div className="relative w-full max-w-md bg-[#2f3136] rounded-lg shadow-lg ring-1 ring-black/40 z-[300] overflow-hidden">
+                <div className="px-6 py-4 border-b border-black/20">
+                  <h2 className="text-lg font-semibold text-white">
+                    Transfer Ownership
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-300">
+                    This will transfer ownership of {server.name} server to @
+                    {membership.username}. This cannot be undone!
+                  </p>
+                </div>
+
+                <div className="px-6 py-4">
+                  <label
+                    htmlFor="agree"
+                    className="flex items-start gap-3 text-sm text-gray-300"
+                  >
+                    <input
+                      id="agree"
+                      type="checkbox"
+                      checked={ownershipAgree}
+                      onChange={() => setOwnershipAgree((prev) => !prev)}
+                      required
+                    />
+                    <span>
+                      I acknowledge that by transferring ownership of this
+                      server to @{membership.username}, it officially belongs to
+                      them.
+                    </span>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-black/5">
+                  <button
+                    onClick={() => {
+                      setOwnershipModal((prev) => ({
+                        ...prev,
+                        [membership._id]: false,
+                      }));
+                      setOwnershipAgree(false);
+                    }}
+                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-[#3a3c40] text-white hover:bg-[#4b4d51]"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={() => handleTransferOwnership(membership._id)}
+                    disabled={!ownershipAgree}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium bg-red-600 text-white ${
+                      !ownershipAgree && "cursor-not-allowed"
+                    }`}
+                  >
+                    Transfer Ownership
                   </button>
                 </div>
               </div>
