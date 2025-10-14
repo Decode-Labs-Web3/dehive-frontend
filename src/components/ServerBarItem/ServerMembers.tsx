@@ -39,9 +39,20 @@ interface MembershipsProps {
 }
 
 export default function ServerMembers({ server }: ServerMembersProps) {
-  const [memberships, setMemberships] = useState<MembershipsProps[]>([]);
+  const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string>();
-  const [userModal, setUserModal] = useState<Record<string, boolean>>({});
+  const [kickForm, setKickForm] = useState({
+    server_id: server._id,
+    target_user_dehive_id: "",
+    reason: "",
+  });
+  const [reasonKickModal, setReasonKickModal] = useState<
+    Record<string, boolean>
+  >({});
+  const [memberships, setMemberships] = useState<MembershipsProps[]>([]);
+  const [userSettingModal, setUserSettingModal] = useState<
+    Record<string, boolean>
+  >({});
   useEffect(() => {
     const currentUserId = getCookie("userId");
     if (currentUserId) {
@@ -49,6 +60,7 @@ export default function ServerMembers({ server }: ServerMembersProps) {
     }
   }, []);
   const fetchServerMember = useCallback(async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/members/memberships", {
         method: "POST",
@@ -70,7 +82,15 @@ export default function ServerMembers({ server }: ServerMembersProps) {
         response.message === "Operation successful"
       ) {
         setMemberships(response.data);
-        setUserModal(
+        setUserSettingModal(
+          Object.fromEntries(
+            response.data.map((membership: MembershipsProps) => [
+              membership._id,
+              false,
+            ])
+          )
+        );
+        setReasonKickModal(
           Object.fromEntries(
             response.data.map((membership: MembershipsProps) => [
               membership._id,
@@ -82,6 +102,8 @@ export default function ServerMembers({ server }: ServerMembersProps) {
     } catch (error) {
       console.error(error);
       console.log("Sever error for fetch server membership");
+    } finally {
+      setLoading(false);
     }
   }, [server]);
 
@@ -89,7 +111,55 @@ export default function ServerMembers({ server }: ServerMembersProps) {
     fetchServerMember();
   }, [fetchServerMember]);
 
-  if (!server) {
+  const handleReasonChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setKickForm((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleKickUser = async () => {
+    if (
+      kickForm.server_id.trim() === "" ||
+      kickForm.target_user_dehive_id.trim() === "" ||
+      kickForm.reason.trim() === ""
+    )
+      return;
+    try {
+      const apiResponse = await fetch("/api/servers/members/kick", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify(kickForm),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse) {
+        console.error(apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 201 &&
+        response.message === "User successfully kicked."
+      ) {
+        fetchServerMember();
+        setKickForm({
+          server_id: server._id,
+          target_user_dehive_id: "",
+          reason: "",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server error kick user");
+    }
+  };
+
+  if (loading) {
     return <div>Loading...</div>;
   }
 
@@ -155,7 +225,7 @@ export default function ServerMembers({ server }: ServerMembersProps) {
             </div>
             <button
               onClick={() =>
-                setUserModal((prev) => ({
+                setUserSettingModal((prev) => ({
                   ...prev,
                   [membership._id]: true,
                 }))
@@ -165,7 +235,7 @@ export default function ServerMembers({ server }: ServerMembersProps) {
               <FontAwesomeIcon icon={faEllipsisVertical} />
             </button>
           </div>
-          {userModal[membership._id] && (
+          {userSettingModal[membership._id] && (
             <div role="dialog">
               <div
                 tabIndex={-1}
@@ -174,14 +244,14 @@ export default function ServerMembers({ server }: ServerMembersProps) {
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
-                    setUserModal((prev) => ({
+                    setUserSettingModal((prev) => ({
                       ...prev,
                       [membership._id]: false,
                     }));
                   }
                 }}
                 onClick={() => {
-                  setUserModal((prev) => ({
+                  setUserSettingModal((prev) => ({
                     ...prev,
                     [membership._id]: false,
                   }));
@@ -196,7 +266,25 @@ export default function ServerMembers({ server }: ServerMembersProps) {
                     ) : (
                       <button>Ban {membership.username}</button>
                     )}
-                    <button>Kick {membership.username}</button>
+                    <button
+                      onClick={() => {
+                        setUserSettingModal((prev) => ({
+                          ...prev,
+                          [membership._id]: false,
+                        }));
+                        setReasonKickModal((prev) => ({
+                          ...prev,
+                          [membership._id]: true,
+                        }));
+                        setKickForm((prev) => ({
+                          ...prev,
+                          target_user_dehive_id: membership._id,
+                          reason: "",
+                        }));
+                      }}
+                    >
+                      Kick {membership.username}
+                    </button>
                     <button>Transfer Ownnership</button>
                   </>
                 )}
@@ -216,6 +304,88 @@ export default function ServerMembers({ server }: ServerMembersProps) {
                 >
                   Copy User ID
                 </button>
+              </div>
+            </div>
+          )}
+
+          {reasonKickModal[membership._id] && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="fixed inset-0 z-[250] flex items-center justify-center px-4"
+            >
+              {/* backdrop */}
+              <div
+                onClick={() => {
+                  setReasonKickModal((prev) => ({
+                    ...prev,
+                    [membership._id]: false,
+                  }));
+                  setKickForm((prev) => ({
+                    ...prev,
+                    target_user_dehive_id: "",
+                    reason: "",
+                  }));
+                }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              />
+
+              {/* kick modal */}
+              <div className="relative w-full max-w-md bg-[#2f3136] rounded-lg shadow-lg ring-1 ring-black/40 z-[300] overflow-hidden">
+                <div className="px-6 py-4 border-b border-black/20">
+                  <h2 className="text-lg font-semibold text-white">
+                    Kick @{membership.username} from Server
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-300">
+                    Are you sure you want to kick @{membership.username} from
+                    the server? They will be able to rejoin again with a new
+                    invite.
+                  </p>
+                </div>
+
+                <div className="px-6 py-4">
+                  <label
+                    htmlFor={`reason-${membership._id}`}
+                    className="block text-xs font-medium text-gray-300 mb-2"
+                  >
+                    Reason for Kick
+                  </label>
+                  <input
+                    id={`reason-${membership._id}`}
+                    name="reason"
+                    value={kickForm.reason}
+                    onChange={handleReasonChange}
+                    autoFocus
+                    placeholder="Add a reason (required)"
+                    className="w-full rounded-md bg-[#202225] border border-black/30 text-sm text-white placeholder-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-black/5">
+                  <button
+                    onClick={() => {
+                      setReasonKickModal((prev) => ({
+                        ...prev,
+                        [membership._id]: false,
+                      }));
+                      setKickForm((prev) => ({
+                        ...prev,
+                        target_user_dehive_id: "",
+                        reason: "",
+                      }));
+                    }}
+                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-[#3a3c40] text-white hover:bg-[#4b4d51]"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={handleKickUser}
+                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                  >
+                    Kick
+                  </button>
+                </div>
               </div>
             </div>
           )}

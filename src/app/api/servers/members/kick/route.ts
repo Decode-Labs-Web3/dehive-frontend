@@ -27,28 +27,42 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { serverId } = body;
+    console.log("/api/server/members/kick test", body)
+
+    if (!body) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "kickForm is lacking info ",
+        },
+        { status: 400 }
+      );
+    }
+
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_USER_DEHIVE_SERVER}/api/memberships/server/${serverId}/members`,
+      `${process.env.DEHIVE_USER_DEHIVE_SERVER}/api/memberships/kick`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "x-session-id": sessionId,
         },
+        body: JSON.stringify(body),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
     );
 
     // console.debug(
-    //   "/api/server/members/memberships backend response status",
+    //   "/api/server/members/kick backend response status",
     //   backendResponse.status
     // );
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/server/members/memberships backend error:", error);
+      console.error("/api/server/members/kick", error);
       return NextResponse.json(
         {
           success: false,
@@ -60,19 +74,18 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.info("/api/server/members/memberships response", response.data);
+    // console.info("/api/server/members/kick", response.data);
 
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 200,
-        message: response.message || "Operation successful",
-        data: response.data,
+        statusCode: response.statusCode || 201,
+        message: response.message || "User successfully kicked.",
       },
-      { status: 200 }
+      { status: 201 }
     );
   } catch (error) {
-    console.error("/api/server/members/memberships handler error:", error);
+    console.error("/api/server/members/kick handler error:", error);
     return NextResponse.json(
       {
         success: false,
