@@ -276,7 +276,7 @@ export default function MessageChannelPage({
                       alt={"Avatar"}
                       width={40}
                       height={40}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       unoptimized
                     />
                   </div>

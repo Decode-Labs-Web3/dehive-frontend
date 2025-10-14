@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import ServerBarItems from "./index"
+import ServerBarItems from "./index";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan, faX } from "@fortawesome/free-solid-svg-icons";
@@ -280,7 +280,7 @@ export default function ServerPannel({
           <div className="flex-1 overflow-y-auto px-10 py-8">
             {serverPannelSetting.members && (
               <>
-                <ServerBarItems.ServerMembers server={server}/>
+                <ServerBarItems.ServerMembers server={server} />
               </>
             )}
 

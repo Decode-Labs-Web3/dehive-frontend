@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    console.info("/api/memberships/server response", response.data.items);
+    // console.info("/api/members/memberships response", response.data);
 
     return NextResponse.json(
       {
