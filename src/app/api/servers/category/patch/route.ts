@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   apiPathName,
@@ -31,7 +32,7 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const { categoryId, name } = body;
 
-    if (!categoryId || !name ) {
+    if (!categoryId || !name) {
       return NextResponse.json(
         {
           status: false,
@@ -46,6 +47,9 @@ export async function PATCH(req: Request) {
       name,
     };
 
+    const userAgent = req.headers.get("user-agent") || "";
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
+
     const backendRes = await fetch(
       `${process.env.DEHIVE_SERVER}/api/servers/categories/${categoryId}`,
       {
@@ -53,6 +57,7 @@ export async function PATCH(req: Request) {
         headers: {
           "Content-Type": "application/json",
           "x-session-id": sessionId,
+          "x-fingerprint-hashed": fingerprint_hashed,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -60,10 +65,11 @@ export async function PATCH(req: Request) {
       }
     );
 
-    // console.log("this is backend response from ", backendRes)
+    // console.log(`${pathname} error:`, backendRes)
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
+      console.error(`${pathname} error:`, backendRes);
       return NextResponse.json(
         {
           status: false,
@@ -84,7 +90,7 @@ export async function PATCH(req: Request) {
       { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error(error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json({
       status: false,
       statusCode: 500,

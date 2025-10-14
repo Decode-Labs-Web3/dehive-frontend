@@ -47,17 +47,11 @@ export async function POST(req: Request) {
       }
     );
 
-    console.debug(
-      "get-user-following backend response status",
-      backendResponse.status
-    );
+    // console.debug(`${pathname}:`, backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error(
-        "/api/me/conversation/conversation-list backend error:",
-        error
-      );
+      console.error(`${pathname}: `, error);
       return NextResponse.json(
         {
           success: false,
@@ -69,7 +63,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    console.info("conversation-list success response", response.data.items);
+    // console.info(`${pathname}:`, response.data.items);
 
     return NextResponse.json(
       {
@@ -81,7 +75,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/me/conversation/conversation-list handler error:", error);
+    console.error(`${pathname}: handler error:`, error);
     return NextResponse.json(
       {
         success: false,

@@ -50,10 +50,10 @@ export async function POST(req: Request) {
       }
     );
 
-    console.debug(
-      "get-user-following backend response status",
-      backendResponse.status
-    );
+    // console.debug(
+    //   `${pathname}`,
+    //   backendResponse.status
+    // );
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);

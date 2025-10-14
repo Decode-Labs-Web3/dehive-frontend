@@ -42,9 +42,9 @@ export async function POST(req: Request) {
       }
     );
 
-    // console.log("hdbewjdbwejdbwejdwebdjewbduwejdhbewjdhbwedjwebdujwebjd", backendResponse)
+    // console.log(`${pathname}:`, backendResponse)
     // console.debug(
-    //   "/api/server/members/ban-list backend response status",
+    //   `${pathname}:`,
     //   backendResponse.status
     // );
 
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.info("/api/server/members/ban-list response", response.data);
+    // console.info(`${pathname}:`, response.data);
 
     return NextResponse.json(
       {
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/server/members/ban-list handler error:", error);
+    console.error(`${pathname}: error:`, error);
     return NextResponse.json(
       {
         success: false,

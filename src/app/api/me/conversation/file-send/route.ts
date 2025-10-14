@@ -47,17 +47,11 @@ export async function POST(req: Request) {
       }
     );
 
-    console.debug(
-      "get-user-following backend response status",
-      backendResponse.status
-    );
+    // console.debug(`${pathname}`, backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error(
-        "/api/me/me/conversation/file-list backend error:",
-        error
-      );
+      console.error("/api/me/me/conversation/file-list backend error:", error);
       return NextResponse.json(
         {
           success: false,

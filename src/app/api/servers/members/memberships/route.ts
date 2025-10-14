@@ -42,13 +42,13 @@ export async function POST(req: Request) {
     );
 
     // console.debug(
-    //   "/api/server/members/memberships backend response status",
+    //   `${pathname}:`,
     //   backendResponse.status
     // );
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/server/members/memberships backend error:", error);
+      console.error(`${pathname}:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.info("/api/server/members/memberships response", response.data);
+    // console.info(`${pathname}:`, response.data);
 
     return NextResponse.json(
       {
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/server/members/memberships handler error:", error);
+    console.error(`${pathname}: error:`, error);
     return NextResponse.json(
       {
         success: false,

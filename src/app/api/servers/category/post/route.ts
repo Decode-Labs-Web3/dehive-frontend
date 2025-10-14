@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   apiPathName,
@@ -42,6 +43,9 @@ export async function POST(req: Request) {
       );
     }
 
+    const userAgent = req.headers.get("user-agent") || "";
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
+
     const backendResponse = await fetch(
       `${process.env.DEHIVE_SERVER}/api/servers/${serverId}/categories`,
       {
@@ -49,6 +53,7 @@ export async function POST(req: Request) {
         headers: {
           "x-session-id": sessionId,
           "Content-Type": "application/json",
+          "x-fingerprint-hashed": fingerprint_hashed,
         },
         body: JSON.stringify({ name }),
         cache: "no-store",
@@ -56,11 +61,11 @@ export async function POST(req: Request) {
       }
     );
 
-    // console.debug( "create-category backend response status", backendResponse.status);
+    // console.debug(`${pathname} error:`, backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/servers/category/post backend error:", error);
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -72,7 +77,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.debug("create-category success response", response);
+    // console.debug(`${pathname}`, response);
 
     return NextResponse.json(
       {
@@ -84,7 +89,7 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("/api/servers/category/post handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

@@ -77,7 +77,7 @@ export async function GET(req: Request) {
 
     return res;
   } catch (error) {
-    console.error("/api/user/user-info handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

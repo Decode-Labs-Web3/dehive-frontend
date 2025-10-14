@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    console.log("/api/server/members/kick test", body)
+    // console.log(`${pathname}:`, body)
 
     if (!body) {
       return NextResponse.json(
@@ -56,13 +56,13 @@ export async function POST(req: Request) {
     );
 
     // console.debug(
-    //   "/api/server/members/kick backend response status",
+    //   `${pathname}:`,
     //   backendResponse.status
     // );
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/server/members/kick", error);
+      console.error(`${pathname}:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.info("/api/server/members/kick", response.data);
+    // console.info(`${pathname}:`, response.data);
 
     return NextResponse.json(
       {
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("/api/server/members/kick handler error:", error);
+    console.error(`${pathname}:`, error);
     return NextResponse.json(
       {
         success: false,

@@ -44,14 +44,11 @@ export async function GET(req: Request) {
       }
     );
 
-    console.debug(
-      "get-user-following backend response status",
-      backendResponse.status
-    );
+    // console.debug(`${pathname}`, backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/user/user-following backend error:", error);
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -63,7 +60,7 @@ export async function GET(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.info("user-following success response", response.data.items);
+    // console.info(`${pathname}:`, response.data.items);
 
     return NextResponse.json(
       {
@@ -75,7 +72,7 @@ export async function GET(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/user/user-following handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

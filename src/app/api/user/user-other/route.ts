@@ -36,16 +36,19 @@ export async function POST(req: Request) {
 
     // console.log("this is ssoToken and state from sso", ssoToken, state);
 
-    const backendRes = await fetch(`${process.env.DEHIVE_AUTH}/auth/profile/${userId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-session-id": sessionId,
-        "x-fingerprint-hashed": fingerprint_hashed,
-      },
-      cache: "no-store",
-      signal: AbortSignal.timeout(10000),
-    });
+    const backendRes = await fetch(
+      `${process.env.DEHIVE_AUTH}/auth/profile/${userId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-session-id": sessionId,
+          "x-fingerprint-hashed": fingerprint_hashed,
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      }
+    );
 
     if (!backendRes.ok) {
       const err = await backendRes.json().catch(() => null);
@@ -70,7 +73,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/user/user-info handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

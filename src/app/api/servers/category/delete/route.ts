@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   apiPathName,
@@ -29,7 +30,8 @@ export async function DELETE(req: Request) {
     const body = await req.json();
     const { categoryId } = body;
 
-    // console.log("[category/post] incoming payload", { serverId, name });
+    const userAgent = req.headers.get("user-agent") || "";
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     if (!categoryId) {
       return NextResponse.json(
@@ -48,17 +50,18 @@ export async function DELETE(req: Request) {
         method: "DELETE",
         headers: {
           "x-session-id": sessionId,
+          "x-fingerprint-hashed": fingerprint_hashed,
         },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
     );
 
-    // console.debug( "delete-category backend response status", backendResponse.status);
+    // console.debug(`${pathname} :`, backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/servers/category/post backend error:", error);
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -70,7 +73,7 @@ export async function DELETE(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.debug("delete-category success response", response);
+    // console.debug(`${pathname}:`, response);
 
     return NextResponse.json(
       {
@@ -81,7 +84,7 @@ export async function DELETE(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/servers/category/delete handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

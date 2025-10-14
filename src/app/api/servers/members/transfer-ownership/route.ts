@@ -60,7 +60,7 @@ export async function PATCH(req: Request) {
       }
     );
 
-    // console.log("hdkqwhdqkjwdnqwkjdbnwqdjqwbdwjhqdbqwudjyqwbdujebduwejdbweujd",backendRes )
+    // console.log(`${pathname}:`,backendRes )
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
@@ -84,7 +84,7 @@ export async function PATCH(req: Request) {
       { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error(error);
+    console.error(`${pathname}:`,error);
     return NextResponse.json({
       status: false,
       statusCode: 500,

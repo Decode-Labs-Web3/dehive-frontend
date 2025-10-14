@@ -47,10 +47,7 @@ export async function POST(req: Request) {
       }
     );
 
-    console.debug(
-      "get-user-following backend response status",
-      backendResponse.status
-    );
+    // console.debug(`${pathname}`, backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
@@ -81,7 +78,10 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/me/conversation/conversation-list handler error:", error);
+    console.error(
+      "/api/me/conversation/conversation-list handler error:",
+      error
+    );
     return NextResponse.json(
       {
         success: false,

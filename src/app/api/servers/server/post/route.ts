@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   apiPathName,
@@ -44,6 +45,9 @@ export async function POST(req: Request) {
       description,
     };
 
+    const userAgent = req.headers.get("user-agent") || "";
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
+
     const backendResponse = await fetch(
       `${process.env.DEHIVE_SERVER}/api/servers`,
       {
@@ -51,6 +55,7 @@ export async function POST(req: Request) {
         headers: {
           "Content-Type": "application/json",
           "x-session-id": sessionId,
+          "x-fingerprint-hashed": fingerprint_hashed,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -58,11 +63,11 @@ export async function POST(req: Request) {
       }
     );
 
-    // console.debug("create-server backend response status", backendResponse.status);
+    // console.debug(`${pathname}:`, backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/servers/server backend error:", error);
+      console.error(`${pathname}`, error);
       return NextResponse.json(
         {
           success: false,
@@ -74,19 +79,19 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.debug("create-server success response", response);
+    // console.debug(`${pathname}:`, response);
 
     return NextResponse.json(
       {
         success: true,
         statusCode: response.statusCode || 201,
         message: response.message || "Operation successful",
-        data: response.data
+        data: response.data,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error("/api/servers/server handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

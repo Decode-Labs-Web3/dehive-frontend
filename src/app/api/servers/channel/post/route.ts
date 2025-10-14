@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   apiPathName,
@@ -29,6 +30,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { serverId, categoryId, name, type } = body;
 
+    const userAgent = req.headers.get("user-agent") || "";
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
+
     // console.log("[category/post] incoming payload", { serverId, name });
 
     if (!serverId || !categoryId || !name || !type) {
@@ -55,6 +59,7 @@ export async function POST(req: Request) {
         headers: {
           "x-session-id": sessionId,
           "Content-Type": "application/json",
+          "x-fingerprint-hashed": fingerprint_hashed,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",

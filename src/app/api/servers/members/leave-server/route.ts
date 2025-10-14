@@ -54,7 +54,7 @@ export async function DELETE(req: Request) {
       }
     );
 
-    // console.log("hdkqwhdqkjwdnqwkjdbnwqdjqwbdwjhqdbqwudjyqwbdujebduwejdbweujd",backendRes )
+    // console.log(`${pathname}:`,backendRes )
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);

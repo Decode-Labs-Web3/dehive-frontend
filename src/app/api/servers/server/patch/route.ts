@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   apiPathName,
@@ -47,6 +48,9 @@ export async function PATCH(req: Request) {
       description,
     };
 
+    const userAgent = req.headers.get("user-agent") || "";
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
+
     const backendRes = await fetch(
       `${process.env.DEHIVE_SERVER}/api/servers/${serverId}`,
       {
@@ -54,6 +58,7 @@ export async function PATCH(req: Request) {
         headers: {
           "Content-Type": "application/json",
           "x-session-id": sessionId,
+          "x-fingerprint-hashed": fingerprint_hashed,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -61,7 +66,7 @@ export async function PATCH(req: Request) {
       }
     );
 
-    // console.log("this is backend response from ", backendRes)
+    // console.log(`${pathname} :`, backendRes)
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
@@ -85,7 +90,7 @@ export async function PATCH(req: Request) {
       { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error(error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json({
       status: false,
       statusCode: 500,

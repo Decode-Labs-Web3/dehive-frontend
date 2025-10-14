@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   apiPathName,
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { serverId } = body;
 
-    // console.log("get-server-info serverId response status", serverId)
+    // console.log(`${pathname}:`, serverId)
 
     if (!serverId) {
       return NextResponse.json(
@@ -42,26 +43,30 @@ export async function POST(req: Request) {
       );
     }
 
+    const userAgent = req.headers.get("user-agent") || "";
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
+
     const backendResponse = await fetch(
       `${process.env.DEHIVE_SERVER}/api/servers/${serverId}`,
       {
         method: "GET",
         headers: {
           "x-session-id": sessionId,
+          "x-fingerprint-hashed": fingerprint_hashed,
         },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
     );
 
-    console.debug(
-      "get-server-info backend response status",
-      backendResponse.status
-    );
+    // console.debug(
+    //   `${pathname}:`,
+    //   backendResponse.status
+    // );
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/server/server-info backend error:", error);
+      console.error(`${pathname}: backend error`, error);
       return NextResponse.json(
         {
           success: false,
@@ -73,7 +78,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.debug("create-server success response", response);
+    // console.debug(`${pathname}: `, response);
 
     return NextResponse.json(
       {
@@ -85,7 +90,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/server/server-info handler error:", error);
+    console.error(`${pathname}: error:`, error);
     return NextResponse.json(
       {
         success: false,

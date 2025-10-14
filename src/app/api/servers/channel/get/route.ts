@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import {
   generateRequestId,
   apiPathName,
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { channelId } = body;
 
-    // console.log("get-channel channelId response status", serverId)
+    // console.log(`${pathname}:`, channelId)
 
     if (!channelId) {
       return NextResponse.json(
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       }
     );
 
-    // console.debug("get-channel backend response status", backendResponse.status);
+    // console.debug(`${pathname} error:`, backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.debug("get-channel success response", response);
+    // console.debug(`${pathname}:`, response);
 
     return NextResponse.json(
       {
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/servers/channel/get handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

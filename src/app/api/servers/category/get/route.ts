@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   apiPathName,
@@ -42,12 +43,16 @@ export async function POST(req: Request) {
       );
     }
 
+    const userAgent = req.headers.get("user-agent") || "";
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
+
     const backendResponse = await fetch(
       `${process.env.DEHIVE_SERVER}/api/servers/${serverId}/categories`,
       {
         method: "GET",
         headers: {
           "x-session-id": sessionId,
+          "x-fingerprint-hashed": fingerprint_hashed,
         },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -58,7 +63,7 @@ export async function POST(req: Request) {
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/servers/server-info backend error:", error);
+      console.error(`${pathname} backend error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -82,7 +87,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/servers/server-info handler error:", error);
+    console.error(`${pathname}  handler error:`, error);
     return NextResponse.json(
       {
         success: false,
