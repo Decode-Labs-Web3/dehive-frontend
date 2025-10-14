@@ -46,9 +46,13 @@ export default function ServerMembers({ server }: ServerMembersProps) {
     target_user_dehive_id: "",
     reason: "",
   });
-  const [reasonKickModal, setReasonKickModal] = useState<
-    Record<string, boolean>
-  >({});
+  const [banForm, setBanForm] = useState({
+    server_id: server._id,
+    target_user_dehive_id: "",
+    reason: "Suspicious or spam account",
+  });
+  const [kickModal, setKickModal] = useState<Record<string, boolean>>({});
+  const [banModal, setBanModal] = useState<Record<string, boolean>>({});
   const [memberships, setMemberships] = useState<MembershipsProps[]>([]);
   const [userSettingModal, setUserSettingModal] = useState<
     Record<string, boolean>
@@ -90,7 +94,15 @@ export default function ServerMembers({ server }: ServerMembersProps) {
             ])
           )
         );
-        setReasonKickModal(
+        setKickModal(
+          Object.fromEntries(
+            response.data.map((membership: MembershipsProps) => [
+              membership._id,
+              false,
+            ])
+          )
+        );
+        setBanModal(
           Object.fromEntries(
             response.data.map((membership: MembershipsProps) => [
               membership._id,
@@ -111,7 +123,7 @@ export default function ServerMembers({ server }: ServerMembersProps) {
     fetchServerMember();
   }, [fetchServerMember]);
 
-  const handleReasonChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleKickFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setKickForm((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
@@ -156,6 +168,55 @@ export default function ServerMembers({ server }: ServerMembersProps) {
     } catch (error) {
       console.error(error);
       console.log("Server error kick user");
+    }
+  };
+
+  const handleBanFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    setBanForm((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleBanUser = async () => {
+    if (
+      banForm.server_id.trim() === "" ||
+      banForm.target_user_dehive_id.trim() === "" ||
+      banForm.reason.trim() === ""
+    )
+      return;
+    try {
+      const apiResponse = await fetch("/api/servers/members/ban", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify(banForm),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse) {
+        console.error(apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 201 &&
+        response.message === "User successfully baned."
+      ) {
+        fetchServerMember();
+        setBanForm({
+          server_id: server._id,
+          target_user_dehive_id: "",
+          reason: "Suspicious or spam account",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server error ban user");
     }
   };
 
@@ -261,18 +322,33 @@ export default function ServerMembers({ server }: ServerMembersProps) {
               <div className="absolute flex flex-col right-0 mr-15 z-[200]">
                 {userId !== membership._id && (
                   <>
-                    {membership.is_banned ? (
-                      <button>Unban {membership.username}</button>
-                    ) : (
-                      <button>Ban {membership.username}</button>
-                    )}
                     <button
                       onClick={() => {
                         setUserSettingModal((prev) => ({
                           ...prev,
                           [membership._id]: false,
                         }));
-                        setReasonKickModal((prev) => ({
+                        setBanModal((prev) => ({
+                          ...prev,
+                          [membership._id]: true,
+                        }));
+                        setBanForm((prev) => ({
+                          ...prev,
+                          target_user_dehive_id: membership._id,
+                          reason: "Suspicious or spam account",
+                        }));
+                      }}
+                    >
+                      Ban {membership.username}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setUserSettingModal((prev) => ({
+                          ...prev,
+                          [membership._id]: false,
+                        }));
+                        setKickModal((prev) => ({
                           ...prev,
                           [membership._id]: true,
                         }));
@@ -308,16 +384,151 @@ export default function ServerMembers({ server }: ServerMembersProps) {
             </div>
           )}
 
-          {reasonKickModal[membership._id] && (
+          {/* ban modal */}
+          {banModal[membership._id] && (
             <div
               role="dialog"
               aria-modal="true"
               className="fixed inset-0 z-[250] flex items-center justify-center px-4"
             >
-              {/* backdrop */}
               <div
                 onClick={() => {
-                  setReasonKickModal((prev) => ({
+                  setBanModal((prev) => ({
+                    ...prev,
+                    [membership._id]: false,
+                  }));
+                  setBanForm((prev) => ({
+                    ...prev,
+                    target_user_dehive_id: "",
+                    reason: "Suspicious or spam account",
+                  }));
+                }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              />
+
+              <div className="relative w-full max-w-md bg-[#2f3136] rounded-lg shadow-lg ring-1 ring-black/40 z-[300] overflow-hidden">
+                <div className="px-6 py-4 border-b border-black/20">
+                  <h2 className="text-lg font-semibold text-white">
+                    Ban @{membership.username}?
+                  </h2>
+                </div>
+
+                <div className="px-6 py-4">
+                  <fieldset className="flex flex-col gap-2">
+                    <legend className="text-sm font-medium text-[var(--muted-foreground)] mb-2">
+                      Reason for Ban
+                    </legend>
+
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="reason"
+                        value="Suspicious or spam account"
+                        checked={
+                          banForm.reason === "Suspicious or spam account"
+                        }
+                        onChange={handleBanFormChange}
+                        className="accent-[var(--accent)]"
+                      />
+                      <span className="text-sm">
+                        Suspicious or spam account
+                      </span>
+                    </label>
+
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="reason"
+                        value="Compromised or hacked account"
+                        checked={
+                          banForm.reason === "Compromised or hacked account"
+                        }
+                        onChange={handleBanFormChange}
+                        className="accent-[var(--accent)]"
+                      />
+                      <span className="text-sm">
+                        Compromised or hacked account
+                      </span>
+                    </label>
+
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="reason"
+                        value="Breaking server rules"
+                        checked={banForm.reason === "Breaking server rules"}
+                        onChange={handleBanFormChange}
+                        className="accent-[var(--accent)]"
+                      />
+                      <span className="text-sm">Breaking server rules</span>
+                    </label>
+
+                    <label className="flex items-start gap-3">
+                      <input
+                        type="radio"
+                        name="reason"
+                        value="Other: "
+                        checked={banForm.reason.startsWith("Other")}
+                        onChange={handleBanFormChange}
+                        className="accent-[var(--accent)] mt-1"
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm">Other</span>
+
+                        {banForm.reason.startsWith("Other") && (
+                          <input
+                            autoFocus
+                            name="reason"
+                            placeholder="Type your reason…"
+                            value={banForm.reason}
+                            onChange={handleBanFormChange}
+                            className="mt-2 w-full rounded-md bg-[#202225] border border-black/30 text-sm text-white placeholder-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                          />
+                        )}
+                      </div>
+                    </label>
+                  </fieldset>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-black/5">
+                  <button
+                    onClick={() => {
+                      setBanModal((prev) => ({
+                        ...prev,
+                        [membership._id]: false,
+                      }));
+                      setBanForm((prev) => ({
+                        ...prev,
+                        target_user_dehive_id: "",
+                        reason: "",
+                      }));
+                    }}
+                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-[#3a3c40] text-white hover:bg-[#4b4d51]"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={handleBanUser}
+                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                  >
+                    Ban
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* kick modal */}
+          {kickModal[membership._id] && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="fixed inset-0 z-[250] flex items-center justify-center px-4"
+            >
+              <div
+                onClick={() => {
+                  setKickModal((prev) => ({
                     ...prev,
                     [membership._id]: false,
                   }));
@@ -330,7 +541,6 @@ export default function ServerMembers({ server }: ServerMembersProps) {
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm"
               />
 
-              {/* kick modal */}
               <div className="relative w-full max-w-md bg-[#2f3136] rounded-lg shadow-lg ring-1 ring-black/40 z-[300] overflow-hidden">
                 <div className="px-6 py-4 border-b border-black/20">
                   <h2 className="text-lg font-semibold text-white">
@@ -354,7 +564,7 @@ export default function ServerMembers({ server }: ServerMembersProps) {
                     id={`reason-${membership._id}`}
                     name="reason"
                     value={kickForm.reason}
-                    onChange={handleReasonChange}
+                    onChange={handleKickFormChange}
                     autoFocus
                     placeholder="Add a reason (required)"
                     className="w-full rounded-md bg-[#202225] border border-black/30 text-sm text-white placeholder-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -364,7 +574,7 @@ export default function ServerMembers({ server }: ServerMembersProps) {
                 <div className="flex items-center justify-end gap-3 px-6 py-4 bg-black/5">
                   <button
                     onClick={() => {
-                      setReasonKickModal((prev) => ({
+                      setKickModal((prev) => ({
                         ...prev,
                         [membership._id]: false,
                       }));
