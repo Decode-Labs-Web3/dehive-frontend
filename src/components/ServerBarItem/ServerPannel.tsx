@@ -41,6 +41,7 @@ export default function ServerPannel({
     members: false,
     invites: false,
     role: false,
+    bans: false,
     delete: false,
   };
 
@@ -219,7 +220,7 @@ export default function ServerPannel({
 
             <button
               onClick={() => {
-                setServerPannelSetting({ ...allFalse, invites: true });
+                setServerPannelSetting({ ...allFalse, role: true });
               }}
               className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                 true
@@ -228,6 +229,19 @@ export default function ServerPannel({
               }`}
             >
               Role
+            </button>
+
+            <button
+              onClick={() => {
+                setServerPannelSetting({ ...allFalse, bans: true });
+              }}
+              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
+                true
+                  ? "bg-[var(--surface-active)] text-[var(--foreground)]"
+                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface-hover)]"
+              }`}
+            >
+              Bans
             </button>
 
             <div className="border-1 my-4 border-[var(--foreground)]" />
@@ -281,6 +295,12 @@ export default function ServerPannel({
             {serverPannelSetting.members && (
               <>
                 <ServerBarItems.ServerMembers server={server} />
+              </>
+            )}
+
+            {serverPannelSetting.bans && (
+              <>
+                <ServerBarItems.ServerBans server={server} />
               </>
             )}
 

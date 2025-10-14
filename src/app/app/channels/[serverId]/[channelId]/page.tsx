@@ -25,7 +25,7 @@ export default function DirectMessagePage() {
     channelId,
   });
 
-  console.log("edewbdjhwebdjhwebdjwedbkwedwkedbwejdwejdbwed",conversationId)
+  console.log("Conversation Id form direct message",conversationId)
   console.log(status)
   console.log(error)
 
