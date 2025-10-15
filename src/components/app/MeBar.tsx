@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import UserProfileModal from "@/components/meBarItem/UserProfileModal";
 import { useState, useCallback, useEffect } from "react";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -169,35 +170,7 @@ export default function MeBar() {
             )}
 
             {userProfileModal[user.user_id] && (
-              <div
-                tabIndex={-1}
-                ref={(element: HTMLDivElement) => {
-                  element?.focus();
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") {
-                    setUserProfileModal((prev) => ({
-                      ...prev,
-                      [user.user_id]: false,
-                    }));
-                  }
-                }}
-                role="dialog"
-                className="fixed inset-0 flex justify-center items-center z-30"
-              >
-                <div
-                  onClick={() => {
-                    setUserProfileModal((prev) => ({
-                      ...prev,
-                      [user.user_id]: false,
-                    }));
-                  }}
-                  className="fixed inset-0 bg-black/80 z-40"
-                />
-                <div className="w-100 h-100 bg-red-500 z-50">
-                  
-                </div>
-              </div>
+              <UserProfileModal userId={user.user_id} setUserProfileModal={setUserProfileModal}/>
             )}
           </div>
         ))}
