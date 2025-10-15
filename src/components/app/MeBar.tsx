@@ -72,11 +72,13 @@ export default function MeBar() {
   }, [fetchUserData]);
 
   return (
-    <div className="w-full h-full bg-[var(--background)] border-2 border-[var(--border-color)]">
+    <div className="w-full h-full bg-[#2b2d31] border-r border-black/20 text-neutral-200 overflow-y-auto">
       <Link
         href={"/app/channels/me/"}
-        className="flex flex-row bg-red-500 w-full h-10 border-2 gap-2 "
-      ></Link>
+        className="flex items-center w-full h-11 px-3 text-xs font-semibold tracking-wide uppercase text-neutral-400 bg-[#1e1f22] border-b border-black/20"
+      >
+        Direct Messages
+      </Link>
       {userData.length > 0 &&
         userData.map((user) => (
           <div
@@ -94,7 +96,7 @@ export default function MeBar() {
           >
             <Link
               href={`/app/channels/me/${user.user_id}`}
-              className="flex flex-row w-full h-full border-2 gap-2 "
+              className="group flex items-center w-full gap-3 px-2 py-2 rounded-md hover:bg-white/5 transition-colors"
             >
               <div className="w-10 h-10">
                 <Image
@@ -106,13 +108,17 @@ export default function MeBar() {
                   alt={"Avatar"}
                   width={40}
                   height={40}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full rounded-full object-cover"
                   unoptimized
                 />
               </div>
-              <div>
-                <h1>{user.display_name}</h1>
-                <p>@{user.username}</p>
+              <div className="min-w-0 leading-tight">
+                <h1 className="font-medium text-[15px] truncate">
+                  {user.display_name}
+                </h1>
+                <p className="text-xs text-neutral-400 truncate">
+                  @{user.username}
+                </p>
               </div>
             </Link>
 
@@ -130,7 +136,7 @@ export default function MeBar() {
                     }));
                   }
                 }}
-                className="absolute bg-green-500 flex flex-col justify-center items-start left-1/2 -translate-x-1/2  w-44 sm:w-20 md:w-40 lg:w-55 z-50"
+                className="absolute top-12 right-2 z-50 w-56 rounded-md bg-[#232428] text-neutral-200 shadow-xl ring-1 ring-black/50 border border-black/20 p-1 focus:outline-none"
               >
                 <button
                   onClick={() => {
@@ -143,11 +149,19 @@ export default function MeBar() {
                       [user.user_id]: true,
                     }));
                   }}
+                  className="w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors"
                 >
                   Profile
                 </button>
-                <Link href={`/app/channels/me/${user.user_id}`}>Message</Link>
-                <button>Call</button>
+                <Link
+                  href={`/app/channels/me/${user.user_id}`}
+                  className="block w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors"
+                >
+                  Message
+                </Link>
+                <button className="w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors">
+                  Call
+                </button>
                 <button
                   onClick={async (
                     event: React.MouseEvent<HTMLButtonElement>
@@ -162,10 +176,13 @@ export default function MeBar() {
                       button.textContent = oldText;
                     }, 1000);
                   }}
-                  className="flex justify-between w-full"
+                  className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-white/10 active:bg-white/20 transition-colors"
                 >
                   Copy User ID
-                  <FontAwesomeIcon icon={faCopy} />
+                  <FontAwesomeIcon
+                    icon={faCopy}
+                    className="ml-2 text-neutral-400"
+                  />
                 </button>
               </div>
             )}

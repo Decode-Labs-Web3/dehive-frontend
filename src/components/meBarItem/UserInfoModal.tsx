@@ -6,13 +6,14 @@ import { useState, useEffect, useCallback } from "react";
 
 interface UserDataProps {
   _id: string;
-  dehive_role: string;
-  status: string;
-  server_count: number;
   username: string;
   display_name: string;
-  bio: string;
+  avatar: string;
   avatar_ipfs_hash: string;
+  status: string;
+  server_count: number;
+  bio: string;
+  is_banned: true;
   last_login: string;
   following_number: number;
   followers_number: number;
@@ -21,11 +22,20 @@ interface UserDataProps {
   is_blocked: boolean;
   is_blocked_by: boolean;
   mutual_followers_number: number;
-  mutual_followers_list: MutualFollower[];
+  mutual_followers_list: MutualFollowers[];
   is_active: boolean;
+  wallets: Wallets[];
+  __v: number;
+  mutual_servers_count: number;
+  mutual_servers: MutualServers[];
 }
 
-interface MutualFollower {
+interface MutualServers {
+  _id: string;
+  server_name: string;
+}
+
+interface MutualFollowers {
   followers_number: number;
   avatar_ipfs_hash: string;
   role: string;
@@ -33,6 +43,17 @@ interface MutualFollower {
   display_name: string;
   username: string;
   following_number: number;
+}
+
+interface Wallets {
+  _id: string;
+  address: string;
+  user_id: string;
+  name_service: null;
+  is_primary: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 interface UserInfoModalProps {
@@ -51,7 +72,7 @@ export default function UserInfoModal({
 
   const fetchUserInfo = useCallback(async () => {
     try {
-      const apiResponse = await fetch("/api/user/user-other", {
+      const apiResponse = await fetch("/api/user/user-dehive", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +87,10 @@ export default function UserInfoModal({
         return;
       }
       const response = await apiResponse.json();
-      if (response.statusCode === 200 && response.message === "User found") {
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
         setUserInfo(response.data);
       }
     } catch (error) {
@@ -123,7 +147,7 @@ export default function UserInfoModal({
                     />
                   </div>
                   <span className="inline-flex items-center rounded-full bg-neutral-800 px-3 py-1 text-xs font-semibold uppercase text-neutral-200">
-                    {userInfo.dehive_role}
+                    {userInfo.status}
                   </span>
                 </div>
                 <h2 className="mt-4 text-2xl font-semibold leading-tight">
@@ -201,7 +225,7 @@ export default function UserInfoModal({
               ) : (
                 <ul className="mt-6 space-y-4">
                   {userInfo.mutual_followers_list.map(
-                    (mutual: MutualFollower) => (
+                    (mutual: MutualFollowers) => (
                       <li
                         key={mutual.user_id}
                         onClick={() => setActiveUserId(mutual.user_id)}
