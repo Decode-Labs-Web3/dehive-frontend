@@ -5,14 +5,15 @@ import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
 import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
+import ServerBarItems from "@/components/serverBarItem";
 import {
-  faUserPlus,
   faPen,
-  faTrash,
-  faRightFromBracket,
   faGear,
-  faFolderPlus,
   faCopy,
+  faTrash,
+  faUserPlus,
+  faFolderPlus,
+  faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerProps {
@@ -45,6 +46,13 @@ export default function EditModal({
   const router = useRouter();
   const [userId, setUserId] = useState("");
   const { refreshServers } = useServerContext();
+  const allFalse = {
+    edit: false,
+    leave: false,
+    invite: false,
+    delete: false,
+    category: false,
+  };
 
   useEffect(() => {
     const value = getCookie("userId");
@@ -53,12 +61,7 @@ export default function EditModal({
     }
   }, []);
 
-  const [modal, setModal] = useState({
-    edit: false,
-    leave: false,
-    delete: false,
-    category: false,
-  });
+  const [modal, setModal] = useState({ ...allFalse });
 
   const [editServerForm, setEditServerForm] = useState({
     name: server.name,
@@ -136,10 +139,9 @@ export default function EditModal({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        setModal((prev) => ({
-          ...prev,
-          edit: false,
-        }));
+        setModal({
+          ...allFalse,
+        });
         fetchServerInfo?.();
       }
     } catch (error) {
@@ -177,10 +179,7 @@ export default function EditModal({
         response.message === "Operation successful"
       ) {
         toastSuccess("Delete Successful");
-        setModal((prev) => ({
-          ...prev,
-          delete: false,
-        }));
+        setModal({ ...allFalse });
         router.push("/app/channels/me");
         refreshServers?.();
       }
@@ -213,10 +212,7 @@ export default function EditModal({
         response.statusCode === 200 &&
         response.message === "Successfully left server."
       ) {
-        setModal((prev) => ({
-          ...prev,
-          leave: false,
-        }));
+        setModal({ ...allFalse });
         refreshServers?.();
         router.push("/app/channels/me");
       }
@@ -252,10 +248,7 @@ export default function EditModal({
         response.statusCode === 201 &&
         response.message === "Operation successful"
       ) {
-        setModal((prev) => ({
-          ...prev,
-          category: false,
-        }));
+        setModal({ ...allFalse });
         fetchServerInfo();
       }
     } catch (error) {
@@ -272,14 +265,26 @@ export default function EditModal({
         ref={(el) => {
           if (
             el &&
-            !(modal.edit || modal.delete || modal.leave || modal.category)
+            !(
+              modal.edit ||
+              modal.delete ||
+              modal.leave ||
+              modal.category ||
+              modal.invite
+            )
           )
             el.focus();
         }}
         onKeyDown={(event) => {
           if (
             event.key === "Escape" &&
-            !(modal.edit || modal.delete || modal.leave || modal.category)
+            !(
+              modal.edit ||
+              modal.delete ||
+              modal.leave ||
+              modal.category ||
+              modal.invite
+            )
           ) {
             setServerSettingModal(false);
           }
@@ -294,7 +299,12 @@ export default function EditModal({
         // }}
         className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-30 rounded-md bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-lg overflow-hidden"
       >
-        <button className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]">
+        <button
+          onClick={() => {
+            setModal({ ...allFalse, invite: true });
+          }}
+          className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+        >
           Invite Friend
           <FontAwesomeIcon icon={faUserPlus} />
         </button>
@@ -302,7 +312,7 @@ export default function EditModal({
         {server.owner_id !== userId && (
           <button
             onClick={() => {
-              setModal((prev) => ({ ...prev, leave: true }));
+              setModal({ ...allFalse, leave: true });
             }}
             className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
           >
@@ -315,7 +325,7 @@ export default function EditModal({
           <>
             <button
               onClick={() => {
-                setModal((prev) => ({ ...prev, category: true }));
+                setModal({ ...allFalse, category: true });
               }}
               className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
             >
@@ -327,6 +337,7 @@ export default function EditModal({
               onClick={() => {
                 setServerPannel(true);
                 setModal({
+                  invite: false,
                   edit: false,
                   leave: false,
                   delete: false,
@@ -341,7 +352,7 @@ export default function EditModal({
 
             <button
               onClick={() => {
-                setModal((prev) => ({ ...prev, edit: true }));
+                setModal({ ...allFalse, edit: true });
               }}
               className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
             >
@@ -351,7 +362,7 @@ export default function EditModal({
 
             <button
               onClick={() => {
-                setModal((prev) => ({ ...prev, delete: true }));
+                setModal({ ...allFalse, delete: true });
               }}
               className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
             >
@@ -390,13 +401,13 @@ export default function EditModal({
           }}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
-              setModal((prev) => ({ ...prev, edit: false }));
+              setModal({ ...allFalse, edit: false });
             }
           }}
           className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
-            onClick={() => setModal((prev) => ({ ...prev, edit: false }))}
+            onClick={() => setModal({ ...allFalse, edit: false })}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
 
@@ -444,7 +455,7 @@ export default function EditModal({
               <button
                 onClick={() => {
                   setServerSettingModal(false);
-                  setModal((prev) => ({ ...prev, edit: false }));
+                  setModal({ ...allFalse, edit: false });
                 }}
                 className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
               >
@@ -479,13 +490,13 @@ export default function EditModal({
           }}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
-              setModal((prev) => ({ ...prev, delete: false }));
+              setModal({ ...allFalse, delete: false });
             }
           }}
           className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
-            onClick={() => setModal((prev) => ({ ...prev, delete: false }))}
+            onClick={() => setModal({ ...allFalse, delete: false })}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
           <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
@@ -505,10 +516,10 @@ export default function EditModal({
               <button
                 onClick={() => {
                   setServerSettingModal(false);
-                  setModal((prev) => ({
-                    ...prev,
+                  setModal({
+                    ...allFalse,
                     delete: false,
-                  }));
+                  });
                 }}
                 className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
               >
@@ -534,7 +545,7 @@ export default function EditModal({
           }}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
-              setModal((prev) => ({ ...prev, leave: false }));
+              setModal({ ...allFalse, leave: false });
             }
           }}
           className="fixed inset-0 flex items-center justify-center z-30"
@@ -555,7 +566,7 @@ export default function EditModal({
               <button
                 onClick={() => {
                   setServerSettingModal(false);
-                  setModal((prev) => ({ ...prev, leave: false }));
+                  setModal({ ...allFalse, leave: false });
                 }}
                 className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
               >
@@ -581,13 +592,13 @@ export default function EditModal({
           }}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
-              setModal((prev) => ({ ...prev, category: false }));
+              setModal({ ...allFalse, category: false });
             }
           }}
           className="fixed inset-0 flex items-center justify-center z-30"
         >
           <div
-            onClick={() => setModal((prev) => ({ ...prev, category: false }))}
+            onClick={() => setModal({ ...allFalse, category: false })}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
           <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
@@ -605,7 +616,7 @@ export default function EditModal({
               <button
                 onClick={() => {
                   setServerSettingModal(false);
-                  setModal((prev) => ({ ...prev, category: false }));
+                  setModal({ ...allFalse, category: false });
                 }}
                 className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
               >
@@ -620,6 +631,12 @@ export default function EditModal({
             </div>
           </div>
         </div>
+      )}
+
+      {modal.invite && (
+        <>
+          <ServerBarItems.ServerInvite serverId={server._id}/>
+        </>
       )}
     </>
   );

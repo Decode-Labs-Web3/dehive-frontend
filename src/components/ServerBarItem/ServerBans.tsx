@@ -188,7 +188,7 @@ export default function ServerBans({ server }: ServerBansProps) {
         <div
           key={member.user_dehive_id}
           className="relative grid grid-cols-5 items-center gap-4 rounded-xl border px-4 py-4 shadow-sm"
-          >
+        >
           <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-neutral-800 bg-neutral-950">
             <Image
               src={`https://ipfs.de-id.xyz/ipfs/${member.user_profile.avatar_ipfs_hash}`}
@@ -316,10 +316,8 @@ export default function ServerBans({ server }: ServerBansProps) {
               role="dialog"
               className="fixed inset-0 z-[300] flex items-center justify-center"
             >
-
               <div
                 tabIndex={-1}
-               
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
                     setUnbanModal((prev) => ({
@@ -346,7 +344,6 @@ export default function ServerBans({ server }: ServerBansProps) {
                 }}
                 className="fixed inset-0 z-[250] bg-black/80 "
               />
-
 
               <div className="relative z-[301] w-full max-w-md rounded-2xl bg-black p-6 shadow-2xl">
                 <h1 className="text-lg font-semibold text-white">

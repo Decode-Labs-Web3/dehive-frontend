@@ -84,7 +84,7 @@ export default function GuildBar({
           <FontAwesomeIcon icon={faMessage} />
         </button>
 
-        <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 px-2 py-1 ml-2 bg-[var(--foreground)] text-[var(--accent-foreground)] font-semibold z-1000 left-full whitespace-nowrap rounded-md shadow opacity-0 group-hover:opacity-100">
+        <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 px-2 py-1 ml-2 bg-black text-[var(--accent-foreground)] font-semibold z-1000 left-full whitespace-nowrap rounded-md shadow opacity-0 group-hover:opacity-100">
           Direct Message
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function GuildBar({
             >
               {server.name.slice(0, 1).toUpperCase()}
             </button>
-            <div className="pointer-events-none absolute rounded-md font-semibold px-2 py-1 ml-2 left-full top-1/2 -translate-y-1/2 bg-[var(--foreground)] text-[var(--accent-foreground)] opacity-0 z-1000 group-hover:opacity-100 whitespace-nowrap shadow">
+            <div className="pointer-events-none absolute rounded-md font-semibold px-2 py-1 ml-2 left-full top-1/2 -translate-y-1/2 bg-black text-[var(--accent-foreground)] opacity-0 z-1000 group-hover:opacity-100 whitespace-nowrap shadow">
               {server.name}
             </div>
           </div>

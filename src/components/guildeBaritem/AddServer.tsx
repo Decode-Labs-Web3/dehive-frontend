@@ -79,7 +79,7 @@ export default function AddServer({ handleGetServer }: Props) {
         >
           <FontAwesomeIcon icon={faPlus} />
         </button>
-        <div className="pointer-events-none z-10 absolute ml-2 font-semibold top-1/2 -translate-y-1/2 px-2 py-1 left-full rounded-md bg-[var(--foreground)] text-[var(--accent-foreground)] opacity-0 group-hover:opacity-100 whitespace-nowrap shadow">
+        <div className="pointer-events-none z-10 absolute ml-2 font-semibold top-1/2 -translate-y-1/2 px-2 py-1 left-full rounded-md bg-black text-[var(--accent-foreground)] opacity-0 group-hover:opacity-100 whitespace-nowrap shadow">
           Add Server
         </div>
       </div>

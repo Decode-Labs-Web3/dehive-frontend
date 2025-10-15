@@ -7,6 +7,7 @@ import ServerPannel from "./ServerPannel";
 import ServerMembers from "./ServerMembers";
 import ServerBans from "./ServerBans";
 import ServerUserProfile from "./ServerUserInfoModal";
+import ServerInvite from "./ServerInvite";
 
 const ServerBarItems = {
   Channels,
@@ -14,9 +15,10 @@ const ServerBarItems = {
   EditModal,
   Categories,
   CategoryPanel,
-  ServerPannel,
-  ServerMembers,
   ServerBans,
+  ServerPannel,
+  ServerInvite,
+  ServerMembers,
   ServerUserProfile,
 };
 
