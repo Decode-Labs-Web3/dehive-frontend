@@ -61,7 +61,7 @@ export default function EditModal({
     }
   }, []);
 
-  const [modal, setModal] = useState({ ...allFalse });
+  const [modal, setModal] = useState<Record<string, boolean>>({ ...allFalse });
 
   const [editServerForm, setEditServerForm] = useState({
     name: server.name,
@@ -635,7 +635,7 @@ export default function EditModal({
 
       {modal.invite && (
         <>
-          <ServerBarItems.ServerInvite serverId={server._id}/>
+          <ServerBarItems.ServerInvite server={server} setModal={setModal} />
         </>
       )}
     </>

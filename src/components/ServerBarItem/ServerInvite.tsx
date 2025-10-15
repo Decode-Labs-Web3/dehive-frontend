@@ -1,14 +1,33 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
+import { faX, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useInviteSuggestions } from "@/hooks/useInviteSuggestions";
 
-interface ServerInviteProps {
-  serverId: string;
+interface ServerProps {
+  _id: string;
+  name: string;
+  description: string;
+  owner_id: string;
+  member_count: number;
+  is_private: boolean;
+  tags: [];
+  createdAt: string;
+  updatedAt: string;
+  _v: boolean;
 }
 
-export default function ServerInvite({ serverId }: ServerInviteProps) {
-  const [code, setCode] = useState<number | null>(null);
+interface ServerInviteProps {
+  server: ServerProps;
+  setModal: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+}
+
+export default function ServerInvite({ server, setModal }: ServerInviteProps) {
   const [loading, setLoading] = useState(false);
+  const [code, setCode] = useState<number | null>(null);
+  const { suggestions } = useInviteSuggestions(server._id);
 
   const fetchCode = useCallback(async () => {
     setLoading(true);
@@ -20,7 +39,7 @@ export default function ServerInvite({ serverId }: ServerInviteProps) {
           "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
-          serverId,
+          serverId: server._id,
         }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -44,11 +63,15 @@ export default function ServerInvite({ serverId }: ServerInviteProps) {
     } finally {
       setLoading(false);
     }
-  }, [serverId]);
+  }, [server._id]);
 
   useEffect(() => {
     fetchCode();
   }, [fetchCode]);
+
+  const invitePath = code
+    ? `/invite?code=${encodeURIComponent(String(code))}`
+    : "";
 
   if (loading) {
     return <h1>Loading ...</h1>;
@@ -58,10 +81,101 @@ export default function ServerInvite({ serverId }: ServerInviteProps) {
       role="dialog"
       className="fixed inset-0 flex items-center justify-center z-30"
     >
-      <div className="fixed inset-0 bg-black/80 z-40" />
-      <div className="bg-green-500 w-100 h-100 z-50">
-        <h1>Hello this this server invited</h1>
-        <h1>http://localhost:9000/invite/inviteCode={code}</h1>
+      <div
+        onClick={() => {
+          setModal((prev) => ({
+            ...prev,
+            invite: false,
+          }));
+        }}
+        className="fixed inset-0 bg-black/80 z-40"
+      />
+      <div className="bg-[#313338] rounded-lg w-full max-w-md z-50 overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-[#1e1f22]">
+          <div>
+            <h2 className="text-white font-semibold text-base">
+              Invite friends to {server.name} server
+            </h2>
+            <div className="flex items-center gap-1 text-[#b5bac1] text-xs mt-1">
+              <span>#</span>
+              <span>general</span>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setModal((prev) => ({
+                ...prev,
+                invite: false,
+              }));
+            }}
+            className="text-[#b5bac1] hover:text-white transition-colors"
+          >
+            <FontAwesomeIcon icon={faX} className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="px-4 pb-4 max-h-64 overflow-y-auto">
+          {suggestions.map((suggestion) => (
+            <div
+              key={suggestion.user_id}
+              className="flex items-center justify-between py-2 hover:bg-[#2b2d31] rounded px-2 -mx-2 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                  <Image
+                    src={
+                      suggestion
+                        ? `https://ipfs.de-id.xyz/ipfs/${suggestion.avatar_ipfs_hash}`
+                        : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                    }
+                    alt={"Avatar"}
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-contain"
+                    unoptimized
+                  />
+                </div>
+                <div>
+                  <div className="text-white text-sm font-medium">
+                    {suggestion.display_name}
+                  </div>
+                  <div className="text-[#b5bac1] text-xs">
+                    @{suggestion.username}
+                  </div>
+                </div>
+              </div>
+              <button className="bg-transparent border border-[#4e5058] text-white text-sm px-4 py-1.5 rounded hover:bg-[#4e5058] transition-colors">
+                <FontAwesomeIcon icon={faPlus} />
+                Invite
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-[#1e1f22] p-4">
+          <div className="text-[#b5bac1] text-xs font-semibold uppercase mb-2">
+            Or, send a server invite link to a friend
+          </div>
+          <div className="flex gap-2">
+            <button
+              disabled={!code}
+              onClick={async (e) => {
+                if (!code) return;
+                const btn = e.currentTarget;
+                const old = btn.textContent;
+
+                const fullUrl = `${window.location.origin}${invitePath}`;
+                await navigator.clipboard.writeText(fullUrl);
+
+                btn.textContent = "Copied!";
+                setTimeout(() => (btn.textContent = old), 1000);
+              }}
+              className="bg-[#5865f2] hover:bg-[#4752c4] text-white text-sm font-medium px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {`${window.location.origin}${invitePath}`}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
