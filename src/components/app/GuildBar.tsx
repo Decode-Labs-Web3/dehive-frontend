@@ -1,5 +1,5 @@
 "use client";
-import ServerBarItems from "../guildeBaritem/index";
+import GuideBarItems from "../guildeBaritem/index";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { faMessage } from "@fortawesome/free-solid-svg-icons";
@@ -118,7 +118,7 @@ export default function GuildBar({
           </div>
         ))}
 
-      <ServerBarItems.AddServer handleGetServer={handleGetServer} />
+      <GuideBarItems.AddServer handleGetServer={handleGetServer} />
     </aside>
   );
 }

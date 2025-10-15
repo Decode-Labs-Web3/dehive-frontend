@@ -6,7 +6,6 @@ import ServerBarItems from "./index";
 import { getCookie } from "@/utils/cookie.utils";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import UserInfoModal from "@/components/meBarItem/UserInfoModal";
 import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
@@ -341,7 +340,7 @@ export default function ServerMembers({
               <span className="text-xs text-[var(--muted-foreground)]">
                 Joined
                 <br />
-                {new Date(membership.joined_at).toLocaleDateString()}
+                {new Date(membership.joined_at).toLocaleString()}
               </span>
 
               <div>
@@ -376,8 +375,7 @@ export default function ServerMembers({
 
           {/* user setting modal */}
           {userSettingModal[membership._id] && (
-            <div role="dialog" aria-modal="true">
-              {/* backdrop to close on click or Escape */}
+            <div role="dialog">
               <div
                 tabIndex={-1}
                 ref={(element: HTMLDivElement) => {
@@ -812,7 +810,10 @@ export default function ServerMembers({
           )}
 
           {userProfileModal[membership._id] && (
-            <UserInfoModal userId={membership._id}  setUserProfileModal={setUserProfileModal}/>
+            <ServerBarItems.ServerUserProfile
+              userId={membership._id}
+              setUserProfileModal={setUserProfileModal}
+            />
           )}
         </div>
       ))}

@@ -27,19 +27,18 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    console.log(`${pathname}:`, body)
+    console.log(`${pathname}:`, body);
 
     if (!body) {
       return NextResponse.json(
         {
           success: false,
           statusCode: 400,
-          message: "kickForm is lacking info ",
+          message: "Ban Form is lacking info ",
         },
         { status: 400 }
       );
     }
-
 
     const backendResponse = await fetch(
       `${process.env.DEHIVE_USER_DEHIVE_SERVER}/api/memberships/ban`,
@@ -56,7 +55,7 @@ export async function POST(req: Request) {
     );
 
     // console.debug(
-    //   "/api/server/members/ban backend response status",
+    //  `${pathname}`,
     //   backendResponse.status
     // );
 

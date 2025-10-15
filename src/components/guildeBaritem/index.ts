@@ -1,7 +1,7 @@
 import AddServer from "./AddServer";
 
-const ServerBarItems = {
+const GuideBarItems = {
   AddServer,
 };
 
-export default ServerBarItems;
+export default GuideBarItems;
