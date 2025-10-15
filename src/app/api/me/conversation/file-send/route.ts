@@ -28,54 +28,55 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { conversationId, page } = body;
 
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
     console.log(fingerprint_hashed);
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/files/${conversationId}?page=${page}&limit=30`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/send`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "x-session-id": sessionId,
           "x-fingerprint-hashed": fingerprint_hashed,
         },
+        body: JSON.stringify(body),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
     );
 
-    // console.debug(`${pathname}`, backendResponse.status);
+    // console.debug(`${pathname} error`, backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/me/me/conversation/file-list backend error:", error);
+      console.error(`${pathname} error`, error);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendResponse.status || 401,
-          message: error?.message || "Create server failed",
+          message: error?.message || "Send file failed",
         },
         { status: backendResponse.status || 401 }
       );
     }
 
     const response = await backendResponse.json();
-    // console.info("conversation-list success response", response.data.items);
+    // console.info(`${pathname}`, response.data);
 
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 200,
-        message: response.message || "OK",
+        statusCode: response.statusCode || 201,
+        message: response.message || "Message sent successfully",
         data: response.data,
       },
-      { status: 200 }
+      { status: 201 }
     );
   } catch (error) {
-    console.error("/api/me/me/conversation/file-list handler error:", error);
+    console.error(`${pathname} error`, error);
     return NextResponse.json(
       {
         success: false,

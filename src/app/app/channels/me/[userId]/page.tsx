@@ -24,6 +24,7 @@ export default function DirectMessagePage() {
         {
           method: "POST",
           headers: {
+            "Content-Type": "application/json",
             "X-Frontend-Internal-Request": "true",
           },
           body: JSON.stringify({ otherUserDehiveId: userId }),

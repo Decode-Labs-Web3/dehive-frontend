@@ -28,6 +28,19 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
   const [loading, setLoading] = useState(false);
   const [code, setCode] = useState<number | null>(null);
   const { suggestions } = useInviteSuggestions(server._id);
+  const [isSended, setIsSended] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    setIsSended(
+      Object.fromEntries(
+        suggestions.map((suggestion) => [suggestion.user_id, false])
+      )
+    );
+  }, [suggestions]);
+  const [sendInvite, setSendInvite] = useState({
+    conversationId: "",
+    content: "",
+    uploadIds: [],
+  });
 
   const fetchCode = useCallback(async () => {
     setLoading(true);
@@ -68,6 +81,80 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
   useEffect(() => {
     fetchCode();
   }, [fetchCode]);
+
+  const handleSendInvite = async (otherUserDehiveId: string) => {
+    setLoading(true);
+    if (isSended[otherUserDehiveId]) return;
+    // console.log(
+    //   "ehdbwe,bdjwebdiwkedbwkedbwkedjwekjdwedwedwedwed",
+    //   otherUserDehiveId
+    // );
+    try {
+      const apiResponse = await fetch(
+        "/api/me/conversation/conversation-create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Frontend-Internal-Request": "true",
+          },
+          body: JSON.stringify({ otherUserDehiveId }),
+          cache: "no-cache",
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+      if (response.statusCode === 200 && response.message === "OK") {
+        setSendInvite((prev) => ({
+          ...prev,
+          conversationId: response.data._id,
+          content: `${window.location.origin}${invitePath}`,
+        }));
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server create conversation is error");
+    }
+
+    try {
+      const apiResponse = await fetch("/api/me/conversation/file-send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify(sendInvite),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 201 &&
+        response.message === "Message sent successfully"
+      ) {
+        setLoading(false);
+        setIsSended((prev) => ({
+          ...prev,
+          [otherUserDehiveId]: true,
+        }));
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server create conversation is error");
+    }
+  };
 
   const invitePath = code
     ? `/invite?code=${encodeURIComponent(String(code))}`
@@ -144,9 +231,19 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
                   </div>
                 </div>
               </div>
-              <button className="bg-transparent border border-[#4e5058] text-white text-sm px-4 py-1.5 rounded hover:bg-[#4e5058] transition-colors">
-                <FontAwesomeIcon icon={faPlus} />
-                Invite
+              <button
+                disabled={isSended[suggestion.user_id]}
+                onClick={() => handleSendInvite(suggestion.user_id)}
+                className="bg-transparent border border-[#4e5058] text-white text-sm px-4 py-1.5 rounded hover:bg-[#4e5058] transition-colors"
+              >
+                {isSended[suggestion.user_id] ? (
+                  <>Sended</>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faPlus} />
+                    Invite
+                  </>
+                )}
               </button>
             </div>
           ))}

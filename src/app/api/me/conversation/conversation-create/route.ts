@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const { otherUserDehiveId } = body;
-    // console.log( "Helllo" ,otherUserDehiveId)
+    console.log( "Helllo" ,otherUserDehiveId)
 
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/user/user-following handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
