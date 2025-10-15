@@ -6,6 +6,7 @@ import ServerBarItems from "./index";
 import { getCookie } from "@/utils/cookie.utils";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import UserInfoModal from "@/components/meBarItem/UserInfoModal";
 import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
@@ -811,7 +812,7 @@ export default function ServerMembers({
           )}
 
           {userProfileModal[membership._id] && (
-            <ServerBarItems.ServerUserProfile membership={membership} />
+            <UserInfoModal userId={membership._id}  setUserProfileModal={setUserProfileModal}/>
           )}
         </div>
       ))}

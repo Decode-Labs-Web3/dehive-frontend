@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import UserProfileModal from "@/components/meBarItem/UserProfileModal";
+import UserInfoModal from "@/components/meBarItem/UserInfoModal";
 import { useState, useCallback, useEffect } from "react";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -118,19 +118,20 @@ export default function MeBar() {
 
             {userModal[user.user_id] && (
               <div
-              tabIndex={-1}
-              ref={(element: HTMLDivElement) => {
-                element?.focus()
-              }}
-              onKeyDown={(event) => {
-                if(event.key === "Escape"){
-                  setUserModal((prev) => ({
-                    ...prev,
-                    [user.user_id]: false,
-                  }));
-                }
-              }}
-              className="absolute bg-green-500 flex flex-col justify-center items-start left-1/2 -translate-x-1/2  w-44 sm:w-20 md:w-40 lg:w-55 z-50">
+                tabIndex={-1}
+                ref={(element: HTMLDivElement) => {
+                  element?.focus();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    setUserModal((prev) => ({
+                      ...prev,
+                      [user.user_id]: false,
+                    }));
+                  }
+                }}
+                className="absolute bg-green-500 flex flex-col justify-center items-start left-1/2 -translate-x-1/2  w-44 sm:w-20 md:w-40 lg:w-55 z-50"
+              >
                 <button
                   onClick={() => {
                     setUserModal((prev) => ({
@@ -170,7 +171,10 @@ export default function MeBar() {
             )}
 
             {userProfileModal[user.user_id] && (
-              <UserProfileModal userId={user.user_id} setUserProfileModal={setUserProfileModal}/>
+              <UserInfoModal
+                userId={user.user_id}
+                setUserProfileModal={setUserProfileModal}
+              />
             )}
           </div>
         ))}

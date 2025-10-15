@@ -35,17 +35,18 @@ interface MutualFollower {
   following_number: number;
 }
 
-interface UserProfileModalProps {
+interface ServerUserInfoModalProps {
   userId: string;
   setUserProfileModal: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
   >;
 }
 
-export default function UserProfileModal({
+export default function ServerUserInfoModal({
   userId,
   setUserProfileModal,
-}: UserProfileModalProps) {
+}: ServerUserInfoModalProps) {
+  const [activeUserId, setActiveUserId] = useState(userId);
   const [userInfo, setUserInfo] = useState<UserDataProps | null>(null);
 
   const fetchUserInfo = useCallback(async () => {
@@ -56,7 +57,7 @@ export default function UserProfileModal({
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId: activeUserId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -72,7 +73,7 @@ export default function UserProfileModal({
       console.error(error);
       console.log("Server fetch user chatting with errror");
     }
-  }, [userId]);
+  }, [activeUserId]);
 
   useEffect(() => {
     fetchUserInfo();
@@ -170,11 +171,11 @@ export default function UserProfileModal({
                 )}
 
                 <Link
-                  href={`/app/channels/me/${userInfo._id}`}
+                  href={`/app/channels/me/${activeUserId}`}
                   onClick={() => {
                     setUserProfileModal((prev) => ({
                       ...prev,
-                      [userInfo._id]: false,
+                      [userId]: false,
                     }));
                   }}
                   className="mt-8 inline-flex w-full items-center justify-center rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
@@ -203,15 +204,16 @@ export default function UserProfileModal({
                     (mutual: MutualFollower) => (
                       <li
                         key={mutual.user_id}
+                        onClick={() => setActiveUserId(mutual.user_id)}
                         className="flex items-center gap-4 rounded-xl border border-transparent bg-neutral-900/60 px-4 py-3 transition hover:border-neutral-700"
                       >
-                        <div className="h-12 w-12 overflow-hidden rounded-full bg-neutral-800">
+                        <div className="h-12 w-12 rounded-full bg-neutral-800">
                           <Image
                             src={`https://ipfs.de-id.xyz/ipfs/${mutual.avatar_ipfs_hash}`}
                             alt={mutual.display_name}
-                            width={48}
-                            height={48}
-                            className="h-full w-full object-cover"
+                            width={20}
+                            height={20}
+                            className="h-full w-full object-contain"
                             unoptimized
                           />
                         </div>
