@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/user/user-following backend error:", error);
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,

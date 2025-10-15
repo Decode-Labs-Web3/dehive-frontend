@@ -24,6 +24,8 @@ interface ServerProps {
 
 interface ServerMembersProps {
   server: ServerProps;
+  fetchServerInfo: () => void;
+  setServerPannel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface MembershipsProps {
@@ -41,7 +43,11 @@ interface MembershipsProps {
   joined_at: string;
 }
 
-export default function ServerMembers({ server }: ServerMembersProps) {
+export default function ServerMembers({
+  server,
+  fetchServerInfo,
+  setServerPannel,
+}: ServerMembersProps) {
   const { refreshServers } = useServerContext();
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string>();
@@ -281,6 +287,8 @@ export default function ServerMembers({ server }: ServerMembersProps) {
           [memberId]: false,
         }));
         refreshServers?.();
+        fetchServerInfo?.();
+        setServerPannel(false);
       }
     } catch (error) {
       console.error(error);

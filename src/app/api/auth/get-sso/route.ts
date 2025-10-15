@@ -74,10 +74,11 @@ export async function POST(req: Request) {
       }
     );
 
-    console.log(backendRes)
+    // console.error(`${pathname}`,backendRes)
 
     if (!backendRes.ok) {
       const err = await backendRes.json().catch(() => null);
+      // console.log(`${pathname}`,err);
       return NextResponse.json(
         {
           success: false,
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendRes.json();
-    console.log(response);
+    // console.log(`${pathname}`,response);
 
     const res = NextResponse.json(
       {
@@ -125,7 +126,7 @@ export async function POST(req: Request) {
 
     return res;
   } catch (error) {
-    console.error("/api/auth/sso handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

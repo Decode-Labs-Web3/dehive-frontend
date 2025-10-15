@@ -294,7 +294,11 @@ export default function ServerPannel({
           <div className="flex-1 overflow-y-auto px-10 py-8">
             {serverPannelSetting.members && (
               <>
-                <ServerBarItems.ServerMembers server={server} />
+                <ServerBarItems.ServerMembers
+                  server={server}
+                  fetchServerInfo={fetchServerInfo}
+                  setServerPannel={setServerPannel}
+                />
               </>
             )}
 

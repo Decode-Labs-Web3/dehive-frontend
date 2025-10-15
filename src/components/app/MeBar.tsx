@@ -194,7 +194,9 @@ export default function MeBar() {
                   }}
                   className="fixed inset-0 bg-black/80 z-40"
                 />
-                <div className="w-100 h-100 bg-red-500 z-50"></div>
+                <div className="w-100 h-100 bg-red-500 z-50">
+                  
+                </div>
               </div>
             )}
           </div>
