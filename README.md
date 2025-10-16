@@ -1,38 +1,146 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dehive - Real-time Chat Application
 
-## Getting Started
+**Final Project - University of Greenwich**
+**Student:** Vũ Trần Quang Minh
+**Email:** minhvtqgcs220006@fpt.edu.vn
+**Academic Year:** 2024-2025
 
-First, run the development server:
+---
+
+## 📋 About The Project
+
+Dehive is a modern, real-time messaging platform that combines Discord-like community features with blockchain-based authentication. Built with Next.js and Socket.IO, it provides secure, scalable communication through servers, channels, and direct messaging.
+
+### Key Features
+
+- 🔐 **Blockchain Authentication** - SSO integration with Decode Protocol
+- 💬 **Real-time Messaging** - WebSocket-powered instant communication
+- 🏰 **Server Management** - Create and manage community servers with roles and permissions
+- 📁 **Organized Channels** - Categories and channels for structured conversations
+- 👥 **User Management** - Profiles, following system, and member controls
+- 🎨 **Modern UI** - Responsive dark theme with three-column layout
+
+---
+
+## �️ Tech Stack
+
+- **Frontend:** Next.js 15.5, React 19, TypeScript
+- **Styling:** Tailwind CSS 4
+- **Real-time:** Socket.IO Client 4.8
+- **Icons:** FontAwesome
+- **Notifications:** React-Toastify
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 20.x or higher
+- Backend API server running
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/Decode-Labs-Web3/dehive-frontend.git
+cd dehive-frontend
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Create `.env.local` file:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_ME_SIO_URL=http://localhost:3001
+NEXT_PUBLIC_CHANNEL_SIO_URL=http://localhost:3002
+DECODE_BASE_URL=https://decode.protocol.url
+DEHIVE_APP_ID=dehive
+PUBLIC_FRONTEND_URL=http://localhost:9000
+NODE_ENV=development
+```
+
+4. Run development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open [http://localhost:9000](http://localhost:9000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 📁 Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+├── app/              # Next.js App Router (pages & API routes)
+├── components/       # React components
+├── hooks/            # Custom React hooks
+├── contexts/         # React contexts
+├── providers/        # Context providers
+├── library/          # WebSocket connections
+├── interfaces/       # TypeScript interfaces
+├── utils/            # Utility functions
+└── middleware.ts     # API protection
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🔐 Security Features
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- API route protection via middleware
+- SSO authentication with Decode Protocol
+- HTTP-only secure cookies
+- WebSocket identity verification
+- TypeScript type safety
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# dehive-frontend
-# dehive-frontend
+---
+
+## 🌟 Core Features
+
+### Messaging System
+
+Real-time message delivery with edit, delete, reply, and file attachment support. Includes pagination and message history.
+
+### Server System
+
+Create servers with categories and channels. Manage members with role-based permissions (Owner/Admin/Member). Generate invite codes.
+
+### User System
+
+User profiles with avatars, status tracking, following system, and customizable display names.
+
+---
+
+## 👤 Author
+
+**Vũ Trần Quang Minh**
+Student ID: GCS220006
+University: University of Greenwich
+Email: minhvtqgcs220006@fpt.edu.vn
+
+---
+
+## 🙏 Acknowledgments
+
+Thanks to Next.js, Socket.IO, Decode Protocol, and the University of Greenwich for making this project possible.
+
+---
+
+_Built with Next.js, React, TypeScript, and Socket.IO_
+
+---
