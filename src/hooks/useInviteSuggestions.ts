@@ -87,8 +87,8 @@ export function useInviteSuggestions(serverId: string) {
 
       const members = (await membersResponse.json()).data as Member[];
       const friends = (await friendsResponse.json()).data as Friend[];
-      console.log("members", members);
-      console.log("friends", friends);
+      // console.log("members", members);
+      // console.log("friends", friends);
       const inServer = new Set(members.map((member: Member) => member._id));
       const filtered = friends.filter(
         (friend: Friend) => !inServer.has(friend.user_id)

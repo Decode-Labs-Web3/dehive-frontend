@@ -1,7 +1,8 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import ServerBarItems from "./index";
+import { useParams } from "next/navigation";
+import { getCookie } from "@/utils/cookie.utils";
 import { useState, useCallback, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -31,9 +32,56 @@ interface ChannelProps {
   __v: number;
 }
 
-export default function Categories() {
+interface ServerProps {
+  _id: string;
+  name: string;
+  description: string;
+  owner_id: string;
+  member_count: number;
+  is_private: boolean;
+  tags: [];
+  createdAt: string;
+  updatedAt: string;
+  _v: boolean;
+}
+
+interface Member {
+  membership_id: string;
+  _id: string;
+  username: string;
+  display_name: string;
+  avatar: string;
+  avatar_ipfs_hash: string;
+  status: string;
+  server_count: number;
+  bio: string;
+  is_banned: boolean;
+  last_login: string;
+  following_number: number;
+  followers_number: number;
+  is_following: boolean;
+  is_follower: boolean;
+  is_blocked: boolean;
+  is_blocked_by: boolean;
+  mutual_followers_number: number;
+  mutual_followers_list: [];
+  is_active: boolean;
+  wallets: [];
+  __v: number;
+  role: string;
+  is_muted: boolean;
+  joined_at: string;
+}
+
+interface CategoriesProps {
+  server: ServerProps;
+}
+
+export default function Categories({ server }: CategoriesProps) {
   const { serverId } = useParams();
+  const [userId, setUserId] = useState<string>("");
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  const [isPrivileged, setIsPrivileged] = useState(false);
   const [createChannelModal, setCreateChannelModal] = useState<
     Record<string, boolean>
   >({});
@@ -55,6 +103,52 @@ export default function Categories() {
   const [channelPanel, setChannelPanel] = useState<Record<string, boolean>>({});
   // const [ channelModal, setChannelModal ] = useState<Record<string, boolean>>({})
   // console.log(category);
+
+  useEffect(() => {
+    const userId = getCookie("userId");
+    if (userId) {
+      setUserId(userId);
+    }
+  }, []);
+
+  const fetchMember = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/servers/members/memberships", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ serverId: server._id }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        const isPrivileged = response.data.some(
+          (member: Member) =>
+            (member.role === "owner" || member.role === "moderator") &&
+            member._id === userId
+        );
+        setIsPrivileged(isPrivileged);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server fetch server member error");
+    }
+  }, [server._id, userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetchMember();
+  }, [userId, fetchMember]);
 
   const fetchCategoryInfo = useCallback(async () => {
     setLoading(true);
@@ -257,7 +351,7 @@ export default function Categories() {
               className="relative group flex items-center justify-between px-3 py-1 rounded-md hover:bg-[var(--background-secondary)]"
             >
               <button
-                className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]"
+                className="flex h-10 items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]"
                 onClick={() =>
                   setOpen((prev) => ({
                     ...prev,
@@ -271,18 +365,21 @@ export default function Categories() {
                   className="text-[var(--muted-foreground)]"
                 />
               </button>
-              <button
-                onClick={() =>
-                  setCreateChannelModal((prev) => ({
-                    ...prev,
-                    [category._id]: !prev[category._id],
-                  }))
-                }
-                className="p-1 rounded hover:bg-[var(--background)]/10 text-[var(--accent)]"
-                aria-label={`Create channel in ${category.name}`}
-              >
-                <FontAwesomeIcon icon={faPlus} />
-              </button>
+
+              {isPrivileged && (
+                <button
+                  onClick={() =>
+                    setCreateChannelModal((prev) => ({
+                      ...prev,
+                      [category._id]: !prev[category._id],
+                    }))
+                  }
+                  className="p-1 h-10 rounded hover:bg-[var(--background)]/10 text-[var(--accent)]"
+                  aria-label={`Create channel in ${category.name}`}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                </button>
+              )}
 
               {/* right mouse click category modal */}
               {categoryModal[category._id] && (
@@ -352,39 +449,43 @@ export default function Categories() {
                           Collapse All Categories
                         </button>
 
-                        <button
-                          onClick={() => {
-                            setCategoryModal((prev) => ({
-                              ...prev,
-                              [category._id]: false,
-                            }));
+                        {server.owner_id === userId && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setCategoryModal((prev) => ({
+                                  ...prev,
+                                  [category._id]: false,
+                                }));
 
-                            setEditCategoryModal((prev) => ({
-                              ...prev,
-                              [category._id]: true,
-                            }));
-                          }}
-                          className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
-                        >
-                          Edit Category
-                        </button>
+                                setEditCategoryModal((prev) => ({
+                                  ...prev,
+                                  [category._id]: true,
+                                }));
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                            >
+                              Edit Category
+                            </button>
 
-                        <button
-                          onClick={() => {
-                            setDeleteCategoryModal((prev) => ({
-                              ...prev,
-                              [category._id]: true,
-                            }));
+                            <button
+                              onClick={() => {
+                                setDeleteCategoryModal((prev) => ({
+                                  ...prev,
+                                  [category._id]: true,
+                                }));
 
-                            setCategoryModal((prev) => ({
-                              ...prev,
-                              [category._id]: false,
-                            }));
-                          }}
-                          className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
-                        >
-                          Delete Category
-                        </button>
+                                setCategoryModal((prev) => ({
+                                  ...prev,
+                                  [category._id]: false,
+                                }));
+                              }}
+                              className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
+                            >
+                              Delete Category
+                            </button>
+                          </>
+                        )}
 
                         <button
                           onClick={async (
@@ -496,6 +597,7 @@ export default function Categories() {
                         channelPanel={channelPanel}
                         setChannelPannel={setChannelPanel}
                         fetchCategoryInfo={fetchCategoryInfo}
+                        isPrivileged={isPrivileged}
                       />
                     </div>
                   ))}

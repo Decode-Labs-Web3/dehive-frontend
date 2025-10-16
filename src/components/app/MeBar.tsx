@@ -108,7 +108,7 @@ export default function MeBar() {
                   alt={"Avatar"}
                   width={40}
                   height={40}
-                  className="w-full h-full rounded-full object-cover"
+                  className="w-full h-full rounded-full object-contain"
                   unoptimized
                 />
               </div>
@@ -124,6 +124,7 @@ export default function MeBar() {
 
             {userModal[user.user_id] && (
               <div
+                role="dialog"
                 tabIndex={-1}
                 ref={(element: HTMLDivElement) => {
                   element?.focus();
@@ -136,9 +137,9 @@ export default function MeBar() {
                     }));
                   }
                 }}
-                className="absolute top-12 right-2 z-50 w-56 rounded-md bg-[#232428] text-neutral-200 shadow-xl ring-1 ring-black/50 border border-black/20 p-1 focus:outline-none"
+                className="absolute inset-0 z-30"
               >
-                <button
+                <div
                   onClick={() => {
                     setUserModal((prev) => ({
                       ...prev,
@@ -146,44 +147,66 @@ export default function MeBar() {
                     }));
                     setUserProfileModal((prev) => ({
                       ...prev,
-                      [user.user_id]: true,
+                      [user.user_id]: false,
                     }));
                   }}
-                  className="w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors"
-                >
-                  Profile
-                </button>
-                <Link
-                  href={`/app/channels/me/${user.user_id}`}
-                  className="block w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors"
-                >
-                  Message
-                </Link>
-                <button className="w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors">
-                  Call
-                </button>
-                <button
-                  onClick={async (
-                    event: React.MouseEvent<HTMLButtonElement>
-                  ) => {
-                    const button = event.currentTarget;
-                    const oldText = button.textContent;
+                  className="fixed inset-0 bg-black/50 z-40"
+                />
+                <div className="absolute left-1/2 -translate-x-1/2 mt-15 w-56 rounded-md bg-[#232428] text-neutral-200 border border-black/20 p-1 z-50">
+                  {" "}
+                  <button
+                    onClick={() => {
+                      setUserModal((prev) => ({
+                        ...prev,
+                        [user.user_id]: false,
+                      }));
+                      setUserProfileModal((prev) => ({
+                        ...prev,
+                        [user.user_id]: true,
+                      }));
+                    }}
+                    className="w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors"
+                  >
+                    Profile
+                  </button>
+                  <Link
+                    onClick={() => {
+                      setUserModal((prev) => ({
+                        ...prev,
+                        [user.user_id]: false,
+                      }));
+                    }}
+                    href={`/app/channels/me/${user.user_id}`}
+                    className="block w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors"
+                  >
+                    Message
+                  </Link>
+                  <button className="w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors">
+                    Call
+                  </button>
+                  <button
+                    onClick={async (
+                      event: React.MouseEvent<HTMLButtonElement>
+                    ) => {
+                      const button = event.currentTarget;
+                      const oldText = button.textContent;
 
-                    await navigator.clipboard.writeText(user.user_id);
+                      await navigator.clipboard.writeText(user.user_id);
 
-                    button.textContent = "Copied!";
-                    setTimeout(() => {
-                      button.textContent = oldText;
-                    }, 1000);
-                  }}
-                  className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-white/10 active:bg-white/20 transition-colors"
-                >
-                  Copy User ID
-                  <FontAwesomeIcon
-                    icon={faCopy}
-                    className="ml-2 text-neutral-400"
-                  />
-                </button>
+                      button.textContent = "Copied!";
+                      setTimeout(() => {
+                        button.textContent = oldText;
+                      }, 1000);
+                    }}
+                    className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-white/10 active:bg-white/20 transition-colors"
+                  >
+                    Copy User ID
+                    <FontAwesomeIcon
+                      icon={faCopy}
+                      className="ml-2 text-neutral-400"
+                    />
+                  </button>
+                </div>
               </div>
             )}
 
