@@ -31,7 +31,7 @@ interface UserDataProps {
 }
 
 interface MutualServers {
-  _id: string;
+  server_id: string;
   server_name: string;
 }
 
@@ -68,6 +68,7 @@ export default function UserInfoModal({
   setUserProfileModal,
 }: UserInfoModalProps) {
   const [activeUserId, setActiveUserId] = useState(userId);
+  const [tab, setTab] = useState<"activity" | "mutual" | "servers">("mutual");
   const [userInfo, setUserInfo] = useState<UserDataProps | null>(null);
 
   const fetchUserInfo = useCallback(async () => {
@@ -210,53 +211,112 @@ export default function UserInfoModal({
             </aside>
 
             <section className="flex-1 overflow-y-auto bg-neutral-900/60 px-6 py-6">
-              <div className="flex flex-wrap items-center gap-4 border-b border-neutral-800 pb-4 text-sm font-medium">
-                <span className="text-neutral-400">Activity</span>
-                <span className="text-white">Mutual Friends</span>
-                <span className="text-neutral-500">
-                  Servers ({userInfo.server_count})
-                </span>
+              <div className="border-b border-neutral-800 pb-4">
+                <div className="flex gap-4 text-sm font-medium">
+                  <button
+                    onClick={() => setTab("activity")}
+                    className={`rounded-md px-2 py-1 ${
+                      tab === "activity"
+                        ? "text-white"
+                        : "text-neutral-400 hover:text-neutral-200"
+                    }`}
+                  >
+                    Activity
+                  </button>
+
+                  <button
+                    onClick={() => setTab("mutual")}
+                    className={`rounded-md px-2 py-1 ${
+                      tab === "mutual"
+                        ? "text-white"
+                        : "text-neutral-400 hover:text-neutral-200"
+                    }`}
+                  >
+                    Mutual Friends
+                  </button>
+
+                  <button
+                    onClick={() => setTab("servers")}
+                    className={`rounded-md px-2 py-1 ${
+                      tab === "servers"
+                        ? "text-white"
+                        : "text-neutral-400 hover:text-neutral-200"
+                    }`}
+                  >
+                    Servers ({userInfo?.mutual_servers_count ?? 0})
+                  </button>
+                </div>
               </div>
 
-              {userInfo.mutual_followers_list.length === 0 ? (
-                <div className="flex h-48 items-center justify-center text-sm text-neutral-500">
-                  No mutual friends yet.
+              {tab === "activity" && (
+                <div role="tabpanel" className="py-6 text-sm text-neutral-400">
+                  No recent activity.
                 </div>
-              ) : (
-                <ul className="mt-6 space-y-4">
-                  {userInfo.mutual_followers_list.map(
-                    (mutual: MutualFollowers) => (
-                      <li
-                        key={mutual.user_id}
-                        onClick={() => setActiveUserId(mutual.user_id)}
-                        className="flex items-center gap-4 rounded-xl border border-transparent bg-neutral-900/60 px-4 py-3 transition hover:border-neutral-700"
-                      >
-                        <div className="h-12 w-12 overflow-hidden rounded-full bg-neutral-800">
-                          <Image
-                            src={`https://ipfs.de-id.xyz/ipfs/${mutual.avatar_ipfs_hash}`}
-                            alt={mutual.display_name}
-                            width={48}
-                            height={48}
-                            className="h-full w-full object-contain"
-                            unoptimized
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="truncate text-sm font-semibold text-white">
-                            {mutual.display_name}
-                          </p>
-                          <p className="truncate text-xs text-neutral-400">
-                            @{mutual.username}
-                          </p>
-                        </div>
-                        <div className="text-right text-xs text-neutral-500">
-                          <p>{mutual.followers_number} Followers</p>
-                          <p>{mutual.following_number} Following</p>
-                        </div>
-                      </li>
-                    )
+              )}
+
+              {tab === "mutual" && (
+                <div role="tabpanel" className="py-6">
+                  {userInfo.mutual_followers_list.length === 0 ? (
+                    <div className="flex h-48 items-center justify-center text-sm text-neutral-500">
+                      No mutual friends yet.
+                    </div>
+                  ) : (
+                    <ul className="mt-2 space-y-4">
+                      {userInfo.mutual_followers_list.map(
+                        (mutual: MutualFollowers) => (
+                          <li
+                            key={mutual.user_id}
+                            onClick={() => setActiveUserId(mutual.user_id)}
+                            className="flex items-center gap-4 rounded-xl border border-transparent bg-neutral-900/60 px-4 py-3 transition hover:border-neutral-700 cursor-pointer"
+                          >
+                            <div className="h-12 w-12 overflow-hidden rounded-full bg-neutral-800">
+                              <Image
+                                src={`https://ipfs.de-id.xyz/ipfs/${mutual.avatar_ipfs_hash}`}
+                                alt={mutual.display_name}
+                                width={48}
+                                height={48}
+                                className="h-full w-full object-contain"
+                                unoptimized
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="truncate text-sm font-semibold text-white">
+                                {mutual.display_name}
+                              </p>
+                              <p className="truncate text-xs text-neutral-400">
+                                @{mutual.username}
+                              </p>
+                            </div>
+                            <div className="text-right text-xs text-neutral-500">
+                              <p>{mutual.followers_number} Followers</p>
+                              <p>{mutual.following_number} Following</p>
+                            </div>
+                          </li>
+                        )
+                      )}
+                    </ul>
                   )}
-                </ul>
+                </div>
+              )}
+              {tab === "servers" && (
+                <div role="tabpanel" className="py-6">
+                  {userInfo.mutual_servers_count === 0 ? (
+                    <div className="flex h-48 items-center justify-center text-sm text-neutral-500">
+                      No mutual servers.
+                    </div>
+                  ) : (
+                    <ul className="mt-2 space-y-3">
+                      {userInfo.mutual_servers.map((server: MutualServers) => (
+                        <li
+                          key={server.server_id}
+                          className="rounded-xl bg-neutral-900/60 px-4 py-3 text-sm text-neutral-200"
+                        >
+                          {server.server_name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               )}
             </section>
           </div>

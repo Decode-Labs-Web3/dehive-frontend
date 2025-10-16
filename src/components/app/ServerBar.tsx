@@ -100,7 +100,8 @@ export default function ServerBar() {
           </>
         )}
       </div>
-      <ServerBarItems.Categories />
+      
+      {server && <ServerBarItems.Categories server={server} />}
 
       {serverPannel && server && (
         <ServerBarItems.ServerPannel
