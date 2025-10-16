@@ -11,7 +11,7 @@ let _socket: Socket<ServerToClientCallEvents, ClientToServerCallEvents> | null =
 export function getMeCallSocketIO() {
   if (_socket) return _socket;
 
-  _socket = io(URL, {
+  _socket = io(`${URL}/rtc`, {
     transports: ["websocket"],
     autoConnect: false,
     reconnection: true,
