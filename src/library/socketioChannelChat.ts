@@ -2,15 +2,15 @@ import { io, Socket } from "socket.io-client";
 import type {
   ServerToClientChannelEvents,
   ClientToServerChannelEvents,
-} from "@/interfaces/websocketChannel.interfaces";
+} from "@/interfaces/websocketChannelChat.interfaces";
 
-const URL = process.env.NEXT_PUBLIC_CHANNEL_SIO_URL!;
+const URL = process.env.NEXT_PUBLIC_CHANNEL_CHAT_SIO_URL!;
 let _channelSocket: Socket<
   ServerToClientChannelEvents,
   ClientToServerChannelEvents
 > | null = null;
 
-export function getChannelSocketIO(): Socket<
+export function getChannelChatSocketIO(): Socket<
   ServerToClientChannelEvents,
   ClientToServerChannelEvents
 > {

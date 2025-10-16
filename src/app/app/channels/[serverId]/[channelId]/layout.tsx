@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getCookie } from "@/utils/cookie.utils";
-import SocketChannelProvider from "@/providers/socketChannelProvider";
+import SocketChannelProvider from "@/providers/socketChannelChatProvider";
 
 export default function ChannelLayout({ children }: { children: React.ReactNode }) {
   const { serverId, channelId } = useParams<{

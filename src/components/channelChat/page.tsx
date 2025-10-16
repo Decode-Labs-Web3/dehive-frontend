@@ -17,7 +17,7 @@ import {
   faTrash,
   faX,
 } from "@fortawesome/free-solid-svg-icons";
-import { MessageChannel } from "@/interfaces/websocketChannel.interfaces";
+import { MessageChannel } from "@/interfaces/websocketChannelChat.interfaces";
 
 interface NewMessage {
   content: string;

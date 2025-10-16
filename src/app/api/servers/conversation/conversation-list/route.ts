@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     console.log(fingerprint_hashed);
 
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_CHANNEL_SIO_URL}/api/messages/conversation/${conversationId}?page=${page}&limit=30`,
+      `${process.env.NEXT_PUBLIC_CHANNEL_CHAT_SIO_URL}/api/messages/conversation/${conversationId}?page=${page}&limit=30`,
       {
         method: "GET",
         headers: {

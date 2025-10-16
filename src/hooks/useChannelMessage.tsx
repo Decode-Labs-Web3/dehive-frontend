@@ -1,11 +1,11 @@
 "use client";
 
-import { getChannelSocketIO } from "@/library/socketioChannel";
+import { getChannelChatSocketIO } from "@/library/socketioChannel";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { MessageChannel } from "@/interfaces/websocketChannel.interfaces";
+import { MessageChannel } from "@/interfaces/websocketChannelChat.interfaces";
 
 export function useChannelMessage(conversationId?: string) {
-  const socket = useRef(getChannelSocketIO()).current;
+  const socket = useRef(getChannelChatSocketIO()).current;
   const [page, setPage] = useState<number>(0);
   const [isLastPage, setIsLastPage] = useState(false);
   const [sending, setSending] = useState(false);
@@ -44,7 +44,9 @@ export function useChannelMessage(conversationId?: string) {
       );
     };
 
-    const onMessageEdited = (editMessage: MessageChannel & { isEdited?: boolean }) => {
+    const onMessageEdited = (
+      editMessage: MessageChannel & { isEdited?: boolean }
+    ) => {
       if (
         String(editMessage.conversationId) !==
         String(latestConversationId.current)

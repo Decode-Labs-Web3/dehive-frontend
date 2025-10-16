@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { getMeSocketIO } from "@/library/socketioMe";
+import { getMeChatSocketIO } from "@/library/socketioMeChat";
 import type {
   IdentityConfirmed,
   Message,
@@ -10,8 +10,8 @@ import type {
 
 type Props = { userId?: string | null; children: React.ReactNode };
 
-export default function SocketMeProvider({ userId, children }: Props) {
-  const socket = useRef(getMeSocketIO()).current;
+export default function SocketMeChatProvider({ userId, children }: Props) {
+  const socket = useRef(getMeChatSocketIO()).current;
 
   useEffect(() => {
     const identify = () => {

@@ -1,7 +1,7 @@
 export * from "./services.interfaces";
 
-export * from "./websocketMe.interfaces";
+export * from "./websocketMeChat.interfaces";
 
 export * from "./user.interfaces";
 
-export * from "./websocketChannel.interfaces";
+export * from "./websocketChannelChat.interfaces";

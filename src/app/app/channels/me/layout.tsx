@@ -3,7 +3,7 @@
 import App from "@/components/app";
 import { useEffect, useState } from "react";
 import { getCookie } from "@/utils/cookie.utils";
-import SocketMeProvider from "@/providers/socketMeProvider";
+import SocketMeChatProvider from "@/providers/socketMeChatProvider";
 
 export default function MeLayout({ children }: { children: React.ReactNode }) {
   const [currentId, setCurrentId] = useState("");
@@ -14,13 +14,13 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
     }
   }, []);
   return (
-    <SocketMeProvider userId={currentId}>
+    <SocketMeChatProvider userId={currentId}>
       <div className="flex h-screen">
         <div className="w-60">
           <App.MeBar />
         </div>
         <div className="flex-1">{children}</div>
       </div>
-    </SocketMeProvider>
+    </SocketMeChatProvider>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { getChannelSocketIO } from "@/library/socketioChannel";
+import { getChannelChatSocketIO } from "@/library/socketioChannelChat";
 import type {
   IdentityConfirmedChannel,
   JoinedChannel,
@@ -24,7 +24,7 @@ export default function SocketChannelProvider({
   channelId,
   children,
 }: Props) {
-  const socket = useRef(getChannelSocketIO()).current;
+  const socket = useRef(getChannelChatSocketIO()).current;
 
   useEffect(() => {
     const identify = () => {

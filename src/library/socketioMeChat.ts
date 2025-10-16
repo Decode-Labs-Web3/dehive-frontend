@@ -2,13 +2,13 @@ import { io, Socket } from "socket.io-client";
 import type {
   ServerToClientMeEvents,
   ClientToServerMeEvents,
-} from "../interfaces/websocketMe.interfaces";
+} from "../interfaces/websocketMeChat.interfaces";
 
-const URL = process.env.NEXT_PUBLIC_ME_SIO_URL!;
+const URL = process.env.NEXT_PUBLIC_ME_CHAT_SIO_URL!;
 let _socket: Socket<ServerToClientMeEvents, ClientToServerMeEvents> | null =
   null;
 
-export function getMeSocketIO(): Socket<
+export function getMeChatSocketIO(): Socket<
   ServerToClientMeEvents,
   ClientToServerMeEvents
 > {

@@ -1,13 +1,13 @@
 "use client";
 
-import { getChannelSocketIO } from "@/library/socketioChannel";
+import { getChannelChatSocketIO } from "@/library/socketioChannel";
 import { useEffect, useRef, useState, useCallback } from "react";
 import type {
   IdentityConfirmedChannel,
   JoinedChannel,
   WsErrorPayloadChannel,
   JoinChannelDto,
-} from "@/interfaces/websocketChannel.interfaces";
+} from "@/interfaces/websocketChannelChat.interfaces";
 
 type Args = {
   userId?: string | null;
@@ -15,10 +15,16 @@ type Args = {
   channelId?: string | null;
 };
 
-type Status = "idle" | "connecting" | "identifying" | "joining" | "ready" | "error";
+type Status =
+  | "idle"
+  | "connecting"
+  | "identifying"
+  | "joining"
+  | "ready"
+  | "error";
 
 export function useChannelConversation({ userId, serverId, channelId }: Args) {
-  const socket = useRef(getChannelSocketIO()).current;
+  const socket = useRef(getChannelChatSocketIO()).current;
 
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>("idle");
@@ -59,7 +65,9 @@ export function useChannelConversation({ userId, serverId, channelId }: Args) {
 
     socket.io.on("reconnect", () => identify());
     socket.io.on("reconnect_attempt", () => {});
-    socket.io.on("reconnect_error", (e: Error) => setErr(e.message ?? "reconnect_error"));
+    socket.io.on("reconnect_error", (e: Error) =>
+      setErr(e.message ?? "reconnect_error")
+    );
     socket.io.on("reconnect_failed", () => setErr("reconnect_failed"));
 
     if (!socket.connected) socket.connect();
@@ -78,7 +86,7 @@ export function useChannelConversation({ userId, serverId, channelId }: Args) {
 
   useEffect(() => {
     const onIdentityConfirmed = (p: IdentityConfirmedChannel) => {
-      console.log(p)
+      console.log(p);
       if (canJoin) join();
     };
     const onJoinedChannel = (p: JoinedChannel) => {
