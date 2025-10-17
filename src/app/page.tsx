@@ -13,11 +13,6 @@ export default function Login() {
 
   useEffect(() => {
     (async () => {
-      const existing = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("fingerprint_hashed="));
-      if (existing) return;
-
       const { fingerprint_hashed } = await fingerprintService();
       document.cookie = `fingerprint=${fingerprint_hashed}; path=/; max-age=31536000; SameSite=Lax`;
     })();

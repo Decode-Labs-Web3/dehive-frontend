@@ -11,6 +11,12 @@ import {
   faPlus,
   faCopy,
 } from "@fortawesome/free-solid-svg-icons";
+import {
+  DndContext,
+  DragEndEvent,
+  useDroppable,
+  useDraggable,
+} from "@dnd-kit/core";
 
 interface CategoryProps {
   _id: string;
@@ -333,8 +339,88 @@ export default function Categories({ server }: CategoriesProps) {
     }
   };
 
+  const handleChannelMove = async (
+    channelId: string,
+    targetCategoryId: string
+  ) => {
+    try {
+      const apiResponse = await fetch("/api/servers/channel/move", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ channelId, targetCategoryId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        fetchCategoryInfo();
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server error for moving channel");
+    }
+  };
+
+  const OnDragEnd = async ({ active, over }: DragEndEvent) => {
+    if (!over) return;
+    const channelId = String(active.id);
+    const sourceCategoryId = String(active.data.current?.categoryId);
+    const targetCategoryId = String(over.id);
+    if (
+      !channelId ||
+      !sourceCategoryId ||
+      sourceCategoryId === targetCategoryId
+    )
+      return;
+
+    setCategories((prev: CategoryProps[]) =>
+      prev.map((category: CategoryProps) => {
+        if (category._id === sourceCategoryId) {
+          return {
+            ...category,
+            channels: category.channels.filter(
+              (prevChannel) => prevChannel._id !== channelId
+            ),
+          };
+        }
+        if (category._id === targetCategoryId) {
+          const moved = prev
+            .find((prevCategory) => prevCategory._id === sourceCategoryId)
+            ?.channels.find((prevChannel) => prevChannel._id === channelId);
+          return moved
+            ? {
+                ...category,
+                channels: [
+                  ...category.channels,
+                  { ...moved, category_id: targetCategoryId },
+                ],
+              }
+            : category;
+        }
+        return category;
+      })
+    );
+
+    try {
+      await handleChannelMove(channelId, targetCategoryId);
+    } catch (error) {
+      console.error(error);
+      fetchCategoryInfo();
+    }
+  };
+
   return (
-    <div>
+    <DndContext onDragEnd={OnDragEnd}>
       {categories.length > 0 &&
         categories.map((category) => (
           <div key={category._id}>
@@ -588,20 +674,32 @@ export default function Categories({ server }: CategoriesProps) {
 
             {/* create channal */}
             {open[category._id] && (
-              <>
+              <ServerBarItems.CategoryDroppable
+                category={category}
+                isOpen={open[category._id]}
+              >
                 {category.channels.length > 0 &&
                   category.channels.map((channel) => (
-                    <div key={channel._id}>
-                      <ServerBarItems.Channels
-                        channel={channel}
-                        channelPanel={channelPanel}
-                        setChannelPannel={setChannelPanel}
-                        fetchCategoryInfo={fetchCategoryInfo}
-                        isPrivileged={isPrivileged}
-                      />
-                    </div>
+                    // <div key={channel._id}>
+                    //   <ServerBarItems.Channels
+                    //     channel={channel}
+                    //     channelPanel={channelPanel}
+                    //     setChannelPannel={setChannelPanel}
+                    //     fetchCategoryInfo={fetchCategoryInfo}
+                    //     isPrivileged={isPrivileged}
+                    //   />
+                    // </div>
+                    <ServerBarItems.ChannelDraggable
+                      key={channel._id}
+                      categoryId={category._id}
+                      channel={channel}
+                      channelPanel={channelPanel}
+                      setChannelPannel={setChannelPanel}
+                      fetchCategoryInfo={fetchCategoryInfo}
+                      isPrivileged={isPrivileged}
+                    />
                   ))}
-              </>
+              </ServerBarItems.CategoryDroppable>
             )}
 
             {createChannelModal[category._id] && (
@@ -717,6 +815,6 @@ export default function Categories({ server }: CategoriesProps) {
             )}
           </div>
         ))}
-    </div>
+    </DndContext>
   );
 }

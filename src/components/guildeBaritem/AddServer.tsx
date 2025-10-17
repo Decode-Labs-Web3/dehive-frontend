@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { toastSuccess, toastError } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function AddServer({ handleGetServer }: Props) {
-  const router = useRouter()
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
 
   const [serverForm, setServerForm] = useState({
@@ -58,7 +58,7 @@ export default function AddServer({ handleGetServer }: Props) {
         description: "",
       });
       handleGetServer();
-      router.push(`/app/channels/${response.data._id}`)
+      router.push(`/app/channels/${response.data._id}`);
       toastSuccess(response.message);
     } catch (error) {
       console.error(error);
