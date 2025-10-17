@@ -207,10 +207,11 @@ export default function EditModal({
         return;
       }
       const response = await apiResponse.json();
+      console.log("hello this is response",response)
 
       if (
         response.statusCode === 200 &&
-        response.message === "Successfully left server."
+        response.message === 'Operation successful'
       ) {
         setModal({ ...allFalse });
         refreshServers?.();

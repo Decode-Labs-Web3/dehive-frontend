@@ -33,7 +33,9 @@ export default function InvitePage() {
         response.statusCode === 201 &&
         response.message === "Operation successful"
       ) {
-        router.push(`/app/channels/${response.data.server_id}`);
+        const serverId = String(response.data)
+        console.log("hello this is ",response.data)
+        router.push(`/app/channels/${serverId}`);
       }
     } catch (error) {
       console.error(error);

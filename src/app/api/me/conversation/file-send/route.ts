@@ -41,6 +41,8 @@ export async function POST(req: Request) {
       );
     }
 
+    console.log("hello this is body",body)
+
     const backendResponse = await fetch(
       `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/send`,
       {

@@ -14,8 +14,6 @@ import {
 import {
   DndContext,
   DragEndEvent,
-  useDroppable,
-  useDraggable,
 } from "@dnd-kit/core";
 
 interface CategoryProps {

@@ -47,6 +47,7 @@ export async function POST(req: Request) {
       {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "x-session-id": sessionId,
           "X-Request-Id": requestId,
         },
@@ -55,32 +56,31 @@ export async function POST(req: Request) {
       }
     );
 
-    // console.error(`${pathname}`,backendRes)
+    console.error(`${pathname}`, backendRes);
 
     if (!backendRes.ok) {
-      const err = await backendRes.json().catch(() => null);
-      // console.log(`${pathname}`,err);
+      const error = await backendRes.json().catch(() => null);
       return NextResponse.json(
         {
-          success: false,
-          statusCode: backendRes.status || 401,
-          message: err?.message || "SSO failed",
+          status: false,
+          statusCode: backendRes.status || 400,
+          message: error.message,
         },
-        { status: backendRes.status || 401 }
+        { status: backendRes.status || 400 }
       );
     }
 
     const response = await backendRes.json();
-    // console.log(`${pathname} error:`,response);
+    console.log(response)
 
     return NextResponse.json(
       {
-        success: true,
+        status: true,
         statusCode: response.statusCode || 201,
         message: response.message || "Operation successful",
-        data: response.data,
+        data: response.data
       },
-      { status: 201 }
+      { status: response.statusCode || 201 }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);

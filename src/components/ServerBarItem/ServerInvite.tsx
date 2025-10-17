@@ -41,6 +41,7 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
     content: "",
     uploadIds: [],
   });
+  console.log("sendInvite: ", sendInvite)
 
   const fetchCode = useCallback(async () => {
     setLoading(true);
