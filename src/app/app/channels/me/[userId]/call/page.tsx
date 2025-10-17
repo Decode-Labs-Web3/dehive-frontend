@@ -1,103 +1,117 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useDirectCall } from "@/hooks/useDirectCall";
-import VideoPanel from "@/components/meCall/VideoPanel";
-import CallControls from "@/components/meCall/CallControls";
-import IncomingCallModal from "@/components/meCall/IncomingCallModal";
+import { useEffect, useMemo, useState } from "react";
+import {
+  StreamVideoClient,
+  StreamVideo,
+  StreamCall,
+  SpeakerLayout,
+  CallControls,
+} from "@stream-io/video-react-sdk";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { useParams } from "next/navigation";
 
+type TokenResponse = { apiKey: string; token: string; userId: string };
+
 export default function DirectCallPage() {
-  const { userId } = useParams() as { userId: string };
-  const {
-    callId,
-    localStream,
-    remoteStream,
-    incomingCall,
-    startCall,
-    acceptCall,
-    declineCall,
-    endCall,
-    muteMic,
-    muteCam,
-    initMedia,
-  } = useDirectCall();
+  const { userId: targetUserId } = useParams() as { userId: string };
 
-  const [micOn, setMicOn] = useState(true);
-  const [camOn, setCamOn] = useState(true);
-
-  // 👇 ADD: Auto-sync state với actual tracks khi stream thay đổi
+  const [meId, setMeId] = useState<string>("");
   useEffect(() => {
-    if (localStream) {
-      const audioTrack = localStream.getAudioTracks()[0];
-      const videoTrack = localStream.getVideoTracks()[0];
-
-      if (audioTrack) setMicOn(audioTrack.enabled);
-      if (videoTrack) setCamOn(videoTrack.enabled);
+    const k = "stream_me_id";
+    let id = localStorage.getItem(k);
+    if (!id) {
+      id = `u_${Math.random().toString(36).slice(2, 10)}`;
+      localStorage.setItem(k, id);
     }
-  }, [localStream]);
+    setMeId(id);
+  }, []);
+
+  const [client, setClient] = useState<StreamVideoClient | null>(null);
+  const [call, setCall] = useState<ReturnType<
+    StreamVideoClient["call"]
+  > | null>(null);
 
   useEffect(() => {
-    // mở camera/mic preview khi vào trang
-    initMedia().catch(() => {});
-  }, [initMedia]);
+    if (!meId) return;
+    (async () => {
+      const res = await fetch(
+        `/api/stream/token?userId=${encodeURIComponent(meId)}`,
+        {
+          cache: "no-store",
+        }
+      );
+      if (!res.ok) {
+        console.error("Failed to fetch stream token");
+        return;
+      }
+      const { apiKey, token, userId }: TokenResponse = await res.json();
+      const c = new StreamVideoClient({ apiKey, user: { id: userId }, token });
+      setClient(c);
+    })();
+  }, [meId]);
 
-  const handleToggleMic = (enabled: boolean) => {
-    setMicOn(enabled);
-    muteMic(enabled);
+  const callId = useMemo(
+    () => (meId && targetUserId ? `dm_${meId}_${targetUserId}` : ""),
+    [meId, targetUserId]
+  );
+
+  const join = async () => {
+    if (!client || !callId) return;
+    const _call = client.call("default", callId);
+    await _call.join({ create: true });
+    setCall(_call);
   };
 
-  const handleToggleCam = (enabled: boolean) => {
-    setCamOn(enabled);
-    muteCam(enabled);
+  const leave = async () => {
+    try {
+      await call?.leave();
+    } catch {}
+    setCall(null);
   };
-
-  const showIncoming = useMemo(() => Boolean(incomingCall), [incomingCall]);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-950 text-white p-4 md:p-6">
-      {/* Header */}
+    <div className="flex flex-col h-screen bg-[#0b1614] text-white p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Direct Call</h1>
-        {!callId && (
+        {!call ? (
           <button
-            onClick={() => startCall(userId)}
+            onClick={join}
             className="rounded-xl px-6 py-3 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium"
+            disabled={!client || !callId}
           >
-            📞 Call User #{userId}
+            📞 Call User #{targetUserId}
+          </button>
+        ) : (
+          <button
+            onClick={leave}
+            className="rounded-xl px-6 py-3 bg-red-600 text-white hover:bg-red-700 transition-colors font-medium"
+          >
+            ✕ Leave
           </button>
         )}
       </div>
 
-      {/* Video Panel */}
-      <div className="flex-1 mb-6">
-        <VideoPanel localStream={localStream} remoteStream={remoteStream} />
+      <div className="flex-1 min-h-0">
+        {client && call ? (
+          <StreamVideo client={client}>
+            <StreamCall call={call}>
+              <div className="h-full flex flex-col gap-4">
+                <div className="flex-1 min-h-0 rounded-xl overflow-hidden bg-[#191b22]">
+                  <SpeakerLayout />
+                </div>
+                <div className="flex justify-center">
+                  <CallControls />
+                </div>
+              </div>
+            </StreamCall>
+          </StreamVideo>
+        ) : (
+          <div className="h-full rounded-xl bg-[#191b22] flex items-center justify-center text-gray-300">
+            {client ? "Ready to start the call." : "Initializing…"}
+          </div>
+        )}
       </div>
-
-      {/* Call Status */}
-      {callId && (
-        <div className="text-center mb-4 text-gray-400">
-          Call ID: <span className="font-mono text-indigo-400">{callId}</span>
-        </div>
-      )}
-
-      {/* Controls */}
-      <CallControls
-        onHangup={endCall}
-        onToggleMic={handleToggleMic}
-        onToggleCam={handleToggleCam}
-        micOn={micOn}
-        camOn={camOn}
-        disabled={!callId}
-      />
-
-      {/* Incoming Call Modal */}
-      <IncomingCallModal
-        open={showIncoming}
-        callerName={incomingCall?.caller_id || "Unknown"}
-        onAccept={() => incomingCall && acceptCall(incomingCall.call_id)}
-        onDecline={() => incomingCall && declineCall(incomingCall.call_id)}
-      />
     </div>
   );
 }

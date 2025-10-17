@@ -1,13 +1,13 @@
 export interface WsErrorPayload {
   message: string;
   code?: string;
-  details?: string | Record<string, unknown>;
+  details?: string;
   timestamp?: string;
 }
 
 export interface IdentityConfirmed {
   userDehiveId: string;
-  status?: "success";
+  status: "success";
   timestamp?: string;
 }
 
@@ -15,15 +15,15 @@ export interface IncomingCallPayload {
   call_id: string;
   caller_id: string;
   caller_info?: unknown;
-  with_video: boolean;
-  with_audio: boolean;
+  with_video?: boolean;
+  with_audio?: boolean;
   timestamp?: string;
 }
 
 export interface CallStartedPayload {
   call_id: string;
   status?: string;
-  target_user_id: string;
+  target_user_id?: string;
   timestamp?: string;
 }
 
@@ -33,7 +33,6 @@ export interface CallAcceptedPayload {
   callee_info?: unknown;
   with_video?: boolean;
   with_audio?: boolean;
-  status?: string;
   timestamp?: string;
 }
 
@@ -103,27 +102,25 @@ export interface ToggleMediaInbound extends ToggleMediaDto {
 
 // server -> client
 export interface ServerToClientCallEvents {
-  identityConfirmed: (p: IdentityConfirmed) => void;
+  connect: () => void;
+  connect_error: (err: Error) => void;
+  disconnect: (reason: string) => void;
+  error: (data: WsErrorPayload) => void;
 
-  incomingCall: (p: IncomingCallPayload) => void;
-  callStarted: (p: CallStartedPayload) => void;
-  callAccepted: (p: CallAcceptedPayload) => void;
-  callDeclined: (p: CallDeclinedPayload) => void;
-  callEnded: (p: CallEndedPayload) => void;
+  identityConfirmed: (data: IdentityConfirmed) => void;
 
-  signalOffer: (data: SignalOfferInbound) => void;
-  signalAnswer: (data: SignalAnswerInbound) => void;
-  iceCandidate: (data: IceCandidateInbound) => void;
+  incomingCall: (data: IncomingCallPayload) => void;
+  callStarted: (data: CallStartedPayload) => void;
+  callAccepted: (data: CallAcceptedPayload) => void;
+  callDeclined: (data: CallDeclinedPayload) => void;
+  callEnded: (data: CallEndedPayload) => void;
 
-  mediaToggled: (data: ToggleMediaInbound) => void;
-
-  pong: (p: { timestamp: string; message: string }) => void;
-  error: (e: WsErrorPayload) => void;
+  pong: (data: { timestamp: string; message: "pong" }) => void;
 }
 
 // client -> server
 export interface ClientToServerCallEvents {
-  identity: (userDehiveId: string) => void;
+  identity: (userId: string | { userDehiveId: string }) => void;
 
   startCall: (data: {
     target_user_id: string;
@@ -138,13 +135,8 @@ export interface ClientToServerCallEvents {
   }) => void;
 
   declineCall: (data: { call_id: string }) => void;
+
   endCall: (data: { call_id: string }) => void;
 
-  signalOffer: (data: SignalOfferDto) => void;
-  signalAnswer: (data: SignalAnswerDto) => void;
-  iceCandidate: (data: IceCandidateDto) => void;
-
-  toggleMedia: (data: ToggleMediaDto) => void;
-
-  ping?: () => void;
+  ping: () => void;
 }

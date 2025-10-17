@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   apiPathName,
@@ -29,10 +28,6 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const { userId } = body;
-
-    const userAgent = req.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
-    console.log(fingerprint_hashed);
 
     // console.log(`${pathname} error:`, userId);
 

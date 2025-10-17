@@ -1,14 +1,27 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { faRightToBracket } from "@fortawesome/free-solid-svg-icons";
+import { fingerprintService } from "@/services/index.services";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRightToBracket } from "@fortawesome/free-solid-svg-icons";
 
 export default function Login() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const existing = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("fingerprint_hashed="));
+      if (existing) return;
+
+      const { fingerprint_hashed } = await fingerprintService();
+      document.cookie = `fingerprint=${fingerprint_hashed}; path=/; max-age=31536000; SameSite=Lax`;
+    })();
+  }, []);
 
   const handleLogin = async () => {
     try {

@@ -29,7 +29,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { serverId } = body;
 
-
     const backendResponse = await fetch(
       `${process.env.DEHIVE_USER_DEHIVE_SERVER}/api/memberships/servers/${serverId}/ban-list`,
       {
@@ -50,7 +49,7 @@ export async function POST(req: Request) {
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error("/api/server/members/ban-list backend error:", error);
+      console.error(`${pathname}`, error);
       return NextResponse.json(
         {
           success: false,

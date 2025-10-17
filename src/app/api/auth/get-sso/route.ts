@@ -5,7 +5,6 @@ import {
   apiPathName,
   guardInternal,
 } from "@/utils/index.utils";
-import { fingerprintService } from "@/services/index.services";
 
 function isoToMaxAgeSeconds(expiresAtISO: string): number {
   const now = Date.now();
@@ -51,13 +50,22 @@ export async function POST(req: Request) {
     }
 
     // console.log("this is ssoToken and state from sso", ssoToken, state);
-    const userAgent = req.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
-    console.log("this is fingerprint hash from get sso: ", fingerprint_hashed)
+    const fingerprint = (await cookies()).get("fingerprint")?.value;
+
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing fingerprint header",
+        },
+        { status: 400 }
+      );
+    }
 
     const requestBody = {
       sso_token: ssoToken,
-      fingerprint_hashed,
+      fingerprint_hashed: fingerprint,
     };
 
     const backendRes = await fetch(
@@ -78,7 +86,7 @@ export async function POST(req: Request) {
 
     if (!backendRes.ok) {
       const err = await backendRes.json().catch(() => null);
-      // console.log(`${pathname}`,err);
+      console.log(`${pathname}`, err);
       return NextResponse.json(
         {
           success: false,

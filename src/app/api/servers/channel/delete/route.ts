@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   apiPathName,
@@ -43,8 +42,18 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const userAgent = req.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
+    const fingerprint = (await cookies()).get("fingerprint")?.value;
+
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing fingerprint header",
+        },
+        { status: 400 }
+      );
+    }
 
     const backendResponse = await fetch(
       `${process.env.DEHIVE_SERVER}/api/servers/channels/${channelId}`,
@@ -52,7 +61,7 @@ export async function DELETE(req: Request) {
         method: "DELETE",
         headers: {
           "x-session-id": sessionId,
-          "x-fingerprint-hashed": fingerprint_hashed,
+          "x-fingerprint-hashed": fingerprint,
         },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
