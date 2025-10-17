@@ -35,7 +35,7 @@ export async function GET(req: Request) {
     }
 
     const response = await backendResponse.json();
-
+    console.log(response.data.iceServers);
     return NextResponse.json(
       {
         success: true,

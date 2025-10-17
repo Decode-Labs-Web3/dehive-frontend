@@ -17,7 +17,9 @@ export const metadata: Metadata = {
   description:
     "Chatting and security with dehive chat apply the blockchain technology",
   icons: {
-    icon: "/dehive.png",
+    icon: [
+      { url: "/images/logos/dehive.png", type: "image/png" },
+    ],
   },
 };
 

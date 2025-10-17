@@ -9,7 +9,7 @@ import {
   useRef,
   useLayoutEffect,
 } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -42,6 +42,7 @@ export default function MessageMePage({
 }) {
   // console.log("edwedwedwed", conversation);
   const { userId } = useParams();
+  const router = useRouter();
   const [UserChatWith, setUserChatWith] = useState<UserChatWith | null>();
   const [messageReply, setMessageReply] = useState<Message | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
@@ -279,6 +280,12 @@ export default function MessageMePage({
             </div>
           </div>
         </div>
+        <button
+          onClick={() => router.push(`/app/channels/me/${userId}/call`)}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg"
+        >
+          📞 Start Call
+        </button>
         <span className="text-xs text-[var(--muted-foreground)]">
           Page {currentPage + 1}
         </span>
