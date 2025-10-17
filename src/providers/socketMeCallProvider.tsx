@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, createContext, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { getMeCallSocketIO } from "@/library/sooketioMeCall";
 import type {
@@ -18,6 +18,41 @@ import type { Socket } from "socket.io-client";
 
 type Props = { userId?: string | null; children: React.ReactNode };
 
+const CallStateContext = createContext<{
+  callState: {
+    callId: string | null;
+    status: "idle" | "ringing" | "connecting" | "connected" | "ended";
+    isIncoming: boolean;
+    isOutgoing: boolean;
+    callerId: string | null;
+    calleeId: string | null;
+    withVideo: boolean;
+    withAudio: boolean;
+    error: string | null;
+  };
+  setGlobalCallState: React.Dispatch<
+    React.SetStateAction<{
+      callId: string | null;
+      status: "idle" | "ringing" | "connecting" | "connected" | "ended";
+      isIncoming: boolean;
+      isOutgoing: boolean;
+      callerId: string | null;
+      calleeId: string | null;
+      withVideo: boolean;
+      withAudio: boolean;
+      error: string | null;
+    }>
+  >;
+} | null>(null);
+
+export const useCallState = () => {
+  const context = useContext(CallStateContext);
+  if (!context) {
+    throw new Error("useCallState must be used within SocketMeCallProvider");
+  }
+  return context;
+};
+
 export default function SocketMeCallProvider({ userId, children }: Props) {
   const router = useRouter();
   const socket = useRef<
@@ -25,6 +60,29 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
   >(getMeCallSocketIO()).current;
 
   const [currentPath, setCurrentPath] = React.useState<string>("");
+
+  // Global call state to share with useDirectCall
+  const [globalCallState, setGlobalCallState] = React.useState<{
+    callId: string | null;
+    status: "idle" | "ringing" | "connecting" | "connected" | "ended";
+    isIncoming: boolean;
+    isOutgoing: boolean;
+    callerId: string | null;
+    calleeId: string | null;
+    withVideo: boolean;
+    withAudio: boolean;
+    error: string | null;
+  }>({
+    callId: null,
+    status: "idle",
+    isIncoming: false,
+    isOutgoing: false,
+    callerId: null,
+    calleeId: null,
+    withVideo: false,
+    withAudio: false,
+    error: null,
+  });
 
   useEffect(() => {
     const identify = () => {
@@ -48,6 +106,20 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
     const onIncoming = (p: IncomingCallPayload) => {
       console.log("[incomingCall]", p);
       console.log("this is incomming phone from socket provider");
+
+      // Update global call state
+      setGlobalCallState({
+        callId: p.call_id,
+        status: "ringing",
+        isIncoming: true,
+        isOutgoing: false,
+        callerId: p.caller_id,
+        calleeId: null,
+        withVideo: p.with_video ?? false,
+        withAudio: p.with_audio ?? false,
+        error: null,
+      });
+
       if (p.caller_id) {
         const targetPath = `/app/channels/me/${p.caller_id}/call`;
         if (currentPath !== targetPath) {
@@ -64,6 +136,17 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
 
     const onStarted = (p: CallStartedPayload) => {
       console.log("[callStarted]", p);
+
+      // Update global call state
+      setGlobalCallState((prev) => ({
+        ...prev,
+        callId: p.call_id,
+        status: "ringing",
+        isOutgoing: true,
+        isIncoming: false,
+        calleeId: p.target_user_id || null,
+      }));
+
       if (p.target_user_id) {
         const targetPath = `/app/channels/me/${p.target_user_id}/call`;
         if (currentPath !== targetPath) {
@@ -77,12 +160,47 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
         }
       }
     };
-    const onAccepted = (p: CallAcceptedPayload) =>
+    const onAccepted = (p: CallAcceptedPayload) => {
       console.log("[callAccepted]", p);
-    const onDeclined = (p: CallDeclinedPayload) =>
+      setGlobalCallState((prev) => ({
+        ...prev,
+        status: "connected",
+        isIncoming: false,
+        isOutgoing: false,
+        calleeId: p.callee_id || null,
+        withVideo: p.with_video ?? prev.withVideo,
+        withAudio: p.with_audio ?? prev.withAudio,
+      }));
+    };
+
+    const onDeclined = (p: CallDeclinedPayload) => {
       console.log("[callDeclined]", p);
+      setGlobalCallState({
+        callId: null,
+        status: "idle",
+        isIncoming: false,
+        isOutgoing: false,
+        callerId: null,
+        calleeId: null,
+        withVideo: false,
+        withAudio: false,
+        error: null,
+      });
+    };
+
     const onEnded = (p: CallEndedPayload) => {
       console.log("[callEnded]", p);
+      setGlobalCallState({
+        callId: null,
+        status: "idle",
+        isIncoming: false,
+        isOutgoing: false,
+        callerId: null,
+        calleeId: null,
+        withVideo: false,
+        withAudio: false,
+        error: null,
+      });
       router.back();
     };
 
@@ -151,5 +269,11 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
     };
   }, []);
 
-  return <>{children}</>;
+  return (
+    <CallStateContext.Provider
+      value={{ callState: globalCallState, setGlobalCallState }}
+    >
+      {children}
+    </CallStateContext.Provider>
+  );
 }

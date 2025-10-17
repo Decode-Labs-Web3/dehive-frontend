@@ -2,6 +2,7 @@
 
 import { getMeCallSocketIO } from "@/library/sooketioMeCall";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallState } from "@/providers/socketMeCallProvider";
 import type {
   IncomingCallPayload,
   CallStartedPayload,
@@ -27,7 +28,11 @@ export interface CallState {
 export function useDirectCall() {
   const socket = useRef(getMeCallSocketIO()).current;
 
-  const [callState, setCallState] = useState<CallState>({
+  // Use global call state from provider
+  const { callState: globalCallState, setGlobalCallState } = useCallState();
+
+  // Local state for UI-specific logic
+  const [localCallState, setLocalCallState] = useState<CallState>({
     callId: null,
     status: "idle",
     isIncoming: false,
@@ -39,11 +44,19 @@ export function useDirectCall() {
     error: null,
   });
 
-  // Handle incoming calls
+  // Use global state as primary source
+  const callState = globalCallState;
+
+  // Debug log to track state changes
+  useEffect(() => {
+    console.log("[useDirectCall] Global call state updated:", callState);
+  }, [callState]);
+
+  // Handle incoming calls - sync with global state
   useEffect(() => {
     const onIncomingCall = (payload: IncomingCallPayload) => {
       console.log("[useDirectCall] Incoming call:", payload);
-      setCallState({
+      setGlobalCallState({
         callId: payload.call_id,
         status: "ringing",
         isIncoming: true,
@@ -58,8 +71,9 @@ export function useDirectCall() {
 
     const onCallStarted = (payload: CallStartedPayload) => {
       console.log("[useDirectCall] Call started:", payload);
-      setCallState((prev) => ({
+      setGlobalCallState((prev) => ({
         ...prev,
+        callId: payload.call_id,
         status: "ringing",
         isOutgoing: true,
         isIncoming: false,
@@ -69,7 +83,7 @@ export function useDirectCall() {
 
     const onCallAccepted = (payload: CallAcceptedPayload) => {
       console.log("[useDirectCall] Call accepted:", payload);
-      setCallState((prev) => ({
+      setGlobalCallState((prev) => ({
         ...prev,
         status: "connected",
         isIncoming: false,
@@ -82,7 +96,7 @@ export function useDirectCall() {
 
     const onCallDeclined = (payload: CallDeclinedPayload) => {
       console.log("[useDirectCall] Call declined:", payload);
-      setCallState({
+      setGlobalCallState({
         callId: null,
         status: "idle",
         isIncoming: false,
@@ -97,7 +111,7 @@ export function useDirectCall() {
 
     const onCallEnded = (payload: CallEndedPayload) => {
       console.log("[useDirectCall] Call ended:", payload);
-      setCallState({
+      setGlobalCallState({
         callId: null,
         status: "idle",
         isIncoming: false,
@@ -112,7 +126,7 @@ export function useDirectCall() {
 
     const onError = (error: WsErrorPayload) => {
       console.error("[useDirectCall] Error:", error);
-      setCallState((prev) => ({
+      setGlobalCallState((prev) => ({
         ...prev,
         error: error.message,
         status: "idle",
@@ -121,7 +135,7 @@ export function useDirectCall() {
 
     const onMediaToggled = (data: ToggleMediaInbound) => {
       console.log("[useDirectCall] Media toggled:", data);
-      setCallState((prev) => ({
+      setGlobalCallState((prev) => ({
         ...prev,
         [data.media_type === "audio" ? "withAudio" : "withVideo"]:
           data.state === "enabled",
@@ -231,8 +245,8 @@ export function useDirectCall() {
   );
 
   const clearError = useCallback(() => {
-    setCallState((prev) => ({ ...prev, error: null }));
-  }, []);
+    setGlobalCallState((prev) => ({ ...prev, error: null }));
+  }, [setGlobalCallState]);
 
   return {
     // State

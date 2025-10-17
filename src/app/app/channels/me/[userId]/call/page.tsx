@@ -18,18 +18,15 @@ export default function DirectCallPage() {
     endCall,
   } = useDirectCall();
 
-  // Handle starting a call through Socket.IO
   const handleStartCall = async () => {
     if (!userId) return;
     startCall(userId as string, { withVideo: true, withAudio: true });
   };
 
-  // Handle accepting an incoming call
   const handleAcceptCall = async () => {
     acceptCall({ withVideo: true, withAudio: true });
   };
 
-  // Handle declining an incoming call
   const handleDeclineCall = () => {
     declineCall();
   };
