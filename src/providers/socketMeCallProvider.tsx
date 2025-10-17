@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { getMeCallSocketIO } from "@/library/sooketioMeCall";
 import type {
   ClientToServerCallEvents,
@@ -18,9 +19,12 @@ import type { Socket } from "socket.io-client";
 type Props = { userId?: string | null; children: React.ReactNode };
 
 export default function SocketMeCallProvider({ userId, children }: Props) {
+  const router = useRouter();
   const socket = useRef<
     Socket<ServerToClientCallEvents, ClientToServerCallEvents>
   >(getMeCallSocketIO()).current;
+
+  const [currentPath, setCurrentPath] = React.useState<string>("");
 
   useEffect(() => {
     const identify = () => {
@@ -41,15 +45,57 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
     const onIdentityConfirmed = (p: IdentityConfirmed) =>
       console.log("[mecall identityConfirmed]", p);
 
-    const onIncoming = (p: IncomingCallPayload) =>
+    const onIncoming = (p: IncomingCallPayload) => {
       console.log("[incomingCall]", p);
-    const onStarted = (p: CallStartedPayload) =>
+      console.log("this is incomming phone from socket provider");
+      if (p.caller_id) {
+        const targetPath = `/app/channels/me/${p.caller_id}/call`;
+        if (currentPath !== targetPath) {
+          console.log(
+            "Auto-navigating to call page for incoming call from:",
+            p.caller_id
+          );
+          router.push(targetPath);
+        } else {
+          console.log("Already on call page, no navigation needed");
+        }
+      }
+    };
+
+    const onStarted = (p: CallStartedPayload) => {
       console.log("[callStarted]", p);
+      if (p.target_user_id) {
+        const targetPath = `/app/channels/me/${p.target_user_id}/call`;
+        if (currentPath !== targetPath) {
+          console.log(
+            "Auto-navigating to call page for outgoing call to:",
+            p.target_user_id
+          );
+          router.push(targetPath);
+        } else {
+          console.log("Already on call page, no navigation needed");
+        }
+      }
+    };
     const onAccepted = (p: CallAcceptedPayload) =>
       console.log("[callAccepted]", p);
     const onDeclined = (p: CallDeclinedPayload) =>
       console.log("[callDeclined]", p);
-    const onEnded = (p: CallEndedPayload) => console.log("[callEnded]", p);
+    const onEnded = (p: CallEndedPayload) => {
+      console.log("[callEnded]", p);
+      router.back();
+    };
+
+    const onMediaToggled = (data: {
+      call_id: string;
+      user_id?: string;
+      media_type: "audio" | "video";
+      state: "enabled" | "disabled";
+      timestamp?: string;
+    }) => console.log("[mediaToggled]", data);
+
+    const onPong = (data: { timestamp: string; message: "pong" }) =>
+      console.log("[pong]", data);
 
     socket.on("connect", onConnect);
     socket.on("connect_error", onConnectError);
@@ -63,6 +109,9 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
     socket.on("callAccepted", onAccepted);
     socket.on("callDeclined", onDeclined);
     socket.on("callEnded", onEnded);
+
+    socket.on("mediaToggled", onMediaToggled);
+    socket.on("pong", onPong);
 
     socket.connect();
     return () => {
@@ -78,14 +127,29 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
       socket.off("callAccepted", onAccepted);
       socket.off("callDeclined", onDeclined);
       socket.off("callEnded", onEnded);
-    };
-  }, [socket, userId]);
 
-  // re-identify when userId changes
+      socket.off("mediaToggled", onMediaToggled);
+      socket.off("pong", onPong);
+    };
+  }, [socket, userId, router, currentPath]);
+
   useEffect(() => {
     if (!socket.connected) return;
     if (userId) socket.emit("identity", userId);
   }, [userId, socket]);
+
+  useEffect(() => {
+    const updateCurrentPath = () => {
+      setCurrentPath(window.location.pathname);
+    };
+
+    updateCurrentPath();
+    window.addEventListener("popstate", updateCurrentPath);
+
+    return () => {
+      window.removeEventListener("popstate", updateCurrentPath);
+    };
+  }, []);
 
   return <>{children}</>;
 }

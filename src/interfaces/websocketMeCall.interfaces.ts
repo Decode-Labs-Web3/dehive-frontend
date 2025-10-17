@@ -115,6 +115,14 @@ export interface ServerToClientCallEvents {
   callDeclined: (data: CallDeclinedPayload) => void;
   callEnded: (data: CallEndedPayload) => void;
 
+  mediaToggled: (data: {
+    call_id: string;
+    user_id?: string;
+    media_type: "audio" | "video";
+    state: "enabled" | "disabled";
+    timestamp?: string;
+  }) => void;
+
   pong: (data: { timestamp: string; message: "pong" }) => void;
 }
 
@@ -137,6 +145,12 @@ export interface ClientToServerCallEvents {
   declineCall: (data: { call_id: string }) => void;
 
   endCall: (data: { call_id: string }) => void;
+
+  toggleMedia: (data: {
+    call_id: string;
+    media_type: "audio" | "video";
+    state: "enabled" | "disabled";
+  }) => void;
 
   ping: () => void;
 }

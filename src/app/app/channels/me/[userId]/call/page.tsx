@@ -1,116 +1,186 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  StreamVideoClient,
-  StreamVideo,
-  StreamCall,
-  SpeakerLayout,
-  CallControls,
-} from "@stream-io/video-react-sdk";
-import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { useParams } from "next/navigation";
-
-type TokenResponse = { apiKey: string; token: string; userId: string };
+import { useDirectCall } from "@/hooks/useDirectCall";
 
 export default function DirectCallPage() {
-  const { userId: targetUserId } = useParams() as { userId: string };
+  const { userId } = useParams();
 
-  const [meId, setMeId] = useState<string>("");
-  useEffect(() => {
-    const k = "stream_me_id";
-    let id = localStorage.getItem(k);
-    if (!id) {
-      id = `u_${Math.random().toString(36).slice(2, 10)}`;
-      localStorage.setItem(k, id);
-    }
-    setMeId(id);
-  }, []);
+  // Use the direct call hook for Socket.IO call management
+  const {
+    callState,
+    isInCall,
+    hasIncomingCall,
+    hasOutgoingCall,
+    startCall,
+    acceptCall,
+    declineCall,
+    endCall,
+  } = useDirectCall();
 
-  const [client, setClient] = useState<StreamVideoClient | null>(null);
-  const [call, setCall] = useState<ReturnType<
-    StreamVideoClient["call"]
-  > | null>(null);
-
-  useEffect(() => {
-    if (!meId) return;
-    (async () => {
-      const res = await fetch(
-        `/api/stream/token?userId=${encodeURIComponent(meId)}`,
-        {
-          cache: "no-store",
-        }
-      );
-      if (!res.ok) {
-        console.error("Failed to fetch stream token");
-        return;
-      }
-      const { apiKey, token, userId }: TokenResponse = await res.json();
-      const c = new StreamVideoClient({ apiKey, user: { id: userId }, token });
-      setClient(c);
-    })();
-  }, [meId]);
-
-  const callId = useMemo(
-    () => (meId && targetUserId ? `dm_${meId}_${targetUserId}` : ""),
-    [meId, targetUserId]
-  );
-
-  const join = async () => {
-    if (!client || !callId) return;
-    const _call = client.call("default", callId);
-    await _call.join({ create: true });
-    setCall(_call);
+  // Handle starting a call through Socket.IO
+  const handleStartCall = async () => {
+    if (!userId) return;
+    startCall(userId as string, { withVideo: true, withAudio: true });
   };
 
-  const leave = async () => {
-    try {
-      await call?.leave();
-    } catch {}
-    setCall(null);
+  // Handle accepting an incoming call
+  const handleAcceptCall = async () => {
+    acceptCall({ withVideo: true, withAudio: true });
+  };
+
+  // Handle declining an incoming call
+  const handleDeclineCall = () => {
+    declineCall();
+  };
+
+  // Handle ending the call
+  const handleEndCall = () => {
+    endCall();
   };
 
   return (
     <div className="flex flex-col h-screen bg-[#0b1614] text-white p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Direct Call</h1>
-        {!call ? (
+        <h1 className="text-2xl font-semibold">Direct Call (Socket.IO Only)</h1>
+
+        {/* Call Controls based on call state */}
+        {callState.status === "idle" && (
           <button
-            onClick={join}
+            onClick={handleStartCall}
             className="rounded-xl px-6 py-3 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium"
-            disabled={!client || !callId}
+            disabled={!userId}
           >
-            📞 Call User #{targetUserId}
+            📞 Call User #{userId}
           </button>
-        ) : (
+        )}
+
+        {hasIncomingCall && (
+          <div className="flex gap-3">
+            <button
+              onClick={handleAcceptCall}
+              className="rounded-xl px-6 py-3 bg-green-600 text-white hover:bg-green-700 transition-colors font-medium"
+            >
+              ✅ Accept
+            </button>
+            <button
+              onClick={handleDeclineCall}
+              className="rounded-xl px-6 py-3 bg-red-600 text-white hover:bg-red-700 transition-colors font-medium"
+            >
+              ❌ Decline
+            </button>
+          </div>
+        )}
+
+        {hasOutgoingCall && (
+          <div className="flex items-center gap-3">
+            <span className="text-yellow-400">📞 Ringing...</span>
+            <button
+              onClick={handleEndCall}
+              className="rounded-xl px-6 py-3 bg-red-600 text-white hover:bg-red-700 transition-colors font-medium"
+            >
+              ✕ Cancel
+            </button>
+          </div>
+        )}
+
+        {isInCall && (
           <button
-            onClick={leave}
+            onClick={handleEndCall}
             className="rounded-xl px-6 py-3 bg-red-600 text-white hover:bg-red-700 transition-colors font-medium"
           >
-            ✕ Leave
+            ✕ End Call
           </button>
         )}
       </div>
 
       <div className="flex-1 min-h-0">
-        {client && call ? (
-          <StreamVideo client={client}>
-            <StreamCall call={call}>
-              <div className="h-full flex flex-col gap-4">
-                <div className="flex-1 min-h-0 rounded-xl overflow-hidden bg-[#191b22]">
-                  <SpeakerLayout />
-                </div>
-                <div className="flex justify-center">
-                  <CallControls />
+        <div className="h-full rounded-xl bg-[#191b22] flex flex-col items-center justify-center text-gray-300">
+          {callState.status === "idle" && (
+            <div className="text-center">
+              <div className="text-6xl mb-4">📞</div>
+              <h2 className="text-xl font-semibold mb-2">Ready to Call</h2>
+              <p className="text-gray-400">
+                Click the call button to start a call with User #{userId}
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                (Stream.io video will be added after backend fix)
+              </p>
+            </div>
+          )}
+
+          {hasIncomingCall && (
+            <div className="text-center">
+              <div className="text-6xl mb-4">📞</div>
+              <h2 className="text-xl font-semibold mb-2">Incoming Call</h2>
+              <p className="text-gray-400">
+                User {callState.callerId} is calling you
+              </p>
+              <div className="mt-4 flex gap-3 justify-center">
+                <button
+                  onClick={handleAcceptCall}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={handleDeclineCall}
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Decline
+                </button>
+              </div>
+            </div>
+          )}
+
+          {hasOutgoingCall && (
+            <div className="text-center">
+              <div className="text-6xl mb-4 animate-pulse">📞</div>
+              <h2 className="text-xl font-semibold mb-2">Calling...</h2>
+              <p className="text-gray-400">
+                Waiting for User #{userId} to answer outgoing call
+              </p>
+            </div>
+          )}
+
+          {callState.status === "ringing" &&
+            !hasIncomingCall &&
+            !hasOutgoingCall && (
+              <div className="text-center">
+                <div className="text-6xl mb-4">⏳</div>
+                <h2 className="text-xl font-semibold mb-2">Connecting...</h2>
+                <p className="text-gray-400">Setting up your call</p>
+              </div>
+            )}
+
+          {isInCall && (
+            <div className="text-center">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-xl font-semibold mb-2">Call Connected!</h2>
+              <p className="text-gray-400">
+                Socket.IO call is active. Video will be added after backend fix.
+              </p>
+              <div className="mt-4">
+                <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
+                  <p className="text-green-400 text-sm">
+                    ✅ Socket.IO call established
+                  </p>
+                  <p className="text-green-400 text-sm">
+                    ⏳ Stream.io video integration pending
+                  </p>
                 </div>
               </div>
-            </StreamCall>
-          </StreamVideo>
-        ) : (
-          <div className="h-full rounded-xl bg-[#191b22] flex items-center justify-center text-gray-300">
-            {client ? "Ready to start the call." : "Initializing…"}
-          </div>
-        )}
+            </div>
+          )}
+
+          {callState.error && (
+            <div className="text-center">
+              <div className="text-6xl mb-4">⚠️</div>
+              <h2 className="text-xl font-semibold mb-2 text-red-400">Error</h2>
+              <p className="text-red-300">{callState.error}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
