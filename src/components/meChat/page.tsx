@@ -50,7 +50,8 @@ export default function MessageMePage({
     uploadIds: [],
     replyTo: null,
   });
-
+  const [messageDelete, setMessageDelete] = useState<Message | null>(null);
+  const [deleteMessageModal, setDeleteMessageModal] = useState(false);
   const [editMessageField, setEditMessageField] = useState<
     Record<string, boolean>
   >({});
@@ -423,7 +424,10 @@ export default function MessageMePage({
                             <div className="relative">
                               <button
                                 className="peer rounded px-2 py-1 text-[var(--danger)]"
-                                onClick={() => remove(message._id)}
+                                onClick={() => {
+                                  setDeleteMessageModal(true);
+                                  setMessageDelete(message);
+                                }}
                               >
                                 <FontAwesomeIcon icon={faTrash} />
                               </button>
@@ -462,6 +466,112 @@ export default function MessageMePage({
           )}
         </div>
       </div>
+
+      {deleteMessageModal && messageDelete && (
+        <div
+          role="dialog"
+          className="fixed inset-0 flex items-center justify-center z-30"
+        >
+          <div
+            tabIndex={-1}
+            ref={(element: HTMLDivElement) => {
+              element?.focus();
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setDeleteMessageModal(false);
+                setMessageDelete(null);
+              }
+            }}
+            onClick={() => {
+              setDeleteMessageModal(false);
+              setMessageDelete(null);
+            }}
+            className="fixed inset-0 bg-black/80 z-40"
+          />
+          <div
+            className="z-50 relative w-full max-w-xl rounded-2xl border border-[#1e1f22] bg-[#313338] p-6 text-white shadow-2xl"
+            aria-modal="true"
+            aria-labelledby="delete-message-title"
+          >
+            <button
+              type="button"
+              aria-label="Close"
+              className="absolute right-4 top-4 text-neutral-400 transition hover:text-neutral-200"
+              onClick={() => {
+                setDeleteMessageModal(false);
+                setMessageDelete(null);
+              }}
+            >
+              <FontAwesomeIcon icon={faX} />
+            </button>
+
+            <h1
+              id="delete-message-title"
+              className="text-2xl font-bold text-white"
+            >
+              Delete Message
+            </h1>
+            <p className="mt-1 text-sm text-neutral-300">
+              Are you sure you want to delete this message?
+            </p>
+
+            <div className="mt-4 rounded-xl bg-[#2b2d31] px-4 py-3 shadow-inner">
+              <div className="flex items-start gap-3">
+                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-neutral-700">
+                  <Image
+                    src={
+                      messageDelete.sender
+                        ? `https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`
+                        : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                    }
+                    alt={"Avatar"}
+                    width={48}
+                    height={48}
+                    className="h-full w-full object-contain"
+                    unoptimized
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <span className="text-base font-semibold text-yellow-400">
+                      {messageDelete.sender.username}
+                    </span>
+                    <span className="text-xs text-neutral-400">
+                      {new Date(messageDelete.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="mt-1 whitespace-pre-wrap break-words text-sm text-neutral-200">
+                    {messageDelete.content}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-between gap-4">
+              <button
+                onClick={() => {
+                  setDeleteMessageModal(false);
+                  setMessageDelete(null);
+                }}
+                className="h-12 w-full max-w-[240px] rounded-xl bg-[#2b2d31] text-base font-semibold text-neutral-200 shadow-sm transition hover:bg-[#3a3d42]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  remove(messageDelete._id);
+                  setDeleteMessageModal(false);
+                  setMessageDelete(null);
+                }}
+                className="h-12 w-full max-w-[240px] rounded-xl bg-[#da373d] text-base font-semibold text-white shadow-sm transition hover:bg-[#b53035]"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-6 py-4 backdrop-blur">
         <div className="flex items-end gap-3 rounded-2xl bg-[var(--surface-primary)] p-3 shadow-lg">

@@ -41,7 +41,7 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
     content: "",
     uploadIds: [],
   });
-  console.log("sendInvite: ", sendInvite)
+  console.log("sendInvite: ", sendInvite);
 
   const fetchCode = useCallback(async () => {
     setLoading(true);
@@ -84,14 +84,11 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
   }, [fetchCode]);
 
   const handleSendInvite = async (otherUserDehiveId: string) => {
-    setLoading(true);
     if (isSended[otherUserDehiveId]) return;
-    // console.log(
-    //   "ehdbwe,bdjwebdiwkedbwkedbwkedjwekjdwedwedwedwed",
-    //   otherUserDehiveId
-    // );
+    setLoading(true);
+
     try {
-      const apiResponse = await fetch(
+      const conversationRes = await fetch(
         "/api/me/conversation/conversation-create",
         {
           method: "POST",
@@ -104,56 +101,50 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
           signal: AbortSignal.timeout(10000),
         }
       );
-
-      if (!apiResponse.ok) {
-        console.error(apiResponse);
+      if (!conversationRes.ok) {
+        console.error(conversationRes);
         return;
       }
 
-      const response = await apiResponse.json();
-      if (response.statusCode === 200 && response.message === "OK") {
-        setSendInvite((prev) => ({
-          ...prev,
-          conversationId: response.data._id,
-          content: `${window.location.origin}${invitePath}`,
-        }));
+      const conversation = await conversationRes.json();
+      if (conversation.statusCode !== 200) {
+        console.error("create conversation failed");
+        return;
       }
-    } catch (error) {
-      console.error(error);
-      console.log("Server create conversation is error");
-    }
 
-    try {
-      const apiResponse = await fetch("/api/me/conversation/file-send", {
+      const payload = {
+        conversationId: conversation.data._id,
+        content: `${window.location.origin}${invitePath}`,
+        uploadIds: [],
+      };
+      setSendInvite(payload);
+
+      const sendRes = await fetch("/api/me/conversation/file-send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify(sendInvite),
+        body: JSON.stringify(payload),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
-
-      if (!apiResponse.ok) {
-        console.error(apiResponse);
+      if (!sendRes.ok) {
+        console.error(sendRes);
         return;
       }
 
-      const response = await apiResponse.json();
+      const send = await sendRes.json();
       if (
-        response.statusCode === 201 &&
-        response.message === "Message sent successfully"
+        send.statusCode === 201 &&
+        send.message === "Message sent successfully"
       ) {
-        setLoading(false);
-        setIsSended((prev) => ({
-          ...prev,
-          [otherUserDehiveId]: true,
-        }));
+        setIsSended((prev) => ({ ...prev, [otherUserDehiveId]: true }));
       }
     } catch (error) {
       console.error(error);
-      console.log("Server create conversation is error");
+    } finally {
+      setLoading(false);
     }
   };
 

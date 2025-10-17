@@ -51,6 +51,7 @@ export async function POST(req: Request) {
           "x-session-id": sessionId,
           "X-Request-Id": requestId,
         },
+        // body: JSON.stringify(null),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
@@ -60,6 +61,7 @@ export async function POST(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
+      console.error(`${pathname} error:`, backendRes);
       return NextResponse.json(
         {
           status: false,
@@ -71,7 +73,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendRes.json();
-    console.log(response)
+    // console.log("Hello this is response",response)
 
     return NextResponse.json(
       {
