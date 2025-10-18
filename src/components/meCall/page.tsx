@@ -67,7 +67,7 @@ export default function App() {
   const [token, setToken] = useState<string | null>(null);
 
   const getToken = useCallback(async () => {
-    const apiResponse = await fetch("/api/stream/stream-token", {
+    const apiResponse = await fetch("/api/stream/token", {
       method: "GET",
       headers: {
         "X-Frontend-Internal-Request": "true",

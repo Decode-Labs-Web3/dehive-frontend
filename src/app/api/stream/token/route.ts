@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { StreamClient } from "@stream-io/node-sdk";
+export const runtime = "nodejs";
 import {
   generateRequestId,
   apiPathName,
@@ -13,68 +15,34 @@ export async function GET(req: Request) {
   if (denied) return denied;
 
   try {
-    const sessionId = (await cookies()).get("sessionId")?.value;
+    const userId = (await cookies()).get("userId")?.value;
 
-    if (!sessionId) {
+    if (!userId) {
       return NextResponse.json(
         {
           success: false,
           statusCode: 401,
-          message: "SessionId is not found",
+          message: "userId is not found",
         },
         { status: 401 }
       );
     }
 
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const apiKey = process.env.STREAM_KEY!;
+    const apiSecret = process.env.STREAM_SECRET!;
+    const client = new StreamClient(apiKey, apiSecret);
+    const validity = 60 * 60 * 24 * 30; // 30 days
 
-    if (!fingerprint) {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing fingerprint header",
-        },
-        { status: 400 }
-      );
-    }
-
-    // console.log("this is sessionId and fingerprint", sessionId, fingerprint);
-
-    const backendRes = await fetch(
-      `${process.env.DEHIVE_DIRECT_CALLING}/api/calls/stream-token`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "x-session-id": sessionId,
-          "x-fingerprint-hashed": fingerprint,
-        },
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      }
-    );
-
-    if (!backendRes.ok) {
-      const error = await backendRes.json().catch(() => null);
-      console.error("this is error", error);
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: backendRes.status || 401,
-          message: error?.message,
-        },
-        { status: backendRes.status || 401 }
-      );
-    }
-
-    const response = await backendRes.json();
+    const token = client.generateUserToken({
+      user_id: userId!,
+      validity_in_seconds: validity,
+    });
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 200,
-        message: response.message || "Stream.io token retrieved successfully",
-        data: response.data,
+        statusCode: 200,
+        message: "Stream.io token retrieved successfully",
+        data: { token },
       },
       { status: 200 }
     );
