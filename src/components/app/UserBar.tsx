@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
-import { UserDataProps } from "@/interfaces/index.interfaces";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSun,
@@ -13,6 +12,21 @@ import {
   faVolumeHigh,
   faVolumeXmark,
 } from "@fortawesome/free-solid-svg-icons";
+
+interface UserDataProps {
+  _id: string;
+  dehive_role: string;
+  status: string;
+  server_count: number;
+  username: string;
+  display_name: string;
+  bio: string;
+  avatar_ipfs_hash: string;
+  last_login: string;
+  following_number: number;
+  followers_number: number;
+  is_active: boolean;
+}
 
 export default function UserBar() {
   const [theme, setTheme] = useState(false);
@@ -41,7 +55,7 @@ export default function UserBar() {
 
       const response = await apiResponse.json();
       setUserData(response.data);
-      // console.log("this is user data",response.data )
+      console.log("this is user data from user bar",response.data )
       localStorage.setItem("userData", JSON.stringify(response.data));
       setLoading(false);
     } catch (error) {
