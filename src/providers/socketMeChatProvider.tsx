@@ -19,53 +19,53 @@ export default function SocketMeChatProvider({ userId, children }: Props) {
     };
 
     const onConnect = () => {
-      console.log("[ws connect]", socket.id);
+      console.log("[ws me chat connect]", socket.id);
       identify();
     };
 
     const onManagerReconnect = (attempt: number) => {
-      console.log("[ws reconnect]", attempt);
+      console.log("[ws me chat reconnect]", attempt);
       identify();
     };
 
     const onManagerReconnectAttempt = (attempt: number) => {
-      console.log("[ws reconnect_attempt]", attempt);
+      console.log("[ws me chat reconnect_attempt]", attempt);
     };
 
     const onManagerReconnectError = (err: Error) => {
-      console.warn("[ws reconnect_error]", err);
+      console.warn("[ws me chat reconnect_error]", err);
     };
 
     const onManagerReconnectFailed = () => {
-      console.warn("[ws reconnect_failed]");
+      console.warn("[ws me chat reconnect_failed]");
     };
 
     const onConnectError = (error: Error) => {
-      console.warn("[ws connect_error]", error);
+      console.warn("[ws me chat connect_error]", error);
     };
 
     const onError = (error: WsErrorPayload) => {
-      console.warn("[ws error]", error);
+      console.warn("[ws me chat error]", error);
     };
 
     const onDisconnect = (reason: string) => {
-      console.log("[ws disconnect]", reason);
+      console.log("[ws me chat disconnect]", reason);
     };
 
     const onIdentityConfirmed = (p: IdentityConfirmed) => {
-      console.log("[ws identityConfirmed]", p);
+      console.log("[ws me chat identityConfirmed]", p);
     };
 
     const onNewMessage = (message: Message) => {
-      console.log("[ws newMessage]", message);
+      console.log("[ws me chat newMessage]", message);
     };
 
     const onMessageEdited = (message: Message) => {
-      console.log("[ws messageEdited]", message);
+      console.log("[ws me chat messageEdited]", message);
     };
 
     const onMessageDeleted = (message: Message) => {
-      console.log("[ws messageDeleted]", message);
+      console.log("[ws me chat messageDeleted]", message);
     };
 
     socket.on("connect", onConnect);

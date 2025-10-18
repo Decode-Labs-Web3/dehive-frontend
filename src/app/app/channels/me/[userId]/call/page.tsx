@@ -2,6 +2,15 @@
 
 import { useParams } from "next/navigation";
 import { useDirectCall } from "@/hooks/useDirectCall";
+import { useStreamCall } from "@/hooks/useStreamCall";
+import {
+  StreamCall,
+  StreamTheme,
+  CallControls,
+  CallParticipantsList,
+  CallStatsButton,
+  SpeakerLayout,
+} from "@stream-io/video-react-sdk";
 
 export default function DirectCallPage() {
   const { userId } = useParams();
@@ -17,6 +26,16 @@ export default function DirectCallPage() {
     declineCall,
     endCall,
   } = useDirectCall();
+
+  // Use Stream.io hook for video calling
+  const {
+    streamState,
+    streamCall,
+    isStreamReady,
+    toggleCamera,
+    toggleMicrophone,
+    leaveCall,
+  } = useStreamCall();
 
   const handleStartCall = async () => {
     if (!userId) return;
@@ -151,22 +170,88 @@ export default function DirectCallPage() {
             )}
 
           {isInCall && (
-            <div className="text-center">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-xl font-semibold mb-2">Call Connected!</h2>
-              <p className="text-gray-400">
-                Socket.IO call is active. Video will be added after backend fix.
-              </p>
-              <div className="mt-4">
-                <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
-                  <p className="text-green-400 text-sm">
-                    ✅ Socket.IO call established
-                  </p>
-                  <p className="text-green-400 text-sm">
-                    ⏳ Stream.io video integration pending
-                  </p>
+            <div className="h-full flex flex-col">
+              {isStreamReady && streamCall ? (
+                // Full Stream.io Video Call Interface
+                <div className="h-full">
+                  <StreamTheme>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    <StreamCall call={streamCall.call! as any}>
+                      <div className="h-full flex flex-col">
+                        {/* Stream.io Call Content with full UI */}
+                        <div className="flex-1 bg-gray-900 rounded-lg overflow-hidden">
+                          <SpeakerLayout />
+                          <CallControls />
+                          <CallParticipantsList onClose={() => {}} />
+                          <CallStatsButton />
+                        </div>
+                      </div>
+                    </StreamCall>
+                  </StreamTheme>
                 </div>
-              </div>
+              ) : streamState.isConnecting ? (
+                // Connecting to Stream.io
+                <div className="text-center">
+                  <div className="text-6xl mb-4 animate-pulse">🔄</div>
+                  <h2 className="text-xl font-semibold mb-2">
+                    Connecting to Video Call...
+                  </h2>
+                  <p className="text-gray-400">
+                    Setting up Stream.io video connection
+                  </p>
+                  <div className="mt-4">
+                    <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                      <p className="text-blue-400 text-sm">
+                        🔄 Connecting to Stream.io...
+                      </p>
+                      <p className="text-blue-400 text-sm">
+                        Call ID: {streamState.callId}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : streamState.error ? (
+                // Stream.io Error
+                <div className="text-center">
+                  <div className="text-6xl mb-4">⚠️</div>
+                  <h2 className="text-xl font-semibold mb-2 text-red-400">
+                    Stream.io Error
+                  </h2>
+                  <p className="text-red-300">{streamState.error}</p>
+                  <div className="mt-4">
+                    <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+                      <p className="text-red-400 text-sm">
+                        ❌ Failed to connect to Stream.io
+                      </p>
+                      <p className="text-red-400 text-sm">
+                        Socket.IO call is still active
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Fallback: Socket.IO only
+                <div className="text-center">
+                  <div className="text-6xl mb-4">🎉</div>
+                  <h2 className="text-xl font-semibold mb-2">
+                    Call Connected!
+                  </h2>
+                  <p className="text-gray-400">
+                    Socket.IO call is active. Waiting for Stream.io
+                    connection...
+                  </p>
+                  <div className="mt-4">
+                    <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
+                      <p className="text-green-400 text-sm">
+                        ✅ Socket.IO call established
+                      </p>
+                      <p className="text-green-400 text-sm">
+                        ⏳ Stream.io video connection pending
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

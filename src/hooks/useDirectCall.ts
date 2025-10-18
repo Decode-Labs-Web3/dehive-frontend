@@ -1,21 +1,13 @@
 "use client";
 
 import { getMeCallSocketIO } from "@/library/sooketioMeCall";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useCallState } from "@/providers/socketMeCallProvider";
-import type {
-  IncomingCallPayload,
-  CallStartedPayload,
-  CallAcceptedPayload,
-  CallDeclinedPayload,
-  CallEndedPayload,
-  WsErrorPayload,
-  ToggleMediaInbound,
-} from "@/interfaces/websocketMeCall.interfaces";
+import type { StreamInfo } from "@/interfaces/websocketMeCall.interfaces";
 
 export interface CallState {
   callId: string | null;
-  status: "idle" | "ringing" | "connecting" | "connected" | "ended";
+  status: "idle" | "ringing" | "connecting" | "connected" | "ended" | "timeout";
   isIncoming: boolean;
   isOutgoing: boolean;
   callerId: string | null;
@@ -23,6 +15,7 @@ export interface CallState {
   withVideo: boolean;
   withAudio: boolean;
   error: string | null;
+  streamInfo: StreamInfo | null;
 }
 
 export function useDirectCall() {
@@ -31,135 +24,18 @@ export function useDirectCall() {
   // Use global call state from provider
   const { callState: globalCallState, setGlobalCallState } = useCallState();
 
-  // Local state for UI-specific logic
-  const [localCallState, setLocalCallState] = useState<CallState>({
-    callId: null,
-    status: "idle",
-    isIncoming: false,
-    isOutgoing: false,
-    callerId: null,
-    calleeId: null,
-    withVideo: false,
-    withAudio: false,
-    error: null,
-  });
+  // Note: Local state removed - using global state from provider
 
   // Use global state as primary source
   const callState = globalCallState;
 
   // Debug log to track state changes
   useEffect(() => {
-    console.log("[useDirectCall] Global call state updated:", callState);
+    console.log("[useDirectCall] Global call me call ", callState);
   }, [callState]);
 
-  // Handle incoming calls - sync with global state
-  useEffect(() => {
-    const onIncomingCall = (payload: IncomingCallPayload) => {
-      console.log("[useDirectCall] Incoming call:", payload);
-      setGlobalCallState({
-        callId: payload.call_id,
-        status: "ringing",
-        isIncoming: true,
-        isOutgoing: false,
-        callerId: payload.caller_id,
-        calleeId: null,
-        withVideo: payload.with_video ?? false,
-        withAudio: payload.with_audio ?? false,
-        error: null,
-      });
-    };
-
-    const onCallStarted = (payload: CallStartedPayload) => {
-      console.log("[useDirectCall] Call started:", payload);
-      setGlobalCallState((prev) => ({
-        ...prev,
-        callId: payload.call_id,
-        status: "ringing",
-        isOutgoing: true,
-        isIncoming: false,
-        calleeId: payload.target_user_id || null,
-      }));
-    };
-
-    const onCallAccepted = (payload: CallAcceptedPayload) => {
-      console.log("[useDirectCall] Call accepted:", payload);
-      setGlobalCallState((prev) => ({
-        ...prev,
-        status: "connected",
-        isIncoming: false,
-        isOutgoing: false,
-        calleeId: payload.callee_id || null,
-        withVideo: payload.with_video ?? prev.withVideo,
-        withAudio: payload.with_audio ?? prev.withAudio,
-      }));
-    };
-
-    const onCallDeclined = (payload: CallDeclinedPayload) => {
-      console.log("[useDirectCall] Call declined:", payload);
-      setGlobalCallState({
-        callId: null,
-        status: "idle",
-        isIncoming: false,
-        isOutgoing: false,
-        callerId: null,
-        calleeId: null,
-        withVideo: false,
-        withAudio: false,
-        error: null,
-      });
-    };
-
-    const onCallEnded = (payload: CallEndedPayload) => {
-      console.log("[useDirectCall] Call ended:", payload);
-      setGlobalCallState({
-        callId: null,
-        status: "idle",
-        isIncoming: false,
-        isOutgoing: false,
-        callerId: null,
-        calleeId: null,
-        withVideo: false,
-        withAudio: false,
-        error: null,
-      });
-    };
-
-    const onError = (error: WsErrorPayload) => {
-      console.error("[useDirectCall] Error:", error);
-      setGlobalCallState((prev) => ({
-        ...prev,
-        error: error.message,
-        status: "idle",
-      }));
-    };
-
-    const onMediaToggled = (data: ToggleMediaInbound) => {
-      console.log("[useDirectCall] Media toggled:", data);
-      setGlobalCallState((prev) => ({
-        ...prev,
-        [data.media_type === "audio" ? "withAudio" : "withVideo"]:
-          data.state === "enabled",
-      }));
-    };
-
-    socket.on("incomingCall", onIncomingCall);
-    socket.on("callStarted", onCallStarted);
-    socket.on("callAccepted", onCallAccepted);
-    socket.on("callDeclined", onCallDeclined);
-    socket.on("callEnded", onCallEnded);
-    socket.on("error", onError);
-    socket.on("mediaToggled", onMediaToggled);
-
-    return () => {
-      socket.off("incomingCall", onIncomingCall);
-      socket.off("callStarted", onCallStarted);
-      socket.off("callAccepted", onCallAccepted);
-      socket.off("callDeclined", onCallDeclined);
-      socket.off("callEnded", onCallEnded);
-      socket.off("error", onError);
-      socket.off("mediaToggled", onMediaToggled);
-    };
-  }, [socket]);
+  // Note: Event handlers are already managed in the SocketMeCallProvider
+  // This hook focuses on call actions and state access
 
   // Call actions
   const startCall = useCallback(
@@ -253,6 +129,7 @@ export function useDirectCall() {
     callState,
     isInCall: callState.status === "connected",
     isRinging: callState.status === "ringing",
+    isTimeout: callState.status === "timeout",
     hasIncomingCall: callState.isIncoming && callState.status === "ringing",
     hasOutgoingCall: callState.isOutgoing && callState.status === "ringing",
 

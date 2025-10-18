@@ -14,9 +14,18 @@ export interface IdentityConfirmed {
 export interface IncomingCallPayload {
   call_id: string;
   caller_id: string;
-  caller_info?: unknown;
+  caller_info?: {
+    _id: string;
+    username: string;
+    display_name: string;
+    avatar_ipfs_hash: string;
+    bio: string;
+    status: string;
+    is_active: boolean;
+  };
   with_video?: boolean;
   with_audio?: boolean;
+  stream_info?: StreamInfo;
   timestamp?: string;
 }
 
@@ -24,15 +33,25 @@ export interface CallStartedPayload {
   call_id: string;
   status?: string;
   target_user_id?: string;
+  stream_info?: StreamInfo;
   timestamp?: string;
 }
 
 export interface CallAcceptedPayload {
   call_id: string;
   callee_id?: string;
-  callee_info?: unknown;
+  callee_info?: {
+    _id: string;
+    username: string;
+    display_name: string;
+    avatar_ipfs_hash: string;
+    bio: string;
+    status: string;
+    is_active: boolean;
+  };
   with_video?: boolean;
   with_audio?: boolean;
+  stream_info?: StreamInfo;
   timestamp?: string;
 }
 
@@ -98,6 +117,39 @@ export interface ToggleMediaInbound extends ToggleMediaDto {
   timestamp?: string;
 }
 
+export interface StreamInfo {
+  callId: string;
+  callerToken: string;
+  calleeToken: string;
+  streamConfig: {
+    apiKey: string;
+    callType: string;
+    callId: string;
+    members: Array<{
+      user_id: string;
+      role: string;
+    }>;
+    settings: {
+      audio: {
+        default_device: string;
+        is_default_enabled: boolean;
+      };
+      video: {
+        camera_default_on: boolean;
+        camera_facing: string;
+      };
+    };
+  };
+}
+
+export interface CallTimeoutPayload {
+  call_id: string;
+  status?: string;
+  caller_id?: string;
+  reason?: string;
+  timestamp?: string;
+}
+
 // ===== Event name maps =====
 
 // server -> client
@@ -114,6 +166,7 @@ export interface ServerToClientCallEvents {
   callAccepted: (data: CallAcceptedPayload) => void;
   callDeclined: (data: CallDeclinedPayload) => void;
   callEnded: (data: CallEndedPayload) => void;
+  callTimeout: (data: CallTimeoutPayload) => void;
 
   mediaToggled: (data: {
     call_id: string;
