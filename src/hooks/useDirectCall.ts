@@ -1,9 +1,8 @@
 "use client";
 
-import { getMeCallSocketIO } from "@/library/sooketioMeCall";
 import { useEffect, useRef, useCallback } from "react";
+import { getMeCallSocketIO } from "@/library/sooketioMeCall";
 import { useCallState } from "@/providers/socketMeCallProvider";
-import type { StreamInfo } from "@/interfaces/websocketMeCall.interfaces";
 
 export interface CallState {
   callId: string | null;
@@ -12,21 +11,15 @@ export interface CallState {
   isOutgoing: boolean;
   callerId: string | null;
   calleeId: string | null;
-  withVideo: boolean;
-  withAudio: boolean;
   error: string | null;
-  streamInfo: StreamInfo | null;
 }
 
 export function useDirectCall() {
   const socket = useRef(getMeCallSocketIO()).current;
+  console.log("socketio me call", socket);
 
-  // Use global call state from provider
   const { callState: globalCallState, setGlobalCallState } = useCallState();
 
-  // Note: Local state removed - using global state from provider
-
-  // Use global state as primary source
   const callState = globalCallState;
 
   // Debug log to track state changes
@@ -39,10 +32,7 @@ export function useDirectCall() {
 
   // Call actions
   const startCall = useCallback(
-    (
-      targetUserId: string,
-      options: { withVideo?: boolean; withAudio?: boolean } = {}
-    ) => {
+    (targetUserId: string) => {
       if (callState.status !== "idle") {
         console.warn("Cannot start call - already in call");
         return;
@@ -51,33 +41,26 @@ export function useDirectCall() {
       console.log("[useDirectCall] Starting call to:", targetUserId);
       socket.emit("startCall", {
         target_user_id: targetUserId,
-        with_video: options.withVideo ?? true,
-        with_audio: options.withAudio ?? true,
       });
     },
     [socket, callState.status]
   );
 
-  const acceptCall = useCallback(
-    (options: { withVideo?: boolean; withAudio?: boolean } = {}) => {
-      if (
-        !callState.callId ||
-        callState.status !== "ringing" ||
-        !callState.isIncoming
-      ) {
-        console.warn("Cannot accept call - no incoming call");
-        return;
-      }
+  const acceptCall = useCallback(() => {
+    if (
+      !callState.callId ||
+      callState.status !== "ringing" ||
+      !callState.isIncoming
+    ) {
+      console.warn("Cannot accept call - no incoming call");
+      return;
+    }
 
-      console.log("[useDirectCall] Accepting call:", callState.callId);
-      socket.emit("acceptCall", {
-        call_id: callState.callId,
-        with_video: options.withVideo ?? callState.withVideo,
-        with_audio: options.withAudio ?? callState.withAudio,
-      });
-    },
-    [socket, callState]
-  );
+    console.log("[useDirectCall] Accepting call:", callState.callId);
+    socket.emit("acceptCall", {
+      call_id: callState.callId,
+    });
+  }, [socket, callState]);
 
   const declineCall = useCallback(() => {
     if (
@@ -103,23 +86,6 @@ export function useDirectCall() {
     socket.emit("endCall", { call_id: callState.callId });
   }, [socket, callState]);
 
-  const toggleMedia = useCallback(
-    (mediaType: "audio" | "video", state: "enabled" | "disabled") => {
-      if (!callState.callId || callState.status !== "connected") {
-        console.warn("Cannot toggle media - no active call");
-        return;
-      }
-
-      console.log("[useDirectCall] Toggling media:", mediaType, state);
-      socket.emit("toggleMedia", {
-        call_id: callState.callId,
-        media_type: mediaType,
-        state,
-      });
-    },
-    [socket, callState]
-  );
-
   const clearError = useCallback(() => {
     setGlobalCallState((prev) => ({ ...prev, error: null }));
   }, [setGlobalCallState]);
@@ -138,7 +104,6 @@ export function useDirectCall() {
     acceptCall,
     declineCall,
     endCall,
-    toggleMedia,
     clearError,
   };
 }

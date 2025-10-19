@@ -55,7 +55,7 @@ export default function UserBar() {
 
       const response = await apiResponse.json();
       setUserData(response.data);
-      console.log("this is user data from user bar",response.data )
+      // console.log("this is user data from user bar",response.data )
       localStorage.setItem("userData", JSON.stringify(response.data));
       setLoading(false);
     } catch (error) {

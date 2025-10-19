@@ -23,18 +23,14 @@ export interface IncomingCallPayload {
     status: string;
     is_active: boolean;
   };
-  with_video?: boolean;
-  with_audio?: boolean;
-  stream_info?: StreamInfo;
-  timestamp?: string;
+  timestamp: string;
 }
 
 export interface CallStartedPayload {
   call_id: string;
-  status?: string;
-  target_user_id?: string;
-  stream_info?: StreamInfo;
-  timestamp?: string;
+  status: string;
+  target_user_id: string;
+  timestamp: string;
 }
 
 export interface CallAcceptedPayload {
@@ -49,17 +45,16 @@ export interface CallAcceptedPayload {
     status: string;
     is_active: boolean;
   };
-  with_video?: boolean;
-  with_audio?: boolean;
-  stream_info?: StreamInfo;
-  timestamp?: string;
+  status?: string;
+  timestamp: string;
 }
 
 export interface CallDeclinedPayload {
   call_id: string;
   callee_id?: string;
   reason?: string;
-  timestamp?: string;
+  status?: string;
+  timestamp: string;
 }
 
 export interface CallEndedPayload {
@@ -68,7 +63,7 @@ export interface CallEndedPayload {
   reason?: string;
   duration?: number;
   status?: string;
-  timestamp?: string;
+  timestamp: string;
 }
 
 /** DTO client→server */
@@ -106,48 +101,12 @@ export interface IceCandidateInbound extends IceCandidateDto {
   timestamp?: string;
 }
 
-export interface ToggleMediaDto {
-  call_id: string;
-  media_type: "audio" | "video";
-  state: "enabled" | "disabled";
-}
-
-export interface ToggleMediaInbound extends ToggleMediaDto {
-  user_id?: string;
-  timestamp?: string;
-}
-
-export interface StreamInfo {
-  callId: string;
-  callerToken: string;
-  calleeToken: string;
-  streamConfig: {
-    apiKey: string;
-    callType: string;
-    callId: string;
-    members: Array<{
-      user_id: string;
-      role: string;
-    }>;
-    settings: {
-      audio: {
-        default_device: string;
-        is_default_enabled: boolean;
-      };
-      video: {
-        camera_default_on: boolean;
-        camera_facing: string;
-      };
-    };
-  };
-}
-
 export interface CallTimeoutPayload {
   call_id: string;
   status?: string;
   caller_id?: string;
   reason?: string;
-  timestamp?: string;
+  timestamp: string;
 }
 
 // ===== Event name maps =====
@@ -168,14 +127,6 @@ export interface ServerToClientCallEvents {
   callEnded: (data: CallEndedPayload) => void;
   callTimeout: (data: CallTimeoutPayload) => void;
 
-  mediaToggled: (data: {
-    call_id: string;
-    user_id?: string;
-    media_type: "audio" | "video";
-    state: "enabled" | "disabled";
-    timestamp?: string;
-  }) => void;
-
   pong: (data: { timestamp: string; message: "pong" }) => void;
 }
 
@@ -183,27 +134,13 @@ export interface ServerToClientCallEvents {
 export interface ClientToServerCallEvents {
   identity: (userId: string | { userDehiveId: string }) => void;
 
-  startCall: (data: {
-    target_user_id: string;
-    with_video?: boolean;
-    with_audio?: boolean;
-  }) => void;
+  startCall: (data: { target_user_id: string }) => void;
 
-  acceptCall: (data: {
-    call_id: string;
-    with_video?: boolean;
-    with_audio?: boolean;
-  }) => void;
+  acceptCall: (data: { call_id: string }) => void;
 
   declineCall: (data: { call_id: string }) => void;
 
   endCall: (data: { call_id: string }) => void;
-
-  toggleMedia: (data: {
-    call_id: string;
-    media_type: "audio" | "video";
-    state: "enabled" | "disabled";
-  }) => void;
 
   ping: () => void;
 }

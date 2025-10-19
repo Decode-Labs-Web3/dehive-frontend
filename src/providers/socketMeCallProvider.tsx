@@ -14,7 +14,6 @@ import type {
   CallEndedPayload,
   CallStartedPayload,
   CallTimeoutPayload,
-  StreamInfo,
 } from "@/interfaces/websocketMeCall.interfaces";
 import type { Socket } from "socket.io-client";
 
@@ -34,10 +33,7 @@ const CallStateContext = createContext<{
     isOutgoing: boolean;
     callerId: string | null;
     calleeId: string | null;
-    withVideo: boolean;
-    withAudio: boolean;
     error: string | null;
-    streamInfo: StreamInfo | null;
   };
   setGlobalCallState: React.Dispatch<
     React.SetStateAction<{
@@ -53,10 +49,7 @@ const CallStateContext = createContext<{
       isOutgoing: boolean;
       callerId: string | null;
       calleeId: string | null;
-      withVideo: boolean;
-      withAudio: boolean;
       error: string | null;
-      streamInfo: StreamInfo | null;
     }>
   >;
 } | null>(null);
@@ -77,7 +70,6 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
 
   const [currentPath, setCurrentPath] = React.useState<string>("");
 
-  // Global call state to share with useDirectCall
   const [globalCallState, setGlobalCallState] = React.useState<{
     callId: string | null;
     status:
@@ -91,10 +83,7 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
     isOutgoing: boolean;
     callerId: string | null;
     calleeId: string | null;
-    withVideo: boolean;
-    withAudio: boolean;
     error: string | null;
-    streamInfo: StreamInfo | null;
   }>({
     callId: null,
     status: "idle",
@@ -102,10 +91,7 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
     isOutgoing: false,
     callerId: null,
     calleeId: null,
-    withVideo: false,
-    withAudio: false,
     error: null,
-    streamInfo: null,
   });
 
   useEffect(() => {
@@ -123,7 +109,13 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
     const onDisconnect = (reason: string) =>
       console.log("[mecall disconnect]", reason);
 
-    const onError = (e: WsErrorPayload) => console.warn("[mecall error]", e);
+    const onError = (e: WsErrorPayload) => {
+      console.warn("[mecall error]", e);
+      setGlobalCallState((prev) => ({
+        ...prev,
+        error: e.message || "WebSocket error occurred",
+      }));
+    };
     const onIdentityConfirmed = (p: IdentityConfirmed) =>
       console.log("[mecall identityConfirmed]", p);
 
@@ -139,10 +131,7 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
         isOutgoing: false,
         callerId: p.caller_id,
         calleeId: null,
-        withVideo: p.with_video ?? false,
-        withAudio: p.with_audio ?? false,
         error: null,
-        streamInfo: p.stream_info || null,
       });
 
       if (p.caller_id) {
@@ -169,8 +158,7 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
         status: "ringing",
         isOutgoing: true,
         isIncoming: false,
-        calleeId: p.target_user_id || null,
-        streamInfo: p.stream_info || null,
+        calleeId: p.target_user_id,
       }));
 
       if (p.target_user_id) {
@@ -193,10 +181,7 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
         status: "connected",
         isIncoming: false,
         isOutgoing: false,
-        calleeId: p.callee_id || null,
-        withVideo: p.with_video ?? prev.withVideo,
-        withAudio: p.with_audio ?? prev.withAudio,
-        streamInfo: p.stream_info || prev.streamInfo,
+        calleeId: p.callee_id || prev.calleeId,
       }));
     };
 
@@ -209,10 +194,7 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
         isOutgoing: false,
         callerId: null,
         calleeId: null,
-        withVideo: false,
-        withAudio: false,
         error: null,
-        streamInfo: null,
       });
     };
 
@@ -225,21 +207,9 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
         isOutgoing: false,
         callerId: null,
         calleeId: null,
-        withVideo: false,
-        withAudio: false,
         error: null,
-        streamInfo: null,
       });
-      router.back();
     };
-
-    const onMediaToggled = (data: {
-      call_id: string;
-      user_id?: string;
-      media_type: "audio" | "video";
-      state: "enabled" | "disabled";
-      timestamp?: string;
-    }) => console.log("[mediaToggled]", data);
 
     const onPong = (data: { timestamp: string; message: "pong" }) =>
       console.log("[pong]", data);
@@ -253,12 +223,8 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
         isOutgoing: false,
         callerId: null,
         calleeId: null,
-        withVideo: false,
-        withAudio: false,
         error: "Call timed out",
-        streamInfo: null,
       });
-      router.back();
     };
 
     socket.on("connect", onConnect);
@@ -275,7 +241,6 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
     socket.on("callEnded", onEnded);
     socket.on("callTimeout", onTimeout);
 
-    socket.on("mediaToggled", onMediaToggled);
     socket.on("pong", onPong);
 
     socket.connect();
@@ -294,7 +259,6 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
       socket.off("callEnded", onEnded);
       socket.off("callTimeout", onTimeout);
 
-      socket.off("mediaToggled", onMediaToggled);
       socket.off("pong", onPong);
     };
   }, [socket, userId, router, currentPath]);

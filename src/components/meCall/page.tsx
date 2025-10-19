@@ -1,29 +1,8 @@
 "use client";
 
-import {
-  CallControls,
-  CallingState,
-  SpeakerLayout,
-  StreamCall,
-  StreamTheme,
-  StreamVideo,
-  StreamVideoClient,
-  useCall,
-  useCallStateHooks,
-  type User,
-  type Call,
-} from "@stream-io/video-react-sdk";
-import { useEffect, useState, useCallback } from "react";
-
-import "@stream-io/video-react-sdk/dist/css/styles.css";
-
-// const apiKey = "mmhfdzb5evj2";
-// const token =
-//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3Byb250by5nZXRzdHJlYW0uaW8iLCJzdWIiOiJ1c2VyL0xpbWVfU3Byb3V0IiwidXNlcl9pZCI6IkxpbWVfU3Byb3V0IiwidmFsaWRpdHlfaW5fc2Vjb25kcyI6NjA0ODAwLCJpYXQiOjE3NjA3NzQ4ODcsImV4cCI6MTc2MTM3OTY4N30.bkxIpYHLXqm4nL6vbW-qmS4_jb41OBiryZtvEgMAueM";
-// const userId = "Lime_Sprout";
-// const callId = "u2RO5s5OwzhH040HBfj9w";
-
-// set up the user object
+import { useDirectCall } from "@/hooks/useDirectCall";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface UserDataProps {
   _id: string;
@@ -40,8 +19,16 @@ interface UserDataProps {
   is_active: boolean;
 }
 
-export default function App() {
+export default function CallPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { callState, startCall, acceptCall, declineCall, endCall, clearError } =
+    useDirectCall();
   const [userData, setUserData] = useState<UserDataProps | null>(null);
+  const [otherUserData, setOtherUserData] = useState<UserDataProps | null>(
+    null
+  );
+
   useEffect(() => {
     const userData = localStorage.getItem("userData");
     if (userData) {
@@ -49,178 +36,188 @@ export default function App() {
     }
   }, []);
 
-  let user: User | null = null;
+  // Get the other user ID from URL params
+  const otherUserId = params?.userId as string;
 
-  if (userData) {
-    user = {
-      id: userData._id,
-      name: userData.display_name,
-      image: `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`,
-    } as User;
-  }
-
-  const [client, setClient] = useState<StreamVideoClient | null>(null);
-  const [call, setCall] = useState<Call | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const apiKey: string = process.env.NEXT_PUBLIC_STREAM_KEY!;
-  const callId: string = "minh";
-  const [token, setToken] = useState<string | null>(null);
-
-  const getToken = useCallback(async () => {
-    const apiResponse = await fetch("/api/stream/token", {
-      method: "GET",
-      headers: {
-        "X-Frontend-Internal-Request": "true",
-      },
-      cache: "no-store",
-      signal: AbortSignal.timeout(10000),
-    });
-    if (!apiResponse.ok) {
-      const error = await apiResponse.json();
-      console.error("this is error", error);
-      return;
+  useEffect(() => {
+    if (otherUserId && callState.status === "idle") {
+      // Start a call when component mounts
+      startCall(otherUserId);
     }
-    const response = await apiResponse.json();
-    console.log("this is data", response);
-    setToken(response.data.token);
-  }, []);
+  }, [otherUserId, startCall, callState.status]);
 
-  useEffect(() => {
-    getToken();
-  }, [getToken]);
+  const handleAcceptCall = () => {
+    acceptCall();
+  };
 
-  useEffect(() => {
-    if (!token) return;
-    const streamVideoClient = new StreamVideoClient({
-      apiKey: apiKey,
-      user: user!,
-      token: token!,
-    });
-    const streamCall = streamVideoClient.call("default", callId);
+  const handleDeclineCall = () => {
+    declineCall();
+    router.back();
+  };
 
-    // Join the call with camera and mic disabled by default
-    streamCall
-      .join({
-        create: true,
-        video: false,
-      })
-      .then(async () => {
-        // Force tắt camera và mic sau khi join
-        try {
-          await streamCall.camera.disable();
-          await streamCall.microphone.disable();
-        } catch (error) {
-          console.log("Camera/mic already disabled or error:", error);
-        }
+  const handleEndCall = () => {
+    endCall();
+    router.back();
+  };
 
-        setClient(streamVideoClient);
-        setCall(streamCall);
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Failed to join call:", error);
-        setError(error.message || "Failed to join call");
-      });
+  const handleClearError = () => {
+    clearError();
+  };
 
-    // Cleanup function
-    return () => {
-      if (streamCall) {
-        streamCall.leave();
-      }
-    };
-  }, [token, callId, apiKey]);
-
-  if (error) {
+  if (callState.error) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-          <p className="text-gray-700 mb-4">{error}</p>
-          <p className="text-sm text-gray-500">
-            You may have hit the rate limit. Please wait a few minutes and try
-            again.
-          </p>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Call Error</h2>
+          <p className="text-gray-700 mb-4">{callState.error}</p>
+          <button
+            onClick={handleClearError}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Clear Error
+          </button>
         </div>
       </div>
     );
   }
 
-  if (!client || !call) {
+  if (callState.status === "timeout") {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-700">Connecting to call...</p>
+          <h2 className="text-2xl font-bold text-yellow-600 mb-4">
+            Call Timeout
+          </h2>
+          <p className="text-gray-700 mb-4">The call has timed out.</p>
+          <button
+            onClick={() => router.back()}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Go Back
+          </button>
         </div>
       </div>
     );
   }
 
+  if (callState.status === "ringing" && callState.isIncoming) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="mb-8">
+            <div className="w-24 h-24 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <svg
+                className="w-12 h-12 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              Incoming Call
+            </h2>
+            <p className="text-gray-600">Call from user {callState.callerId}</p>
+          </div>
+
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={handleAcceptCall}
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full font-medium transition-colors flex items-center gap-2"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+              </svg>
+              Accept
+            </button>
+            <button
+              onClick={handleDeclineCall}
+              className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-medium transition-colors flex items-center gap-2"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Decline
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (callState.status === "ringing" && callState.isOutgoing) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="mb-8">
+            <div className="w-24 h-24 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
+              <svg
+                className="w-12 h-12 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              Calling...
+            </h2>
+            <p className="text-gray-600">Calling user {callState.calleeId}</p>
+          </div>
+
+          <button
+            onClick={handleEndCall}
+            className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-medium transition-colors"
+          >
+            Cancel Call
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (callState.status === "connected") {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="mb-8">
+            <div className="w-24 h-24 bg-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <svg
+                className="w-12 h-12 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              Call Connected
+            </h2>
+            <p className="text-gray-600">You are now connected</p>
+          </div>
+
+          <button
+            onClick={handleEndCall}
+            className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-medium transition-colors"
+          >
+            End Call
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Default loading state
   return (
-    <StreamVideo client={client}>
-      {token && call && (
-        <StreamCall call={call}>
-          <MyUILayout />
-        </StreamCall>
-      )}
-    </StreamVideo>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-700">Initializing call...</p>
+      </div>
+    </div>
   );
 }
-
-const MyUILayout = () => {
-  const call = useCall();
-  const { useCallCallingState } = useCallStateHooks();
-  const callingState = useCallCallingState();
-
-  const handleEndCall = async () => {
-    if (call) {
-      try {
-        await call.endCall();
-      } catch (error) {
-        console.error("Failed to end call:", error);
-      }
-    }
-  };
-
-  const handleLeaveCall = async () => {
-    if (call) {
-      try {
-        await call.leave();
-      } catch (error) {
-        console.error("Failed to leave call:", error);
-      }
-    }
-  };
-
-  if (callingState !== CallingState.JOINED) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-700">Joining call...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <StreamTheme>
-      <SpeakerLayout participantsBarPosition="bottom" />
-      <div className="flex justify-center items-center gap-4 p-4">
-        <CallControls />
-        <button
-          onClick={handleLeaveCall}
-          className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-        >
-          Leave Call
-        </button>
-        <button
-          onClick={handleEndCall}
-          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-        >
-          End Call
-        </button>
-      </div>
-    </StreamTheme>
-  );
-};

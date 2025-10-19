@@ -31,7 +31,7 @@ export default function Login() {
       });
       const response = await apiResponse.json();
 
-      console.log("This is login", response);
+      // console.log("This is login", response);
       if (!response.success)
         throw new Error(response.message || "Cannot start SSO");
       router.push(response.data);
