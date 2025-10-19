@@ -1,9 +1,19 @@
 export interface CallProps {
   callId: string | null;
-  status: "idle" | "ringing" | "connected" | "declined" | "ended" | "timeout";
+  status: "idle" | "ringing" | "calling" | "connected";
   isIncoming: boolean;
   isOutgoing: boolean;
-  callerId: string | null;
-  calleeId: string | null;
-  error: string | null;
+  caller_info: UserInfo | null;
+  callee_info: UserInfo | null;
+  isTimeout: boolean;
+}
+
+interface UserInfo {
+  avatar_ipfs_hash: string;
+  bio: string;
+  display_name: string;
+  is_active: boolean;
+  status: string;
+  username: string;
+  _id: string;
 }

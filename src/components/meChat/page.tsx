@@ -271,6 +271,7 @@ export default function MessageMePage({
               height={40}
               className="w-full h-full object-contain"
               unoptimized
+              priority
             />
           </div>
           <div className="flex flex-col">

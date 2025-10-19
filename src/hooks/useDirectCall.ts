@@ -1,30 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useRef, useCallback } from "react";
 import { getMeCallSocketIO } from "@/library/sooketioMeCall";
-import { CallProps } from "@/interfaces/call.interfaces";
+import { useMeCallContext } from "@/contexts/MeCallConetext.contexts";
 
 export function useDirectCall(targetUserId: string) {
   const socket = useRef(getMeCallSocketIO()).current;
-  const router = useRouter();
+  const { meCallState } = useMeCallContext();
 
-  const [callState, setCallState] = useState<CallProps>({
-    callId: null,
-    status: "idle",
-    isIncoming: false,
-    isOutgoing: false,
-    callerId: null,
-    calleeId: null,
-    error: null,
-  });
-
-  useEffect(() => {
-    console.log("[useDirectCall] Global call me call ", callState);
-  }, [callState]);
 
   const startCall = useCallback(() => {
-    if (callState.status !== "idle") {
+    if (meCallState.status !== "idle") {
       console.warn("Cannot start call - already in call");
       return;
     }
@@ -33,79 +19,53 @@ export function useDirectCall(targetUserId: string) {
     socket.emit("startCall", {
       target_user_id: targetUserId,
     });
-  }, [socket, callState.status, targetUserId]);
+  }, [socket, meCallState.status, targetUserId]);
 
   const acceptCall = useCallback(() => {
     if (
-      !callState.callId ||
-      callState.status !== "ringing" ||
-      !callState.isIncoming
+      !meCallState.callId ||
+      meCallState.status !== "ringing" ||
+      !meCallState.isIncoming
     ) {
       console.warn("Cannot accept call - no incoming call");
       return;
     }
 
-    console.log("[useDirectCall] Accepting call:", callState.callId);
+    console.log("[useDirectCall] Accepting call:", meCallState.callId);
     socket.emit("acceptCall", {
-      call_id: callState.callId,
+      call_id: meCallState.callId,
     });
-  }, [socket, callState]);
+  }, [socket, meCallState]);
 
   const declineCall = useCallback(() => {
     if (
-      !callState.callId ||
-      callState.status !== "ringing" ||
-      !callState.isIncoming
+      !meCallState.callId ||
+      meCallState.status !== "ringing" ||
+      !meCallState.isIncoming
     ) {
       console.warn("Cannot decline call - no incoming call");
       return;
     }
 
-    console.log("[useDirectCall] Declining call:", callState.callId);
-    socket.emit("declineCall", { call_id: callState.callId });
-  }, [socket, callState]);
+    console.log("[useDirectCall] Declining call:", meCallState.callId);
+    socket.emit("declineCall", { call_id: meCallState.callId });
+  }, [socket, meCallState]);
 
   const endCall = useCallback(() => {
-    if (!callState.callId || callState.status === "idle") {
+    if (!meCallState.callId || meCallState.status === "idle") {
       console.warn("Cannot end call - no active call");
       return;
     }
 
-    console.log("[useDirectCall] Ending call:", callState.callId);
-    socket.emit("endCall", { call_id: callState.callId });
-  }, [socket, callState]);
-
-  const clearError = useCallback(() => {
-    setCallState((prev) => ({ ...prev, error: null }));
-  }, []);
-
-  const handleDeclineCall = () => {
-    declineCall();
-    router.push(`/app/channels/me/${targetUserId}`);
-  };
-
-  const handleEndCall = () => {
-    endCall();
-    router.push(`/app/channels/me/${targetUserId}`);
-  };
+    console.log("[useDirectCall] Ending call:", meCallState.callId);
+    socket.emit("endCall", { call_id: meCallState.callId });
+  }, [socket, meCallState]);
 
   return {
-    // State
-    callState,
-    isInCall: callState.status === "connected",
-    isRinging: callState.status === "ringing",
-    isTimeout: callState.status === "timeout",
-    isDeclined: callState.status === "declined",
-    hasIncomingCall: callState.isIncoming && callState.status === "ringing",
-    hasOutgoingCall: callState.isOutgoing && callState.status === "ringing",
-
     // Actions
     startCall,
     acceptCall,
     declineCall,
     endCall,
-    clearError,
-    handleDeclineCall,
-    handleEndCall,
   };
 }

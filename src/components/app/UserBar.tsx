@@ -125,7 +125,10 @@ export default function UserBar() {
             <FontAwesomeIcon icon={sound ? faVolumeHigh : faVolumeXmark} />
           </button>
           <button className="h-8 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90 flex items-center justify-center">
-            <FontAwesomeIcon className="hover:animate-[spin_1s]" icon={faGear} />
+            <FontAwesomeIcon
+              className="hover:animate-[spin_1s]"
+              icon={faGear}
+            />
           </button>
         </div>
 
@@ -143,6 +146,7 @@ export default function UserBar() {
               height={40}
               className="w-full h-full object-contain"
               unoptimized
+              priority
             />
           </div>
           <div className="min-w-0">
@@ -170,6 +174,7 @@ export default function UserBar() {
                     height={64}
                     className="w-full h-full object-contain"
                     unoptimized
+                    priority
                   />
                 </div>
 
