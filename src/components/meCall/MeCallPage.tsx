@@ -13,7 +13,7 @@ import {
   type User,
   type Call,
 } from "@stream-io/video-react-sdk";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
@@ -45,7 +45,7 @@ interface MeCallPageProps {
   endCall: () => void;
 }
 
-export default function MeCallPage({callId, endCall} : MeCallPageProps) {
+export default function MeCallPage({ callId, endCall }: MeCallPageProps) {
   const [userData, setUserData] = useState<UserDataProps | null>(null);
   useEffect(() => {
     const userData = localStorage.getItem("userData");
@@ -54,15 +54,14 @@ export default function MeCallPage({callId, endCall} : MeCallPageProps) {
     }
   }, []);
 
-  let user: User | null = null;
-
-  if (userData) {
-    user = {
+  const user = useMemo(() => {
+    if (!userData) return null;
+    return {
       id: userData._id,
       name: userData.display_name,
       image: `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`,
     } as User;
-  }
+  }, [userData]);
 
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);
@@ -132,7 +131,7 @@ export default function MeCallPage({callId, endCall} : MeCallPageProps) {
         streamCall.leave();
       }
     };
-  }, [token, apiKey, callId]);
+  }, [token, apiKey, callId, user]);
 
   if (error) {
     return (
@@ -171,7 +170,7 @@ export default function MeCallPage({callId, endCall} : MeCallPageProps) {
   );
 }
 
-const MyUILayout = ({endCall}: {endCall: () => void}) => {
+const MyUILayout = ({ endCall }: { endCall: () => void }) => {
   const call = useCall();
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
@@ -222,8 +221,7 @@ const MyUILayout = ({endCall}: {endCall: () => void}) => {
           onClick={() => {
             handleEndCall();
             endCall();
-          }
-          }
+          }}
           className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
         >
           End Call

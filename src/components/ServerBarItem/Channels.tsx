@@ -88,7 +88,7 @@ export default function Channels({
         }
       >
         <Link
-          href={`/app/channels/${serverId}/${channel._id}`}
+          href={channel.type === "TEXT" ? `/app/channels/${serverId}/${channel._id}` : `/app/channels/${serverId}/${channel._id}/call`}
           className=" flex flex-row justify-between items-center w-full h-full"
         >
           <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
