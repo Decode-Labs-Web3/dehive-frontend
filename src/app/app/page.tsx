@@ -10,8 +10,8 @@ export default function AppPage() {
   }, [router]);
 
   return (
-    <div>
-      Loading...
-    </div>
+    <>
+      <div>Loading...</div>
+    </>
   );
 }
