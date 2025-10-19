@@ -2,35 +2,20 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { getMeCallSocketIO } from "@/library/sooketioMeCall";
-import { useCallState } from "@/providers/socketMeCallProvider";
-
-export interface CallState {
-  callId: string | null;
-  status: "idle" | "ringing" | "connecting" | "connected" | "ended" | "timeout";
-  isIncoming: boolean;
-  isOutgoing: boolean;
-  callerId: string | null;
-  calleeId: string | null;
-  error: string | null;
-}
+import { useMeCallState } from "@/contexts/MeCallContext.contexts";
 
 export function useDirectCall() {
   const socket = useRef(getMeCallSocketIO()).current;
   console.log("socketio me call", socket);
 
-  const { callState: globalCallState, setGlobalCallState } = useCallState();
+  const { globalCallState, setGlobalCallState } = useMeCallState();
 
   const callState = globalCallState;
 
-  // Debug log to track state changes
   useEffect(() => {
     console.log("[useDirectCall] Global call me call ", callState);
   }, [callState]);
 
-  // Note: Event handlers are already managed in the SocketMeCallProvider
-  // This hook focuses on call actions and state access
-
-  // Call actions
   const startCall = useCallback(
     (targetUserId: string) => {
       if (callState.status !== "idle") {

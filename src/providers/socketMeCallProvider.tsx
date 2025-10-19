@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, createContext, useContext } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import type { Socket } from "socket.io-client";
+import { useEffect, useRef, useState } from "react";
 import { getMeCallSocketIO } from "@/library/sooketioMeCall";
+import { MeCallStateContext } from "@/contexts/MeCallContext.contexts";
 import type {
   ClientToServerCallEvents,
   ServerToClientCallEvents,
@@ -15,76 +17,34 @@ import type {
   CallStartedPayload,
   CallTimeoutPayload,
 } from "@/interfaces/websocketMeCall.interfaces";
-import type { Socket } from "socket.io-client";
 
-type Props = { userId?: string | null; children: React.ReactNode };
+interface SocketMeCallProviderProps {
+  userId: string;
+  children: React.ReactNode;
+}
 
-const CallStateContext = createContext<{
-  callState: {
-    callId: string | null;
-    status:
-      | "idle"
-      | "ringing"
-      | "connecting"
-      | "connected"
-      | "ended"
-      | "timeout";
-    isIncoming: boolean;
-    isOutgoing: boolean;
-    callerId: string | null;
-    calleeId: string | null;
-    error: string | null;
-  };
-  setGlobalCallState: React.Dispatch<
-    React.SetStateAction<{
-      callId: string | null;
-      status:
-        | "idle"
-        | "ringing"
-        | "connecting"
-        | "connected"
-        | "ended"
-        | "timeout";
-      isIncoming: boolean;
-      isOutgoing: boolean;
-      callerId: string | null;
-      calleeId: string | null;
-      error: string | null;
-    }>
-  >;
-} | null>(null);
+interface CallProps {
+  callId: string | null;
+  status: "idle" | "ringing" | "connecting" | "connected" | "ended" | "timeout";
+  isIncoming: boolean;
+  isOutgoing: boolean;
+  callerId: string | null;
+  calleeId: string | null;
+  error: string | null;
+}
 
-export const useCallState = () => {
-  const context = useContext(CallStateContext);
-  if (!context) {
-    throw new Error("useCallState must be used within SocketMeCallProvider");
-  }
-  return context;
-};
-
-export default function SocketMeCallProvider({ userId, children }: Props) {
+export default function SocketMeCallProvider({
+  userId,
+  children,
+}: SocketMeCallProviderProps) {
   const router = useRouter();
   const socket = useRef<
     Socket<ServerToClientCallEvents, ClientToServerCallEvents>
   >(getMeCallSocketIO()).current;
+  const pathname = usePathname();
+  const latestPathRef = useRef(pathname);
 
-  const [currentPath, setCurrentPath] = React.useState<string>("");
-
-  const [globalCallState, setGlobalCallState] = React.useState<{
-    callId: string | null;
-    status:
-      | "idle"
-      | "ringing"
-      | "connecting"
-      | "connected"
-      | "ended"
-      | "timeout";
-    isIncoming: boolean;
-    isOutgoing: boolean;
-    callerId: string | null;
-    calleeId: string | null;
-    error: string | null;
-  }>({
+  const [globalCallState, setGlobalCallState] = useState<CallProps>({
     callId: null,
     status: "idle",
     isIncoming: false,
@@ -116,14 +76,15 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
         error: e.message || "WebSocket error occurred",
       }));
     };
-    const onIdentityConfirmed = (p: IdentityConfirmed) =>
+
+    const onIdentityConfirmed = (p: IdentityConfirmed) => {
       console.log("[mecall identityConfirmed]", p);
+    };
 
     const onIncoming = (p: IncomingCallPayload) => {
       console.log("[incomingCall]", p);
       console.log("this is incomming phone from socket provider");
 
-      // Update global call state
       setGlobalCallState({
         callId: p.call_id,
         status: "ringing",
@@ -136,7 +97,7 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
 
       if (p.caller_id) {
         const targetPath = `/app/channels/me/${p.caller_id}/call`;
-        if (currentPath !== targetPath) {
+        if (pathname !== targetPath) {
           console.log(
             "Auto-navigating to call page for incoming call from:",
             p.caller_id
@@ -151,7 +112,6 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
     const onStarted = (p: CallStartedPayload) => {
       console.log("[callStarted]", p);
 
-      // Update global call state
       setGlobalCallState((prev) => ({
         ...prev,
         callId: p.call_id,
@@ -163,7 +123,7 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
 
       if (p.target_user_id) {
         const targetPath = `/app/channels/me/${p.target_user_id}/call`;
-        if (currentPath !== targetPath) {
+        if (pathname !== targetPath) {
           console.log(
             "Auto-navigating to call page for outgoing call to:",
             p.target_user_id
@@ -174,6 +134,7 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
         }
       }
     };
+
     const onAccepted = (p: CallAcceptedPayload) => {
       console.log("[callAccepted]", p);
       setGlobalCallState((prev) => ({
@@ -261,7 +222,7 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
 
       socket.off("pong", onPong);
     };
-  }, [socket, userId, router, currentPath]);
+  }, [socket, userId, router, pathname]);
 
   useEffect(() => {
     if (!socket.connected) return;
@@ -269,23 +230,14 @@ export default function SocketMeCallProvider({ userId, children }: Props) {
   }, [userId, socket]);
 
   useEffect(() => {
-    const updateCurrentPath = () => {
-      setCurrentPath(window.location.pathname);
-    };
-
-    updateCurrentPath();
-    window.addEventListener("popstate", updateCurrentPath);
-
-    return () => {
-      window.removeEventListener("popstate", updateCurrentPath);
-    };
-  }, []);
+    latestPathRef.current = pathname;
+  }, [pathname]);
 
   return (
-    <CallStateContext.Provider
-      value={{ callState: globalCallState, setGlobalCallState }}
+    <MeCallStateContext.Provider
+      value={{ globalCallState, setGlobalCallState }}
     >
       {children}
-    </CallStateContext.Provider>
+    </MeCallStateContext.Provider>
   );
 }

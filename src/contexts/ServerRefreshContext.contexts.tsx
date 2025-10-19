@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { createContext, useContext } from "react"
+import { createContext, useContext } from "react";
 
-interface ServerContextValue {
+interface ServerRefreshContextProps {
   refreshServers?: () => void;
 }
 
-export const ServerContext = createContext<ServerContextValue>({})
+export const ServerRefreshContext = createContext<ServerRefreshContextProps>({});
 
-export const useServerContext = () => useContext(ServerContext);
+export const useServerRefresh = () => useContext(ServerRefreshContext);
