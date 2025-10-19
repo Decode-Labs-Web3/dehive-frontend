@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
-import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
+import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import ServerBarItems from "@/components/serverBarItem";
 import {
   faPen,
@@ -45,7 +45,7 @@ export default function EditModal({
   // const [server, setServer] = useState<ServerProps>(server)
   const router = useRouter();
   const [userId, setUserId] = useState("");
-  const { refreshServers } = useServerContext();
+  const { refreshServers } = useServerRefresh();
   const allFalse = {
     edit: false,
     leave: false,

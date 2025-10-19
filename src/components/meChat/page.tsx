@@ -1,7 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { UserChatWith } from "@/interfaces/index.interfaces";
+import { useParams, useRouter } from "next/navigation";
+import { useDirectMessage } from "@/hooks/useDirectMessage";
+import { UserChatWith } from "@/interfaces/user.interfaces";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Message } from "@/interfaces/websocketMeChat.interfaces";
 import {
   useState,
   useEffect,
@@ -9,16 +13,12 @@ import {
   useRef,
   useLayoutEffect,
 } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useDirectMessage } from "@/hooks/useDirectMessage";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowTurnUp,
   faPen,
   faTrash,
   faX,
 } from "@fortawesome/free-solid-svg-icons";
-import { Message } from "@/interfaces/index.interfaces";
 
 interface Conversation {
   userA: string;
@@ -285,7 +285,7 @@ export default function MessageMePage({
           onClick={() => router.push(`/app/channels/me/${userId}/call`)}
           className="px-4 py-2 bg-green-600 text-white rounded-lg"
         >
-          📞 Start Call
+          Start Call
         </button>
         <span className="text-xs text-[var(--muted-foreground)]">
           Page {currentPage + 1}

@@ -1,6 +1,6 @@
 export interface CallProps {
   callId: string | null;
-  status: "idle" | "ringing" | "connecting" | "connected" | "ended" | "timeout";
+  status: "idle" | "ringing" | "connected" | "declined" | "ended" | "timeout";
   isIncoming: boolean;
   isOutgoing: boolean;
   callerId: string | null;

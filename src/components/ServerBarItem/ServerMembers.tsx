@@ -6,7 +6,7 @@ import ServerBarItems from "./index";
 import { getCookie } from "@/utils/cookie.utils";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
+import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerProps {
@@ -48,7 +48,7 @@ export default function ServerMembers({
   fetchServerInfo,
   setServerPannel,
 }: ServerMembersProps) {
-  const { refreshServers } = useServerContext();
+  const { refreshServers } = useServerRefresh();
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string>();
   const [kickForm, setKickForm] = useState({

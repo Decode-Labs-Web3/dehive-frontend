@@ -5,7 +5,7 @@ import ServerBarItems from "./index";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan, faX } from "@fortawesome/free-solid-svg-icons";
-import { useServerContext } from "@/contexts/ServerRefreshContext.contexts";
+import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 
 interface ServerProps {
   _id: string;
@@ -34,7 +34,7 @@ export default function ServerPannel({
   setServerSettingModal,
 }: ServerPannel) {
   const router = useRouter();
-  const { refreshServers } = useServerContext();
+  const { refreshServers } = useServerRefresh();
 
   const allFalse = {
     profile: false,

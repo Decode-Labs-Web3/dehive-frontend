@@ -1,35 +1,39 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { getMeCallSocketIO } from "@/library/sooketioMeCall";
-import { useMeCallState } from "@/contexts/MeCallContext.contexts";
+import { CallProps } from "@/interfaces/call.interfaces";
 
-export function useDirectCall() {
+export function useDirectCall(targetUserId: string) {
   const socket = useRef(getMeCallSocketIO()).current;
-  console.log("socketio me call", socket);
+  const router = useRouter();
 
-  const { globalCallState, setGlobalCallState } = useMeCallState();
-
-  const callState = globalCallState;
+  const [callState, setCallState] = useState<CallProps>({
+    callId: null,
+    status: "idle",
+    isIncoming: false,
+    isOutgoing: false,
+    callerId: null,
+    calleeId: null,
+    error: null,
+  });
 
   useEffect(() => {
     console.log("[useDirectCall] Global call me call ", callState);
   }, [callState]);
 
-  const startCall = useCallback(
-    (targetUserId: string) => {
-      if (callState.status !== "idle") {
-        console.warn("Cannot start call - already in call");
-        return;
-      }
+  const startCall = useCallback(() => {
+    if (callState.status !== "idle") {
+      console.warn("Cannot start call - already in call");
+      return;
+    }
 
-      console.log("[useDirectCall] Starting call to:", targetUserId);
-      socket.emit("startCall", {
-        target_user_id: targetUserId,
-      });
-    },
-    [socket, callState.status]
-  );
+    console.log("[useDirectCall] Starting call to:", targetUserId);
+    socket.emit("startCall", {
+      target_user_id: targetUserId,
+    });
+  }, [socket, callState.status, targetUserId]);
 
   const acceptCall = useCallback(() => {
     if (
@@ -72,8 +76,18 @@ export function useDirectCall() {
   }, [socket, callState]);
 
   const clearError = useCallback(() => {
-    setGlobalCallState((prev) => ({ ...prev, error: null }));
-  }, [setGlobalCallState]);
+    setCallState((prev) => ({ ...prev, error: null }));
+  }, []);
+
+  const handleDeclineCall = () => {
+    declineCall();
+    router.push(`/app/channels/me/${targetUserId}`);
+  };
+
+  const handleEndCall = () => {
+    endCall();
+    router.push(`/app/channels/me/${targetUserId}`);
+  };
 
   return {
     // State
@@ -81,6 +95,7 @@ export function useDirectCall() {
     isInCall: callState.status === "connected",
     isRinging: callState.status === "ringing",
     isTimeout: callState.status === "timeout",
+    isDeclined: callState.status === "declined",
     hasIncomingCall: callState.isIncoming && callState.status === "ringing",
     hasOutgoingCall: callState.isOutgoing && callState.status === "ringing",
 
@@ -90,5 +105,7 @@ export function useDirectCall() {
     declineCall,
     endCall,
     clearError,
+    handleDeclineCall,
+    handleEndCall,
   };
 }

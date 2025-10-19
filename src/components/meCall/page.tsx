@@ -22,8 +22,15 @@ interface UserDataProps {
 export default function CallPage() {
   const params = useParams();
   const router = useRouter();
-  const { callState, startCall, acceptCall, declineCall, endCall, clearError } =
-    useDirectCall();
+  const {
+    callState,
+    startCall,
+    acceptCall,
+    declineCall,
+    endCall,
+    clearError,
+    isDeclined,
+  } = useDirectCall();
   const [userData, setUserData] = useState<UserDataProps | null>(null);
   const [otherUserData, setOtherUserData] = useState<UserDataProps | null>(
     null
@@ -89,6 +96,25 @@ export default function CallPage() {
             Call Timeout
           </h2>
           <p className="text-gray-700 mb-4">The call has timed out.</p>
+          <button
+            onClick={() => router.back()}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (callState.status === "declined") {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">
+            Call Declined
+          </h2>
+          <p className="text-gray-700 mb-4">The call was declined.</p>
           <button
             onClick={() => router.back()}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
@@ -211,7 +237,6 @@ export default function CallPage() {
     );
   }
 
-  // Default loading state
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="text-center">
