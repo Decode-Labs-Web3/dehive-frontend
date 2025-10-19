@@ -1,15 +1,15 @@
 // ===== Server -> Client (listen) =====
-export type IdentityConfirmedChannel = {
+export interface IdentityConfirmedChannel {
   message: string;
   userDehiveId: string;
-};
+}
 
-export type JoinedChannel = {
+export interface JoinedChannel {
   conversationId: string;
   message: string;
-};
+}
 
-export type MessageChannel = {
+export interface MessageChannel {
   _id: string;
   conversationId: string;
   sender: Sender;
@@ -21,7 +21,7 @@ export type MessageChannel = {
   createdAt: string | Date;
   updatedAt: string | Date;
   __v?: number | 0;
-};
+}
 
 interface Sender {
   dehive_id: string;
@@ -37,37 +37,37 @@ interface ReplyMessage {
   createdAt: string;
 }
 
-export type WsErrorPayloadChannel = {
+export interface WsErrorPayloadChannel {
   message: string;
   details?: string | unknown;
-};
+}
 
-export type Pong = {
+export interface Pong {
   timestamp: string;
   message: string;
-};
+}
 
 // ===== Client -> Server (emit) =====
-export type CreateMessageChannelDto = {
+export interface CreateMessageChannelDto {
   conversationId: string;
   content: string;
   uploadIds: string[];
   replyTo: string | null;
-};
+}
 
-export type EditMessageChannelDto = {
+export interface EditMessageChannelDto {
   messageId: string;
   content: string;
-};
+}
 
-export type DeleteMessageChannelDto = {
+export interface DeleteMessageChannelDto {
   messageId: string;
-};
+}
 
-export type JoinChannelDto = {
+export interface JoinChannelDto {
   serverId: string;
   channelId: string;
-};
+}
 
 // ===== Event name maps  =====
 

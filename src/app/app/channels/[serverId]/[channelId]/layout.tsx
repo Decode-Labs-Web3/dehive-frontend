@@ -5,7 +5,11 @@ import { useParams } from "next/navigation";
 import { getCookie } from "@/utils/cookie.utils";
 import SocketChannelProvider from "@/providers/socketChannelChatProvider";
 
-export default function ChannelLayout({ children }: { children: React.ReactNode }) {
+export default function ChannelLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { serverId, channelId } = useParams<{
     serverId: string;
     channelId: string;
@@ -18,12 +22,18 @@ export default function ChannelLayout({ children }: { children: React.ReactNode 
     }
   }, []);
   return (
-    <SocketChannelProvider
-      userId={currentId}
-      serverId={serverId}
-      channelId={channelId}
-    >
-      {children}
-    </SocketChannelProvider>
+    <>
+      {currentId && serverId && channelId ? (
+        <SocketChannelProvider
+          userId={currentId}
+          serverId={serverId}
+          channelId={channelId}
+        >
+          {children}
+        </SocketChannelProvider>
+      ) : (
+        <h1>Loading...</h1>
+      )}
+    </>
   );
 }

@@ -1,11 +1,12 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
-import type { Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
+import { CallProps } from "@/interfaces/call.interfaces";
+import { useRouter, usePathname } from "next/navigation";
 import { getMeCallSocketIO } from "@/library/sooketioMeCall";
 import { MeCallStateContext } from "@/contexts/MeCallContext.contexts";
-import type {
+import {
   ClientToServerCallEvents,
   ServerToClientCallEvents,
   WsErrorPayload,
@@ -21,16 +22,6 @@ import type {
 interface SocketMeCallProviderProps {
   userId: string;
   children: React.ReactNode;
-}
-
-interface CallProps {
-  callId: string | null;
-  status: "idle" | "ringing" | "connecting" | "connected" | "ended" | "timeout";
-  isIncoming: boolean;
-  isOutgoing: boolean;
-  callerId: string | null;
-  calleeId: string | null;
-  error: string | null;
 }
 
 export default function SocketMeCallProvider({
@@ -64,10 +55,14 @@ export default function SocketMeCallProvider({
       console.log("[mecall connect]");
       identify();
     };
-    const onConnectError = (e: Error) =>
+
+    const onConnectError = (e: Error) => {
       console.warn("[mecall connect_error]", e);
-    const onDisconnect = (reason: string) =>
+    };
+
+    const onDisconnect = (reason: string) => {
       console.log("[mecall disconnect]", reason);
+    };
 
     const onError = (e: WsErrorPayload) => {
       console.warn("[mecall error]", e);

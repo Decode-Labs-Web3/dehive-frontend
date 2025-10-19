@@ -1,23 +1,14 @@
 "use client";
 
 import { createContext, useContext } from "react";
-
-interface MeCallProps {
-  callId: string | null;
-  status: "idle" | "ringing" | "connecting" | "connected" | "ended" | "timeout";
-  isIncoming: boolean;
-  isOutgoing: boolean;
-  callerId: string | null;
-  calleeId: string | null;
-  error: string | null;
-}
+import { CallProps } from "@/interfaces/call.interfaces";
 
 interface MeCallStateProps {
-  globalCallState: MeCallProps;
-  setGlobalCallState: React.Dispatch<React.SetStateAction<MeCallProps>>;
+  globalCallState: CallProps;
+  setGlobalCallState: React.Dispatch<React.SetStateAction<CallProps>>;
 }
 
-const defaultCallState: MeCallProps = {
+const defaultCallState: CallProps = {
   callId: null,
   status: "idle",
   isIncoming: false,

@@ -2,15 +2,21 @@
 
 import { useEffect, useRef } from "react";
 import { getMeChatSocketIO } from "@/library/socketioMeChat";
-import type {
+import {
   IdentityConfirmed,
   Message,
   WsErrorPayload,
-} from "@/interfaces/index.interfaces";
+} from "@/interfaces/websocketMeChat.interfaces";
 
-type Props = { userId?: string | null; children: React.ReactNode };
+interface SocketMeChatProviderProps {
+  userId: string;
+  children: React.ReactNode;
+}
 
-export default function SocketMeChatProvider({ userId, children }: Props) {
+export default function SocketMeChatProvider({
+  userId,
+  children,
+}: SocketMeChatProviderProps) {
   const socket = useRef(getMeChatSocketIO()).current;
 
   useEffect(() => {

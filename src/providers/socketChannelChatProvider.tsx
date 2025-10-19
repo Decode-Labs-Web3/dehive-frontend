@@ -2,28 +2,28 @@
 
 import { useEffect, useRef } from "react";
 import { getChannelChatSocketIO } from "@/library/socketioChannelChat";
-import type {
+import {
   IdentityConfirmedChannel,
   JoinedChannel,
   MessageChannel,
   WsErrorPayloadChannel,
   Pong,
   JoinChannelDto,
-} from "@/interfaces/index.interfaces";
+} from "@/interfaces/websocketChannelChat.interfaces";
 
-type Props = {
-  userId?: string | null;
-  serverId?: string | null;
-  channelId?: string | null;
+interface SocketChannelProviderProps {
+  userId: string;
+  serverId: string;
+  channelId: string;
   children: React.ReactNode;
-};
+}
 
 export default function SocketChannelProvider({
   userId,
   serverId,
   channelId,
   children,
-}: Props) {
+}: SocketChannelProviderProps) {
   const socket = useRef(getChannelChatSocketIO()).current;
 
   useEffect(() => {

@@ -1,16 +1,11 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { authExpire, httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
   guardInternal,
 } from "@/utils/index.utils";
-
-function isoToMaxAgeSeconds(expiresAtISO: string): number {
-  const now = Date.now();
-  const expMs = Date.parse(expiresAtISO);
-  return Math.max(0, Math.floor((expMs - now) / 1000));
-}
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
@@ -28,10 +23,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "SSO State is expired",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -42,25 +37,25 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "SSO State mismatch",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
     // console.log("this is ssoToken and state from sso", ssoToken, state);
     const fingerprint = (await cookies()).get("fingerprint")?.value;
-    console.log("this is fingerprint:", fingerprint)
+    console.log("this is fingerprint:", fingerprint);
 
     if (!fingerprint) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -86,15 +81,15 @@ export async function POST(req: Request) {
     // console.error(`${pathname}`,backendRes)
 
     if (!backendRes.ok) {
-      const err = await backendRes.json().catch(() => null);
-      console.log(`${pathname}`, err);
+      const error = await backendRes.json().catch(() => null);
+      console.log(`${pathname}`, error);
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || 401,
-          message: err?.message || "SSO failed",
+          statusCode: backendRes.status || httpStatus.UNAUTHORIZED,
+          message: error?.message || "SSO failed",
         },
-        { status: backendRes.status || 401 }
+        { status: backendRes.status || httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -113,24 +108,25 @@ export async function POST(req: Request) {
     res.cookies.delete("ssoState");
     res.cookies.delete("accessExp");
     res.cookies.delete("sessionId");
-    const accessExpISO = response.data.expires_at as string;
-    const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
-    const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
 
-    res.cookies.set("accessExp", String(accessExpSec), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: accessMaxAge,
-    });
+    res.cookies.set(
+      "accessExp",
+      String(Math.floor(Date.now() / 1000) + authExpire.sessionToken),
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: authExpire.sessionToken,
+      }
+    );
 
     res.cookies.set("sessionId", response.data.session_id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: accessMaxAge,
+      maxAge: authExpire.sessionToken,
     });
 
     return res;
@@ -139,10 +135,10 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: "Server create SSO fail",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -153,9 +149,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: 405,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: 405 }
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }

@@ -1,4 +1,5 @@
 import { randomBytes } from "crypto";
+import { authExpire, httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
@@ -16,15 +17,17 @@ export async function GET(req: NextRequest) {
     // console.log("hello this is sso")
     const decodeBase = process.env.DECODE_BASE_URL;
     if (!decodeBase) {
-      const statusCode = 500;
-      const message = "Missing DECODE_BASE_URL";
       return NextResponse.json(
-        { success: false, statusCode, message },
-        { status: statusCode }
+        {
+          success: false,
+          statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+          message: "Missing DECODE_BASE_URL",
+        },
+        { status: httpStatus.INTERNAL_SERVER_ERROR }
       );
     }
 
-    const appId = process.env.DEHIVE_APP_ID ?? "dehive";
+    const appId = "dehive";
 
     const origin = req.nextUrl.origin;
     const redirectUri = `${origin}/sso`;
@@ -39,11 +42,11 @@ export async function GET(req: NextRequest) {
     const res = NextResponse.json(
       {
         success: true,
-        statusCode: 200,
+        statusCode: httpStatus.OK,
         message: "Login URL created",
         data: ssoUrl,
       },
-      { status: 200 }
+      { status: httpStatus.OK }
     );
 
     res.cookies.delete("ssoState");
@@ -53,19 +56,20 @@ export async function GET(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 5,
+      maxAge: authExpire.ssoState,
     });
 
     return res;
-  } catch (error: unknown) {
+  } catch (error) {
     console.error(error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
-        message: "Failed to create SSO URL",
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        message:
+          error instanceof Error ? error.message : "Failed to create SSO URL",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.log(`${pathname} - ${requestId}`);

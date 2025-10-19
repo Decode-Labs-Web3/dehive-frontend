@@ -14,13 +14,19 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
     }
   }, []);
   return (
-    <SocketMeChatProvider userId={currentId}>
-      <div className="flex h-screen">
-        <div className="w-60">
-          <App.MeBar />
-        </div>
-        <div className="flex-1">{children}</div>
-      </div>
-    </SocketMeChatProvider>
+    <>
+      {currentId ? (
+        <SocketMeChatProvider userId={currentId}>
+          <div className="flex h-screen">
+            <div className="w-60">
+              <App.MeBar />
+            </div>
+            <div className="flex-1">{children}</div>
+          </div>
+        </SocketMeChatProvider>
+      ) : (
+        <h1>Loading ...</h1>
+      )}
+    </>
   );
 }

@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { fingerprintService } from "@/services/index.services";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { fingerprintService } from "@/services/fingerprint.services";
 import { faRightToBracket } from "@fortawesome/free-solid-svg-icons";
 
 export default function Login() {

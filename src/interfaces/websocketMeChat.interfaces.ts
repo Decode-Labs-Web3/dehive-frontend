@@ -1,9 +1,9 @@
 // ===== Server -> Client (listen) =====
-export type IdentityConfirmed = {
+export interface IdentityConfirmed {
   userDehiveId: string;
-};
+}
 
-export type Message = {
+export interface Message {
   _id: string;
   conversationId: string;
   sender: Sender;
@@ -15,7 +15,7 @@ export type Message = {
   createdAt: string;
   updatedAt: string;
   __v?: number | 0;
-};
+}
 
 interface Sender {
   dehive_id: string;
@@ -31,27 +31,27 @@ interface ReplyMessage {
   createdAt: string;
 }
 
-export type WsErrorPayload = {
+export interface WsErrorPayload {
   message: string;
   details?: string;
-};
+}
 
 // ===== Client -> Server (emit) =====
-export type SendDirectMessageDto = {
+export interface SendDirectMessageDto {
   conversationId: string;
   content: string;
   uploadIds: string[];
   replyTo: string | null;
-};
+}
 
-export type EditMessageDto = {
+export interface EditMessageDto {
   messageId: string;
   content: string;
-};
+}
 
-export type DeleteMessageDto = {
+export interface DeleteMessageDto {
   messageId: string;
-};
+}
 
 // ===== Event name maps  =====
 
