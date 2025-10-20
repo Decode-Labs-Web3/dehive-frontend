@@ -1,11 +1,58 @@
 "use client";
 
+import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashCan, faFolder, faX } from "@fortawesome/free-solid-svg-icons";
+import {
+  faRightFromBracket,
+  faFolder,
+  faX,
+} from "@fortawesome/free-solid-svg-icons";
 
-export default function UserSetting() {
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+interface UserPannelProps {
+  setUserPannel: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export default function UserPannel({ setUserPannel }: UserPannelProps) {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const allFalse = { account: false, profile: false };
+  const [userPannelSetting, setUserPannelSetting] = useState<
+    Record<string, boolean>
+  >({ ...allFalse, account: true });
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted) return null;
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        credentials: "include",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (response.ok) {
+        router.push("/");
+      } else {
+        console.error("Logout failed");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  const content = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       <div className="relative z-[101] flex h-full w-full border border-[var(--border-subtle)] bg-[var(--surface-primary)] text-[var(--foreground)]">
         <aside className="flex w-64 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
           <div className="px-6 pb-5 pt-7">
@@ -18,21 +65,36 @@ export default function UserSetting() {
                   Vũ Trần Quang Minh
                 </p>
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  Category Pannel Settings
+                  User Pannel Settings
                 </p>
               </div>
             </div>
           </div>
 
-          <nav className="mt-2 flex-1 space-y-1 px-3">
-            <button>Overview</button>
-            <button>Permissions</button>
+          <nav className="mt-2 flex-1 flex flex-col gap-2 justify-start items-start space-y-1 px-3">
+            <button
+              onClick={() =>
+                setUserPannelSetting({ ...allFalse, account: true })
+              }
+            >
+              My Account
+            </button>
+            <button
+              onClick={() =>
+                setUserPannelSetting({ ...allFalse, profile: true })
+              }
+            >
+              Profiles
+            </button>
 
-            <div className="border-1 my-4 border-[var(--foreground)]" />
+            <div className="border-1 my-4 border-[var(--foreground)] w-full" />
 
-            <button className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-[var(--danger)] transition hover:bg-[var(--danger-soft)]">
-              Delete Category
-              <FontAwesomeIcon icon={faTrashCan} />
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-[var(--danger)] transition hover:bg-[var(--danger-soft)]"
+            >
+              Logout
+              <FontAwesomeIcon icon={faRightFromBracket} />
             </button>
           </nav>
         </aside>
@@ -44,7 +106,10 @@ export default function UserSetting() {
               <h2 className="text-2xl font-semibold text-[var(--foreground)]"></h2>
             </div>
 
-            <button>
+            <button
+              onClick={() => setUserPannel(false)}
+              className="flex flex-col items-center gap-1 text-xs uppercase tracking-wide transition text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            >
               <span className="rounded-full border border-[var(--border-subtle)] p-2">
                 <FontAwesomeIcon icon={faX} />
               </span>
@@ -53,7 +118,7 @@ export default function UserSetting() {
           </header>
 
           <div className="flex-1 overflow-y-auto px-10 py-8">
-            {false && (
+            {userPannelSetting.account && (
               <div className="max-w-xl space-y-6">
                 <div className="space-y-2">
                   <label
@@ -80,7 +145,7 @@ export default function UserSetting() {
             )}
           </div>
 
-          {false && (
+          {userPannelSetting.profile && (
             <div className="pointer-events-auto absolute inset-x-8 bottom-6 rounded-2xl border border-[var(--success-border)] bg-[var(--success-soft)] px-6 py-4 text-sm text-[var(--foreground)]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -106,4 +171,6 @@ export default function UserSetting() {
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 }

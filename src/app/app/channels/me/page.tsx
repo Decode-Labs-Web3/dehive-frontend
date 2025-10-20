@@ -120,9 +120,7 @@ export default function Me() {
                   @{user.username}
                 </h1>
               </div>
-              <p className="text-sm text-zinc-200">
-                <h1 className="font-medium text-white">{user.display_name}</h1>
-              </p>
+              <h1 className="font-medium text-white">{user.display_name}</h1>
             </div>
           </div>
         ))}

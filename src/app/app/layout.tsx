@@ -69,7 +69,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </SocketMeCallProvider>
         )}
 
-        <div className="absolute bottom-5 left-5 w-65 h-30 z-10">
+        <div className="absolute bottom-5 left-5 w-65 h-30 z-10 overflow-visible">
           <App.UserBar />
         </div>
       </div>
