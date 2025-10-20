@@ -16,7 +16,7 @@ interface ServerProps {
   owner_id: string;
   member_count: number;
   is_private: boolean;
-  tags: [];
+  tags: string[];
   createdAt: string;
   updatedAt: string;
   _v: boolean;

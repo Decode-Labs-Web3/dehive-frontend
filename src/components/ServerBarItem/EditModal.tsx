@@ -23,7 +23,7 @@ interface ServerProps {
   owner_id: string;
   member_count: number;
   is_private: boolean;
-  tags: [];
+  tags: string[];
   createdAt: string;
   updatedAt: string;
   _v: boolean;
@@ -207,11 +207,11 @@ export default function EditModal({
         return;
       }
       const response = await apiResponse.json();
-      console.log("hello this is response",response)
+      console.log("hello this is response", response);
 
       if (
         response.statusCode === 200 &&
-        response.message === 'Operation successful'
+        response.message === "Operation successful"
       ) {
         setModal({ ...allFalse });
         refreshServers?.();

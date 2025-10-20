@@ -14,7 +14,7 @@ interface ServerProps {
   owner_id: string;
   member_count: number;
   is_private: boolean;
-  tags: [];
+  tags: string[];
   createdAt: string;
   updatedAt: string;
   _v: boolean;
@@ -38,6 +38,7 @@ export default function ServerPannel({
 
   const allFalse = {
     profile: false,
+    tag: false,
     members: false,
     invites: false,
     role: false,
@@ -190,6 +191,17 @@ export default function ServerPannel({
               }`}
             >
               Server Profile
+            </button>
+
+            <button
+              onClick={() => setServerPannelSetting({ ...allFalse, tag: true })}
+              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
+                true
+                  ? "bg-[var(--surface-active)] text-[var(--foreground)]"
+                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface-hover)]"
+              }`}
+            >
+              Server Tag
             </button>
 
             <button
@@ -385,6 +397,12 @@ export default function ServerPannel({
                   </button>
                 </div>
               </div>
+            </div>
+          )}
+
+          {serverPannelSetting.tag && (
+            <div className="h-50 w-50 bg-red-500">
+              <h1>This is sever tag</h1>
             </div>
           )}
         </section>
