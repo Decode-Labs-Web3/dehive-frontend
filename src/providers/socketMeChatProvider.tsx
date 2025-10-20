@@ -25,7 +25,7 @@ export default function SocketMeChatProvider({
     };
 
     const onConnect = () => {
-      console.log("[ws me chat connect]", socket.id);
+      console.log("[ws me chat connect]");
       identify();
     };
 

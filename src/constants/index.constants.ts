@@ -13,3 +13,12 @@ export const httpStatus = {
   METHOD_NOT_ALLOWED: 405,
   INTERNAL_SERVER_ERROR: 500,
 };
+
+export const serverTag = [
+  "Gaming",
+  "Friends",
+  "Study Group",
+  "School Club",
+  "Local Community",
+  "Artist & Creators",
+];

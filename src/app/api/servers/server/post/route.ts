@@ -14,8 +14,7 @@ export async function POST(req: Request) {
 
   try {
     const sessionId = (await cookies()).get("sessionId")?.value;
-    const body = await req.json();
-    const { name, description } = body;
+    const serverForm = await req.json();
 
     if (!sessionId) {
       return NextResponse.json(
@@ -28,21 +27,16 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!name || !description) {
+    if (!serverForm) {
       return NextResponse.json(
         {
           success: false,
           statusCode: 400,
-          message: "Missing name and description",
+          message: "Missing serverForm",
         },
         { status: 400 }
       );
     }
-
-    const requestBody = {
-      name,
-      description,
-    };
 
    const fingerprint = (await cookies()).get("fingerprint")?.value;
 
@@ -66,7 +60,7 @@ export async function POST(req: Request) {
           "x-session-id": sessionId,
           "x-fingerprint-hashed": fingerprint,
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(serverForm),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }

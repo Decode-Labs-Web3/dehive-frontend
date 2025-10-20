@@ -10,7 +10,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [isCalling, setIsCalling] = useState(false);
   const [isFocus, setIsFocus] = useState(false);
-  console.log("isFocus", isFocus);
+  console.log("isFocus nha", isFocus);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const triggerRefeshServer = useCallback(() => {
     setRefreshVersion((prev) => prev + 1);

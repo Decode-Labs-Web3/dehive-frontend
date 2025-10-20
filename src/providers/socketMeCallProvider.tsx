@@ -89,6 +89,7 @@ export default function SocketMeCallProvider({
 
     const onStarted = (payload: CallStartedPayload) => {
       console.log("[callStarted]", payload);
+      console.log("this is call id",payload.call_id)
       setMeCallState({
         callId: payload.call_id,
         status: "calling",
