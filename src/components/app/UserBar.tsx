@@ -215,7 +215,7 @@ export default function UserBar() {
           </div>
         </div>
       </aside>
-      {userPannel && <UserPannel setUserPannel={setUserPannel} />}
+      {userPannel && userData && <UserPannel setUserPannel={setUserPannel} userData={userData}/>}
     </>
   );
 }

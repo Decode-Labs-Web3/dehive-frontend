@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -10,11 +11,29 @@ import {
   faX,
 } from "@fortawesome/free-solid-svg-icons";
 
+interface UserDataProps {
+  _id: string;
+  dehive_role: string;
+  status: string;
+  server_count: number;
+  username: string;
+  display_name: string;
+  bio: string;
+  avatar_ipfs_hash: string;
+  last_login: string;
+  following_number: number;
+  followers_number: number;
+  is_active: boolean;
+}
 interface UserPannelProps {
+  userData: UserDataProps;
   setUserPannel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function UserPannel({ setUserPannel }: UserPannelProps) {
+export default function UserPannel({
+  userData,
+  setUserPannel,
+}: UserPannelProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const allFalse = { account: false, profile: false };
@@ -119,25 +138,148 @@ export default function UserPannel({ setUserPannel }: UserPannelProps) {
 
           <div className="flex-1 overflow-y-auto px-10 py-8">
             {userPannelSetting.account && (
-              <div className="max-w-xl space-y-6">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="name"
-                    className="block text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]"
-                  >
-                    Category Name
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="name"
-                      name="name"
-                      // value={}
-                      // onChange={}
-                      autoFocus
-                      className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--background)] px-4 py-3 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]"
-                    />
-                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[var(--muted-foreground)]">
-                      <FontAwesomeIcon icon={faFolder} />
+              <div className="max-w-2xl space-y-5">
+                <h2 className="text-xl font-semibold text-[var(--foreground)] mb-5">
+                  My Account
+                </h2>
+
+                <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="relative">
+                      <div className="w-20 h-20 flex-shrink-0">
+                        <Image
+                          src={
+                            userData
+                              ? `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`
+                              : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                          }
+                          alt={"Avatar"}
+                          width={80}
+                          height={80}
+                          className="w-full h-full rounded-full object-cover"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-4 border-[var(--surface-secondary)]"></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-[var(--foreground)]">
+                        {userData.username}
+                      </h3>
+                      <p className="text-sm text-[var(--muted-foreground)]">
+                        ···
+                      </p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setUserPannelSetting({ ...allFalse, profile: true })
+                      }
+                      className="px-4 py-2 bg-[#5865F2] text-white text-sm font-medium rounded hover:bg-[#4752C4] transition"
+                    >
+                      Edit User Profile
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex-1">
+                      <label className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-2">
+                        Display Name
+                      </label>
+                      <p className="text-sm text-[var(--foreground)]">
+                        {userData.display_name}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setUserPannelSetting({ ...allFalse, profile: true })
+                      }
+                      className="px-3 py-1.5 text-sm text-[var(--foreground)] bg-[var(--surface-tertiary)] rounded hover:bg-[var(--surface-hover)] transition"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex-1">
+                      <label className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-2">
+                        Username
+                      </label>
+                      <p className="text-sm text-[var(--foreground)]">
+                        {userData.username}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setUserPannelSetting({ ...allFalse, profile: true })
+                      }
+                      className="px-3 py-1.5 text-sm text-[var(--foreground)] bg-[var(--surface-tertiary)] rounded hover:bg-[var(--surface-hover)] transition"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <label className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-2">
+                        Bio
+                      </label>
+                      <p className="text-sm text-[var(--foreground)]">
+                        {userData.bio || "No bio yet"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setUserPannelSetting({ ...allFalse, profile: true })
+                      }
+                      className="px-3 py-1.5 text-sm text-[var(--foreground)] bg-[var(--surface-tertiary)] rounded hover:bg-[var(--surface-hover)] transition"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
+                  <h3 className="text-sm font-semibold uppercase text-[var(--muted-foreground)] mb-3">
+                    Stats
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-[var(--muted-foreground)] mb-1">
+                        Servers
+                      </p>
+                      <p className="text-lg font-semibold text-[var(--foreground)]">
+                        {userData.server_count}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-[var(--muted-foreground)] mb-1">
+                        Role
+                      </p>
+                      <p className="text-lg font-semibold text-[var(--foreground)]">
+                        {userData.dehive_role}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-[var(--muted-foreground)] mb-1">
+                        Following
+                      </p>
+                      <p className="text-lg font-semibold text-[var(--foreground)]">
+                        {userData.following_number}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-[var(--muted-foreground)] mb-1">
+                        Followers
+                      </p>
+                      <p className="text-lg font-semibold text-[var(--foreground)]">
+                        {userData.followers_number}
+                      </p>
                     </div>
                   </div>
                 </div>
