@@ -49,7 +49,7 @@ interface ServerProps {
   _v: boolean;
 }
 
-interface Member {
+interface MemberInServerProps {
   membership_id: string;
   _id: string;
   username: string;
@@ -137,7 +137,7 @@ export default function Categories({ server }: CategoriesProps) {
         response.message === "Operation successful"
       ) {
         const isPrivileged = response.data.some(
-          (member: Member) =>
+          (member: MemberInServerProps) =>
             (member.role === "owner" || member.role === "moderator") &&
             member._id === userId
         );

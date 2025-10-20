@@ -9,7 +9,7 @@ interface InviteSuggestion {
   display_name: string;
 }
 
-interface Member {
+interface MemberInServerProps {
   membership_id: string;
   _id: string;
   username: string;
@@ -85,11 +85,11 @@ export function useInviteSuggestions(serverId: string) {
         return;
       }
 
-      const members = (await membersResponse.json()).data as Member[];
+      const members = (await membersResponse.json()).data as MemberInServerProps[];
       const friends = (await friendsResponse.json()).data as Friend[];
       // console.log("members", members);
       // console.log("friends", friends);
-      const inServer = new Set(members.map((member: Member) => member._id));
+      const inServer = new Set(members.map((member: MemberInServerProps) => member._id));
       const filtered = friends.filter(
         (friend: Friend) => !inServer.has(friend.user_id)
       );

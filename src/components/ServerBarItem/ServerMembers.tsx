@@ -28,16 +28,29 @@ interface ServerMembersProps {
   setServerPannel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-interface MembershipsProps {
+interface MemberInServerProps {
   membership_id: string;
   _id: string;
   username: string;
   display_name: string;
   avatar: string;
+  avatar_ipfs_hash: string;
   status: string;
   server_count: number;
   bio: string;
   is_banned: boolean;
+  last_login: string;
+  following_number: number;
+  followers_number: number;
+  is_following: boolean;
+  is_follower: boolean;
+  is_blocked: boolean;
+  is_blocked_by: boolean;
+  mutual_followers_number: number;
+  mutual_followers_list: [];
+  is_active: boolean;
+  wallets: [];
+  __v: number;
   role: string;
   is_muted: boolean;
   joined_at: string;
@@ -69,7 +82,7 @@ export default function ServerMembers({
   const [userProfileModal, setUserProfileModal] = useState<
     Record<string, boolean>
   >({});
-  const [memberships, setMemberships] = useState<MembershipsProps[]>([]);
+  const [memberships, setMemberships] = useState<MemberInServerProps[]>([]);
   const [userSettingModal, setUserSettingModal] = useState<
     Record<string, boolean>
   >({});
@@ -105,7 +118,7 @@ export default function ServerMembers({
         setMemberships(response.data);
         setUserSettingModal(
           Object.fromEntries(
-            response.data.map((membership: MembershipsProps) => [
+            response.data.map((membership: MemberInServerProps) => [
               membership._id,
               false,
             ])
@@ -113,7 +126,7 @@ export default function ServerMembers({
         );
         setKickModal(
           Object.fromEntries(
-            response.data.map((membership: MembershipsProps) => [
+            response.data.map((membership: MemberInServerProps) => [
               membership._id,
               false,
             ])
@@ -121,7 +134,7 @@ export default function ServerMembers({
         );
         setBanModal(
           Object.fromEntries(
-            response.data.map((membership: MembershipsProps) => [
+            response.data.map((membership: MemberInServerProps) => [
               membership._id,
               false,
             ])
@@ -129,7 +142,7 @@ export default function ServerMembers({
         );
         setOwnershipModal(
           Object.fromEntries(
-            response.data.map((membership: MembershipsProps) => [
+            response.data.map((membership: MemberInServerProps) => [
               membership._id,
               false,
             ])
@@ -137,7 +150,7 @@ export default function ServerMembers({
         );
         setUserProfileModal(
           Object.fromEntries(
-            response.data.map((membership: MembershipsProps) => [
+            response.data.map((membership: MemberInServerProps) => [
               membership._id,
               false,
             ])
