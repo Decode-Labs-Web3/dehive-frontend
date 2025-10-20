@@ -73,14 +73,14 @@ export async function POST(req: Request) {
     }
 
     const response = await backendRes.json();
-    // console.log("Hello this is response",response)
+    console.log("Hello this is response from server invite", response);
 
     return NextResponse.json(
       {
         status: true,
         statusCode: response.statusCode || 201,
         message: response.message || "Operation successful",
-        data: response.data
+        data: response.data,
       },
       { status: response.statusCode || 201 }
     );
