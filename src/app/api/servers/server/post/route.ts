@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
@@ -20,10 +21,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "Missing sessionId",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -31,23 +32,23 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing serverForm",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
-   const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = (await cookies()).get("fingerprint")?.value;
 
     if (!fingerprint) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -74,10 +75,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || 400,
+          statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
           message: error?.message || "Create server failed",
         },
-        { status: backendResponse.status || 400 }
+        { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -87,21 +88,21 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 201,
+        statusCode: response.statusCode || httpStatus.CREATED,
         message: response.message || "Operation successful",
         data: response.data,
       },
-      { status: 201 }
+      { status: response.statusCode || httpStatus.CREATED }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: "Server error while creating server",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

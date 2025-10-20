@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus, authExpire } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
@@ -19,10 +20,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "SessionId is not found",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -32,10 +33,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -53,14 +54,15 @@ export async function GET(req: Request) {
     });
 
     if (!backendRes.ok) {
-      const err = await backendRes.json().catch(() => null);
+      const error = await backendRes.json().catch(() => null);
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || 401,
-          message: err?.message,
+          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
+          message: error?.message,
         },
-        { status: backendRes.status || 401 }
+        { status: backendRes.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -68,11 +70,11 @@ export async function GET(req: Request) {
     const res = NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "User found",
         data: response.data,
       },
-      { status: 200 }
+      { status: response.statusCode || httpStatus.OK }
     );
 
     res.cookies.set("userId", response.data._id, {
@@ -80,7 +82,7 @@ export async function GET(req: Request) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: authExpire.sessionToken,
     });
 
     return res;
@@ -89,10 +91,10 @@ export async function GET(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: "Server get user info fail",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

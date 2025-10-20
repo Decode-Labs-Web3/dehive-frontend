@@ -99,10 +99,10 @@ export async function POST(req: Request) {
     const res = NextResponse.json(
       {
         success: true,
-        statusCode: 200,
+        statusCode: httpStatus.OK,
         message: "SSO token created",
       },
-      { status: 200 }
+      { status: httpStatus.OK }
     );
 
     res.cookies.delete("ssoState");

@@ -5,6 +5,7 @@ export const authExpire = {
 
 export const httpStatus = {
   OK: 200,
+  CREATED: 201,
   PARTIAL_CONTENT: 207,
   FORBIDDEN: 403,
   BAD_REQUEST: 400,

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
@@ -19,10 +20,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing sessionId",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -33,13 +34,12 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "kickForm is lacking info ",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
-
 
     const backendResponse = await fetch(
       `${process.env.DEHIVE_USER_DEHIVE_SERVER}/api/memberships/kick`,
@@ -66,10 +66,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || 401,
+          statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
           message: error?.message || "Create server failed",
         },
-        { status: backendResponse.status || 401 }
+        { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -79,20 +79,20 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 201,
+        statusCode: response.statusCode || httpStatus.CREATED,
         message: response.message || "User successfully kicked.",
       },
-      { status: 201 }
+      { status: response.statusCode || httpStatus.CREATED }
     );
   } catch (error) {
     console.error(`${pathname}:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: "Server error while get server",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

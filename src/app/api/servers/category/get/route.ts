@@ -5,6 +5,7 @@ import {
   apiPathName,
   guardInternal,
 } from "@/utils/index.utils";
+import { httpStatus } from "@/constants/index.constants";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
@@ -19,10 +20,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "Missing sessionId",
         },
-        { status: 400 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -35,10 +36,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing serverId",
         },
-        { status: 401 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -48,10 +49,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -76,10 +77,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || 401,
+          statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
           message: error?.message || "Create server failed",
         },
-        { status: backendResponse.status || 401 }
+        { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -89,21 +90,21 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "Operation successful",
         data: response.data,
       },
-      { status: 200 }
+      { status: response.statusCode || httpStatus.OK }
     );
   } catch (error) {
     console.error(`${pathname}  handler error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: "Server error while get server",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

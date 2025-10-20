@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
@@ -19,10 +20,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "sessionId is expired",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -33,10 +34,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing code",
         },
-        { status: 401 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -57,18 +58,18 @@ export async function POST(req: Request) {
       }
     );
 
-    console.error(`${pathname}`, backendRes);
+    // console.error(`${pathname}`, backendRes);
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
       console.error(`${pathname} error:`, backendRes);
       return NextResponse.json(
         {
-          status: false,
-          statusCode: backendRes.status || 400,
+          success: false,
+          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
           message: error.message,
         },
-        { status: backendRes.status || 400 }
+        { status: backendRes.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -77,22 +78,22 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        status: true,
-        statusCode: response.statusCode || 201,
+        success: true,
+        statusCode: response.statusCode || httpStatus.CREATED,
         message: response.message || "Operation successful",
         data: response.data,
       },
-      { status: response.statusCode || 201 }
+      { status: response.statusCode || httpStatus.CREATED }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: "Server from invite server",
       },
-      { status: 500 }
+      { status:  httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -103,9 +104,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: 405,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: 405 }
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }
