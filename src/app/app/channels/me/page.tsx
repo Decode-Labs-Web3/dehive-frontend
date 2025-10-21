@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { useConversationRefresh } from "@/contexts/ConversationRefreshContext";
@@ -103,20 +103,12 @@ export default function Me() {
             onClick={() => fetchConversation(user.user_id)}
             className="group flex items-start gap-3 px-4 py-2 hover:bg-[#2b2d31]/60"
           >
-            <div className="w-10 h-10 flex-shrink-0">
-              <Image
-                src={
-                  user
-                    ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                }
-                alt={"Avatar"}
-                width={40}
-                height={40}
-                className="w-full h-full rounded-full object-cover"
-                unoptimized
+            <Avatar className="w-10 h-10">
+              <AvatarImage
+                src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
               />
-            </div>
+              <AvatarFallback>{user.display_name} Avatar</AvatarFallback>
+            </Avatar>
             <div className="min-w-0">
               <div className="flex items-baseline gap-2">
                 <h1 className="font-semibold text-white cursor-pointer hover:underline break-all">

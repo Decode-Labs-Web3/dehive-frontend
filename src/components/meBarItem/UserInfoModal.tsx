@@ -1,8 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface UserDataProps {
   _id: string;
@@ -67,6 +77,7 @@ export default function UserInfoModal({
   userId,
   setUserProfileModal,
 }: UserInfoModalProps) {
+  const router = useRouter();
   const [activeUserId, setActiveUserId] = useState(userId);
   const [tab, setTab] = useState<"activity" | "mutual" | "servers">("mutual");
   const [userInfo, setUserInfo] = useState<UserDataProps | null>(null);
@@ -104,228 +115,242 @@ export default function UserInfoModal({
     fetchUserInfo();
   }, [fetchUserInfo]);
 
+  const fetchConversation = useCallback(
+    async (otherUserDehiveId: string) => {
+      try {
+        const apiResponse = await fetch(
+          "/api/me/conversation/conversation-create",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Frontend-Internal-Request": "true",
+            },
+            body: JSON.stringify({ otherUserDehiveId }),
+            cache: "no-cache",
+            signal: AbortSignal.timeout(10000),
+          }
+        );
+
+        if (!apiResponse.ok) {
+          console.error(apiResponse);
+          return;
+        }
+
+        const response = await apiResponse.json();
+        if (response.statusCode === 200 && response.message === "OK") {
+          router.push(`/app/channels/me/${response.data._id}`);
+        }
+      } catch (error) {
+        console.error(error);
+        console.log("Server create conversation is error");
+      }
+    },
+    [router]
+  );
+
   return (
-    <div
-      tabIndex={-1}
-      ref={(element: HTMLDivElement) => {
-        element?.focus();
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Escape") {
+    <Dialog
+      open={true}
+      onOpenChange={(open) => {
+        if (!open) {
           setUserProfileModal((prev) => ({
             ...prev,
             [userId]: false,
           }));
         }
       }}
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-30 flex items-center justify-center px-4 py-8"
     >
-      <div
-        onClick={() => {
-          setUserProfileModal((prev) => ({
-            ...prev,
-            [userId]: false,
-          }));
-        }}
-        className="fixed inset-0 bg-black/80"
-      />
-      <div className="relative z-50 w-full max-w-4xl rounded-2xl bg-neutral-900 text-white shadow-2xl">
+      <DialogContent className="max-w-4xl h-[80vh] p-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>User Profile</DialogTitle>
+        </DialogHeader>
         {userInfo ? (
           <div className="flex h-full flex-col md:flex-row">
-            <aside className="w-full md:w-80">
-              <div className="px-6 pb-8">
-                <div className="mt-2 flex items-end gap-4">
-                  <div className="h-20 w-20 rounded-full border-4 border-neutral-900 bg-neutral-800">
-                    <Image
-                      src={`https://ipfs.de-id.xyz/ipfs/${userInfo.avatar_ipfs_hash}`}
+            <Card className="w-full md:w-80 rounded-none border-0 border-r">
+              <CardContent className="p-6">
+                <div className="flex items-end gap-4 mb-4">
+                  <Avatar className="w-20 h-20">
+                    <AvatarImage
+                      src={`https://ipfs.de-id.xyz/ipfs/${userInfo?.avatar_ipfs_hash}`}
                       alt={userInfo.display_name}
-                      width={20}
-                      height={20}
-                      className="h-full w-full object-contain"
-                      unoptimized
                     />
-                  </div>
-                  <span className="inline-flex items-center rounded-full bg-neutral-800 px-3 py-1 text-xs font-semibold uppercase text-neutral-200">
+                    <AvatarFallback>
+                      {userInfo.display_name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Badge variant="secondary" className="uppercase">
                     {userInfo.status}
-                  </span>
+                  </Badge>
                 </div>
-                <h2 className="mt-4 text-2xl font-semibold leading-tight">
-                  {userInfo.display_name}
-                </h2>
 
-                <p className="text-sm text-neutral-400">@{userInfo.username}</p>
+                <div className="space-y-2 mb-6">
+                  <h2 className="text-2xl font-semibold">
+                    {userInfo.display_name}
+                  </h2>
+                  <p className="text-muted-foreground">@{userInfo.username}</p>
+                </div>
 
-                <div className="mt-4 divide-y divide-neutral-800 text-sm">
-                  <div className="grid grid-cols-2 items-center py-2">
-                    <span className="text-neutral-500">Followers</span>
-                    <span className="text-right font-semibold tabular-nums">
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Followers</span>
+                    <span className="font-semibold">
                       {userInfo.followers_number}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 items-center py-2">
-                    <span className="text-neutral-500">Following</span>
-                    <span className="text-right font-semibold tabular-nums">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Following</span>
+                    <span className="font-semibold">
                       {userInfo.following_number}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 items-center py-2">
-                    <span className="text-neutral-500">Mutual Friends</span>
-                    <span className="text-right font-semibold tabular-nums">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      Mutual Friends
+                    </span>
+                    <span className="font-semibold">
                       {userInfo.mutual_followers_number}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 items-center py-2">
-                    <span className="text-neutral-500">Servers</span>
-                    <span className="text-right font-semibold tabular-nums">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Servers</span>
+                    <span className="font-semibold">
                       {userInfo.server_count}
                     </span>
                   </div>
                 </div>
 
                 {userInfo.bio && (
-                  <div className="mt-6">
-                    <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  <div className="mb-6">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">
                       About Me
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-neutral-200">
-                      {userInfo.bio}
-                    </p>
+                    <p className="text-sm leading-relaxed">{userInfo.bio}</p>
                   </div>
                 )}
 
-                <Link
-                  href={`/app/channels/me/${activeUserId}`}
+                <Button
+                  className="w-full h-10 bg-purple-500 text-white"
                   onClick={() => {
                     setUserProfileModal((prev) => ({
                       ...prev,
                       [userId]: false,
                     }));
+                    fetchConversation(userInfo._id);
                   }}
-                  className="mt-8 inline-flex w-full items-center justify-center rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
                 >
                   Message
-                </Link>
-              </div>
-            </aside>
+                </Button>
+              </CardContent>
+            </Card>
 
-            <section className="flex-1 overflow-y-auto bg-neutral-900/60 px-6 py-6">
-              <div className="border-b border-neutral-800 pb-4">
-                <div className="flex gap-4 text-sm font-medium">
-                  <button
-                    onClick={() => setTab("activity")}
-                    className={`rounded-md px-2 py-1 ${
-                      tab === "activity"
-                        ? "text-white"
-                        : "text-neutral-400 hover:text-neutral-200"
-                    }`}
-                  >
-                    Activity
-                  </button>
-
-                  <button
-                    onClick={() => setTab("mutual")}
-                    className={`rounded-md px-2 py-1 ${
-                      tab === "mutual"
-                        ? "text-white"
-                        : "text-neutral-400 hover:text-neutral-200"
-                    }`}
-                  >
-                    Mutual Friends
-                  </button>
-
-                  <button
-                    onClick={() => setTab("servers")}
-                    className={`rounded-md px-2 py-1 ${
-                      tab === "servers"
-                        ? "text-white"
-                        : "text-neutral-400 hover:text-neutral-200"
-                    }`}
-                  >
+            <div className="flex-1 p-6">
+              <Tabs
+                value={tab}
+                onValueChange={(value) => setTab(value as typeof tab)}
+              >
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="activity">Activity</TabsTrigger>
+                  <TabsTrigger value="mutual">Mutual Friends</TabsTrigger>
+                  <TabsTrigger value="servers">
                     Servers ({userInfo?.mutual_servers_count ?? 0})
-                  </button>
-                </div>
-              </div>
+                  </TabsTrigger>
+                </TabsList>
 
-              {tab === "activity" && (
-                <div role="tabpanel" className="py-6 text-sm text-neutral-400">
-                  No recent activity.
-                </div>
-              )}
+                <TabsContent value="activity" className="mt-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      <p className="text-muted-foreground text-center">
+                        No recent activity.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-              {tab === "mutual" && (
-                <div role="tabpanel" className="py-6">
-                  {userInfo.mutual_followers_list.length === 0 ? (
-                    <div className="flex h-48 items-center justify-center text-sm text-neutral-500">
-                      No mutual friends yet.
-                    </div>
-                  ) : (
-                    <ul className="mt-2 space-y-4">
-                      {userInfo.mutual_followers_list.map(
-                        (mutual: MutualFollowers) => (
-                          <li
-                            key={mutual.user_id}
-                            onClick={() => setActiveUserId(mutual.user_id)}
-                            className="flex items-center gap-4 rounded-xl border border-transparent bg-neutral-900/60 px-4 py-3 transition hover:border-neutral-700 cursor-pointer"
-                          >
-                            <div className="h-12 w-12 overflow-hidden rounded-full bg-neutral-800">
-                              <Image
-                                src={`https://ipfs.de-id.xyz/ipfs/${mutual.avatar_ipfs_hash}`}
-                                alt={mutual.display_name}
-                                width={48}
-                                height={48}
-                                className="h-full w-full object-contain"
-                                unoptimized
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="truncate text-sm font-semibold text-white">
-                                {mutual.display_name}
-                              </p>
-                              <p className="truncate text-xs text-neutral-400">
-                                @{mutual.username}
-                              </p>
-                            </div>
-                            <div className="text-right text-xs text-neutral-500">
-                              <p>{mutual.followers_number} Followers</p>
-                              <p>{mutual.following_number} Following</p>
-                            </div>
-                          </li>
-                        )
+                <TabsContent value="mutual" className="mt-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      {userInfo.mutual_followers_list.length === 0 ? (
+                        <p className="text-muted-foreground text-center">
+                          No mutual friends yet.
+                        </p>
+                      ) : (
+                        <div className="space-y-4">
+                          {userInfo.mutual_followers_list.map(
+                            (mutual: MutualFollowers) => (
+                              <Card
+                                key={mutual.user_id}
+                                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => setActiveUserId(mutual.user_id)}
+                              >
+                                <CardContent className="p-4">
+                                  <div className="flex items-center gap-4">
+                                    <Avatar className="w-12 h-12">
+                                      <AvatarImage
+                                        src={`https://ipfs.de-id.xyz/ipfs/${mutual.avatar_ipfs_hash}`}
+                                        alt={mutual.display_name}
+                                      />
+                                      <AvatarFallback>
+                                        {mutual.display_name?.charAt(0) || "U"}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-semibold truncate">
+                                        {mutual.display_name}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground truncate">
+                                        @{mutual.username}
+                                      </p>
+                                    </div>
+                                    <div className="text-right text-sm text-muted-foreground">
+                                      <p>{mutual.followers_number} Followers</p>
+                                      <p>{mutual.following_number} Following</p>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )
+                          )}
+                        </div>
                       )}
-                    </ul>
-                  )}
-                </div>
-              )}
-              {tab === "servers" && (
-                <div role="tabpanel" className="py-6">
-                  {userInfo.mutual_servers_count === 0 ? (
-                    <div className="flex h-48 items-center justify-center text-sm text-neutral-500">
-                      No mutual servers.
-                    </div>
-                  ) : (
-                    <ul className="mt-2 space-y-3">
-                      {userInfo.mutual_servers.map((server: MutualServers) => (
-                        <li
-                          key={server.server_id}
-                          className="rounded-xl bg-neutral-900/60 px-4 py-3 text-sm text-neutral-200"
-                        >
-                          {server.server_name}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
-            </section>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="servers" className="mt-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      {userInfo.mutual_servers_count === 0 ? (
+                        <p className="text-muted-foreground text-center">
+                          No mutual servers.
+                        </p>
+                      ) : (
+                        <div className="space-y-3">
+                          {userInfo.mutual_servers.map(
+                            (server: MutualServers) => (
+                              <Card key={server.server_id}>
+                                <CardContent className="p-4">
+                                  <p className="font-medium">
+                                    {server.server_name}
+                                  </p>
+                                </CardContent>
+                              </Card>
+                            )
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         ) : (
-          <div className="flex h-72 items-center justify-center text-sm text-neutral-400">
-            Loading profile...
+          <div className="flex h-72 items-center justify-center">
+            <p className="text-muted-foreground">Loading profile...</p>
           </div>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

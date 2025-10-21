@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface UserDataProps {
   _id: string;
@@ -137,16 +137,14 @@ export default function ServerUserInfoModal({
             <aside className="w-full md:w-80">
               <div className="px-6 pb-8">
                 <div className="mt-2 flex items-end gap-4">
-                  <div className="h-20 w-20 rounded-full border-4 border-neutral-900 bg-neutral-800">
-                    <Image
+                  <Avatar className="w-20 h-20">
+                    <AvatarImage
                       src={`https://ipfs.de-id.xyz/ipfs/${userInfo.avatar_ipfs_hash}`}
-                      alt={userInfo.display_name}
-                      width={20}
-                      height={20}
-                      className="h-full w-full object-contain"
-                      unoptimized
                     />
-                  </div>
+                    <AvatarFallback>
+                      {userInfo.display_name} Avatar
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="inline-flex items-center rounded-full bg-neutral-800 px-3 py-1 text-xs font-semibold uppercase text-neutral-200">
                     {userInfo.status}
                   </span>
@@ -269,16 +267,14 @@ export default function ServerUserInfoModal({
                             onClick={() => setActiveUserId(mutual.user_id)}
                             className="flex items-center gap-4 rounded-xl border border-transparent bg-neutral-900/60 px-4 py-3 transition hover:border-neutral-700 cursor-pointer"
                           >
-                            <div className="h-12 w-12 overflow-hidden rounded-full bg-neutral-800">
-                              <Image
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage
                                 src={`https://ipfs.de-id.xyz/ipfs/${mutual.avatar_ipfs_hash}`}
-                                alt={mutual.display_name}
-                                width={48}
-                                height={48}
-                                className="h-full w-full object-contain"
-                                unoptimized
                               />
-                            </div>
+                              <AvatarFallback>
+                                {mutual.display_name} Avatar
+                              </AvatarFallback>
+                            </Avatar>
                             <div className="flex-1 min-w-0">
                               <p className="truncate text-sm font-semibold text-white">
                                 {mutual.display_name}

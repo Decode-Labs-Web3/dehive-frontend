@@ -1,6 +1,10 @@
 "use client";
 
-import Image from "next/image";
+import { getCookie } from "@/utils/cookie.utils";
+import AutoLink from "@/components/common/AutoLink";
+import { useChannelMessage } from "@/hooks/useChannelMessage";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   useState,
   useEffect,
@@ -8,10 +12,6 @@ import {
   useRef,
   useLayoutEffect,
 } from "react";
-import { useParams } from "next/navigation";
-import AutoLink from "@/components/common/AutoLink";
-import { useChannelMessage } from "@/hooks/useChannelMessage";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowTurnUp,
   faPen,
@@ -31,8 +31,7 @@ export default function MessageChannelPage({
 }: {
   conversationId: string;
 }) {
-  // console.log("edwedwedwed", conversation);
-  const { userId } = useParams();
+  const [userId, setUserId] = useState<string>("");
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
     content: "",
@@ -216,6 +215,14 @@ export default function MessageChannelPage({
     resizeEdit();
   }, [editMessageRef, resizeEdit]);
 
+
+  useEffect(() => {
+    const currentUserId = getCookie("userId");
+    if (currentUserId) {
+      setUserId(currentUserId);
+    }
+  },[])
+
   return (
     <div className="flex h-screen w-full flex-col bg-[var(--surface-primary)] text-[var(--foreground)]">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-6 py-3 backdrop-blur">
@@ -270,20 +277,15 @@ export default function MessageChannelPage({
                 )}
 
                 <div className="flex">
-                  <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase text-[var(--accent-foreground)]">
-                    <Image
-                      src={
-                        message.sender
-                          ? `https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`
-                          : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                      }
-                      alt={"Avatar"}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-contain"
-                      unoptimized
+                  <Avatar>
+                    <AvatarImage
+                      src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
                     />
-                  </div>
+                    <AvatarFallback>
+                      {message.sender.display_name} Avatar
+                    </AvatarFallback>
+                  </Avatar>
+
                   <div className="flex w-full max-w-3xl flex-col items-start gap-1">
                     {!editMessageField[message._id] ? (
                       <>
@@ -303,7 +305,7 @@ export default function MessageChannelPage({
                             </span>
                           )}
                         </div>
-                        {userId === message.sender.dehive_id && (
+                        {userId !== message.sender.dehive_id && (
                           <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
                             <div className="relative">
                               <button
@@ -321,7 +323,8 @@ export default function MessageChannelPage({
                             </div>
                           </div>
                         )}
-                        {userId !== message.sender.dehive_id && (
+
+                        {userId === message.sender.dehive_id && (
                           <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
                             <div className="relative">
                               <button
@@ -462,20 +465,14 @@ export default function MessageChannelPage({
 
             <div className="mt-4 rounded-xl bg-[#2b2d31] px-4 py-3 shadow-inner">
               <div className="flex items-start gap-3">
-                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-neutral-700">
-                  <Image
-                    src={
-                      messageDelete.sender
-                        ? `https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`
-                        : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                    }
-                    alt={"Avatar"}
-                    width={48}
-                    height={48}
-                    className="h-full w-full object-contain"
-                    unoptimized
+                <Avatar>
+                  <AvatarImage
+                    src={`https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`}
                   />
-                </div>
+                  <AvatarFallback>
+                    {messageDelete.sender.display_name} Avatar
+                  </AvatarFallback>
+                </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-2">
                     <span className="text-base font-semibold text-yellow-400">

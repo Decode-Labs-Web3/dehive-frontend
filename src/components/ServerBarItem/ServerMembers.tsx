@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import ServerBarItems from "./index";
 import { getCookie } from "@/utils/cookie.utils";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerProps {
@@ -325,20 +325,14 @@ export default function ServerMembers({
         <div key={membership._id}>
           <div className="grid grid-cols-2 items-center gap-3 px-2 py-2 rounded-md hover:bg-[var(--surface-hover)]">
             <div className="justify-start grid grid-cols-[1fr_2fr_1fr_1fr]">
-              <div className="w-8 h-8 rounded-full overflow-hidden">
-                <Image
-                  src={
-                    membership
-                      ? `https://ipfs.de-id.xyz/ipfs/${membership.avatar}`
-                      : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                  }
-                  alt={`${membership.display_name}'s avatar`}
-                  width={32}
-                  height={32}
-                  className="w-full h-full object-contain"
-                  unoptimized
+              <Avatar className="w-10 h-10">
+                <AvatarImage
+                  src={`https://ipfs.de-id.xyz/ipfs/${membership.avatar}`}
                 />
-              </div>
+                <AvatarFallback>
+                  {membership.display_name} Avatar
+                </AvatarFallback>
+              </Avatar>
 
               <div className="flex flex-col">
                 <span className="text-sm font-medium text-[var(--foreground)] truncate">

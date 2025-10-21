@@ -6,6 +6,7 @@ import AutoLink from "@/components/common/AutoLink";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Message } from "@/interfaces/websocketMeChat.interfaces";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   useState,
   useEffect,
@@ -261,21 +262,12 @@ export default function MessageMePage({ channelId }: MessageMePageProps) {
     <div className="flex h-screen w-full flex-col bg-[var(--surface-primary)] text-[var(--foreground)]">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-6 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold uppercase text-[var(--accent-foreground)]">
-            <Image
-              src={
-                userChatWith
-                  ? `https://ipfs.de-id.xyz/ipfs/${userChatWith.avatar_ipfs_hash}`
-                  : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-              }
-              alt={"Avatar"}
-              width={40}
-              height={40}
-              className="w-full h-full object-contain"
-              unoptimized
-              priority
+          <Avatar className="w-10 h-10">
+            <AvatarImage
+              src={`https://ipfs.de-id.xyz/ipfs/${userChatWith.avatar_ipfs_hash}`}
             />
-          </div>
+            <AvatarFallback>{userChatWith.displayname} Avartar</AvatarFallback>
+          </Avatar>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-[var(--foreground)]">
@@ -329,20 +321,14 @@ export default function MessageMePage({ channelId }: MessageMePageProps) {
                 )}
 
                 <div className="flex">
-                  <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase text-[var(--accent-foreground)]">
-                    <Image
-                      src={
-                        message.sender
-                          ? `https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`
-                          : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                      }
-                      alt={"Avatar"}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-contain"
-                      unoptimized
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage
+                      src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
                     />
-                  </div>
+                    <AvatarFallback>
+                      {userChatWith.displayname} Avartar
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex w-full max-w-3xl flex-col items-start gap-1">
                     {!editMessageField[message._id] ? (
                       <>
@@ -521,20 +507,14 @@ export default function MessageMePage({ channelId }: MessageMePageProps) {
 
             <div className="mt-4 rounded-xl bg-[#2b2d31] px-4 py-3 shadow-inner">
               <div className="flex items-start gap-3">
-                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-neutral-700">
-                  <Image
-                    src={
-                      messageDelete.sender
-                        ? `https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`
-                        : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                    }
-                    alt={"Avatar"}
-                    width={48}
-                    height={48}
-                    className="h-full w-full object-contain"
-                    unoptimized
+                <Avatar className="w-10 h-10">
+                  <AvatarImage
+                    src={`https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`}
                   />
-                </div>
+                  <AvatarFallback>
+                    {userChatWith.displayname} Avartar
+                  </AvatarFallback>
+                </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-2">
                     <span className="text-base font-semibold text-yellow-400">

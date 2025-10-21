@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useCallback, useEffect } from "react";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import UserInfoModal from "@/components/meBarItem/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface UserDataProps {
   id: string;
@@ -106,20 +106,11 @@ export default function MeBar({refreshVersion}: MeBarProps) {
                 href={`/app/channels/me/${user.conversationid}`}
                 className="group flex items-center w-full gap-3 px-2 py-2 rounded-md hover:bg-white/5 transition-colors"
               >
-                <div className="w-10 h-10">
-                  <Image
-                    src={
-                      userData
-                        ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                        : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                    }
-                    alt={"Avatar"}
-                    width={40}
-                    height={40}
-                    className="w-full h-full rounded-full object-contain"
-                    unoptimized
-                  />
-                </div>
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}/>
+                  <AvatarFallback>{user.displayname} Avatar</AvatarFallback>
+                </Avatar>
+
                 <div className="min-w-0 leading-tight">
                   <h1 className="font-medium text-[15px] truncate">
                     {user.displayname} {user.isActive && "*"}

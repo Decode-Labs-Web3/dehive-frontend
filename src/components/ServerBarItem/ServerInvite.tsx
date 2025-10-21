@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { faX, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useInviteSuggestions } from "@/hooks/useInviteSuggestions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ServerProps {
   _id: string;
@@ -200,20 +200,14 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
               className="flex items-center justify-between py-2 hover:bg-[#2b2d31] rounded px-2 -mx-2 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                  <Image
-                    src={
-                      suggestion
-                        ? `https://ipfs.de-id.xyz/ipfs/${suggestion.avatar_ipfs_hash}`
-                        : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                    }
-                    alt={"Avatar"}
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-contain"
-                    unoptimized
+                <Avatar>
+                  <AvatarImage
+                    src={`https://ipfs.de-id.xyz/ipfs/${suggestion.avatar_ipfs_hash}`}
                   />
-                </div>
+                  <AvatarFallback>
+                    {suggestion?.display_name} Avatar
+                  </AvatarFallback>
+                </Avatar>
                 <div>
                   <div className="text-white text-sm font-medium">
                     {suggestion.display_name}

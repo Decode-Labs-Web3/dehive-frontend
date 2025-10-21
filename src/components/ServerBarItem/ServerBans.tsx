@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import ServerBarItems from "@/components/serverBarItem";
+import ServerBarItems from "@/components/ServerBarItem";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerProps {
@@ -189,16 +189,15 @@ export default function ServerBans({ server }: ServerBansProps) {
           key={member.user_dehive_id}
           className="relative grid grid-cols-5 items-center gap-4 rounded-xl border px-4 py-4 shadow-sm"
         >
-          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-neutral-800 bg-neutral-950">
-            <Image
-              src={`https://ipfs.de-id.xyz/ipfs/${member.user_profile.avatar_ipfs_hash}`}
-              alt={member.user_profile.display_name}
-              width={64}
-              height={64}
-              className="h-full w-full object-cover"
-              unoptimized
+          <Avatar>
+            <AvatarImage
+              src={`https://dehive-avatars.infura-ipfs.io/ipfs/${member.user_profile.avatar_ipfs_hash}`}
+              alt={`${member.user_profile.display_name} avatar`}
             />
-          </div>
+            <AvatarFallback>
+              {member.user_profile.display_name} Avatar
+            </AvatarFallback>
+          </Avatar>
           <div className="flex flex-col gap-1 text-left">
             <h1 className="text-sm font-semibold text-white">
               {member.user_profile.display_name}

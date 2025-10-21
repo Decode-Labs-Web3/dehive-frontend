@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface UserDataProps {
   _id: string;
@@ -267,20 +267,14 @@ export default function UserPannel({
                 <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="relative">
-                      <div className="w-20 h-20 flex-shrink-0">
-                        <Image
-                          src={
-                            userData
-                              ? `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`
-                              : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                          }
-                          alt="Avatar"
-                          width={80}
-                          height={80}
-                          className="w-full h-full rounded-full object-cover"
-                          unoptimized
+                      <Avatar>
+                        <AvatarImage
+                          src={`https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`}
                         />
-                      </div>
+                        <AvatarFallback>
+                          {userData?.display_name} Avatar
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-4 border-[var(--surface-secondary)]"></div>
                     </div>
                     <div className="flex-1">
@@ -409,20 +403,14 @@ export default function UserPannel({
                         Loading...
                       </div>
                     ) : (
-                      <Image
-                        src={
-                          updateUserInfo.avatar_ipfs_hash
-                            ? `https://ipfs.de-id.xyz/ipfs/${updateUserInfo.avatar_ipfs_hash}`
-                            : userData?.avatar_ipfs_hash
-                            ? `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`
-                            : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                        }
-                        alt="Avatar"
-                        width={128}
-                        height={128}
-                        className="w-full h-full object-cover"
-                        unoptimized
-                      />
+                      <Avatar>
+                        <AvatarImage
+                          src={`https://ipfs.de-id.xyz/ipfs/${updateUserInfo.avatar_ipfs_hash}`}
+                        />
+                        <AvatarFallback>
+                          {userData?.display_name} Avatar
+                        </AvatarFallback>
+                      </Avatar>
                     )}
 
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors grid place-items-center text-white text-sm font-medium">

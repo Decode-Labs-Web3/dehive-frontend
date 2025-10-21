@@ -1,19 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fingerprintService } from "@/services/fingerprint.services";
 import { faRightToBracket } from "@fortawesome/free-solid-svg-icons";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Login() {
   const router = useRouter();
@@ -39,7 +33,6 @@ export default function Login() {
       });
       const response = await apiResponse.json();
 
-      // console.log("This is login", response);
       if (!response.success)
         throw new Error(response.message || "Cannot start SSO");
       router.push(response.data);
@@ -51,35 +44,25 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="w-full max-w-md p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 rounded-md bg-card border flex items-center justify-center mb-4">
-            <Image
-              src="/images/logos/dehive.png"
-              alt={"Dehive Logo"}
-              width={64}
-              height={64}
-              className="w-12 h-12 object-contain"
-              unoptimized
-            />
-          </div>
-          <h1 className="text-foreground text-2xl font-bold">
-            Welcome to Dehive
-          </h1>
+          <Avatar className="w-40 h-20 mb-4 rounded-none">
+            <AvatarImage src="/images/logos/dehive.png" alt="Dehive Logo" />
+            <AvatarFallback>DeHive logo</AvatarFallback>
+          </Avatar>
+          <h1 className="text-white text-2xl font-bold">Welcome to Dehive</h1>
         </div>
 
-        <Card className="shadow-xl">
+        <Card className="shadow-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Sign In</CardTitle>
-            <CardDescription>Continue with your account</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Button
               onClick={handleLogin}
               disabled={loading}
-              className="w-full h-12 text-base font-semibold transition-transform duration-150 ease-out hover:scale-105"
-              variant="default"
+              className="w-full h-12 text-base font-semibold bg-black"
             >
               <div className="flex items-center justify-center space-x-3">
                 {loading ? (
