@@ -1,9 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
-import { UserChatWith } from "@/interfaces/user.interfaces";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Message } from "@/interfaces/websocketMeChat.interfaces";
 import {
@@ -20,30 +18,18 @@ import {
   faX,
 } from "@fortawesome/free-solid-svg-icons";
 
-interface Conversation {
-  userA: string;
-  userB: string;
-  _id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
 interface NewMessage {
   content: string;
   uploadIds: string[];
   replyTo: string | null;
 }
 
-export default function MessageMePage({
-  conversation,
-}: {
-  conversation: Conversation;
-}) {
+interface MessageMePageProps {
+  channelId: string;
+}
+
+export default function MessageMePage({ channelId }: MessageMePageProps) {
   // console.log("edwedwedwed", conversation);
-  const { userId } = useParams();
-  const router = useRouter();
-  const [UserChatWith, setUserChatWith] = useState<UserChatWith | null>();
   const [messageReply, setMessageReply] = useState<Message | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
     content: "",
@@ -70,7 +56,7 @@ export default function MessageMePage({
     setPage,
     sending,
     err,
-  } = useDirectMessage(conversation?._id);
+  } = useDirectMessage(channelId);
   console.log("This is error", err);
   useEffect(() => {
     setPage(currentPage);
@@ -148,36 +134,6 @@ export default function MessageMePage({
   useEffect(() => {
     editMessageModal();
   }, [editMessageModal]);
-
-  const fetchChatUser = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/user/user-other", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
-        body: JSON.stringify({ userId }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!apiResponse.ok) {
-        console.error(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      if (response.statusCode === 200 && response.message === "User found") {
-        setUserChatWith(response.data);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Server fetch user chatting with errror");
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    fetchChatUser();
-  }, [fetchChatUser]);
 
   const handleMessageReply = (messageReply: Message) => {
     setMessageReply(messageReply);
