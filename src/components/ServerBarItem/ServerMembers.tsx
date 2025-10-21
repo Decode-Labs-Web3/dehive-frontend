@@ -61,7 +61,7 @@ export default function ServerMembers({
   fetchServerInfo,
   setServerPannel,
 }: ServerMembersProps) {
-  const { refreshServers } = useServerRefresh();
+  const { triggerRefeshServer } = useServerRefresh();
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string>();
   const [kickForm, setKickForm] = useState({
@@ -299,7 +299,7 @@ export default function ServerMembers({
           ...prev,
           [memberId]: false,
         }));
-        refreshServers?.();
+        triggerRefeshServer?.();
         fetchServerInfo?.();
         setServerPannel(false);
       }

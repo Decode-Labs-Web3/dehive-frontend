@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
+import { useConversationRefresh } from "@/contexts/ConversationRefreshContext";
 
 interface UserDataProps {
   followers_number: number;
@@ -23,6 +24,7 @@ interface UserDataProps {
 export default function Me() {
   const router = useRouter();
   const [userData, setUserData] = useState<UserDataProps[]>([]);
+  const { triggerRefreshConversation } = useConversationRefresh();
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -80,13 +82,14 @@ export default function Me() {
         const response = await apiResponse.json();
         if (response.statusCode === 200 && response.message === "OK") {
           router.push(`/app/channels/me/${response.data._id}`);
+          triggerRefreshConversation?.();
         }
       } catch (error) {
         console.error(error);
         console.log("Server create conversation is error");
       }
     },
-    [router]
+    [router, triggerRefreshConversation]
   );
 
   return (

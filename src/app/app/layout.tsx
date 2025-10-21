@@ -42,9 +42,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [isCalling]);
 
   return (
-    <ServerRefreshContext.Provider
-      value={{ refreshServers: triggerRefeshServer }}
-    >
+    <ServerRefreshContext.Provider value={{ triggerRefeshServer }}>
       <div className="relative flex h-screen">
         <div className="flex w-15 relative ">
           <App.GuildBar refreshVersion={refreshVersion} />

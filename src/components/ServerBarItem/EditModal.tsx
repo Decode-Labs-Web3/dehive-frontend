@@ -45,7 +45,7 @@ export default function EditModal({
   // const [server, setServer] = useState<ServerProps>(server)
   const router = useRouter();
   const [userId, setUserId] = useState("");
-  const { refreshServers } = useServerRefresh();
+  const { triggerRefeshServer } = useServerRefresh();
   const allFalse = {
     edit: false,
     leave: false,
@@ -181,7 +181,7 @@ export default function EditModal({
         toastSuccess("Delete Successful");
         setModal({ ...allFalse });
         router.push("/app/channels/me");
-        refreshServers?.();
+        triggerRefeshServer?.();
       }
     } catch (error) {
       console.error(error);
@@ -214,7 +214,7 @@ export default function EditModal({
         response.message === "Operation successful"
       ) {
         setModal({ ...allFalse });
-        refreshServers?.();
+        triggerRefeshServer?.();
         router.push("/app/channels/me");
       }
     } catch (error) {

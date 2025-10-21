@@ -34,7 +34,7 @@ export default function ServerPannel({
   setServerSettingModal,
 }: ServerPannel) {
   const router = useRouter();
-  const { refreshServers } = useServerRefresh();
+  const { triggerRefeshServer } = useServerRefresh();
 
   const allFalse = {
     profile: false,
@@ -159,7 +159,7 @@ export default function ServerPannel({
         response.message === "Operation successful"
       ) {
         router.push("/app/channels/me");
-        refreshServers?.();
+        triggerRefeshServer?.();
       }
     } catch (error) {
       console.error(error);

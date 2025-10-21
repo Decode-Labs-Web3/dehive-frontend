@@ -3,7 +3,7 @@
 import { createContext, useContext } from "react";
 
 interface ServerRefreshContextProps {
-  refreshServers?: () => void;
+  triggerRefeshServer?: () => void;
 }
 
 export const ServerRefreshContext = createContext<ServerRefreshContextProps>(

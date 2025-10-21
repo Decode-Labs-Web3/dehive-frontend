@@ -18,7 +18,11 @@ interface UserDataProps {
   lastMessageAt: string;
 }
 
-export default function MeBar() {
+interface MeBarProps {
+  refreshVersion: number;
+}
+
+export default function MeBar({refreshVersion}: MeBarProps) {
   const [userData, setUserData] = useState<UserDataProps[]>([]);
   const [userModal, setUserModal] = useState<Record<string, boolean>>({});
   const [userProfileModal, setUserProfileModal] = useState<
@@ -45,7 +49,7 @@ export default function MeBar() {
       // console.log("This is response data", response)
       if (response.statusCode === 200 && response.message === "OK") {
         const userChatData = response.data.filter(
-          (user: UserDataProps) => user.conversationid !== null
+          (user: UserDataProps) => user.conversationid !== ""
         );
         setUserData(userChatData);
         setUserModal(
@@ -67,7 +71,7 @@ export default function MeBar() {
 
   useEffect(() => {
     fetchUserData();
-  }, [fetchUserData]);
+  }, [fetchUserData, refreshVersion]);
 
   return (
     <div className="w-full h-full bg-[#2b2d31] border-r border-black/20 text-neutral-200 overflow-y-auto">
