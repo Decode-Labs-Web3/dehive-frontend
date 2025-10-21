@@ -9,6 +9,7 @@ import {
   useLayoutEffect,
 } from "react";
 import { useParams } from "next/navigation";
+import AutoLink from "@/components/common/AutoLink";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -295,7 +296,7 @@ export default function MessageChannelPage({
                           </span>
                         </div>
                         <div className="whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm leading-6 text-left">
-                          {message.content}
+                          <AutoLink text={message.content} />
                           {message.isEdited && (
                             <span className="ml-2 text-xs text-[var(--muted-foreground)]">
                               (edited)

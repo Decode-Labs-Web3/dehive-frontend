@@ -7,7 +7,7 @@ import {
 } from "@/utils/index.utils";
 import { httpStatus } from "@/constants/index.constants";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
   const denied = guardInternal(req);
@@ -15,6 +15,8 @@ export async function GET(req: Request) {
 
   try {
     const sessionId = (await cookies()).get("sessionId")?.value;
+    const body = await req.json();
+    const { conversationId } = body;
 
     if (!sessionId) {
       return NextResponse.json(
@@ -41,7 +43,7 @@ export async function GET(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/following-messages?page=0&limit=100`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/conversation/${conversationId}/users`,
       {
         method: "GET",
         headers: {
@@ -62,7 +64,7 @@ export async function GET(req: Request) {
         {
           success: false,
           statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
-          message: error?.message || "Server get user chat failed",
+          message: error?.message || " Server get chat with failed",
         },
         { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
@@ -76,7 +78,7 @@ export async function GET(req: Request) {
         success: true,
         statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "OK",
-        data: response.data.items,
+        data: response.data.user,
       },
       { status: response.statusCode || httpStatus.OK }
     );

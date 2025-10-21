@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import AutoLink from "@/components/common/AutoLink";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Message } from "@/interfaces/websocketMeChat.interfaces";
@@ -28,13 +30,27 @@ interface MessageMePageProps {
   channelId: string;
 }
 
+interface UserChatWith {
+  id: string;
+  displayname: string;
+  username: string;
+  avatar_ipfs_hash: string;
+}
+
 export default function MessageMePage({ channelId }: MessageMePageProps) {
   // console.log("edwedwedwed", conversation);
+  const router = useRouter();
   const [messageReply, setMessageReply] = useState<Message | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
     content: "",
     uploadIds: [],
     replyTo: null,
+  });
+  const [userChatWith, setUserChatWith] = useState<UserChatWith>({
+    id: "",
+    displayname: "",
+    username: "",
+    avatar_ipfs_hash: "",
   });
   const [messageDelete, setMessageDelete] = useState<Message | null>(null);
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
@@ -211,6 +227,36 @@ export default function MessageMePage({ channelId }: MessageMePageProps) {
     resizeEdit();
   }, [editMessageRef, resizeEdit]);
 
+  const fetchUserChatWith = async () => {
+    try {
+      const apiResponse = await fetch("/api/user/chat-with", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ conversationId: channelId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (response.statusCode === 200 && response.message === "OK") {
+        setUserChatWith(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server get user chat with error");
+    }
+  };
+
+  useEffect(() => {
+    fetchUserChatWith();
+  }, []);
+
   return (
     <div className="flex h-screen w-full flex-col bg-[var(--surface-primary)] text-[var(--foreground)]">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-6 py-3 backdrop-blur">
@@ -218,8 +264,8 @@ export default function MessageMePage({ channelId }: MessageMePageProps) {
           <div className="flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold uppercase text-[var(--accent-foreground)]">
             <Image
               src={
-                UserChatWith
-                  ? `https://ipfs.de-id.xyz/ipfs/${UserChatWith.avatar_ipfs_hash}`
+                userChatWith
+                  ? `https://ipfs.de-id.xyz/ipfs/${userChatWith.avatar_ipfs_hash}`
                   : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
               }
               alt={"Avatar"}
@@ -233,13 +279,13 @@ export default function MessageMePage({ channelId }: MessageMePageProps) {
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-[var(--foreground)]">
-                {UserChatWith?.display_name}
+                {userChatWith?.displayname}
               </h1>
             </div>
           </div>
         </div>
         <button
-          onClick={() => router.push(`/app/channels/me/${userId}/call`)}
+          onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
           className="px-4 py-2 bg-green-600 text-white rounded-lg"
         >
           Start Call
@@ -309,14 +355,14 @@ export default function MessageMePage({ channelId }: MessageMePageProps) {
                           </span>
                         </div>
                         <div className="whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm leading-6 text-left">
-                          {message.content}
+                          <AutoLink text={message.content} />
                           {message.isEdited && (
                             <span className="ml-2 text-xs text-[var(--muted-foreground)]">
                               (edited)
                             </span>
                           )}
                         </div>
-                        {userId === message.sender.dehive_id && (
+                        {userChatWith.id === message.sender.dehive_id && (
                           <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
                             <div className="relative">
                               <button
@@ -334,7 +380,7 @@ export default function MessageMePage({ channelId }: MessageMePageProps) {
                             </div>
                           </div>
                         )}
-                        {userId !== message.sender.dehive_id && (
+                        {userChatWith.id !== message.sender.dehive_id && (
                           <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
                             <div className="relative">
                               <button
