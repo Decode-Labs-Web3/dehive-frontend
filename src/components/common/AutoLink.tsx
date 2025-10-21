@@ -24,7 +24,7 @@ export default function AutoLink({ text }: AutoLinkProps) {
     return (
       <a
         href={trimmed}
-        target="_blank"
+        target="_self"
         rel="noopener noreferrer nofollow"
         className="text-blue-500 underline hover:opacity-80 break-all"
       >
@@ -54,7 +54,7 @@ export default function AutoLink({ text }: AutoLinkProps) {
       <a
         key={`${raw}-${start}`}
         href={raw}
-        target="_blank"
+        target="_self"
         rel="noopener noreferrer nofollow"
         className="text-blue-500 underline hover:opacity-80 break-all"
       >

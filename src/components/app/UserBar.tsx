@@ -137,7 +137,6 @@ export default function UserBar() {
             </button>
           </div>
 
-          {/* user info */}
           <div className="flex items-center gap-2 relative group">
             <div className="w-10 h-10 rounded-full overflow-hidden">
               <Image
@@ -215,7 +214,7 @@ export default function UserBar() {
           </div>
         </div>
       </aside>
-      {userPannel && userData && <UserPannel setUserPannel={setUserPannel} userData={userData}/>}
+      {userPannel && userData && <UserPannel setUserPannel={setUserPannel} userData={userData} handleUserData={handleUserData}/>}
     </>
   );
 }

@@ -3,13 +3,9 @@
 import Image from "next/image";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faRightFromBracket,
-  faFolder,
-  faX,
-} from "@fortawesome/free-solid-svg-icons";
+import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
 
 interface UserDataProps {
   _id: string;
@@ -27,11 +23,13 @@ interface UserDataProps {
 }
 interface UserPannelProps {
   userData: UserDataProps;
+  handleUserData: () => void;
   setUserPannel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function UserPannel({
   userData,
+  handleUserData,
   setUserPannel,
 }: UserPannelProps) {
   const router = useRouter();
@@ -40,6 +38,18 @@ export default function UserPannel({
   const [userPannelSetting, setUserPannelSetting] = useState<
     Record<string, boolean>
   >({ ...allFalse, account: true });
+  const [loadingAvatar, setLoadingAvartar] = useState({
+    loading: false,
+    new: false,
+  });
+
+  const [updateUserInfo, setUpdateUserInfo] = useState({
+    avatar_ipfs_hash: userData?.avatar_ipfs_hash,
+    display_name: userData?.display_name,
+    bio: userData?.bio,
+  });
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -70,22 +80,133 @@ export default function UserPannel({
     }
   };
 
+  const openFilePicker = () => fileInputRef.current?.click();
+
+  const handleAvartarUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setLoadingAvartar((prev) => ({
+      ...prev,
+      loading: true,
+    }));
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      console.error("Invalid file type");
+      event.target.value = "";
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const apiResponse = await fetch("/api/user/avartar", {
+        method: "POST",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: formData,
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
+      });
+
+      if (!apiResponse.ok) {
+        console.error("Avatar upload failed:", apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+
+      setUpdateUserInfo((prev) => ({
+        ...prev,
+        avatar_ipfs_hash: response.ipfsHash,
+      }));
+    } catch (error) {
+      console.error("Avatar upload request error:", error);
+      return;
+    } finally {
+      setLoadingAvartar({
+        new: true,
+        loading: false,
+      });
+    }
+  };
+
+  const handleUserInfoChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setUpdateUserInfo((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleUpdateProfile = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const apiResponse = await fetch("/api/user/profile-change", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({
+          current: updateUserInfo,
+          original: {
+            avatar_ipfs_hash: userData?.avatar_ipfs_hash,
+            display_name: userData?.display_name,
+            bio: userData?.bio,
+          },
+        }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
+      });
+
+      if (!apiResponse.ok) {
+        console.error("Profile update failed:", apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+
+      if (
+        response.statusCode === 200 &&
+        response.message === "Profile updated"
+      ) {
+        handleUserData();
+        setTimeout(() => {
+          setUpdateUserInfo({
+            avatar_ipfs_hash: userData?.avatar_ipfs_hash,
+            display_name: userData?.display_name,
+            bio: userData?.bio,
+          });
+        }, 1000);
+      }
+
+      if (
+        response.statusCode === 207 &&
+        response.message === "Partial update"
+      ) {
+        console.error(response.message || "Partial failed");
+      }
+    } catch (error) {
+      console.error("Profile update request error:", error);
+      return;
+    }
+  };
+
+  const isProfileChange =
+    updateUserInfo.display_name !== userData.display_name ||
+    updateUserInfo.bio !== userData.bio ||
+    updateUserInfo.avatar_ipfs_hash !== userData.avatar_ipfs_hash;
+
   const content = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       <div className="relative z-[101] flex h-full w-full border border-[var(--border-subtle)] bg-[var(--surface-primary)] text-[var(--foreground)]">
         <aside className="flex w-64 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
           <div className="px-6 pb-5 pt-7">
             <div className="mt-4 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface-tertiary)] text-[var(--foreground)]">
-                <FontAwesomeIcon icon={faFolder} />
-              </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[var(--foreground)]">
-                  Vũ Trần Quang Minh
-                </p>
-                <p className="text-xs text-[var(--muted-foreground)]">
-                  User Pannel Settings
-                </p>
+                <h1> User Pannel Settings </h1>
               </div>
             </div>
           </div>
@@ -153,7 +274,7 @@ export default function UserPannel({
                               ? `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`
                               : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                           }
-                          alt={"Avatar"}
+                          alt="Avatar"
                           width={80}
                           height={80}
                           className="w-full h-full rounded-full object-cover"
@@ -164,10 +285,10 @@ export default function UserPannel({
                     </div>
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-[var(--foreground)]">
-                        {userData.username}
+                        {userData.display_name}
                       </h3>
                       <p className="text-sm text-[var(--muted-foreground)]">
-                        ···
+                        @{userData.username}
                       </p>
                     </div>
                     <button
@@ -189,27 +310,6 @@ export default function UserPannel({
                       </label>
                       <p className="text-sm text-[var(--foreground)]">
                         {userData.display_name}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() =>
-                        setUserPannelSetting({ ...allFalse, profile: true })
-                      }
-                      className="px-3 py-1.5 text-sm text-[var(--foreground)] bg-[var(--surface-tertiary)] rounded hover:bg-[var(--surface-hover)] transition"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex-1">
-                      <label className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-2">
-                        Username
-                      </label>
-                      <p className="text-sm text-[var(--foreground)]">
-                        {userData.username}
                       </p>
                     </div>
                     <button
@@ -285,9 +385,101 @@ export default function UserPannel({
                 </div>
               </div>
             )}
+
+            {userPannelSetting.profile && (
+              <div className="max-w-2xl space-y-5">
+                <h2 className="text-xl font-semibold text-[var(--foreground)] mb-5">
+                  My Profile
+                </h2>
+
+                <div className="bg-[var(--surface-secondary)] rounded-lg p-4 mb-4">
+                  <label className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-3">
+                    Avatar
+                  </label>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={openFilePicker}
+                    className="w-32 h-32 rounded-xl border-2 border-[color:var(--border)] overflow-hidden relative cursor-pointer group flex items-center justify-center"
+                    aria-label="Change avatar"
+                    title="Click to change avatar"
+                  >
+                    {loadingAvatar.loading ? (
+                      <div className="text-sm text-[color:var(--muted-foreground)]">
+                        Loading...
+                      </div>
+                    ) : (
+                      <Image
+                        src={
+                          updateUserInfo.avatar_ipfs_hash
+                            ? `https://ipfs.de-id.xyz/ipfs/${updateUserInfo.avatar_ipfs_hash}`
+                            : userData?.avatar_ipfs_hash
+                            ? `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`
+                            : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        }
+                        alt="Avatar"
+                        width={128}
+                        height={128}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                      />
+                    )}
+
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors grid place-items-center text-white text-sm font-medium">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-center">
+                        Click to upload
+                      </span>
+                    </div>
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvartarUpload}
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-[var(--surface-secondary)] rounded-lg p-4 mb-4">
+                  <label
+                    htmlFor="display_name"
+                    className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-2"
+                  >
+                    Display Name
+                  </label>
+                  <input
+                    id="display_name"
+                    name="display_name"
+                    value={updateUserInfo.display_name}
+                    onChange={handleUserInfoChange}
+                    placeholder="Enter display name"
+                    className="w-full px-3 py-2 border rounded-lg border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)]"
+                  />
+                </div>
+
+                <div className="bg-[var(--surface-secondary)] rounded-lg p-4 mb-4">
+                  <label
+                    htmlFor="bio"
+                    className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-2"
+                  >
+                    Bio
+                  </label>
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    value={updateUserInfo.bio}
+                    onChange={handleUserInfoChange}
+                    placeholder="Tell us about yourself"
+                    rows={3}
+                    className="w-full px-3 py-2 border rounded-lg border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)] resize-none"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
-          {userPannelSetting.profile && (
+          {isProfileChange && (
             <div className="pointer-events-auto absolute inset-x-8 bottom-6 rounded-2xl border border-[var(--success-border)] bg-[var(--success-soft)] px-6 py-4 text-sm text-[var(--foreground)]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -299,10 +491,22 @@ export default function UserPannel({
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-3">
-                  <button className="rounded-lg border border-[var(--border-subtle)] px-4 py-2 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]">
+                  <button
+                    onClick={() => {
+                      setUpdateUserInfo({
+                        avatar_ipfs_hash: userData?.avatar_ipfs_hash,
+                        display_name: userData?.display_name,
+                        bio: userData?.bio,
+                      });
+                    }}
+                    className="rounded-lg border border-[var(--border-subtle)] px-4 py-2 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
+                  >
                     Reset
                   </button>
-                  <button className="rounded-lg bg-[var(--success)] px-4 py-2 text-xs font-semibold text-[var(--accent-foreground)] transition hover:opacity-90">
+                  <button
+                    onClick={handleUpdateProfile}
+                    className="rounded-lg bg-[var(--success)] px-4 py-2 text-xs font-semibold text-[var(--accent-foreground)] transition hover:opacity-90"
+                  >
                     Save Changes
                   </button>
                 </div>
