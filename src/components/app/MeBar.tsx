@@ -28,7 +28,7 @@ export default function MeBar({refreshVersion}: MeBarProps) {
   const [userProfileModal, setUserProfileModal] = useState<
     Record<string, boolean>
   >({});
-  console.log("this is out side try catch", userData);
+  // console.log("this is out side try catch", userData);
   const fetchUserData = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/user/user-chat", {

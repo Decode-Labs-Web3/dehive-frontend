@@ -1,8 +1,8 @@
 "use client";
 
-import ServerBarItems from "./index";
 import { useParams } from "next/navigation";
 import { getCookie } from "@/utils/cookie.utils";
+import ServerBarItems from "@/components/ServerBarItem";
 import { useState, useCallback, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {

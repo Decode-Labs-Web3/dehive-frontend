@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useDraggable } from "@dnd-kit/core";
-import ServerBarItems from "./index";
+import ServerBarItems from "@/components/ServerBarItem";
 
 interface ChannelProps {
   _id: string;

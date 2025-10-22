@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import ServerBarItems from "@/components/ServerBarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
-import ServerBarItems from "@/components/serverBarItem";
 import {
   faPen,
   faGear,

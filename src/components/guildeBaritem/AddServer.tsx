@@ -7,6 +7,11 @@ import { toastSuccess, toastError } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   faPlus,
   faX,
   faGamepad,
@@ -140,23 +145,34 @@ export default function AddServer({ handleGetServer }: Props) {
   return (
     <>
       <div className="relative group w-10 h-10 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition">
-        <button
-          onClick={() => {
-            setTab({ ...allFalse, tag: true });
-            setModalOpen(true);
-            setServerForm({
-              tags: [],
-              name: "",
-              description: "",
-            });
-          }}
-          className="w-full h-full flex items-center justify-center"
-        >
-          <FontAwesomeIcon icon={faPlus} />
-        </button>
-        <div className="hidden group-hover:block pointer-events-none z-10 absolute ml-2 font-medium top-1/2 -translate-y-1/2 px-2 py-1 left-full rounded bg-black/90 text-white whitespace-nowrap text-xs shadow">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => {
+                setTab({ ...allFalse, tag: true });
+                setModalOpen(true);
+                setServerForm({
+                  tags: [],
+                  name: "",
+                  description: "",
+                });
+              }}
+              className="w-full h-full flex items-center justify-center rounded-md hover:bg-blue-400"
+            >
+              <FontAwesomeIcon icon={faPlus} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="right"
+            align="center"
+            className="bg-black text-white h-10 text-center font-semibold text-xl"
+          >
+            Add Server
+          </TooltipContent>
+          {/* <div className="hidden group-hover:block pointer-events-none z-10 absolute ml-2 font-medium top-1/2 -translate-y-1/2 px-2 py-1 left-full rounded bg-black/90 text-white whitespace-nowrap text-xs shadow">
           Add Server
-        </div>
+        </div> */}
+        </Tooltip>
       </div>
       {modalOpen && (
         <div

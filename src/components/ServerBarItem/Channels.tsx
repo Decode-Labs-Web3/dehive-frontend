@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import ServerBarItems from "./index";
 import { useParams } from "next/navigation";
+import ServerBarItems from "@/components/ServerBarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGear,
