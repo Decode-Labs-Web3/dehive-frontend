@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useCallback, useEffect } from "react";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import UserInfoModal from "@/components/meBarItem/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -36,9 +38,10 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
     Record<string, boolean>
   >({});
   // console.log("this is out side try catch", userData);
-
+  const [loading, setLoading] = useState(false);
   const [userDropdown, setUserDropdown] = useState<Record<string, boolean>>({});
   const fetchUserData = useCallback(async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/user/user-chat", {
         method: "GET",
@@ -75,6 +78,8 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
     } catch (error) {
       console.error(error);
       console.log("Server fetch user data error");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -83,129 +88,146 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
   }, [fetchUserData, refreshVersion]);
 
   return (
-    <div className="w-full h-full bg-[#2b2d31] border-r border-black/20 text-neutral-200 overflow-y-auto">
+    <div className="w-full h-full bg-background border-r border-border text-foreground overflow-y-auto">
       <Link
         href={"/app/channels/me/"}
-        className="flex items-center w-full h-11 px-3 text-xs font-semibold tracking-wide uppercase text-neutral-400 bg-[#1e1f22] border-b border-black/20"
+        className="flex items-center w-full h-11 px-3 text-xs font-semibold tracking-wide uppercase text-muted-foreground bg-muted border-b border-border"
       >
         Direct Messages
       </Link>
-      {userData.length > 0 &&
-        userData
-          .sort(
-            (a, b) =>
-              new Date(b.lastMessageAt).getTime() -
-              new Date(a.lastMessageAt).getTime()
-          )
-          .map((user) => (
-            <div
-              key={user.id}
-              // onContextMenuCapture={(event) => {
-              //   event.preventDefault();
-              //   event.stopPropagation();
-              //   // console.log("Test Mouse Right click");
-              //   setUserModal((prev) => ({
-              //     ...prev,
-              //     [user.id]: !prev[user.id],
-              //   }));
-              // }}
-              className="relative"
-            >
-              <DropdownMenu
-                modal={false}
-                open={!!userDropdown[user.id]}
-                onOpenChange={(o) =>
-                  setUserDropdown((prev) => ({ ...prev, [user.id]: o }))
-                }
+      <ScrollArea>
+        {loading && (
+          <>
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-10" />
+            <Skeleton className="h-20 w-10" />
+          </>
+        )}
+        {userData.length > 0 &&
+          userData
+            .sort(
+              (a, b) =>
+                new Date(b.lastMessageAt).getTime() -
+                new Date(a.lastMessageAt).getTime()
+            )
+            .map((user) => (
+              <div
+                key={user.id}
+                // onContextMenuCapture={(event) => {
+                //   event.preventDefault();
+                //   event.stopPropagation();
+                //   // console.log("Test Mouse Right click");
+                //   setUserModal((prev) => ({
+                //     ...prev,
+                //     [user.id]: !prev[user.id],
+                //   }));
+                // }}
+                className="relative"
               >
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="group flex w-full items-center gap-3 px-2 py-2 rounded-md hover:bg-white/5 transition-colors text-left"
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      setUserDropdown((prev) => ({ ...prev, [user.id]: true }));
-                    }}
-                    onPointerDown={(e) => {
-                      if (e.button !== 2) e.preventDefault();
-                    }}
-                    onClick={() =>
-                      router.push(`/app/channels/me/${user.conversationid}`)
-                    }
-                  >
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage
-                        src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                <DropdownMenu
+                  modal={false}
+                  open={userDropdown[user.id]}
+                  onOpenChange={() =>
+                    setUserDropdown((prev) => ({ ...prev, [user.id]: false }))
+                  }
+                >
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="group flex w-full items-center gap-3 px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left"
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        setUserDropdown((prev) => ({
+                          ...prev,
+                          [user.id]: true,
+                        }));
+                      }}
+                      onPointerDown={(e) => {
+                        if (e.button !== 2) e.preventDefault();
+                      }}
+                      onClick={() =>
+                        router.push(`/app/channels/me/${user.conversationid}`)
+                      }
+                    >
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage
+                          src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                        />
+                        <AvatarFallback>
+                          {user.displayname} Avatar
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="min-w-0 leading-tight">
+                        <h1 className="font-medium text-[15px] truncate">
+                          {user.displayname} {user.isActive && "*"}
+                        </h1>
+                        <p className="text-xs text-muted-foreground truncate">
+                          @{user.username}
+                        </p>
+                      </div>
+                    </button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent className="w-56">
+                    <DropdownMenuItem
+                      onClick={() =>
+                        setUserProfileModal((prev) => ({
+                          ...prev,
+                          [user.id]: true,
+                        }))
+                      }
+                    >
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      asChild
+                      onClick={() => {
+                        router.push(`/app/channels/me/${user.conversationid}`);
+                      }}
+                    >
+                      Message
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>Call</DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(user.id);
+                      }}
+                      className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      Copy User ID
+                      <FontAwesomeIcon
+                        icon={faCopy}
+                        className="ml-2 text-muted-foreground"
                       />
-                      <AvatarFallback>{user.displayname} Avatar</AvatarFallback>
-                    </Avatar>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(
+                          user.conversationid
+                        );
+                      }}
+                      className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      Copy Conversation ID
+                      <FontAwesomeIcon
+                        icon={faCopy}
+                        className="ml-2 text-muted-foreground"
+                      />
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-                    <div className="min-w-0 leading-tight">
-                      <h1 className="font-medium text-[15px] truncate">
-                        {user.displayname} {user.isActive && "*"}
-                      </h1>
-                      <p className="text-xs text-neutral-400 truncate">
-                        @{user.username}
-                      </p>
-                    </div>
-                  </button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuItem
-                    onClick={() =>
-                      setUserProfileModal((prev) => ({
-                        ...prev,
-                        [user.id]: true,
-                      }))
-                    }
-                  >
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    asChild
-                    onClick={() => {
-                      router.push(`/app/channels/me/${user.conversationid}`);
-                    }}
-                  >
-                    Message
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>Call</DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(user.id);
-                    }}
-                    className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-white/10 active:bg-white/20 transition-colors"
-                  >
-                    Copy User ID
-                    <FontAwesomeIcon
-                      icon={faCopy}
-                      className="ml-2 text-neutral-400"
-                    />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(user.conversationid);
-                    }}
-                    className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-white/10 active:bg-white/20 transition-colors"
-                  >
-                    Copy Conversation ID
-                    <FontAwesomeIcon
-                      icon={faCopy}
-                      className="ml-2 text-neutral-400"
-                    />
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {userProfileModal[user.id] && (
-                <UserInfoModal
-                  userId={user.id}
-                  setUserProfileModal={setUserProfileModal}
-                />
-              )}
-            </div>
-          ))}
+                {userProfileModal[user.id] && (
+                  <UserInfoModal
+                    userId={user.id}
+                    setUserProfileModal={setUserProfileModal}
+                  />
+                )}
+              </div>
+            ))}
+        <ScrollBar orientation="vertical" />
+      </ScrollArea>
     </div>
   );
 }

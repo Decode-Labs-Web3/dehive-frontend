@@ -163,9 +163,9 @@ export default function GuildBar({
           </Tooltip>
         </div>
 
-        <Separator decorative className="mx-auto my-1 w-8 bg-black" />
+        <Separator className="mx-auto my-1 w-8 h-1 bg-black" />
 
-        <ScrollArea>
+        <ScrollArea className="-mx-3">
           {loading && (
             <div className="flex flex-col gap-2">
               <Skeleton className="h-10 w-10 rounded-md" />
@@ -176,42 +176,28 @@ export default function GuildBar({
 
           {servers.length > 0 &&
             servers.map((server) => (
-              <div
-                key={server._id}
-                className="relative group w-10 h-10 rounded-md ml-3"
-              >
-                <span
-                  className={`absolute top-1/2 -translate-y-1/2 w-1 rounded-r-full -left-3 ${
-                    activeId === server._id
-                      ? "h-8 bg-red-500"
-                      : "h-4 bg-blue-500"
-                  }`}
-                />
+              <Tooltip key={server._id}>
                 <ContextMenu>
                   <ContextMenuTrigger asChild>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => {
-                            router.push(`/app/channels/${server._id}`);
-                          }}
-                          className="w-full h-full flex items-center font-bold justify-center rounded-md hover:bg-blue-400"
-                        >
-                          {server.name.slice(0, 1).toUpperCase()}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="right"
-                        align="center"
-                        className="bg-black text-white h-10 text-center font-semibold text-xl"
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() =>
+                          router.push(`/app/channels/${server._id}`)
+                        }
+                        className="relative group w-10 h-10 rounded-md ml-3 flex items-center font-bold justify-center hover:bg-blue-400"
                       >
-                        <p>{server.name}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    {/* <div className="pointer-events-none absolute rounded-md font-semibold px-2 py-1 ml-2 left-full top-1/2 -translate-y-1/2 bg-black text-[var(--accent-foreground)] opacity-0 z-1000 group-hover:opacity-100 whitespace-nowrap shadow">
-                {server.name}
-                </div> */}
+                        {server.name.slice(0, 1).toUpperCase()}
+                        <span
+                          className={`absolute top-1/2 -translate-y-1/2 w-1 rounded-r-full -left-3 ${
+                            activeId === server._id
+                              ? "h-8 bg-red-500"
+                              : "h-4 bg-blue-500"
+                          }`}
+                        />
+                      </button>
+                    </TooltipTrigger>
                   </ContextMenuTrigger>
+
                   <ContextMenuContent className="w-48">
                     <ContextMenuItem
                       onClick={() => router.push(`/app/channels/${server._id}`)}
@@ -224,8 +210,8 @@ export default function GuildBar({
                       <>
                         <ContextMenuSeparator />
                         <ContextMenuItem
-                          onClick={() => handleLeaveServer(server._id)}
                           className="text-red-500"
+                          onClick={() => handleLeaveServer(server._id)}
                         >
                           Leave server
                         </ContextMenuItem>
@@ -233,9 +219,9 @@ export default function GuildBar({
                     )}
                     <ContextMenuSeparator />
                     <ContextMenuItem
-                      onClick={async () => {
-                        await navigator.clipboard.writeText(server._id);
-                      }}
+                      onClick={async () =>
+                        navigator.clipboard.writeText(server._id)
+                      }
                     >
                       Copy Server Id{" "}
                       <FontAwesomeIcon
@@ -245,7 +231,15 @@ export default function GuildBar({
                     </ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
-              </div>
+
+                <TooltipContent
+                  side="right"
+                  align="center"
+                  className="pointer-events-none bg-black text-white h-10 text-center font-semibold text-xl"
+                >
+                  <p>{server.name}</p>
+                </TooltipContent>
+              </Tooltip>
             ))}
           <ScrollBar orientation="vertical" />
         </ScrollArea>

@@ -1,8 +1,9 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useConversationRefresh } from "@/contexts/ConversationRefreshContext";
 
 interface UserDataProps {
@@ -93,32 +94,41 @@ export default function Me() {
   );
 
   return (
-    <div className="h-screen min-h-0 flex flex-col bg-[#313338] text-zinc-100">
-      <h1 className="text-xl font-bold text-center">All Friends</h1>
+    <div className="h-full min-h-0 flex flex-col bg-background text-foreground">
+      <header className="shrink-0 px-4 py-3 text-center border-b border-border bg-muted">
+        <h1 className="text-xl font-bold">All Friends</h1>
+      </header>
 
-      <div className="space-y-2 pb-4">
-        {userData.map((user) => (
-          <div
-            key={user.user_id}
-            onClick={() => fetchConversation(user.user_id)}
-            className="group flex items-start gap-3 px-4 py-2 hover:bg-[#2b2d31]/60"
-          >
-            <Avatar className="w-10 h-10">
-              <AvatarImage
-                src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
-              />
-              <AvatarFallback>{user.display_name} Avatar</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <div className="flex items-baseline gap-2">
-                <h1 className="font-semibold text-white cursor-pointer hover:underline break-all">
-                  @{user.username}
-                </h1>
+      <div className="flex-1 min-h-0">
+        <ScrollArea className="h-full">
+          <div className="space-y-2 p-2 pb-4">
+            {userData.map((user) => (
+              <div
+                key={user.user_id}
+                onClick={() => fetchConversation(user.user_id)}
+                className="group flex items-start gap-3 px-4 py-2 hover:bg-accent hover:text-accent-foreground"
+              >
+                <Avatar className="w-10 h-10">
+                  <AvatarImage
+                    src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                  />
+                  <AvatarFallback>{user.display_name} Avatar</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <div className="flex items-baseline gap-2">
+                    <h1 className="font-semibold text-muted-foreground cursor-pointer hover:underline break-all">
+                      @{user.username}
+                    </h1>
+                  </div>
+                  <h1 className="font-medium text-foreground">
+                    {user.display_name}
+                  </h1>
+                </div>
               </div>
-              <h1 className="font-medium text-white">{user.display_name}</h1>
-            </div>
+            ))}
           </div>
-        ))}
+          <ScrollBar orientation="vertical" />
+        </ScrollArea>
       </div>
     </div>
   );

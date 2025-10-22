@@ -8,7 +8,7 @@ import { ConversationRefreshContext } from "@/contexts/ConversationRefreshContex
 
 export default function MeLayout({ children }: { children: React.ReactNode }) {
   const [currentId, setCurrentId] = useState("");
-  const [ refreshVersion, setRefreshVersion ] = useState(0);
+  const [refreshVersion, setRefreshVersion] = useState(0);
   const triggerRefreshConversation = useCallback(() => {
     setRefreshVersion((prev) => prev + 1);
   }, []);
@@ -22,13 +22,18 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
     <>
       {currentId ? (
         <SocketMeChatProvider userId={currentId}>
-          <ConversationRefreshContext.Provider value={{ triggerRefreshConversation }}>
-          <div className="flex h-screen">
-            <div className="w-60">
-              <App.MeBar refreshVersion={refreshVersion}/>
+          <ConversationRefreshContext.Provider
+            value={{ triggerRefreshConversation }}
+          >
+            <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
+              <aside className="h-full overflow-y-auto border-r border-black/20">
+                <App.MeBar refreshVersion={refreshVersion} />
+              </aside>
+
+              <section className="min-w-0 min-h-0 overflow-hidden">
+                <div className="h-full min-h-0">{children}</div>
+              </section>
             </div>
-            <div className="flex-1">{children}</div>
-          </div>
           </ConversationRefreshContext.Provider>
         </SocketMeChatProvider>
       ) : (

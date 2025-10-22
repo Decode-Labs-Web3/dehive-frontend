@@ -7,9 +7,9 @@ import SocketMeCallProvider from "@/providers/socketMeCallProvider";
 import { ServerRefreshContext } from "@/contexts/ServerRefreshContext.contexts";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [isCalling, setIsCalling] = useState(false);
   const [isFocus, setIsFocus] = useState(false);
+  const [isCalling, setIsCalling] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   console.log("isFocus nha", isFocus);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const triggerRefeshServer = useCallback(() => {
@@ -43,7 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <ServerRefreshContext.Provider value={{ triggerRefeshServer }}>
-      <div className="relative flex h-screen">
+      <div className="relative flex h-screen overflow-hidden">
         <div className="flex w-15 relative ">
           <App.GuildBar refreshVersion={refreshVersion} />
         </div>
@@ -63,7 +63,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {userId && (
           <SocketMeCallProvider userId={userId}>
-            <div className="flex-1">{children}</div>
+            <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
           </SocketMeCallProvider>
         )}
 
