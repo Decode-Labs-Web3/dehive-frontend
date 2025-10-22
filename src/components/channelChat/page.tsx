@@ -27,9 +27,9 @@ interface NewMessage {
 }
 
 export default function MessageChannelPage({
-  conversationId,
+  channelId,
 }: {
-  conversationId: string;
+  channelId: string;
 }) {
   const [userId, setUserId] = useState<string>("");
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
@@ -60,7 +60,7 @@ export default function MessageChannelPage({
     setPage,
     sending,
     err,
-  } = useChannelMessage(conversationId);
+  } = useChannelMessage(channelId);
   console.log("This is error", err);
   useEffect(() => {
     setPage(currentPage);
@@ -233,7 +233,7 @@ export default function MessageChannelPage({
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-[var(--foreground)]">
-                {conversationId}
+                {channelId}
               </h1>
             </div>
           </div>

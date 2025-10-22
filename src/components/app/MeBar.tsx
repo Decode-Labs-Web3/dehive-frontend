@@ -96,7 +96,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
       const data = p.data;
       setUserData((prev: UserDataProps[]) => {
         const listIndex = prev.findIndex(
-          (u) => u.conversationid === data.conversationId
+          (old) => old.conversationid === data.conversationId
         );
         if (listIndex === -1) {
           fetchUserData();

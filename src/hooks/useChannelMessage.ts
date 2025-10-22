@@ -4,38 +4,34 @@ import { getChannelChatSocketIO } from "@/library/socketioChannelChat";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interfaces";
 
-export function useChannelMessage(conversationId?: string) {
+export function useChannelMessage(channelId: string) {
   const socket = useRef(getChannelChatSocketIO()).current;
   const [page, setPage] = useState<number>(0);
   const [isLastPage, setIsLastPage] = useState(false);
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [messages, setMessages] = useState<MessageChannel[]>([]);
-  // console.log("dwedwedwedwedwedwqsqwsqwswed",messages);
 
-  const latestConversationId = useRef<string | undefined>(conversationId);
+  const latestConversationId = useRef<string | undefined>(channelId);
   useEffect(() => {
-    latestConversationId.current = conversationId;
+    latestConversationId.current = channelId;
     setMessages([]);
-  }, [conversationId]);
+  }, [channelId]);
 
   useEffect(() => {
-    latestConversationId.current = conversationId;
+    latestConversationId.current = channelId;
     setMessages([]);
     setPage(0);
     setIsLastPage(false);
     setErr(null);
-  }, [conversationId]);
+  }, [channelId]);
 
   useEffect(() => {
-    if (!conversationId) return;
+    if (!channelId) return;
 
     const onNewMessage = (newMessage: MessageChannel) => {
       // console.log(newMessage)
-      if (
-        String(newMessage.conversationId) !==
-        String(latestConversationId.current)
-      )
+      if (String(newMessage.channelId) !== String(latestConversationId.current))
         return;
       setMessages((prev) =>
         prev.some((oldMessage) => oldMessage._id === newMessage._id)
@@ -48,8 +44,7 @@ export function useChannelMessage(conversationId?: string) {
       editMessage: MessageChannel & { isEdited?: boolean }
     ) => {
       if (
-        String(editMessage.conversationId) !==
-        String(latestConversationId.current)
+        String(editMessage.channelId) !== String(latestConversationId.current)
       )
         return;
       setMessages((prev) =>
@@ -70,8 +65,7 @@ export function useChannelMessage(conversationId?: string) {
       deleteMessage: MessageChannel & { isDeleted?: boolean }
     ) => {
       if (
-        String(deleteMessage.conversationId) !==
-        String(latestConversationId.current)
+        String(deleteMessage.channelId) !== String(latestConversationId.current)
       )
         return;
       setMessages((prev) =>
@@ -100,7 +94,7 @@ export function useChannelMessage(conversationId?: string) {
       socket.off("messageDeleted", onMessageDeleted);
       socket.off("error", onWebsocketError);
     };
-  }, [socket, conversationId]);
+  }, [socket, channelId]);
 
   const loadHistory = useCallback(async () => {
     if (!latestConversationId.current) return;
@@ -115,7 +109,7 @@ export function useChannelMessage(conversationId?: string) {
             "Content-Type": "application/json",
             "X-Frontend-Internal-Request": "true",
           },
-          body: JSON.stringify({ conversationId, page }),
+          body: JSON.stringify({ channelId, page }),
           cache: "no-cache",
           signal: AbortSignal.timeout(10000),
         }
@@ -135,7 +129,7 @@ export function useChannelMessage(conversationId?: string) {
       console.error(error);
       setErr("Failed to load history");
     }
-  }, [conversationId, page]);
+  }, [channelId, page]);
 
   const send = useCallback(
     async (
@@ -149,7 +143,7 @@ export function useChannelMessage(conversationId?: string) {
         setSending(true);
         setErr(null);
         socket.emit("sendMessage", {
-          conversationId: String(latestConversationId.current),
+          channelId: String(latestConversationId.current),
           content,
           uploadIds,
           replyTo,

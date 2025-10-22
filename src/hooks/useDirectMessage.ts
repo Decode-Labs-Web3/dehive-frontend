@@ -4,7 +4,7 @@ import { getMeChatSocketIO } from "@/library/socketioMeChat";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Message } from "@/interfaces/websocketMeChat.interfaces";
 
-export function useDirectMessage(conversationId?: string) {
+export function useDirectMessage(conversationId: string) {
   const socket = useRef(getMeChatSocketIO()).current;
   const [page, setPage] = useState<number>(0);
   const [isLastPage, setIsLastPage] = useState(false);

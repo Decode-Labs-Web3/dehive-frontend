@@ -4,14 +4,14 @@ export interface IdentityConfirmedChannel {
   userDehiveId: string;
 }
 
-export interface JoinedChannel {
-  conversationId: string;
+export interface JoinedServer {
+  serverId: string;
   message: string;
 }
 
 export interface MessageChannel {
   _id: string;
-  conversationId: string;
+  channelId: string;
   sender: Sender;
   content: string;
   attachments: unknown[];
@@ -49,7 +49,7 @@ export interface Pong {
 
 // ===== Client -> Server (emit) =====
 export interface CreateMessageChannelDto {
-  conversationId: string;
+  channelId: string;
   content: string;
   uploadIds: string[];
   replyTo: string | null;
@@ -64,9 +64,8 @@ export interface DeleteMessageChannelDto {
   messageId: string;
 }
 
-export interface JoinChannelDto {
+export interface JoinServerDto {
   serverId: string;
-  channelId: string;
 }
 
 // ===== Event name maps  =====
@@ -74,7 +73,7 @@ export interface JoinChannelDto {
 // server to client
 export interface ServerToClientChannelEvents {
   identityConfirmed: (p: IdentityConfirmedChannel) => void;
-  joinedChannel: (p: JoinedChannel) => void;
+  joinedServer: (p: JoinedServer) => void;
   newMessage: (m: MessageChannel) => void;
   messageEdited: (m: MessageChannel) => void;
   messageDeleted: (m: MessageChannel) => void;
@@ -85,7 +84,7 @@ export interface ServerToClientChannelEvents {
 // client to server
 export interface ClientToServerChannelEvents {
   identity: (userDehiveId: string) => void;
-  joinChannel: (dto: JoinChannelDto) => void;
+  joinServer: (dto: JoinServerDto) => void;
   sendMessage: (dto: CreateMessageChannelDto) => void;
   editMessage: (dto: EditMessageChannelDto) => void;
   deleteMessage: (dto: DeleteMessageChannelDto) => void;

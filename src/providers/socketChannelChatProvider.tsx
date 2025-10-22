@@ -4,24 +4,22 @@ import { useEffect, useRef } from "react";
 import { getChannelChatSocketIO } from "@/library/socketioChannelChat";
 import {
   IdentityConfirmedChannel,
-  JoinedChannel,
+  JoinedServer,
   MessageChannel,
   WsErrorPayloadChannel,
+  JoinServerDto,
   Pong,
-  JoinChannelDto,
 } from "@/interfaces/websocketChannelChat.interfaces";
 
 interface SocketChannelProviderProps {
   userId: string;
   serverId: string;
-  channelId: string;
   children: React.ReactNode;
 }
 
 export default function SocketChannelProvider({
   userId,
   serverId,
-  channelId,
   children,
 }: SocketChannelProviderProps) {
   const socket = useRef(getChannelChatSocketIO()).current;
@@ -32,8 +30,8 @@ export default function SocketChannelProvider({
     };
 
     const tryJoin = () => {
-      if (serverId && channelId) {
-        socket.emit("joinChannel", { serverId, channelId } as JoinChannelDto);
+      if (serverId) {
+        socket.emit("joinServer", { serverId });
       }
     };
 
@@ -76,7 +74,7 @@ export default function SocketChannelProvider({
       tryJoin();
     };
 
-    const onJoinedChannel = (p: JoinedChannel) => {
+    const onJoinedServer = (p: JoinedServer) => {
       console.log("[channel joinedChannel]", p);
     };
 
@@ -107,7 +105,7 @@ export default function SocketChannelProvider({
     socket.io.on("reconnect_failed", onManagerReconnectFailed);
 
     socket.on("identityConfirmed", onIdentityConfirmed);
-    socket.on("joinedChannel", onJoinedChannel);
+    socket.on("joinedServer", onJoinedServer);
     socket.on("newMessage", onNewMessage);
     socket.on("messageEdited", onMessageEdited);
     socket.on("messageDeleted", onMessageDeleted);
@@ -127,22 +125,22 @@ export default function SocketChannelProvider({
       socket.io.off("reconnect_failed", onManagerReconnectFailed);
 
       socket.off("identityConfirmed", onIdentityConfirmed);
-      socket.off("joinedChannel", onJoinedChannel);
+      socket.off("joinedServer", onJoinedServer);
       socket.off("newMessage", onNewMessage);
       socket.off("messageEdited", onMessageEdited);
       socket.off("messageDeleted", onMessageDeleted);
       socket.off("pong", onPong);
     };
-  }, [socket, userId, serverId, channelId]);
+  }, [socket, userId, serverId]);
 
   useEffect(() => {
     if (userId && socket.connected) socket.emit("identity", userId);
   }, [userId, socket]);
 
   useEffect(() => {
-    if (serverId && channelId && socket.connected)
-      socket.emit("joinChannel", { serverId, channelId } as JoinChannelDto);
-  }, [serverId, channelId, socket]);
+    if (serverId && socket.connected)
+      socket.emit("joinServer", { serverId } as JoinServerDto);
+  }, [serverId, socket]);
 
   return <>{children}</>;
 }

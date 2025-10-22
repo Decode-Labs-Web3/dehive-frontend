@@ -28,7 +28,18 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { conversationId, page } = body;
+    const { channelId, page } = body;
+
+    if (!channelId) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: httpStatus.BAD_REQUEST,
+          message: "Missing channelId",
+        },
+        { status: httpStatus.BAD_REQUEST }
+      );
+    }
 
     const fingerprint = (await cookies()).get("fingerprint")?.value;
 
@@ -44,7 +55,7 @@ export async function POST(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_CHANNEL_CHAT_SIO_URL}/api/messages/conversation/${conversationId}?page=${page}&limit=30`,
+      `${process.env.DEHIVE_CHANNEL_MESSAGING}/api/messages/channel/${channelId}?page=${page}&limit=30`,
       {
         method: "GET",
         headers: {
