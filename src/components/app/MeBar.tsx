@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useCallback, useEffect } from "react";
 import { getMeChatSocketIO } from "@/library/socketioMeChat";
-import UserInfoModal from "@/components/meBarItem/UserInfoModal";
+import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { faCircle, faCopy } from "@fortawesome/free-solid-svg-icons";

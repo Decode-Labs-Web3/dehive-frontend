@@ -13,6 +13,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserDataProps {
   _id: string;
@@ -23,7 +26,7 @@ interface UserDataProps {
   status: string;
   server_count: number;
   bio: string;
-  is_banned: true;
+  is_banned: boolean;
   last_login: string;
   following_number: number;
   followers_number: number;
@@ -59,7 +62,7 @@ interface Wallets {
   _id: string;
   address: string;
   user_id: string;
-  name_service: null;
+  name_service: string | null;
   is_primary: boolean;
   createdAt: string;
   updatedAt: string;
@@ -191,34 +194,50 @@ export default function UserInfoModal({
                   <p className="text-muted-foreground">@{userInfo.username}</p>
                 </div>
 
+                <Separator className="my-4" />
+
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Followers</span>
-                    <span className="font-semibold">
+                    <Badge
+                      variant="outline"
+                      className="px-3 py-1 text-base font-semibold"
+                    >
                       {userInfo.followers_number}
-                    </span>
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Following</span>
-                    <span className="font-semibold">
+                    <Badge
+                      variant="outline"
+                      className="px-3 py-1 text-base font-semibold"
+                    >
                       {userInfo.following_number}
-                    </span>
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">
                       Mutual Friends
                     </span>
-                    <span className="font-semibold">
+                    <Badge
+                      variant="outline"
+                      className="px-3 py-1 text-base font-semibold"
+                    >
                       {userInfo.mutual_followers_number}
-                    </span>
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Servers</span>
-                    <span className="font-semibold">
+                    <Badge
+                      variant="outline"
+                      className="px-3 py-1 text-base font-semibold"
+                    >
                       {userInfo.server_count}
-                    </span>
+                    </Badge>
                   </div>
                 </div>
+
+                <Separator className="my-4" />
 
                 {userInfo.bio && (
                   <div className="mb-6">
@@ -230,7 +249,8 @@ export default function UserInfoModal({
                 )}
 
                 <Button
-                  className="w-full h-10 bg-purple-500 text-white"
+                  variant="default"
+                  className="w-full h-10"
                   onClick={() => {
                     setUserProfileModal((prev) => ({
                       ...prev,
@@ -275,43 +295,52 @@ export default function UserInfoModal({
                           No mutual friends yet.
                         </p>
                       ) : (
-                        <div className="space-y-4">
-                          {userInfo.mutual_followers_list.map(
-                            (mutual: MutualFollowers) => (
-                              <Card
-                                key={mutual.user_id}
-                                className="cursor-pointer hover:bg-muted/50 transition-colors"
-                                onClick={() => setActiveUserId(mutual.user_id)}
-                              >
-                                <CardContent className="p-4">
-                                  <div className="flex items-center gap-4">
-                                    <Avatar className="w-12 h-12">
-                                      <AvatarImage
-                                        src={`https://ipfs.de-id.xyz/ipfs/${mutual.avatar_ipfs_hash}`}
-                                        alt={mutual.display_name}
-                                      />
-                                      <AvatarFallback>
-                                        {mutual.display_name?.charAt(0) || "U"}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="font-semibold truncate">
-                                        {mutual.display_name}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground truncate">
-                                        @{mutual.username}
-                                      </p>
+                        <ScrollArea className="h-[48vh] pr-2">
+                          <div className="space-y-4">
+                            {userInfo.mutual_followers_list.map(
+                              (mutual: MutualFollowers) => (
+                                <Card
+                                  key={mutual.user_id}
+                                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                  onClick={() =>
+                                    setActiveUserId(mutual.user_id)
+                                  }
+                                >
+                                  <CardContent className="p-4">
+                                    <div className="flex items-center gap-4">
+                                      <Avatar className="w-12 h-12">
+                                        <AvatarImage
+                                          src={`https://ipfs.de-id.xyz/ipfs/${mutual.avatar_ipfs_hash}`}
+                                          alt={mutual.display_name}
+                                        />
+                                        <AvatarFallback>
+                                          {mutual.display_name?.charAt(0) ||
+                                            "U"}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-semibold truncate">
+                                          {mutual.display_name}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground truncate">
+                                          @{mutual.username}
+                                        </p>
+                                      </div>
+                                      <div className="text-right text-sm text-muted-foreground">
+                                        <p>
+                                          {mutual.followers_number} Followers
+                                        </p>
+                                        <p>
+                                          {mutual.following_number} Following
+                                        </p>
+                                      </div>
                                     </div>
-                                    <div className="text-right text-sm text-muted-foreground">
-                                      <p>{mutual.followers_number} Followers</p>
-                                      <p>{mutual.following_number} Following</p>
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            )
-                          )}
-                        </div>
+                                  </CardContent>
+                                </Card>
+                              )
+                            )}
+                          </div>
+                        </ScrollArea>
                       )}
                     </CardContent>
                   </Card>
@@ -325,19 +354,21 @@ export default function UserInfoModal({
                           No mutual servers.
                         </p>
                       ) : (
-                        <div className="space-y-3">
-                          {userInfo.mutual_servers.map(
-                            (server: MutualServers) => (
-                              <Card key={server.server_id}>
-                                <CardContent className="p-4">
-                                  <p className="font-medium">
-                                    {server.server_name}
-                                  </p>
-                                </CardContent>
-                              </Card>
-                            )
-                          )}
-                        </div>
+                        <ScrollArea className="h-[48vh] pr-2">
+                          <div className="space-y-3">
+                            {userInfo.mutual_servers.map(
+                              (server: MutualServers) => (
+                                <Card key={server.server_id}>
+                                  <CardContent className="p-4">
+                                    <p className="font-medium">
+                                      {server.server_name}
+                                    </p>
+                                  </CardContent>
+                                </Card>
+                              )
+                            )}
+                          </div>
+                        </ScrollArea>
                       )}
                     </CardContent>
                   </Card>
@@ -346,8 +377,52 @@ export default function UserInfoModal({
             </div>
           </div>
         ) : (
-          <div className="flex h-72 items-center justify-center">
-            <p className="text-muted-foreground">Loading profile...</p>
+          <div className="flex h-[80vh] flex-col md:flex-row">
+            <Card className="w-full md:w-80 rounded-none border-0 border-r">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-end gap-4">
+                  <Skeleton className="h-20 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-24" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <Separator />
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-10" />
+                  </div>
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-10" />
+                  </div>
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-10" />
+                  </div>
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-10" />
+                  </div>
+                </div>
+                <Separator />
+                <Skeleton className="h-10 w-full" />
+              </CardContent>
+            </Card>
+            <div className="flex-1 p-6">
+              <Card className="h-full">
+                <CardContent className="p-6 space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  <div className="space-y-3">
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         )}
       </DialogContent>

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import ServerBarItems from "@/components/ServerBarItem";
 import { useState, useEffect, useCallback } from "react";
+import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
@@ -393,7 +393,7 @@ export default function ServerBans({ server }: ServerBansProps) {
           )}
 
           {userProfileModal[member.user_dehive_id] && (
-            <ServerBarItems.ServerUserProfile
+            <UserInfoModal
               userId={member.user_dehive_id}
               setUserProfileModal={setUserProfileModal}
             />

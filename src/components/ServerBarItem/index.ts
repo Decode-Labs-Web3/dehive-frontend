@@ -6,7 +6,6 @@ import CategoryPanel from "./CategoryPannel";
 import ServerPannel from "./ServerPannel";
 import ServerMembers from "./ServerMembers";
 import ServerBans from "./ServerBans";
-import ServerUserProfile from "./ServerUserInfoModal";
 import ServerInvite from "./ServerInvite";
 import CategoryDroppable from "./CategoryDroppable"
 import ChannelDraggable from "./ChannelDraggable";
@@ -21,7 +20,6 @@ const ServerBarItems = {
   ServerPannel,
   ServerInvite,
   ServerMembers,
-  ServerUserProfile,
   CategoryDroppable,
   ChannelDraggable,
 };

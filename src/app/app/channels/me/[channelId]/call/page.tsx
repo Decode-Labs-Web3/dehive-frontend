@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useDirectCall } from "@/hooks/useDirectCall";
-import MeCallPage from "@/components/meCall/MeCallPage";
+import MeCallPage from "@/components/common/MeCallPage";
 import { useMeCallContext } from "@/contexts/MeCallConetext.contexts";
 
 export default function CallPage() {

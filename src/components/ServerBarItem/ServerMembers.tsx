@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import ServerBarItems from "./index";
 import { getCookie } from "@/utils/cookie.utils";
 import { useState, useEffect, useCallback } from "react";
+import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -815,7 +815,7 @@ export default function ServerMembers({
           )}
 
           {userProfileModal[membership._id] && (
-            <ServerBarItems.ServerUserProfile
+            <UserInfoModal
               userId={membership._id}
               setUserProfileModal={setUserProfileModal}
             />
