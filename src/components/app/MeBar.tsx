@@ -1,11 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import UserInfoModal from "@/components/meBarItem/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 interface UserDataProps {
   id: string;
@@ -22,13 +29,15 @@ interface MeBarProps {
   refreshVersion: number;
 }
 
-export default function MeBar({refreshVersion}: MeBarProps) {
+export default function MeBar({ refreshVersion }: MeBarProps) {
+  const router = useRouter();
   const [userData, setUserData] = useState<UserDataProps[]>([]);
-  const [userModal, setUserModal] = useState<Record<string, boolean>>({});
   const [userProfileModal, setUserProfileModal] = useState<
     Record<string, boolean>
   >({});
   // console.log("this is out side try catch", userData);
+
+  const [userDropdown, setUserDropdown] = useState<Record<string, boolean>>({});
   const fetchUserData = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/user/user-chat", {
@@ -52,7 +61,7 @@ export default function MeBar({refreshVersion}: MeBarProps) {
           (user: UserDataProps) => user.conversationid !== ""
         );
         setUserData(userChatData);
-        setUserModal(
+        setUserDropdown(
           Object.fromEntries(
             userChatData.map((user: UserDataProps) => [user.id, false])
           )
@@ -91,145 +100,103 @@ export default function MeBar({refreshVersion}: MeBarProps) {
           .map((user) => (
             <div
               key={user.id}
-              onContextMenuCapture={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                // console.log("Test Mouse Right click");
-                setUserModal((prev) => ({
-                  ...prev,
-                  [user.id]: !prev[user.id],
-                }));
-              }}
+              // onContextMenuCapture={(event) => {
+              //   event.preventDefault();
+              //   event.stopPropagation();
+              //   // console.log("Test Mouse Right click");
+              //   setUserModal((prev) => ({
+              //     ...prev,
+              //     [user.id]: !prev[user.id],
+              //   }));
+              // }}
               className="relative"
             >
-              <Link
-                href={`/app/channels/me/${user.conversationid}`}
-                className="group flex items-center w-full gap-3 px-2 py-2 rounded-md hover:bg-white/5 transition-colors"
+              <DropdownMenu
+                modal={false}
+                open={!!userDropdown[user.id]}
+                onOpenChange={(o) =>
+                  setUserDropdown((prev) => ({ ...prev, [user.id]: o }))
+                }
               >
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}/>
-                  <AvatarFallback>{user.displayname} Avatar</AvatarFallback>
-                </Avatar>
-
-                <div className="min-w-0 leading-tight">
-                  <h1 className="font-medium text-[15px] truncate">
-                    {user.displayname} {user.isActive && "*"}
-                  </h1>
-                  <p className="text-xs text-neutral-400 truncate">
-                    @{user.username}
-                  </p>
-                </div>
-              </Link>
-
-              {userModal[user.id] && (
-                <div
-                  role="dialog"
-                  tabIndex={-1}
-                  ref={(element: HTMLDivElement) => {
-                    element?.focus();
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === "Escape") {
-                      setUserModal((prev) => ({
-                        ...prev,
-                        [user.id]: false,
-                      }));
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="group flex w-full items-center gap-3 px-2 py-2 rounded-md hover:bg-white/5 transition-colors text-left"
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setUserDropdown((prev) => ({ ...prev, [user.id]: true }));
+                    }}
+                    onPointerDown={(e) => {
+                      if (e.button !== 2) e.preventDefault();
+                    }}
+                    onClick={() =>
+                      router.push(`/app/channels/me/${user.conversationid}`)
                     }
-                  }}
-                  className="absolute inset-0 z-30"
-                >
-                  <div
-                    onClick={() => {
-                      setUserModal((prev) => ({
-                        ...prev,
-                        [user.id]: false,
-                      }));
+                  >
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage
+                        src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                      />
+                      <AvatarFallback>{user.displayname} Avatar</AvatarFallback>
+                    </Avatar>
+
+                    <div className="min-w-0 leading-tight">
+                      <h1 className="font-medium text-[15px] truncate">
+                        {user.displayname} {user.isActive && "*"}
+                      </h1>
+                      <p className="text-xs text-neutral-400 truncate">
+                        @{user.username}
+                      </p>
+                    </div>
+                  </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuItem
+                    onClick={() =>
                       setUserProfileModal((prev) => ({
                         ...prev,
-                        [user.id]: false,
-                      }));
+                        [user.id]: true,
+                      }))
+                    }
+                  >
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    asChild
+                    onClick={() => {
+                      router.push(`/app/channels/me/${user.conversationid}`);
                     }}
-                    className="fixed inset-0 bg-black/50 z-40"
-                  />
-                  <div className="absolute left-1/2 -translate-x-1/2 mt-15 w-56 rounded-md bg-[#232428] text-neutral-200 border border-black/20 p-1 z-50">
-                    {" "}
-                    <button
-                      onClick={() => {
-                        setUserModal((prev) => ({
-                          ...prev,
-                          [user.id]: false,
-                        }));
-                        setUserProfileModal((prev) => ({
-                          ...prev,
-                          [user.id]: true,
-                        }));
-                      }}
-                      className="w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors"
-                    >
-                      Profile
-                    </button>
-                    <Link
-                      onClick={() => {
-                        setUserModal((prev) => ({
-                          ...prev,
-                          [user.id]: false,
-                        }));
-                      }}
-                      href={`/app/channels/me/${user.conversationid}`}
-                      className="block w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors"
-                    >
-                      Message
-                    </Link>
-                    <button className="w-full text-left px-3 py-2 rounded hover:bg-white/10 active:bg-white/20 transition-colors">
-                      Call
-                    </button>
-                    <button
-                      onClick={async (
-                        event: React.MouseEvent<HTMLButtonElement>
-                      ) => {
-                        const button = event.currentTarget;
-                        const oldText = button.textContent;
-
-                        await navigator.clipboard.writeText(user.id);
-
-                        button.textContent = "Copied!";
-                        setTimeout(() => {
-                          button.textContent = oldText;
-                        }, 1000);
-                      }}
-                      className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-white/10 active:bg-white/20 transition-colors"
-                    >
-                      Copy User ID
-                      <FontAwesomeIcon
-                        icon={faCopy}
-                        className="ml-2 text-neutral-400"
-                      />
-                    </button>
-                    <button
-                      onClick={async (
-                        event: React.MouseEvent<HTMLButtonElement>
-                      ) => {
-                        const button = event.currentTarget;
-                        const oldText = button.textContent;
-                        await navigator.clipboard.writeText(
-                          user.conversationid
-                        );
-                        button.textContent = "Copied!";
-                        setTimeout(() => {
-                          button.textContent = oldText;
-                        }, 1000);
-                      }}
-                      className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-white/10 active:bg-white/20 transition-colors"
-                    >
-                      Copy Conversation ID
-                      <FontAwesomeIcon
-                        icon={faCopy}
-                        className="ml-2 text-neutral-400"
-                      />
-                    </button>
-                  </div>
-                </div>
-              )}
+                  >
+                    Message
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>Call</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(user.id);
+                    }}
+                    className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-white/10 active:bg-white/20 transition-colors"
+                  >
+                    Copy User ID
+                    <FontAwesomeIcon
+                      icon={faCopy}
+                      className="ml-2 text-neutral-400"
+                    />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(user.conversationid);
+                    }}
+                    className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-white/10 active:bg-white/20 transition-colors"
+                  >
+                    Copy Conversation ID
+                    <FontAwesomeIcon
+                      icon={faCopy}
+                      className="ml-2 text-neutral-400"
+                    />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {userProfileModal[user.id] && (
                 <UserInfoModal

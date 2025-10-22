@@ -1,15 +1,23 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { getCookie } from "@/utils/cookie.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import GuideBarItems from "@/components/guildeBaritem";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { faMessage } from "@fortawesome/free-solid-svg-icons";
 import { toastSuccess, toastError } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { faCopy, faMessage } from "@fortawesome/free-solid-svg-icons";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import {
   Tooltip,
   TooltipContent,
@@ -37,8 +45,9 @@ export default function GuildBar({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [servers, setServers] = useState<Server[]>([]);
+  const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [servers, setServers] = useState<Server[]>([]);
 
   const getActiveId = () => {
     if (pathname.includes("/me")) return "me";
@@ -47,6 +56,7 @@ export default function GuildBar({
   };
 
   const activeId = getActiveId();
+  console.log(activeId);
 
   const handleGetServer = useCallback(async () => {
     setLoading(true);
@@ -79,6 +89,46 @@ export default function GuildBar({
   useEffect(() => {
     handleGetServer();
   }, [handleGetServer, refreshVersion]);
+
+  const handleLeaveServer = async (serverId: string) => {
+    try {
+      const apiResponse = await fetch("/api/servers/members/leave-server", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ serverId }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      console.log("hello this is response", response);
+
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        handleGetServer();
+        router.push("/app/channels/me");
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server error for leave server");
+    }
+  };
+
+  useEffect(() => {
+    const currentUserId = getCookie("userId");
+    if (currentUserId) {
+      setUserId(currentUserId);
+    }
+  }, []);
 
   return (
     <TooltipProvider>
@@ -128,7 +178,7 @@ export default function GuildBar({
             servers.map((server) => (
               <div
                 key={server._id}
-                className="relative group w-10 h-10 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition"
+                className="relative group w-10 h-10 rounded-md ml-3"
               >
                 <span
                   className={`absolute top-1/2 -translate-y-1/2 w-1 rounded-r-full -left-3 ${
@@ -137,28 +187,64 @@ export default function GuildBar({
                       : "h-4 bg-blue-500"
                   }`}
                 />
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => {
-                        router.push(`/app/channels/${server._id}`);
-                      }}
-                      className="w-full h-full flex items-center font-bold justify-center rounded-md hover:bg-blue-400"
-                    >
-                      {server.name.slice(0, 1).toUpperCase()}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="right"
-                    align="center"
-                    className="bg-black text-white h-10 text-center font-semibold text-xl"
-                  >
-                    <p>{server.name}</p>
-                  </TooltipContent>
-                </Tooltip>
-                {/* <div className="pointer-events-none absolute rounded-md font-semibold px-2 py-1 ml-2 left-full top-1/2 -translate-y-1/2 bg-black text-[var(--accent-foreground)] opacity-0 z-1000 group-hover:opacity-100 whitespace-nowrap shadow">
+                <ContextMenu>
+                  <ContextMenuTrigger asChild>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => {
+                            router.push(`/app/channels/${server._id}`);
+                          }}
+                          className="w-full h-full flex items-center font-bold justify-center rounded-md hover:bg-blue-400"
+                        >
+                          {server.name.slice(0, 1).toUpperCase()}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="right"
+                        align="center"
+                        className="bg-black text-white h-10 text-center font-semibold text-xl"
+                      >
+                        <p>{server.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    {/* <div className="pointer-events-none absolute rounded-md font-semibold px-2 py-1 ml-2 left-full top-1/2 -translate-y-1/2 bg-black text-[var(--accent-foreground)] opacity-0 z-1000 group-hover:opacity-100 whitespace-nowrap shadow">
                 {server.name}
                 </div> */}
+                  </ContextMenuTrigger>
+                  <ContextMenuContent className="w-48">
+                    <ContextMenuItem
+                      onClick={() => router.push(`/app/channels/${server._id}`)}
+                    >
+                      Open
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem>Invite people</ContextMenuItem>
+                    {userId !== server.owner_id && (
+                      <>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem
+                          onClick={() => handleLeaveServer(server._id)}
+                          className="text-red-500"
+                        >
+                          Leave server
+                        </ContextMenuItem>
+                      </>
+                    )}
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(server._id);
+                      }}
+                    >
+                      Copy Server Id{" "}
+                      <FontAwesomeIcon
+                        icon={faCopy}
+                        className="ml-2 text-neutral-400"
+                      />
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               </div>
             ))}
           <ScrollBar orientation="vertical" />
