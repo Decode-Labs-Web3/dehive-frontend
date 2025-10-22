@@ -36,6 +36,18 @@ export interface WsErrorPayload {
   details?: string;
 }
 
+export interface ConversationUpdate {
+  type: string;
+  data: ConversationUpdateData;
+}
+
+interface ConversationUpdateData {
+  conversationId: string;
+  isActive: boolean;
+  isCall: boolean;
+  lastMessageAt: string;
+}
+
 // ===== Client -> Server (emit) =====
 export interface SendDirectMessageDto {
   conversationId: string;
@@ -62,6 +74,7 @@ export interface ServerToClientMeEvents {
   messageEdited: (m: Message) => void;
   messageDeleted: (m: Message) => void;
   error: (e: WsErrorPayload) => void;
+  conversation_update: (p: ConversationUpdate) => void;
 }
 
 // client to server

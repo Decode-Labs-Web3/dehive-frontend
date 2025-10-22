@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import UserPannel from "../userBarItem/UserPannel";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

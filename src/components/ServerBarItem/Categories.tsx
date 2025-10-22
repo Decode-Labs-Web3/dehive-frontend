@@ -11,10 +11,7 @@ import {
   faPlus,
   faCopy,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  DndContext,
-  DragEndEvent,
-} from "@dnd-kit/core";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
 
 interface CategoryProps {
   _id: string;
@@ -432,10 +429,10 @@ export default function Categories({ server }: CategoriesProps) {
                   [category._id]: !prev[category._id],
                 }));
               }}
-              className="relative group flex items-center justify-between px-3 py-1 rounded-md hover:bg-[var(--background-secondary)]"
+              className="relative group flex items-center justify-between px-3 py-1 rounded-md hover:bg-accent"
             >
               <button
-                className="flex h-10 items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]"
+                className="flex h-10 items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                 onClick={() =>
                   setOpen((prev) => ({
                     ...prev,
@@ -446,7 +443,7 @@ export default function Categories({ server }: CategoriesProps) {
                 <span className="select-none">{category.name}</span>
                 <FontAwesomeIcon
                   icon={open[category._id] ? faChevronDown : faChevronRight}
-                  className="text-[var(--muted-foreground)]"
+                  className="text-muted-foreground"
                 />
               </button>
 
@@ -458,7 +455,7 @@ export default function Categories({ server }: CategoriesProps) {
                       [category._id]: !prev[category._id],
                     }))
                   }
-                  className="p-1 h-10 rounded hover:bg-[var(--background)]/10 text-[var(--accent)]"
+                  className="p-1 h-10 rounded hover:bg-accent/10 text-primary"
                   aria-label={`Create channel in ${category.name}`}
                 >
                   <FontAwesomeIcon icon={faPlus} />
@@ -493,7 +490,7 @@ export default function Categories({ server }: CategoriesProps) {
 
                   {/* <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50"> */}
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50">
-                    <div className="w-56 bg-[var(--background)] border border-[var(--border-color)] rounded-md shadow-xl overflow-hidden text-sm">
+                    <div className="w-56 bg-background border border-border rounded-md shadow-xl overflow-hidden text-sm">
                       <div className="flex flex-col">
                         <button
                           onClick={() => {
@@ -507,7 +504,7 @@ export default function Categories({ server }: CategoriesProps) {
                               [category._id]: false,
                             }));
                           }}
-                          className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                          className="w-full text-left px-3 py-2 hover:bg-accent"
                         >
                           Collapse Category
                         </button>
@@ -528,7 +525,7 @@ export default function Categories({ server }: CategoriesProps) {
                               )
                             );
                           }}
-                          className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                          className="w-full text-left px-3 py-2 hover:bg-accent"
                         >
                           Collapse All Categories
                         </button>
@@ -547,7 +544,7 @@ export default function Categories({ server }: CategoriesProps) {
                                   [category._id]: true,
                                 }));
                               }}
-                              className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                              className="w-full text-left px-3 py-2 hover:bg-accent"
                             >
                               Edit Category
                             </button>
@@ -564,7 +561,7 @@ export default function Categories({ server }: CategoriesProps) {
                                   [category._id]: false,
                                 }));
                               }}
-                              className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
+                              className="w-full text-left px-3 py-2 text-destructive hover:bg-accent"
                             >
                               Delete Category
                             </button>
@@ -584,7 +581,7 @@ export default function Categories({ server }: CategoriesProps) {
                               button.textContent = oldText;
                             }, 1000);
                           }}
-                          className="w-full flex justify-between text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                          className="w-full flex justify-between text-left px-3 py-2 hover:bg-accent"
                         >
                           Copy Category ID
                           <FontAwesomeIcon icon={faCopy} />
@@ -635,11 +632,11 @@ export default function Categories({ server }: CategoriesProps) {
                   className="fixed inset-0 bg-black/50 z-40"
                 />
 
-                <div className="bg-[var(--background)] text-[var(--foreground)] rounded-lg p-5 w-full max-w-md z-50 shadow-2xl border border-[var(--border-color)]">
+                <div className="bg-background text-foreground rounded-lg p-5 w-full max-w-md z-50 shadow-2xl border border-border">
                   <div className="flex items-start gap-3">
                     <div className="min-w-0">
                       <h3 className="text-lg font-semibold">Delete Category</h3>
-                      <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         Are you sure you want to delete{" "}
                         <span className="font-bold">{category.name}</span>? This
                         action {"can't"} be undone.
@@ -655,13 +652,13 @@ export default function Categories({ server }: CategoriesProps) {
                           [category._id]: false,
                         }));
                       }}
-                      className="px-3 py-2 rounded-md text-sm bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90"
+                      className="px-3 py-2 rounded-md text-sm bg-muted text-foreground hover:opacity-90"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={() => handleDeleteCategory(category._id)}
-                      className="px-3 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700"
+                      className="px-3 py-2 rounded-md text-sm bg-destructive text-destructive-foreground hover:opacity-90"
                     >
                       Delete
                     </button>
@@ -726,11 +723,11 @@ export default function Categories({ server }: CategoriesProps) {
                   }
                   className="fixed inset-0 bg-black/50 z-40"
                 />
-                <div className="bg-[var(--background-secondary)] text-[var(--foreground)] rounded-lg p-4 w-full max-w-md z-50 shadow-lg">
+                <div className="bg-background text-foreground rounded-lg p-4 w-full max-w-md z-50 shadow-lg">
                   <h2 className="text-lg font-semibold mb-2">Create Channel</h2>
 
                   <fieldset className="flex flex-col mb-3">
-                    <legend className="text-sm font-medium text-[var(--muted-foreground)] mb-2">
+                    <legend className="text-sm font-medium text-muted-foreground mb-2">
                       Channel Type
                     </legend>
 
@@ -742,7 +739,7 @@ export default function Categories({ server }: CategoriesProps) {
                         value="TEXT"
                         checked={channelForm.type === "TEXT"}
                         onChange={handleChannelForm}
-                        className="accent-[var(--accent)]"
+                        className="accent-[hsl(var(--primary))]"
                       />
                       <label
                         htmlFor={`type-text-${category._id}`}
@@ -760,7 +757,7 @@ export default function Categories({ server }: CategoriesProps) {
                         value="VOICE"
                         checked={channelForm.type === "VOICE"}
                         onChange={handleChannelForm}
-                        className="accent-[var(--accent)]"
+                        className="accent-[hsl(var(--primary))]"
                       />
                       <label
                         htmlFor={`type-voice-${category._id}`}
@@ -774,7 +771,7 @@ export default function Categories({ server }: CategoriesProps) {
                   <div className="flex flex-col mb-4">
                     <label
                       htmlFor={`channel-name-${category._id}`}
-                      className="text-sm text-[var(--muted-foreground)] mb-1"
+                      className="text-sm text-muted-foreground mb-1"
                     >
                       Channel name
                     </label>
@@ -785,7 +782,7 @@ export default function Categories({ server }: CategoriesProps) {
                       value={channelForm.name}
                       onChange={handleChannelForm}
                       autoFocus
-                      className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
+                      className="w-full border border-border bg-background text-foreground rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
 
@@ -797,13 +794,13 @@ export default function Categories({ server }: CategoriesProps) {
                           [category._id]: false,
                         }))
                       }
-                      className="px-3 py-1 rounded text-sm text-[var(--muted-foreground)] hover:bg-[var(--background)]/10"
+                      className="px-3 py-1 rounded text-sm text-muted-foreground hover:bg-accent/10"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={() => handleChannelCreate(category._id)}
-                      className="px-3 py-1 rounded bg-[var(--accent)] text-[var(--accent-foreground)] text-sm"
+                      className="px-3 py-1 rounded bg-primary text-primary-foreground text-sm"
                     >
                       Create
                     </button>

@@ -88,7 +88,11 @@ export default function Channels({
         }
       >
         <Link
-          href={channel.type === "TEXT" ? `/app/channels/${serverId}/${channel._id}` : `/app/channels/${serverId}/${channel._id}/call`}
+          href={
+            channel.type === "TEXT"
+              ? `/app/channels/${serverId}/${channel._id}`
+              : `/app/channels/${serverId}/${channel._id}/call`
+          }
           className=" flex flex-row justify-between items-center w-full h-full"
         >
           <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
@@ -121,7 +125,7 @@ export default function Channels({
               className="fixed inset-0 bg-black/50 z-20"
             />
 
-            <div className="absolute top-full z-30 left-1/2 -translate-x-1/2 w-55 rounded-md bg-[var(--background)] text-[var(--foreground)]">
+            <div className="absolute top-full z-30 left-1/2 -translate-x-1/2 w-56 rounded-md border border-border bg-background text-foreground shadow-lg">
               {isPrivileged && (
                 <>
                   <button
@@ -132,7 +136,7 @@ export default function Channels({
                       }));
                       setChannelModal(false);
                     }}
-                    className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                    className="w-full text-left px-3 py-2 hover:bg-accent"
                   >
                     Edit Channel
                   </button>
@@ -141,7 +145,7 @@ export default function Channels({
                       setChannelModal(false);
                       setDeleteChannelModal(true);
                     }}
-                    className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]"
+                    className="w-full text-left px-3 py-2 text-destructive hover:bg-destructive/10"
                   >
                     Delete Channel
                   </button>
@@ -159,7 +163,7 @@ export default function Channels({
                     button.textContent = oldText;
                   }, 1000);
                 }}
-                className="w-full flex justify-between text-left px-3 py-2 hover:bg-[var(--background-secondary)]"
+                className="w-full flex justify-between text-left px-3 py-2 hover:bg-accent"
               >
                 Copy Channel ID
                 <FontAwesomeIcon icon={faCopy} />
@@ -200,15 +204,15 @@ export default function Channels({
             }}
             className="fixed inset-0 bg-black/50"
           />
-          <div className="bg-[var(--background)] text-[var(--foreground)] rounded-lg p-5 w-full max-w-md z-50 shadow-2xl border border-[var(--border-color)]">
+          <div className="bg-background text-foreground rounded-lg p-5 w-full max-w-md z-50 shadow-2xl border border-border">
             <div className="flex items-start gap-3">
               <div className="min-w-0">
                 <h3 className="text-lg font-semibold">Delete Channel</h3>
-                <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Are you sure you want to delete{" "}
                   <FontAwesomeIcon
                     icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
-                    className="w-4 h-4 text-[var(--muted-foreground)]"
+                    className="w-4 h-4 text-muted-foreground"
                   />{" "}
                   <span className="font-bold">{channel.name}</span>? This action{" "}
                   {"can't"} be undone.
@@ -221,7 +225,7 @@ export default function Channels({
                 onClick={() => {
                   setDeleteChannelModal(false);
                 }}
-                className="px-3 py-2 rounded-md text-sm bg-[var(--background-secondary)] text-[var(--foreground)] hover:opacity-90"
+                className="px-3 py-2 rounded-md text-sm bg-muted text-foreground hover:opacity-90"
               >
                 Cancel
               </button>
@@ -229,7 +233,7 @@ export default function Channels({
                 onClick={() => {
                   handleDeleteChannel(channel._id);
                 }}
-                className="px-3 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700"
+                className="px-3 py-2 rounded-md text-sm bg-destructive text-destructive-foreground hover:opacity-90"
               >
                 Delete
               </button>

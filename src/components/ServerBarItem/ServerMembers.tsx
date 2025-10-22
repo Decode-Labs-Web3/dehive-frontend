@@ -316,14 +316,14 @@ export default function ServerMembers({
   return (
     <div className="space-y-1">
       <div className="mb-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)] mb-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
           Members — {memberships.length}
         </h3>
       </div>
 
       {memberships.map((membership) => (
         <div key={membership._id}>
-          <div className="grid grid-cols-2 items-center gap-3 px-2 py-2 rounded-md hover:bg-[var(--surface-hover)]">
+          <div className="grid grid-cols-2 items-center gap-3 px-2 py-2 rounded-md hover:bg-accent">
             <div className="justify-start grid grid-cols-[1fr_2fr_1fr_1fr]">
               <Avatar className="w-10 h-10">
                 <AvatarImage
@@ -335,33 +335,33 @@ export default function ServerMembers({
               </Avatar>
 
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                <span className="text-sm font-medium text-foreground truncate">
                   {membership.display_name}
                 </span>
 
-                <span className="text-xs text-[var(--muted-foreground)] truncate">
+                <span className="text-xs text-muted-foreground truncate">
                   @{membership.username}
                 </span>
               </div>
 
-              <span className="text-xs text-[var(--muted-foreground)]">
+              <span className="text-xs text-muted-foreground">
                 Joined
                 <br />
                 {new Date(membership.joined_at).toLocaleString()}
               </span>
 
               <div>
-                <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--accent)] text-[var(--accent-foreground)] font-medium">
+                <span className="text-xs px-1.5 py-0.5 rounded bg-accent text-accent-foreground font-medium">
                   {membership.role.charAt(0).toUpperCase() +
                     membership.role.slice(1)}
                 </span>
                 {membership.is_muted && (
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-medium">
+                  <span className="ml-1 text-xs px-1.5 py-0.5 rounded bg-[hsl(var(--warning))]/20 text-[hsl(var(--warning))] font-medium">
                     MUTED
                   </span>
                 )}
                 {membership.is_banned && (
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-red-600 text-white font-medium">
+                  <span className="ml-1 text-xs px-1.5 py-0.5 rounded bg-destructive text-destructive-foreground font-medium">
                     BANNED
                   </span>
                 )}
@@ -402,11 +402,11 @@ export default function ServerMembers({
                     [membership._id]: false,
                   }));
                 }}
-                className="fixed inset-0 bg-transparent z-[150]"
+                className="fixed inset-0 bg-black/50 z-[150]"
               />
 
               <div className="absolute right-0 mr-4 mt-2 z-[200]">
-                <div className="w-56 bg-[#2f3136] text-sm rounded-md shadow-lg ring-1 ring-black/40 overflow-hidden">
+                <div className="w-56 bg-background text-foreground text-sm rounded-md border border-border shadow-lg overflow-hidden">
                   <div
                     onClick={() => {
                       setUserProfileModal((prev) => ({
@@ -418,18 +418,18 @@ export default function ServerMembers({
                         [membership._id]: false,
                       }));
                     }}
-                    className="px-4 py-3 text-white font-semibold"
+                    className="px-4 py-3 font-semibold hover:bg-accent"
                   >
                     Profile
                   </div>
 
                   {/* Moderation actions */}
-                  <div className="border-t border-black/20 px-1 py-1">
+                  <div className="border-t border-border px-1 py-1">
                     {userId !== membership._id && (
                       <>
                         <Link
                           href={`/app/channels/me/${membership._id}`}
-                          className="block w-full text-left px-4 py-3 text-gray-200 hover:bg-[#36373a]"
+                          className="block w-full text-left px-4 py-3 hover:bg-accent"
                         >
                           Message
                         </Link>
@@ -450,7 +450,7 @@ export default function ServerMembers({
                               reason: "",
                             }));
                           }}
-                          className="block w-full text-left px-4 py-2 text-red-400 hover:bg-[#3b1f1f] rounded-md"
+                          className="block w-full text-left px-4 py-2 text-destructive hover:bg-destructive/10 rounded-md"
                         >
                           Kick {membership.username}
                         </button>
@@ -471,12 +471,12 @@ export default function ServerMembers({
                               reason: "Suspicious or spam account",
                             }));
                           }}
-                          className="block w-full text-left px-4 py-2 text-red-500 hover:bg-[#3b1f1f] rounded-md"
+                          className="block w-full text-left px-4 py-2 text-destructive hover:bg-destructive/10 rounded-md"
                         >
                           Ban {membership.username}
                         </button>
 
-                        <div className="border-t border-black/10 my-1" />
+                        <div className="border-t border-border my-1" />
 
                         <button
                           onClick={() => {
@@ -490,7 +490,7 @@ export default function ServerMembers({
                             }));
                             setOwnershipAgree(false);
                           }}
-                          className="block w-full text-left px-4 py-2 text-gray-200 hover:bg-[#36373a] rounded-md"
+                          className="block w-full text-left px-4 py-2 hover:bg-accent rounded-md"
                         >
                           Transfer Ownership
                         </button>
@@ -498,7 +498,7 @@ export default function ServerMembers({
                     )}
                   </div>
 
-                  <div className="border-t border-black/20">
+                  <div className="border-t border-border">
                     <button
                       onClick={async (
                         event: React.MouseEvent<HTMLButtonElement>
@@ -512,7 +512,7 @@ export default function ServerMembers({
                           button.textContent = oldText;
                         }, 1000);
                       }}
-                      className="flex items-center justify-between w-full px-4 py-3 text-gray-300 hover:bg-[#36373a]"
+                      className="flex items-center justify-between w-full px-4 py-3 text-muted-foreground hover:bg-accent"
                     >
                       Copy User ID
                       <FontAwesomeIcon icon={faCopy} />
@@ -545,16 +545,16 @@ export default function ServerMembers({
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm"
               />
 
-              <div className="relative w-full max-w-md bg-[#2f3136] rounded-lg shadow-lg ring-1 ring-black/40 z-[300] overflow-hidden">
-                <div className="px-6 py-4 border-b border-black/20">
-                  <h2 className="text-lg font-semibold text-white">
+              <div className="relative w-full max-w-md bg-background text-foreground rounded-lg border border-border shadow-xl z-[300] overflow-hidden">
+                <div className="px-6 py-4 border-b border-border">
+                  <h2 className="text-lg font-semibold">
                     Ban @{membership.username}?
                   </h2>
                 </div>
 
                 <div className="px-6 py-4">
                   <fieldset className="flex flex-col gap-2">
-                    <legend className="text-sm font-medium text-[var(--muted-foreground)] mb-2">
+                    <legend className="text-sm font-medium text-muted-foreground mb-2">
                       Reason for Ban
                     </legend>
 
@@ -567,7 +567,7 @@ export default function ServerMembers({
                           banForm.reason === "Suspicious or spam account"
                         }
                         onChange={handleBanFormChange}
-                        className="accent-[var(--accent)]"
+                        className="accent-[hsl(var(--primary))]"
                       />
                       <span className="text-sm">
                         Suspicious or spam account
@@ -583,7 +583,7 @@ export default function ServerMembers({
                           banForm.reason === "Compromised or hacked account"
                         }
                         onChange={handleBanFormChange}
-                        className="accent-[var(--accent)]"
+                        className="accent-[hsl(var(--primary))]"
                       />
                       <span className="text-sm">
                         Compromised or hacked account
@@ -597,7 +597,7 @@ export default function ServerMembers({
                         value="Breaking server rules"
                         checked={banForm.reason === "Breaking server rules"}
                         onChange={handleBanFormChange}
-                        className="accent-[var(--accent)]"
+                        className="accent-[hsl(var(--primary))]"
                       />
                       <span className="text-sm">Breaking server rules</span>
                     </label>
@@ -609,7 +609,7 @@ export default function ServerMembers({
                         value="Other: "
                         checked={banForm.reason.startsWith("Other")}
                         onChange={handleBanFormChange}
-                        className="accent-[var(--accent)] mt-1"
+                        className="accent-[hsl(var(--primary))] mt-1"
                       />
                       <div className="flex-1">
                         <span className="text-sm">Other</span>
@@ -621,7 +621,7 @@ export default function ServerMembers({
                             placeholder="Type your reason…"
                             value={banForm.reason}
                             onChange={handleBanFormChange}
-                            className="mt-2 w-full rounded-md bg-[#202225] border border-black/30 text-sm text-white placeholder-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="mt-2 w-full rounded-md bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                           />
                         )}
                       </div>
@@ -629,7 +629,7 @@ export default function ServerMembers({
                   </fieldset>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-black/5">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-muted/10">
                   <button
                     onClick={() => {
                       setBanModal((prev) => ({
@@ -642,14 +642,14 @@ export default function ServerMembers({
                         reason: "",
                       }));
                     }}
-                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-[#3a3c40] text-white hover:bg-[#4b4d51]"
+                    className="rounded-md px-3 py-1.5 text-sm font-medium border border-border hover:bg-accent"
                   >
                     Cancel
                   </button>
 
                   <button
                     onClick={handleBanUser}
-                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-destructive text-destructive-foreground hover:opacity-90 disabled:opacity-60"
                   >
                     Ban
                   </button>
@@ -680,12 +680,12 @@ export default function ServerMembers({
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm"
               />
 
-              <div className="relative w-full max-w-md bg-[#2f3136] rounded-lg shadow-lg ring-1 ring-black/40 z-[300] overflow-hidden">
-                <div className="px-6 py-4 border-b border-black/20">
-                  <h2 className="text-lg font-semibold text-white">
+              <div className="relative w-full max-w-md bg-background text-foreground rounded-lg border border-border shadow-xl z-[300] overflow-hidden">
+                <div className="px-6 py-4 border-b border-border">
+                  <h2 className="text-lg font-semibold">
                     Kick @{membership.username} from Server
                   </h2>
-                  <p className="mt-1 text-sm text-gray-300">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Are you sure you want to kick @{membership.username} from
                     the server? They will be able to rejoin again with a new
                     invite.
@@ -695,7 +695,7 @@ export default function ServerMembers({
                 <div className="px-6 py-4">
                   <label
                     htmlFor={`reason-${membership._id}`}
-                    className="block text-xs font-medium text-gray-300 mb-2"
+                    className="block text-xs font-medium text-muted-foreground mb-2"
                   >
                     Reason for Kick
                   </label>
@@ -706,11 +706,11 @@ export default function ServerMembers({
                     onChange={handleKickFormChange}
                     autoFocus
                     placeholder="Add a reason (required)"
-                    className="w-full rounded-md bg-[#202225] border border-black/30 text-sm text-white placeholder-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full rounded-md bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                   />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-black/5">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-muted/10">
                   <button
                     onClick={() => {
                       setKickModal((prev) => ({
@@ -723,14 +723,14 @@ export default function ServerMembers({
                         reason: "",
                       }));
                     }}
-                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-[#3a3c40] text-white hover:bg-[#4b4d51]"
+                    className="rounded-md px-3 py-1.5 text-sm font-medium border border-border hover:bg-accent"
                   >
                     Cancel
                   </button>
 
                   <button
                     onClick={handleKickUser}
-                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-destructive text-destructive-foreground hover:opacity-90 disabled:opacity-60"
                   >
                     Kick
                   </button>
@@ -757,12 +757,10 @@ export default function ServerMembers({
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm"
               />
 
-              <div className="relative w-full max-w-md bg-[#2f3136] rounded-lg shadow-lg ring-1 ring-black/40 z-[300] overflow-hidden">
-                <div className="px-6 py-4 border-b border-black/20">
-                  <h2 className="text-lg font-semibold text-white">
-                    Transfer Ownership
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-300">
+              <div className="relative w-full max-w-md bg-background text-foreground rounded-lg border border-border shadow-xl z-[300] overflow-hidden">
+                <div className="px-6 py-4 border-b border-border">
+                  <h2 className="text-lg font-semibold">Transfer Ownership</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     This will transfer ownership of {server.name} server to @
                     {membership.username}. This cannot be undone!
                   </p>
@@ -771,7 +769,7 @@ export default function ServerMembers({
                 <div className="px-6 py-4">
                   <label
                     htmlFor="agree"
-                    className="flex items-start gap-3 text-sm text-gray-300"
+                    className="flex items-start gap-3 text-sm text-muted-foreground"
                   >
                     <input
                       id="agree"
@@ -788,7 +786,7 @@ export default function ServerMembers({
                   </label>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-black/5">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-muted/10">
                   <button
                     onClick={() => {
                       setOwnershipModal((prev) => ({
@@ -797,7 +795,7 @@ export default function ServerMembers({
                       }));
                       setOwnershipAgree(false);
                     }}
-                    className="rounded-md px-3 py-1.5 text-sm font-medium bg-[#3a3c40] text-white hover:bg-[#4b4d51]"
+                    className="rounded-md px-3 py-1.5 text-sm font-medium border border-border hover:bg-accent"
                   >
                     Cancel
                   </button>
@@ -805,8 +803,8 @@ export default function ServerMembers({
                   <button
                     onClick={() => handleTransferOwnership(membership._id)}
                     disabled={!ownershipAgree}
-                    className={`rounded-md px-3 py-1.5 text-sm font-medium bg-red-600 text-white ${
-                      !ownershipAgree && "cursor-not-allowed"
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium bg-destructive text-destructive-foreground ${
+                      !ownershipAgree && "cursor-not-allowed opacity-60"
                     }`}
                   >
                     Transfer Ownership

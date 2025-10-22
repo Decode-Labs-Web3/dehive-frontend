@@ -56,7 +56,7 @@ export default function GuildBar({
   };
 
   const activeId = getActiveId();
-  console.log(activeId);
+  // console.log("This is activeId from Guide bar",activeId);
 
   const handleGetServer = useCallback(async () => {
     setLoading(true);

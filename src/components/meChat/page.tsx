@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import AutoLink from "@/components/common/AutoLink";
 import { useDirectMessage } from "@/hooks/useDirectMessage";

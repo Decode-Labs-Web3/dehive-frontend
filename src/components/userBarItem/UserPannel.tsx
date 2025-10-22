@@ -201,8 +201,8 @@ export default function UserPannel({
 
   const content = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      <div className="relative z-[101] flex h-full w-full border border-[var(--border-subtle)] bg-[var(--surface-primary)] text-[var(--foreground)]">
-        <aside className="flex w-64 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
+      <div className="relative z-[101] flex h-full w-full border border-border bg-background text-foreground">
+        <aside className="flex w-64 flex-col border-r border-border bg-secondary">
           <div className="px-6 pb-5 pt-7">
             <div className="mt-4 flex items-center gap-3">
               <div className="min-w-0">
@@ -227,11 +227,11 @@ export default function UserPannel({
               Profiles
             </button>
 
-            <div className="border-1 my-4 border-[var(--foreground)] w-full" />
+            <div className="my-4 w-full border border-foreground" />
 
             <button
               onClick={handleLogout}
-              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-[var(--danger)] transition hover:bg-[var(--danger-soft)]"
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-destructive transition hover:bg-destructive/10"
             >
               Logout
               <FontAwesomeIcon icon={faRightFromBracket} />
@@ -239,18 +239,18 @@ export default function UserPannel({
           </nav>
         </aside>
 
-        <section className="relative flex flex-1 flex-col bg-[var(--surface-primary)]">
-          <header className="flex items-center justify-between border-b border-[var(--border-subtle)] px-10 py-7">
+        <section className="relative flex flex-1 flex-col bg-background">
+          <header className="flex items-center justify-between border-b border-border px-10 py-7">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]"></p>
-              <h2 className="text-2xl font-semibold text-[var(--foreground)]"></h2>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"></p>
+              <h2 className="text-2xl font-semibold text-foreground"></h2>
             </div>
 
             <button
               onClick={() => setUserPannel(false)}
-              className="flex flex-col items-center gap-1 text-xs uppercase tracking-wide transition text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              className="flex flex-col items-center gap-1 text-xs uppercase tracking-wide transition text-muted-foreground hover:text-foreground"
             >
-              <span className="rounded-full border border-[var(--border-subtle)] p-2">
+              <span className="rounded-full border border-border p-2">
                 <FontAwesomeIcon icon={faX} />
               </span>
               Esc
@@ -260,11 +260,11 @@ export default function UserPannel({
           <div className="flex-1 overflow-y-auto px-10 py-8">
             {userPannelSetting.account && (
               <div className="max-w-2xl space-y-5">
-                <h2 className="text-xl font-semibold text-[var(--foreground)] mb-5">
+                <h2 className="text-xl font-semibold text-foreground mb-5">
                   My Account
                 </h2>
 
-                <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
+                <div className="bg-secondary rounded-lg p-4">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="relative">
                       <Avatar>
@@ -275,13 +275,13 @@ export default function UserPannel({
                           {userData?.display_name} Avatar
                         </AvatarFallback>
                       </Avatar>
-                      <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-4 border-[var(--surface-secondary)]"></div>
+                      <div className="absolute bottom-0 right-0 w-6 h-6 bg-[hsl(var(--success))] rounded-full border-4 border-secondary"></div>
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-[var(--foreground)]">
+                      <h3 className="text-xl font-bold text-foreground">
                         {userData.display_name}
                       </h3>
-                      <p className="text-sm text-[var(--muted-foreground)]">
+                      <p className="text-sm text-muted-foreground">
                         @{userData.username}
                       </p>
                     </div>
@@ -289,20 +289,20 @@ export default function UserPannel({
                       onClick={() =>
                         setUserPannelSetting({ ...allFalse, profile: true })
                       }
-                      className="px-4 py-2 bg-[#5865F2] text-white text-sm font-medium rounded hover:bg-[#4752C4] transition"
+                      className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded hover:opacity-90 transition"
                     >
                       Edit User Profile
                     </button>
                   </div>
                 </div>
 
-                <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
+                <div className="bg-secondary rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex-1">
-                      <label className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-2">
+                      <label className="block text-xs font-semibold uppercase text-muted-foreground mb-2">
                         Display Name
                       </label>
-                      <p className="text-sm text-[var(--foreground)]">
+                      <p className="text-sm text-foreground">
                         {userData.display_name}
                       </p>
                     </div>
@@ -310,20 +310,20 @@ export default function UserPannel({
                       onClick={() =>
                         setUserPannelSetting({ ...allFalse, profile: true })
                       }
-                      className="px-3 py-1.5 text-sm text-[var(--foreground)] bg-[var(--surface-tertiary)] rounded hover:bg-[var(--surface-hover)] transition"
+                      className="px-3 py-1.5 text-sm text-foreground bg-muted rounded hover:bg-accent transition"
                     >
                       Edit
                     </button>
                   </div>
                 </div>
 
-                <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
+                <div className="bg-secondary rounded-lg p-4">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <label className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-2">
+                      <label className="block text-xs font-semibold uppercase text-muted-foreground mb-2">
                         Bio
                       </label>
-                      <p className="text-sm text-[var(--foreground)]">
+                      <p className="text-sm text-foreground">
                         {userData.bio || "No bio yet"}
                       </p>
                     </div>
@@ -331,47 +331,45 @@ export default function UserPannel({
                       onClick={() =>
                         setUserPannelSetting({ ...allFalse, profile: true })
                       }
-                      className="px-3 py-1.5 text-sm text-[var(--foreground)] bg-[var(--surface-tertiary)] rounded hover:bg-[var(--surface-hover)] transition"
+                      className="px-3 py-1.5 text-sm text-foreground bg-muted rounded hover:bg-accent transition"
                     >
                       Edit
                     </button>
                   </div>
                 </div>
 
-                <div className="bg-[var(--surface-secondary)] rounded-lg p-4">
-                  <h3 className="text-sm font-semibold uppercase text-[var(--muted-foreground)] mb-3">
+                <div className="bg-secondary rounded-lg p-4">
+                  <h3 className="text-sm font-semibold uppercase text-muted-foreground mb-3">
                     Stats
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs text-[var(--muted-foreground)] mb-1">
+                      <p className="text-xs text-muted-foreground mb-1">
                         Servers
                       </p>
-                      <p className="text-lg font-semibold text-[var(--foreground)]">
+                      <p className="text-lg font-semibold text-foreground">
                         {userData.server_count}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-[var(--muted-foreground)] mb-1">
-                        Role
-                      </p>
-                      <p className="text-lg font-semibold text-[var(--foreground)]">
+                      <p className="text-xs text-muted-foreground mb-1">Role</p>
+                      <p className="text-lg font-semibold text-foreground">
                         {userData.dehive_role}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-[var(--muted-foreground)] mb-1">
+                      <p className="text-xs text-muted-foreground mb-1">
                         Following
                       </p>
-                      <p className="text-lg font-semibold text-[var(--foreground)]">
+                      <p className="text-lg font-semibold text-foreground">
                         {userData.following_number}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-[var(--muted-foreground)] mb-1">
+                      <p className="text-xs text-muted-foreground mb-1">
                         Followers
                       </p>
-                      <p className="text-lg font-semibold text-[var(--foreground)]">
+                      <p className="text-lg font-semibold text-foreground">
                         {userData.followers_number}
                       </p>
                     </div>
@@ -382,24 +380,24 @@ export default function UserPannel({
 
             {userPannelSetting.profile && (
               <div className="max-w-2xl space-y-5">
-                <h2 className="text-xl font-semibold text-[var(--foreground)] mb-5">
+                <h2 className="text-xl font-semibold text-foreground mb-5">
                   My Profile
                 </h2>
 
-                <div className="bg-[var(--surface-secondary)] rounded-lg p-4 mb-4">
-                  <label className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-3">
+                <div className="bg-secondary rounded-lg p-4 mb-4">
+                  <label className="block text-xs font-semibold uppercase text-muted-foreground mb-3">
                     Avatar
                   </label>
                   <div
                     role="button"
                     tabIndex={0}
                     onClick={openFilePicker}
-                    className="w-32 h-32 rounded-xl border-2 border-[color:var(--border)] overflow-hidden relative cursor-pointer group flex items-center justify-center"
+                    className="w-32 h-32 rounded-xl border-2 border-border overflow-hidden relative cursor-pointer group flex items-center justify-center"
                     aria-label="Change avatar"
                     title="Click to change avatar"
                   >
                     {loadingAvatar.loading ? (
-                      <div className="text-sm text-[color:var(--muted-foreground)]">
+                      <div className="text-sm text-muted-foreground">
                         Loading...
                       </div>
                     ) : (
@@ -429,10 +427,10 @@ export default function UserPannel({
                   </div>
                 </div>
 
-                <div className="bg-[var(--surface-secondary)] rounded-lg p-4 mb-4">
+                <div className="bg-secondary rounded-lg p-4 mb-4">
                   <label
                     htmlFor="display_name"
-                    className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-2"
+                    className="block text-xs font-semibold uppercase text-muted-foreground mb-2"
                   >
                     Display Name
                   </label>
@@ -442,14 +440,14 @@ export default function UserPannel({
                     value={updateUserInfo.display_name}
                     onChange={handleUserInfoChange}
                     placeholder="Enter display name"
-                    className="w-full px-3 py-2 border rounded-lg border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)]"
+                    className="w-full px-3 py-2 border rounded-lg border-border bg-muted text-foreground"
                   />
                 </div>
 
-                <div className="bg-[var(--surface-secondary)] rounded-lg p-4 mb-4">
+                <div className="bg-secondary rounded-lg p-4 mb-4">
                   <label
                     htmlFor="bio"
-                    className="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-2"
+                    className="block text-xs font-semibold uppercase text-muted-foreground mb-2"
                   >
                     Bio
                   </label>
@@ -460,7 +458,7 @@ export default function UserPannel({
                     onChange={handleUserInfoChange}
                     placeholder="Tell us about yourself"
                     rows={3}
-                    className="w-full px-3 py-2 border rounded-lg border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)] resize-none"
+                    className="w-full px-3 py-2 border rounded-lg border-border bg-muted text-foreground resize-none"
                   />
                 </div>
               </div>
@@ -468,13 +466,13 @@ export default function UserPannel({
           </div>
 
           {isProfileChange && (
-            <div className="pointer-events-auto absolute inset-x-8 bottom-6 rounded-2xl border border-[var(--success-border)] bg-[var(--success-soft)] px-6 py-4 text-sm text-[var(--foreground)]">
+            <div className="pointer-events-auto absolute inset-x-8 bottom-6 rounded-2xl border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 px-6 py-4 text-sm text-foreground">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-[var(--foreground)]">
+                  <p className="text-sm font-semibold text-foreground">
                     Careful — you have unsaved changes!
                   </p>
-                  <p className="text-xs text-[var(--muted-foreground)]">
+                  <p className="text-xs text-muted-foreground">
                     Save or reset your edits before closing this panel.
                   </p>
                 </div>
@@ -487,13 +485,13 @@ export default function UserPannel({
                         bio: userData?.bio,
                       });
                     }}
-                    className="rounded-lg border border-[var(--border-subtle)] px-4 py-2 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
+                    className="rounded-lg border border-border px-4 py-2 text-xs font-medium text-foreground transition hover:bg-accent"
                   >
                     Reset
                   </button>
                   <button
                     onClick={handleUpdateProfile}
-                    className="rounded-lg bg-[var(--success)] px-4 py-2 text-xs font-semibold text-[var(--accent-foreground)] transition hover:opacity-90"
+                    className="rounded-lg bg-[hsl(var(--success))] px-4 py-2 text-xs font-semibold text-[hsl(var(--success-foreground))] transition hover:opacity-90"
                   >
                     Save Changes
                   </button>

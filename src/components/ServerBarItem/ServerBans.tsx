@@ -171,7 +171,7 @@ export default function ServerBans({ server }: ServerBansProps) {
 
   if (loading) {
     return (
-      <div className="rounded-md border border-neutral-800/60 bg-neutral-900/60 p-6 text-center text-sm text-neutral-300">
+      <div className="rounded-md border border-border bg-muted/50 p-6 text-center text-sm text-muted-foreground">
         Loading...
       </div>
     );
@@ -180,14 +180,14 @@ export default function ServerBans({ server }: ServerBansProps) {
   return (
     <>
       {membersBans.length === 0 && (
-        <h1 className="rounded-lg border border-neutral-800/60 bg-neutral-900/60 px-4 py-6 text-center text-sm text-neutral-300">
+        <h1 className="rounded-lg border border-border bg-muted/50 px-4 py-6 text-center text-sm text-muted-foreground">
           No member ban in this server.
         </h1>
       )}
       {membersBans.map((member) => (
         <div
           key={member.user_dehive_id}
-          className="relative grid grid-cols-5 items-center gap-4 rounded-xl border px-4 py-4 shadow-sm"
+          className="relative grid grid-cols-5 items-center gap-4 rounded-xl border border-border bg-background px-4 py-4 shadow-sm"
         >
           <Avatar>
             <AvatarImage
@@ -199,15 +199,15 @@ export default function ServerBans({ server }: ServerBansProps) {
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col gap-1 text-left">
-            <h1 className="text-sm font-semibold text-white">
+            <h1 className="text-sm font-semibold text-foreground">
               {member.user_profile.display_name}
             </h1>
-            <h1 className="text-xs text-neutral-400">
+            <h1 className="text-xs text-muted-foreground">
               @{member.user_profile.username}
             </h1>
           </div>
-          <h1 className="text-sm text-neutral-300">{member.reason}</h1>
-          <h1 className="text-xs text-neutral-500">
+          <h1 className="text-sm text-muted-foreground">{member.reason}</h1>
+          <h1 className="text-xs text-muted-foreground">
             {new Date(member.createdAt).toLocaleString()}
           </h1>
           <button
@@ -218,7 +218,7 @@ export default function ServerBans({ server }: ServerBansProps) {
                 [member.user_dehive_id]: true,
               }));
             }}
-            className="relative flex h-10 w-10 items-center justify-center justify-self-end rounded-full border border-neutral-800/70 text-neutral-400 transition hover:border-neutral-700 hover:text-white focus-visible:ring-2 focus-visible:ring-neutral-600 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
+            className="relative flex h-10 w-10 items-center justify-center justify-self-end rounded-full border border-border text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <FontAwesomeIcon icon={faEllipsisVertical} />
           </button>
@@ -246,7 +246,7 @@ export default function ServerBans({ server }: ServerBansProps) {
                 className="fixed inset-0 z-[150] bg-black/50 backdrop-blur-sm"
               />
 
-              <div className="absolute right-0 top-full z-[200] mt-3 flex w-48 flex-col gap-1 rounded-lg border border-neutral-800 bg-neutral-900/95 p-2 text-sm shadow-2xl">
+              <div className="absolute right-0 top-full z-[200] mt-3 flex w-48 flex-col gap-1 rounded-lg border border-border bg-background p-2 text-sm text-foreground shadow-2xl">
                 <button
                   type="button"
                   onClick={() => {
@@ -255,13 +255,13 @@ export default function ServerBans({ server }: ServerBansProps) {
                       [member.user_dehive_id]: true,
                     }));
                   }}
-                  className="rounded-md px-3 py-2 text-left text-neutral-200 transition hover:bg-neutral-800"
+                  className="rounded-md px-3 py-2 text-left transition hover:bg-accent"
                 >
-                  Proflle
+                  Profile
                 </button>
                 <Link
                   href={`/app/channels/me/${member.user_dehive_id}`}
-                  className="rounded-md px-3 py-2 text-neutral-200 transition hover:bg-neutral-800"
+                  className="rounded-md px-3 py-2 transition hover:bg-accent"
                 >
                   Message
                 </Link>
@@ -282,7 +282,7 @@ export default function ServerBans({ server }: ServerBansProps) {
                       reason: "",
                     }));
                   }}
-                  className="rounded-md px-3 py-2 text-left text-neutral-200 transition hover:bg-neutral-800"
+                  className="rounded-md px-3 py-2 text-left transition hover:bg-accent"
                 >
                   Unban
                 </button>
@@ -301,7 +301,7 @@ export default function ServerBans({ server }: ServerBansProps) {
                       button.textContent = oldText;
                     }, 1000);
                   }}
-                  className="flex flex-row items-center justify-between rounded-md px-3 py-2 text-neutral-200 transition hover:bg-neutral-800"
+                  className="flex flex-row items-center justify-between rounded-md px-3 py-2 transition hover:bg-accent"
                 >
                   Copy User ID
                   <FontAwesomeIcon icon={faCopy} />
@@ -344,13 +344,13 @@ export default function ServerBans({ server }: ServerBansProps) {
                 className="fixed inset-0 z-[250] bg-black/80 "
               />
 
-              <div className="relative z-[301] w-full max-w-md rounded-2xl bg-black p-6 shadow-2xl">
-                <h1 className="text-lg font-semibold text-white">
+              <div className="relative z-[301] w-full max-w-md rounded-2xl border border-border bg-background p-6 text-foreground shadow-2xl">
+                <h1 className="text-lg font-semibold text-foreground">
                   Unban @{member.user_profile.username}
                 </h1>
                 <label
                   htmlFor="reason"
-                  className="text-sm font-medium text-neutral-300"
+                  className="text-sm font-medium text-muted-foreground"
                 >
                   Unban Reason
                 </label>
@@ -360,9 +360,9 @@ export default function ServerBans({ server }: ServerBansProps) {
                   type="text"
                   value={unbanForm.reason}
                   onChange={handleUnbanFormChange}
-                  className="w-full rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 focus:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-600"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-                <div className="flex flex-row">
+                <div className="mt-4 flex flex-row gap-2">
                   <button
                     type="button"
                     onClick={() => {
@@ -376,14 +376,14 @@ export default function ServerBans({ server }: ServerBansProps) {
                         reason: "",
                       }));
                     }}
-                    className="w-full rounded-lg border border-neutral-800 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:bg-neutral-800"
+                    className="w-full rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent"
                   >
                     Cancel
                   </button>
                   <button
                     disabled={unbanForm.reason.trim() === ""}
                     onClick={handleUnbanUser}
-                    className="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Unban
                   </button>

@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useCallback, useEffect } from "react";
-import { faCopy } from "@fortawesome/free-solid-svg-icons";
+import { getMeChatSocketIO } from "@/library/socketioMeChat";
 import UserInfoModal from "@/components/meBarItem/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { faCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
+import { ConversationUpdate } from "@/interfaces/websocketMeChat.interfaces";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -87,6 +89,41 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
     fetchUserData();
   }, [fetchUserData, refreshVersion]);
 
+  useEffect(() => {
+    const socket = getMeChatSocketIO();
+    const onConversationUpdate = (p: ConversationUpdate) => {
+      console.log("[ws me chat conversationUpdate from me Bar]", p);
+      const data = p.data;
+      setUserData((prev: UserDataProps[]) => {
+        const listIndex = prev.findIndex(
+          (u) => u.conversationid === data.conversationId
+        );
+        if (listIndex === -1) {
+          fetchUserData();
+          return prev;
+        }
+        const newList = [...prev];
+        newList[listIndex] = {
+          ...newList[listIndex],
+          isActive: data.isActive,
+          isCall: data.isCall,
+          lastMessageAt: data.lastMessageAt,
+        };
+
+        newList.sort(
+          (a, b) =>
+            new Date(b.lastMessageAt).getTime() -
+            new Date(a.lastMessageAt).getTime()
+        );
+        return newList;
+      });
+    };
+    socket.on("conversation_update", onConversationUpdate);
+    return () => {
+      socket.off("conversation_update", onConversationUpdate);
+    };
+  });
+
   return (
     <div className="w-full h-full bg-background border-r border-border text-foreground overflow-y-auto">
       <Link
@@ -160,7 +197,15 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
 
                       <div className="min-w-0 leading-tight">
                         <h1 className="font-medium text-[15px] truncate">
-                          {user.displayname} {user.isActive && "*"}
+                          {user.displayname}{" "}
+                          <FontAwesomeIcon
+                            icon={faCircle}
+                            className={`h-2 w-2 ${
+                              user.isActive
+                                ? "text-emerald-500"
+                                : "text-zinc-400"
+                            }`}
+                          />
                         </h1>
                         <p className="text-xs text-muted-foreground truncate">
                           @{user.username}

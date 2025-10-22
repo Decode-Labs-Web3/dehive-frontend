@@ -6,6 +6,7 @@ import {
   IdentityConfirmed,
   Message,
   WsErrorPayload,
+  ConversationUpdate,
 } from "@/interfaces/websocketMeChat.interfaces";
 
 interface SocketMeChatProviderProps {
@@ -74,6 +75,10 @@ export default function SocketMeChatProvider({
       console.log("[ws me chat messageDeleted]", message);
     };
 
+    const onConversationUpdate = (p: ConversationUpdate) => {
+      console.log("[ws me chat conversationUpdate]", p);
+    };
+
     socket.on("connect", onConnect);
 
     socket.on("connect_error", onConnectError);
@@ -89,6 +94,7 @@ export default function SocketMeChatProvider({
     socket.on("newMessage", onNewMessage);
     socket.on("messageEdited", onMessageEdited);
     socket.on("messageDeleted", onMessageDeleted);
+    socket.on("conversation_update", onConversationUpdate);
 
     if (!socket.connected) socket.connect();
 

@@ -169,11 +169,11 @@ export default function ServerPannel({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      <div className="relative z-[101] flex h-full w-full border border-[var(--border-subtle)] bg-[var(--surface-primary)] text-[var(--foreground)]">
-        <aside className="flex w-64 flex-col border-r border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
+      <div className="relative z-[101] flex h-full w-full border border-border bg-background text-foreground">
+        <aside className="flex w-64 flex-col border-r border-border bg-secondary">
           <div className="px-6 pb-5 pt-7">
             <div className="mt-4 flex items-center gap-3">
-              <p className="truncate text-sm font-semibold text-[var(--foreground)]">
+              <p className="truncate text-sm font-semibold text-foreground">
                 {editServerForm.name}
               </p>
             </div>
@@ -186,8 +186,8 @@ export default function ServerPannel({
               }
               className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                 true
-                  ? "bg-[var(--surface-active)] text-[var(--foreground)]"
-                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface-hover)]"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent"
               }`}
             >
               Server Profile
@@ -197,8 +197,8 @@ export default function ServerPannel({
               onClick={() => setServerPannelSetting({ ...allFalse, tag: true })}
               className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                 true
-                  ? "bg-[var(--surface-active)] text-[var(--foreground)]"
-                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface-hover)]"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent"
               }`}
             >
               Server Tag
@@ -210,8 +210,8 @@ export default function ServerPannel({
               }
               className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                 true
-                  ? "bg-[var(--surface-active)] text-[var(--foreground)]"
-                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface-hover)]"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent"
               }`}
             >
               Members
@@ -223,8 +223,8 @@ export default function ServerPannel({
               }
               className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                 true
-                  ? "bg-[var(--surface-active)] text-[var(--foreground)]"
-                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface-hover)]"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent"
               }`}
             >
               Invites
@@ -236,8 +236,8 @@ export default function ServerPannel({
               }}
               className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                 true
-                  ? "bg-[var(--surface-active)] text-[var(--foreground)]"
-                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface-hover)]"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent"
               }`}
             >
               Role
@@ -249,20 +249,20 @@ export default function ServerPannel({
               }}
               className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                 true
-                  ? "bg-[var(--surface-active)] text-[var(--foreground)]"
-                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface-hover)]"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent"
               }`}
             >
               Bans
             </button>
 
-            <div className="border-1 my-4 border-[var(--foreground)]" />
+            <div className="my-4 border border-foreground" />
 
             <button
               onClick={() => {
                 setServerPannelSetting({ ...allFalse, delete: true });
               }}
-              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-[var(--danger)] transition hover:bg-[var(--danger-soft)]"
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-destructive transition hover:bg-destructive/10"
             >
               Delete Server
               <FontAwesomeIcon icon={faTrashCan} />
@@ -270,13 +270,13 @@ export default function ServerPannel({
           </nav>
         </aside>
 
-        <section className="relative flex flex-1 flex-col bg-[var(--surface-primary)]">
-          <header className="flex items-center justify-between border-b border-[var(--border-subtle)] px-10 py-7">
+        <section className="relative flex flex-1 flex-col bg-background">
+          <header className="flex items-center justify-between border-b border-border px-10 py-7">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {true ? "Overview" : "Permissions"}
               </p>
-              <h2 className="text-2xl font-semibold text-[var(--foreground)]">
+              <h2 className="text-2xl font-semibold text-foreground">
                 {true
                   ? "Customize your channel"
                   : "Control who can access these channels"}
@@ -292,11 +292,11 @@ export default function ServerPannel({
               }}
               className={`flex flex-col items-center gap-1 text-xs uppercase tracking-wide transition ${
                 serverInfoChange
-                  ? "cursor-not-allowed text-[var(--muted-foreground)] opacity-60"
-                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                  ? "cursor-not-allowed text-muted-foreground opacity-60"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <span className="rounded-full border border-[var(--border-subtle)] p-2">
+              <span className="rounded-full border border-border p-2">
                 <FontAwesomeIcon icon={faX} />
               </span>
               Esc
@@ -326,7 +326,7 @@ export default function ServerPannel({
                   <div className="space-y-2">
                     <label
                       htmlFor="name"
-                      className="block text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]"
+                      className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                     >
                       Server Name
                     </label>
@@ -337,7 +337,7 @@ export default function ServerPannel({
                         value={editServerForm.name}
                         onChange={handleEditServerChange}
                         autoFocus
-                        className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--background)] px-4 py-3 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]"
+                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     </div>
                   </div>
@@ -346,7 +346,7 @@ export default function ServerPannel({
                   <div className="space-y-2">
                     <label
                       htmlFor="description"
-                      className="block text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]"
+                      className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                     >
                       Server Description
                     </label>
@@ -357,7 +357,7 @@ export default function ServerPannel({
                         value={editServerForm.description}
                         onChange={handleEditServerChange}
                         autoFocus
-                        className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--background)] px-4 py-3 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]"
+                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     </div>
                   </div>
@@ -367,13 +367,13 @@ export default function ServerPannel({
           </div>
 
           {serverInfoChange && (
-            <div className="pointer-events-auto absolute inset-x-8 bottom-6 rounded-2xl border border-[var(--success-border)] bg-[var(--success-soft)] px-6 py-4 text-sm text-[var(--foreground)]">
+            <div className="pointer-events-auto absolute inset-x-8 bottom-6 rounded-2xl border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 px-6 py-4 text-sm text-foreground">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-[var(--foreground)]">
+                  <p className="text-sm font-semibold text-foreground">
                     Careful — you have unsaved changes!
                   </p>
-                  <p className="text-xs text-[var(--muted-foreground)]">
+                  <p className="text-xs text-muted-foreground">
                     Save or reset your edits before closing this panel.
                   </p>
                 </div>
@@ -385,13 +385,13 @@ export default function ServerPannel({
                         description: server.description,
                       });
                     }}
-                    className="rounded-lg border border-[var(--border-subtle)] px-4 py-2 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--surface-hover)]"
+                    className="rounded-lg border border-border px-4 py-2 text-xs font-medium text-foreground transition hover:bg-accent"
                   >
                     Reset
                   </button>
                   <button
                     onClick={handleEditServer}
-                    className="rounded-lg bg-[var(--success)] px-4 py-2 text-xs font-semibold text-[var(--accent-foreground)] transition hover:opacity-90"
+                    className="rounded-lg bg-[hsl(var(--success))] px-4 py-2 text-xs font-semibold text-[hsl(var(--success-foreground))] transition hover:opacity-90"
                   >
                     Save Changes
                   </button>
@@ -423,9 +423,9 @@ export default function ServerPannel({
             }
             className="absolute inset-0 bg-black/50 backdrop-blur-sm z-[110]"
           />
-          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-[120]">
+          <div className="relative w-full max-w-md rounded-lg bg-background text-foreground border border-border shadow-xl p-5 z-[120]">
             <h1 className="text-base font-semibold mb-1">Delete Server</h1>
-            <p className="text-sm text-[var(--muted-foreground)] mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Please type the name of {`"${server.name}"`} to confirm.
             </p>
             <input
@@ -433,7 +433,7 @@ export default function ServerPannel({
               name="name"
               value={deleteServerForm.name}
               onChange={handleDeleteServerChange}
-              className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
+              className="w-full border border-border bg-muted text-foreground rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
 
             <div className="flex flex-row justify-end gap-2">
@@ -445,13 +445,13 @@ export default function ServerPannel({
                     profile: true,
                   }))
                 }
-                className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
+                className="border border-border text-foreground rounded px-3 py-2 hover:bg-muted"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteServer}
-                className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
+                className="bg-destructive text-destructive-foreground rounded px-4 py-2 hover:opacity-90"
               >
                 Delete
               </button>

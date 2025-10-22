@@ -298,13 +298,13 @@ export default function EditModal({
         //     setModal((prev) => ({ ...prev, leave: false }));
         //   }
         // }}
-        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-30 rounded-md bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-lg overflow-hidden"
+        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 z-30 rounded-md bg-background text-foreground border border-border shadow-lg overflow-hidden"
       >
         <button
           onClick={() => {
             setModal({ ...allFalse, invite: true });
           }}
-          className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+          className="w-full px-3 py-2 flex items-center justify-between hover:bg-accent"
         >
           Invite Friend
           <FontAwesomeIcon icon={faUserPlus} />
@@ -315,7 +315,7 @@ export default function EditModal({
             onClick={() => {
               setModal({ ...allFalse, leave: true });
             }}
-            className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+            className="w-full px-3 py-2 flex items-center justify-between text-destructive hover:bg-destructive/10"
           >
             Leave Server
             <FontAwesomeIcon icon={faRightFromBracket} />
@@ -328,7 +328,7 @@ export default function EditModal({
               onClick={() => {
                 setModal({ ...allFalse, category: true });
               }}
-              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-accent"
             >
               Create Category
               <FontAwesomeIcon icon={faFolderPlus} />
@@ -345,7 +345,7 @@ export default function EditModal({
                   category: false,
                 });
               }}
-              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-accent"
             >
               Server Setting
               <FontAwesomeIcon icon={faGear} />
@@ -355,7 +355,7 @@ export default function EditModal({
               onClick={() => {
                 setModal({ ...allFalse, edit: true });
               }}
-              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-accent"
             >
               Edit Server
               <FontAwesomeIcon icon={faPen} />
@@ -365,7 +365,7 @@ export default function EditModal({
               onClick={() => {
                 setModal({ ...allFalse, delete: true });
               }}
-              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+              className="w-full px-3 py-2 flex items-center justify-between text-destructive hover:bg-destructive/10"
             >
               Delete Server
               <FontAwesomeIcon icon={faTrash} />
@@ -384,7 +384,7 @@ export default function EditModal({
                   button.textContent = oldText;
                 }, 1000);
               }}
-              className="w-full px-3 py-2 flex items-center justify-between hover:bg-[var(--background-secondary)]"
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-accent"
             >
               Copy Server ID
               <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />
@@ -412,15 +412,15 @@ export default function EditModal({
             className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
 
-          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
+          <div className="relative w-full max-w-md rounded-lg bg-background text-foreground border border-border shadow-xl p-5 z-50">
             <h1 className="text-base font-semibold mb-1">Edit your server</h1>
-            <p className="text-sm text-[var(--muted-foreground)] mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Update your server name and description.
             </p>
 
             <label
               htmlFor="name"
-              className="text-sm text-[var(--muted-foreground)] mb-1 block"
+              className="text-sm text-muted-foreground mb-1 block"
             >
               Server name
             </label>
@@ -430,14 +430,14 @@ export default function EditModal({
               type="text"
               value={editServerForm.name}
               onChange={handleEditServerChange}
-              className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-3 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
+              className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded-md px-3 py-2 mb-3 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="Write your title"
               required
             />
 
             <label
               htmlFor="description"
-              className="text-sm text-[var(--muted-foreground)] mb-1 block"
+              className="text-sm text-muted-foreground mb-1 block"
             >
               Server description
             </label>
@@ -447,7 +447,7 @@ export default function EditModal({
               type="text"
               value={editServerForm.description}
               onChange={handleEditServerChange}
-              className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
+              className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="Write your description"
               required
             />
@@ -458,7 +458,7 @@ export default function EditModal({
                   setServerSettingModal(false);
                   setModal({ ...allFalse, edit: false });
                 }}
-                className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
+                className="border border-border text-foreground rounded px-3 py-2 hover:bg-accent"
               >
                 Cancel
               </button>
@@ -469,7 +469,7 @@ export default function EditModal({
                   editServerForm.name.trim() === "" ||
                   editServerForm.description.trim() === ""
                 }
-                className={`bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90 disabled:opacity-50 ${
+                className={`bg-primary text-primary-foreground rounded px-4 py-2 hover:opacity-90 disabled:opacity-50 ${
                   editServerForm.name.trim() === "" &&
                   editServerForm.description.trim() === "" &&
                   "cursor-not-allowed"
@@ -500,9 +500,9 @@ export default function EditModal({
             onClick={() => setModal({ ...allFalse, delete: false })}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
-          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
+          <div className="relative w-full max-w-md rounded-lg bg-background text-foreground border border-border shadow-xl p-5 z-50">
             <h1 className="text-base font-semibold mb-1">Delete Server</h1>
-            <p className="text-sm text-[var(--muted-foreground)] mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Please type the name of {`"${server.name}"`} to confirm.
             </p>
             <input
@@ -510,7 +510,7 @@ export default function EditModal({
               name="name"
               value={deleteServerForm.name}
               onChange={handleDeleteServerChange}
-              className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
+              className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             />
 
             <div className="flex flex-row justify-end gap-2">
@@ -522,13 +522,13 @@ export default function EditModal({
                     delete: false,
                   });
                 }}
-                className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
+                className="border border-border text-foreground rounded px-3 py-2 hover:bg-accent"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteServer}
-                className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
+                className="bg-destructive text-destructive-foreground rounded px-4 py-2 hover:opacity-90"
               >
                 Delete
               </button>
@@ -555,11 +555,11 @@ export default function EditModal({
             onClick={() => setModal((prev) => ({ ...prev, leave: false }))}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
-          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
+          <div className="relative w-full max-w-md rounded-lg bg-background text-foreground border border-border shadow-xl p-5 z-50">
             <h1 className="text-base font-semibold mb-1">
               Leave {server.name}
             </h1>
-            <p className="text-sm text-[var(--muted-foreground)] mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Are you sure you want to leave {server.name}? You {"won't"} be
               able to rejoin this server unless you are re-invited.
             </p>
@@ -569,13 +569,13 @@ export default function EditModal({
                   setServerSettingModal(false);
                   setModal({ ...allFalse, leave: false });
                 }}
-                className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
+                className="border border-border text-foreground rounded px-3 py-2 hover:bg-accent"
               >
                 Cancel
               </button>
               <button
                 onClick={handleLeaveServer}
-                className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
+                className="bg-destructive text-destructive-foreground rounded px-4 py-2 hover:opacity-90"
               >
                 Leave
               </button>
@@ -602,7 +602,7 @@ export default function EditModal({
             onClick={() => setModal({ ...allFalse, category: false })}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
-          <div className="relative w-full max-w-md rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border-color)] shadow-xl p-5 z-50">
+          <div className="relative w-full max-w-md rounded-lg bg-background text-foreground border border-border shadow-xl p-5 z-50">
             <h1 className="text-base font-semibold mb-1">Create Category</h1>
 
             <input
@@ -610,7 +610,7 @@ export default function EditModal({
               name="name"
               value={createCategoryForm.name}
               onChange={handleCreateCategoryChange}
-              className="w-full border border-[var(--border-color)] bg-[var(--background-secondary)] text-[var(--foreground)] rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
+              className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             />
 
             <div className="flex flex-row justify-end gap-2">
@@ -619,13 +619,13 @@ export default function EditModal({
                   setServerSettingModal(false);
                   setModal({ ...allFalse, category: false });
                 }}
-                className="border border-[var(--border-color)] text-[var(--foreground)] rounded px-3 py-2 hover:bg-[var(--background-secondary)]"
+                className="border border-border text-foreground rounded px-3 py-2 hover:bg-accent"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateCategory}
-                className="bg-[var(--accent)] text-[var(--accent-foreground)] rounded px-4 py-2 hover:opacity-90"
+                className="bg-primary text-primary-foreground rounded px-4 py-2 hover:opacity-90"
               >
                 Create
               </button>

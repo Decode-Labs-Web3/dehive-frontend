@@ -64,11 +64,11 @@ export default function ServerBar() {
   }
 
   return (
-    <div className="w-full h-full bg-[var(--background)] border-2 border-[var(--border-color)]">
-      <div className="relative bg-gray-500 border-[var-(--foreground)] border-2 p-2 font-bold z-20">
+    <div className="w-full h-full bg-background border border-border">
+      <div className="relative bg-secondary border border-border p-2 font-bold z-20">
         <button
           onClick={() => setServerSettingModal(true)}
-          className="flex w-full items-center justify-between text-[var-(--foreground)]"
+          className="flex w-full items-center justify-between text-foreground"
         >
           <span>{server?.name}</span>
           <FontAwesomeIcon icon={serverSettingModal ? faX : faChevronDown} />
