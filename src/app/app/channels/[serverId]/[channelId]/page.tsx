@@ -1,11 +1,33 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { getCookie } from "@/utils/cookie.utils";
+import { Textarea } from "@/components/ui/textarea";
 import AutoLink from "@/components/common/AutoLink";
+import { Card, CardContent } from "@/components/ui/card";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   useState,
   useEffect,
@@ -80,11 +102,13 @@ export default function ChannelMessagePage() {
   };
 
   const handleEditMessageKeyDown = (
-    event: React.KeyboardEvent<HTMLTextAreaElement>
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+    originMessage: string
   ) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       const content = editMessage.messageEdit.trim();
+      if (originMessage === content) return;
       const messageId = editMessage.id;
       if (content && !sending) {
         edit(messageId, content);
@@ -196,24 +220,21 @@ export default function ChannelMessagePage() {
   }, [sending, loadingMore]);
 
   const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
-  const editMessageRef = useRef<HTMLTextAreaElement | null>(null);
 
   const autoResize = (element: HTMLTextAreaElement | null) => {
     if (!element) return;
     element.style.height = "auto";
-    element.style.height = `${element.scrollHeight}px`;
+    const contentHeight = element.scrollHeight;
+    const maxHeight = Math.min(contentHeight, 200);
+    element.style.height = `${maxHeight}px`;
+    element.style.overflow = maxHeight > 200 ? "auto" : "hidden";
   };
 
   const resizeNew = useCallback(() => autoResize(newMessageRef.current), []);
-  const resizeEdit = useCallback(() => autoResize(editMessageRef.current), []);
 
   useLayoutEffect(() => {
     resizeNew();
   }, [newMessage, resizeNew]);
-
-  useLayoutEffect(() => {
-    resizeEdit();
-  }, [editMessageRef, resizeEdit]);
 
   useEffect(() => {
     const currentUserId = getCookie("userId");
@@ -285,120 +306,109 @@ export default function ChannelMessagePage() {
                     </AvatarFallback>
                   </Avatar>
 
-                  <div className="flex w-full max-w-3xl flex-col items-start gap-1">
+                  <div className="flex w-full flex-col items-start gap-1">
                     {!editMessageField[message._id] ? (
-                      <>
-                        <div className="flex items-baseline gap-2">
-                          <h2 className="text-sm font-semibold text-[var(--foreground)]">
-                            {message.sender.display_name}
-                          </h2>
-                          <span className="text-xs text-[var(--muted-foreground)]">
-                            {new Date(message.createdAt).toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm leading-6 text-left">
-                          <AutoLink text={message.content} />
-                          {message.isEdited && (
-                            <span className="ml-2 text-xs text-[var(--muted-foreground)]">
-                              (edited)
-                            </span>
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <div className="group w-full">
+                            <div className="flex items-center gap-2">
+                              <h2 className="text-sm font-semibold text-[var(--foreground)]">
+                                {message.sender.display_name}
+                              </h2>
+                              <span className="text-xs text-[var(--muted-foreground)]">
+                                {new Date(message.createdAt).toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="w-full whitespace-pre-wrap break-words rounded-2xl px-4 py-2 text-sm leading-6 text-left">
+                              <AutoLink text={message.content} />
+                              {message.isEdited && (
+                                <span className="ml-2 text-xs text-[var(--muted-foreground)]">
+                                  (edited)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </HoverCardTrigger>
+
+                        <HoverCardContent side="top" align="end">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  onClick={() => handleMessageReply(message)}
+                                  className="peer rounded px-2 py-1"
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faArrowTurnUp}
+                                    rotation={270}
+                                  />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Reply</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          {userId === message.sender.dehive_id && (
+                            <>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      className="peer rounded px-2 py-1"
+                                      onClick={() => {
+                                        setEditMessageField(
+                                          Object.fromEntries(
+                                            messages.map((messagelist) => [
+                                              messagelist._id,
+                                              messagelist._id === message._id,
+                                            ])
+                                          )
+                                        );
+                                        setEditMessage({
+                                          id: message._id,
+                                          messageEdit: message.content,
+                                        });
+                                      }}
+                                    >
+                                      <FontAwesomeIcon icon={faPen} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Edit</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      className="peer rounded px-2 py-1 text-[var(--danger)]"
+                                      onClick={() => {
+                                        setDeleteMessageModal(true);
+                                        setMessageDelete(message);
+                                      }}
+                                    >
+                                      <FontAwesomeIcon icon={faTrash} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Delete</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </>
                           )}
-                        </div>
-                        {userId !== message.sender.dehive_id && (
-                          <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
-                            <div className="relative">
-                              <button
-                                onClick={() => handleMessageReply(message)}
-                                className="peer rounded px-2 py-1"
-                              >
-                                <FontAwesomeIcon
-                                  icon={faArrowTurnUp}
-                                  rotation={270}
-                                />
-                              </button>
-                              <div className="absolute -top-10 rounded left-1/2 -translate-x-1/2 opacity-0  peer-hover:opacity-100 p-2 text-white bg-black">
-                                Reply
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {userId === message.sender.dehive_id && (
-                          <div className="absolute -top-2 right-2 hidden items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] shadow-lg transition group-hover:flex">
-                            <div className="relative">
-                              <button
-                                onClick={() => handleMessageReply(message)}
-                                className="peer rounded px-2 py-1"
-                              >
-                                <FontAwesomeIcon
-                                  icon={faArrowTurnUp}
-                                  rotation={270}
-                                />
-                              </button>
-
-                              <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 rounded bg-black p-2 text-white z-50 opacity-0 peer-hover:opacity-100">
-                                Reply
-                              </div>
-                            </div>
-
-                            <div className="relative">
-                              <button
-                                className="peer rounded px-2 py-1"
-                                onClick={() => {
-                                  setEditMessageField(
-                                    Object.fromEntries(
-                                      messages.map((messagelist) => [
-                                        messagelist._id,
-                                        messagelist._id === message._id,
-                                      ])
-                                    )
-                                  );
-                                  setEditMessage({
-                                    id: message._id,
-                                    messageEdit: message.content,
-                                  });
-                                }}
-                              >
-                                <FontAwesomeIcon icon={faPen} />
-                              </button>
-
-                              <div className="pointer-event-none absolute -top-10 left-1/2 -translate-x-1/2 rounded p-2 opacity-0 peer-hover:opacity-100 bg-black text-white z-50">
-                                Edit
-                              </div>
-                            </div>
-
-                            <div className="relative">
-                              <button
-                                className="peer rounded px-2 py-1 text-[var(--danger)]"
-                                onClick={() => {
-                                  setDeleteMessageModal(true);
-                                  setMessageDelete(message);
-                                }}
-                              >
-                                <FontAwesomeIcon icon={faTrash} />
-                              </button>
-                              <div className="pointer-event-none absolute -top-10 left-1/2 -translate-x-1/2 text-white bg-black z-50 rounded p-2 opacity-0 peer-hover:opacity-100">
-                                Delete
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </>
+                        </HoverCardContent>
+                      </HoverCard>
                     ) : (
-                      <textarea
-                        tabIndex={-1}
-                        // ref={(element: HTMLTextAreaElement) => {
-                        //   element?.focus();
-                        // }}
+                      <Textarea
                         name="editMessage"
-                        ref={editMessageRef}
                         value={editMessage.messageEdit}
                         onChange={handleEditMessageChange}
-                        onKeyDown={handleEditMessageKeyDown}
+                        onKeyDown={(event) =>
+                          handleEditMessageKeyDown(event, message.content)
+                        }
                         placeholder="Edit message"
-                        className="min-h-5 max-h-50 resize-none w-full rounded-xl border border-[var(--accent-border)] bg-[var(--surface-secondary)] px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--accent)]"
                         autoFocus
                         disabled={sending}
+                        className="min-h-5 max-h-50 resize-none"
                       />
                     )}
                   </div>
@@ -413,111 +423,82 @@ export default function ChannelMessagePage() {
         </div>
       </div>
 
-      {deleteMessageModal && messageDelete && (
-        <div
-          role="dialog"
-          className="fixed inset-0 flex items-center justify-center z-30"
-        >
-          <div
-            tabIndex={-1}
-            ref={(element: HTMLDivElement) => {
-              element?.focus();
-            }}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                setDeleteMessageModal(false);
-                setMessageDelete(null);
-              }
-            }}
-            onClick={() => {
-              setDeleteMessageModal(false);
-              setMessageDelete(null);
-            }}
-            className="fixed inset-0 bg-black/80 z-40"
-          />
-          <div
-            className="z-50 relative w-full max-w-xl rounded-2xl border border-[#1e1f22] bg-[#313338] p-6 text-white shadow-2xl"
-            aria-modal="true"
-            aria-labelledby="delete-message-title"
-          >
-            <button
-              type="button"
-              aria-label="Close"
-              className="absolute right-4 top-4 text-neutral-400 transition hover:text-neutral-200"
-              onClick={() => {
-                setDeleteMessageModal(false);
-                setMessageDelete(null);
-              }}
-            >
-              <FontAwesomeIcon icon={faX} />
-            </button>
+      <Dialog
+        open={deleteMessageModal}
+        onOpenChange={(open) => {
+          setDeleteMessageModal(open);
+          if (!open) setMessageDelete(null);
+        }}
+      >
+        <DialogContent>
+          {messageDelete ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Delete Message</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this message?
+                </DialogDescription>
+              </DialogHeader>
 
-            <h1
-              id="delete-message-title"
-              className="text-2xl font-bold text-white"
-            >
-              Delete Message
-            </h1>
-            <p className="mt-1 text-sm text-neutral-300">
-              Are you sure you want to delete this message?
-            </p>
-
-            <div className="mt-4 rounded-xl bg-[#2b2d31] px-4 py-3 shadow-inner">
-              <div className="flex items-start gap-3">
-                <Avatar>
-                  <AvatarImage
-                    src={`https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`}
-                  />
-                  <AvatarFallback>
-                    {messageDelete.sender.display_name} Avatar
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-baseline gap-2">
-                    <span className="text-base font-semibold text-yellow-400">
-                      {messageDelete.sender.username}
-                    </span>
-                    <span className="text-xs text-neutral-400">
-                      {new Date(messageDelete.createdAt).toLocaleString()}
-                    </span>
+              <Card className="mt-4">
+                <CardContent className="px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <Avatar>
+                      <AvatarImage
+                        src={`https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`}
+                      />
+                      <AvatarFallback>
+                        {messageDelete.sender.display_name} Avatar
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-base font-semibold text-yellow-400">
+                          {messageDelete.sender.username}
+                        </span>
+                        <span className="text-xs text-neutral-400">
+                          {new Date(messageDelete.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="mt-1 whitespace-pre-wrap break-words text-sm text-neutral-200">
+                        {messageDelete.content}
+                      </div>
+                    </div>
                   </div>
-                  <div className="mt-1 whitespace-pre-wrap break-words text-sm text-neutral-200">
-                    {messageDelete.content}
-                  </div>
-                </div>
-              </div>
-            </div>
+                </CardContent>
+              </Card>
 
-            <div className="mt-6 flex items-center justify-between gap-4">
-              <button
-                onClick={() => {
-                  setDeleteMessageModal(false);
-                  setMessageDelete(null);
-                }}
-                className="h-12 w-full max-w-[240px] rounded-xl bg-[#2b2d31] text-base font-semibold text-neutral-200 shadow-sm transition hover:bg-[#3a3d42]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  remove(messageDelete._id);
-                  setDeleteMessageModal(false);
-                  setMessageDelete(null);
-                }}
-                className="h-12 w-full max-w-[240px] rounded-xl bg-[#da373d] text-base font-semibold text-white shadow-sm transition hover:bg-[#b53035]"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <DialogFooter>
+                <Button
+                  onClick={() => {
+                    setDeleteMessageModal(false);
+                    setMessageDelete(null);
+                  }}
+                  className="h-12 w-full max-w-[240px] rounded-xl bg-[#2b2d31] text-base font-semibold text-neutral-200 shadow-sm transition hover:bg-[#3a3d42]"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    remove(messageDelete._id);
+                    setDeleteMessageModal(false);
+                    setMessageDelete(null);
+                  }}
+                  className="h-12 w-full max-w-[240px] rounded-xl bg-[#da373d] text-base font-semibold text-white shadow-sm transition hover:bg-[#b53035]"
+                >
+                  Delete
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-[var(--border-subtle)] bg-[var(--surface-secondary)] px-6 py-4 backdrop-blur">
         <div className="flex items-end gap-3 rounded-2xl bg-[var(--surface-primary)] p-3 shadow-lg">
-          <button className="h-11 w-11 shrink-0 rounded-full bg-[var(--surface-secondary)] text-lg text-[var(--foreground)] hover:bg-[var(--surface-tertiary)]">
+          <Button className="h-11 w-11 shrink-0 rounded-full bg-[var(--surface-secondary)] text-lg text-[var(--foreground)] hover:bg-[var(--surface-tertiary)]">
             +
-          </button>
+          </Button>
           <div className="flex-1">
             {messageReply && (
               <div className="flex justify-between items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-[var(--surface-tertiary)] border-l-4 border-[var(--accent)]">
@@ -529,7 +510,7 @@ export default function ChannelMessagePage() {
                     {messageReply.content}
                   </span>
                 </div>
-                <button
+                <Button
                   onClick={() => {
                     setNewMessage((prev) => ({
                       ...prev,
@@ -539,10 +520,10 @@ export default function ChannelMessagePage() {
                   }}
                 >
                   <FontAwesomeIcon icon={faX} />
-                </button>
+                </Button>
               </div>
             )}
-            <textarea
+            <Textarea
               ref={newMessageRef}
               name="content"
               value={newMessage.content}
@@ -556,8 +537,8 @@ export default function ChannelMessagePage() {
                 )
               }
               placeholder="Message"
-              className="min-h-5 max-h-50 resize-none w-full rounded-xl border border-transparent bg-transparent px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)]"
               disabled={sending}
+              className="min-h-5 max-h-50 resize-none"
             />
           </div>
         </div>
