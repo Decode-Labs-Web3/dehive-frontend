@@ -44,25 +44,27 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
           <Avatar className="w-40 h-20 mb-4 rounded-none">
             <AvatarImage src="/images/logos/dehive.png" alt="Dehive Logo" />
             <AvatarFallback>DeHive logo</AvatarFallback>
           </Avatar>
-          <h1 className="text-white text-2xl font-bold">Welcome to Dehive</h1>
+          <h1 className="text-gray-200 text-2xl font-bold">
+            Welcome to Dehive
+          </h1>
         </div>
 
-        <Card className="shadow-lg">
+        <Card className="shadow-lg bg-gray-800 border-gray-700">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Sign In</CardTitle>
+            <CardTitle className="text-2xl text-gray-200">Sign In</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <Button
               onClick={handleLogin}
               disabled={loading}
-              className="w-full h-12 text-base font-semibold bg-black"
+              className="w-full h-12 text-base font-semibold bg-gray-700 hover:bg-gray-600"
             >
               <div className="flex items-center justify-center space-x-3">
                 {loading ? (
@@ -83,9 +85,9 @@ export default function Login() {
             </Button>
 
             <div className="text-center">
-              <p className="text-muted-foreground text-sm">
+              <p className="text-gray-400 text-sm">
                 Secure authentication powered by{" "}
-                <span className="text-foreground font-medium">Decode</span>
+                <span className="text-gray-200 font-medium">Decode</span>
               </p>
             </div>
           </CardContent>

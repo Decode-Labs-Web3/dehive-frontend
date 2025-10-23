@@ -9,6 +9,8 @@ import {
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function Authorize() {
   const searchParams = useSearchParams();
@@ -53,47 +55,51 @@ export default function Authorize() {
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
-      <div className="w-full max-w-xl bg-neutral-900 border border-gray-800 rounded-2xl p-6 shadow-xl">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-200 text-lg">
-            <FontAwesomeIcon
-              icon={faRobot}
-              className="w-6 h-6 text-gray-200"
-              aria-hidden
-            />
+      <Card className="w-full max-w-xl bg-neutral-900 border-gray-800 shadow-xl">
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-200 text-lg">
+              <FontAwesomeIcon
+                icon={faRobot}
+                className="w-6 h-6 text-gray-200"
+                aria-hidden
+              />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Authorizing</CardTitle>
+              <p className="text-sm text-gray-400">
+                Finishing SSO flow — please wait
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-semibold">Authorizing</h1>
-            <p className="text-sm text-gray-400">
-              Finishing SSO flow — please wait
-            </p>
-          </div>
-        </div>
+        </CardHeader>
 
-        <div className="mt-6 flex items-center gap-3">
-          <FontAwesomeIcon
-            icon={faSpinner}
-            spin
-            className="text-gray-400 w-5 h-5"
-          />
-          <div className="text-sm text-gray-300 flex items-center gap-2">
-            <span>Waiting for authorization from the SSO server...</span>
+        <CardContent>
+          <div className="flex items-center gap-3">
             <FontAwesomeIcon
-              icon={faFaceSmile}
-              className="text-gray-400 w-4 h-4"
+              icon={faSpinner}
+              spin
+              className="text-gray-400 w-5 h-5"
             />
+            <div className="text-sm text-gray-300 flex items-center gap-2">
+              <span>Waiting for authorization from the SSO server...</span>
+              <FontAwesomeIcon
+                icon={faFaceSmile}
+                className="text-gray-400 w-4 h-4"
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            onClick={handleAuthorize}
-            className="px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-sm text-gray-200 hover:bg-gray-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
+          <div className="mt-6 flex justify-end gap-3">
+            <Button
+              onClick={handleAuthorize}
+              className="bg-gray-800 border border-gray-700 text-gray-200 hover:bg-gray-700"
+            >
+              Retry
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

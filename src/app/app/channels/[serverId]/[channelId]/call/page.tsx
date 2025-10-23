@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import MeCallPage from "@/components/common/MeCallPage";
+import MeCallPage from "@/components/common/CallPage";
 
 export default function ServerCallPage() {
   const { channelId } = useParams<{ channelId: string }>();

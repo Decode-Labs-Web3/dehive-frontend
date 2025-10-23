@@ -40,12 +40,12 @@ interface UserDataProps {
   is_active: boolean;
 }
 
-interface MeCallPageProps {
+interface CallPageProps {
   callId: string;
   endCall: () => void;
 }
 
-export default function MeCallPage({ callId, endCall }: MeCallPageProps) {
+export default function CallPage({ callId, endCall }: CallPageProps) {
   const [userData, setUserData] = useState<UserDataProps | null>(null);
   useEffect(() => {
     const userData = localStorage.getItem("userData");

@@ -1,10 +1,19 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { faX, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useInviteSuggestions } from "@/hooks/useInviteSuggestions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ServerProps {
   _id: string;
@@ -29,6 +38,7 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
   const [code, setCode] = useState<number | null>(null);
   const { suggestions } = useInviteSuggestions(server._id);
   const [isSended, setIsSended] = useState<Record<string, boolean>>({});
+  const [isOpen, setIsOpen] = useState(true); // Thêm state cho Dialog
   useEffect(() => {
     setIsSended(
       Object.fromEntries(
@@ -153,47 +163,37 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
     : "";
 
   if (loading) {
-    return <h1>Loading ...</h1>;
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-4 w-[200px]" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
   }
   return (
-    <div
-      role="dialog"
-      className="fixed inset-0 flex items-center justify-center z-30"
-    >
-      <div
-        onClick={() => {
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) {
           setModal((prev) => ({
             ...prev,
             invite: false,
           }));
-        }}
-        className="fixed inset-0 bg-black/80 z-40"
-      />
-      <div className="bg-background text-foreground border border-border rounded-lg w-full max-w-md z-50 overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div>
-            <h2 className="font-semibold text-base">
-              Invite friends to {server.name} server
-            </h2>
-            <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
-              <span>#</span>
-              <span>general</span>
-            </div>
+        }
+      }}
+    >
+      <DialogContent className="w-full max-w-md">
+        <DialogHeader>
+          <DialogTitle>Invite friends to {server.name} server</DialogTitle>
+          <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
+            <span>#</span>
+            <span>general</span>
           </div>
-          <button
-            onClick={() => {
-              setModal((prev) => ({
-                ...prev,
-                invite: false,
-              }));
-            }}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <FontAwesomeIcon icon={faX} className="w-4 h-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
-        <div className="px-4 pb-4 max-h-64 overflow-y-auto">
+        <ScrollArea className="max-h-64">
           {suggestions.map((suggestion) => (
             <div
               key={suggestion.user_id}
@@ -217,10 +217,11 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
                   </div>
                 </div>
               </div>
-              <button
+              <Button
+                size="sm"
+                className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
                 disabled={isSended[suggestion.user_id]}
                 onClick={() => handleSendInvite(suggestion.user_id)}
-                className="bg-transparent border border-border text-foreground text-sm px-4 py-1.5 rounded hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSended[suggestion.user_id] ? (
                   <>Sended</>
@@ -230,36 +231,33 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
                     Invite
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           ))}
-        </div>
+        </ScrollArea>
 
-        <div className="border-t border-border p-4">
+        <div className="border-t border-border pt-4">
           <div className="text-muted-foreground text-xs font-semibold uppercase mb-2">
             Or, send a server invite link to a friend
           </div>
-          <div className="flex gap-2">
-            <button
-              disabled={!code}
-              onClick={async (e) => {
-                if (!code) return;
-                const btn = e.currentTarget;
-                const old = btn.textContent;
+          <Button
+            disabled={!code}
+            onClick={async (e) => {
+              if (!code) return;
+              const btn = e.currentTarget;
+              const old = btn.textContent;
 
-                const fullUrl = `${window.location.origin}${invitePath}`;
-                await navigator.clipboard.writeText(fullUrl);
+              const fullUrl = `${window.location.origin}${invitePath}`;
+              await navigator.clipboard.writeText(fullUrl);
 
-                btn.textContent = "Copied!";
-                setTimeout(() => (btn.textContent = old), 1000);
-              }}
-              className="bg-primary hover:opacity-90 text-primary-foreground text-sm font-medium px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {`${window.location.origin}${invitePath}`}
-            </button>
-          </div>
+              btn.textContent = "Copied!";
+              setTimeout(() => (btn.textContent = old), 1000);
+            }}
+          >
+            {`${window.location.origin}${invitePath}`}
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

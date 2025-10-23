@@ -4,6 +4,7 @@ import { useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function InvitePage() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function InvitePage() {
         response.statusCode === 201 &&
         response.message === "Operation successful"
       ) {
-        const serverId = String(response.data.server_id)
+        const serverId = String(response.data.server_id);
         // console.log("hello this is ",response.data.server_id)
         router.push(`/app/channels/${serverId}`);
       }
@@ -49,39 +50,43 @@ export default function InvitePage() {
   }, [handleInvite]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full text-center">
-        <div className="mb-6">
-          <FontAwesomeIcon
-            icon={faEnvelope}
-            className="text-indigo-600 text-6xl mb-4"
-          />
-        </div>
-
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Processing Invite
-        </h1>
-
-        <div className="mb-6">
-          <FontAwesomeIcon
-            icon={faSpinner}
-            className="text-indigo-600 text-4xl animate-spin"
-          />
-        </div>
-
-        <p className="text-gray-600 mb-2">
-          Please wait while we process your invitation...
-        </p>
-
-        {code && (
-          <div className="mt-6 bg-gray-100 rounded-lg p-4">
-            <p className="text-sm text-gray-500 mb-1">Invite Code</p>
-            <p className="text-lg font-mono font-semibold text-gray-800">
-              {code}
-            </p>
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <Card className="max-w-md w-full text-center shadow-xl bg-gray-800 border-gray-700">
+        <CardHeader>
+          <div className="mb-6">
+            <FontAwesomeIcon
+              icon={faEnvelope}
+              className="text-indigo-400 text-6xl mb-4"
+            />
           </div>
-        )}
-      </div>
+
+          <CardTitle className="text-3xl font-bold text-gray-200 mb-4">
+            Processing Invite
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <div className="mb-6">
+            <FontAwesomeIcon
+              icon={faSpinner}
+              className="text-indigo-400 text-4xl animate-spin"
+            />
+          </div>
+
+          <p className="text-gray-400 mb-2">
+            Please wait while we process your invitation...
+          </p>
+
+          {code && (
+            <div className="mt-6 bg-gray-700 rounded-lg p-4 border border-gray-600">
+              <p className="text-sm text-gray-400 mb-1">Invite Code</p>
+              <p className="text-lg font-mono font-semibold text-gray-200">
+                {code}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
