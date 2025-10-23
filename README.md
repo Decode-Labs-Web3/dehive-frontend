@@ -58,7 +58,7 @@ npm install
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
-NEXT_PUBLIC_ME_CHAT_SIO_URL=http://localhost:3001
+NEXT_PUBLIC_DIRECT_CHAT_SIO_URL=http://localhost:3001
 NEXT_PUBLIC_CHANNEL_CHAT_SIO_URL=http://localhost:3002
 DECODE_BASE_URL=https://decode.protocol.url
 DEHIVE_APP_ID=dehive

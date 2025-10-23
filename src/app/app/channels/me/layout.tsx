@@ -3,7 +3,7 @@
 import App from "@/components/app";
 import { getCookie } from "@/utils/cookie.utils";
 import { useCallback, useEffect, useState } from "react";
-import SocketMeChatProvider from "@/providers/socketMeChatProvider";
+import SocketMeChatProvider from "@/providers/socketDirectChatProvider";
 import { ConversationRefreshContext } from "@/contexts/ConversationRefreshContext";
 
 export default function MeLayout({ children }: { children: React.ReactNode }) {

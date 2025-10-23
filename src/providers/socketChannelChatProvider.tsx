@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { getChannelChatSocketIO } from "@/library/socketioChannelChat";
+import { getChannelChatSocketIO } from "@/lib/socketioChannelChat";
 import {
   IdentityConfirmedChannel,
   JoinedServer,

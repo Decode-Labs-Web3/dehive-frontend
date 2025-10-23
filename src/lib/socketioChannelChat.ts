@@ -1,25 +1,25 @@
 import { io, Socket } from "socket.io-client";
 import type {
-  ServerToClientChannelEvents,
-  ClientToServerChannelEvents,
+  ServerToClientChannelChat,
+  ClientToServerChannelChat,
 } from "@/interfaces/websocketChannelChat.interfaces";
 
 const URL = process.env.NEXT_PUBLIC_CHANNEL_CHAT_SIO_URL!;
-let _channelSocket: Socket<
-  ServerToClientChannelEvents,
-  ClientToServerChannelEvents
+let _channelChatSocket: Socket<
+  ServerToClientChannelChat,
+  ClientToServerChannelChat
 > | null = null;
 
 export function getChannelChatSocketIO(): Socket<
-  ServerToClientChannelEvents,
-  ClientToServerChannelEvents
+  ServerToClientChannelChat,
+  ClientToServerChannelChat
 > {
-  if (_channelSocket) return _channelSocket;
-  _channelSocket = io(URL, {
+  if (_channelChatSocket) return _channelChatSocket;
+  _channelChatSocket = io(URL, {
     transports: ["websocket"],
     autoConnect: false,
     reconnection: true,
     reconnectionAttempts: Infinity,
   });
-  return _channelSocket;
+  return _channelChatSocket;
 }

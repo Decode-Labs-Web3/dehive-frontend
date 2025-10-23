@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useCallback, useEffect } from "react";
-import { getMeChatSocketIO } from "@/library/socketioMeChat";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { faCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
-import { ConversationUpdate } from "@/interfaces/websocketMeChat.interfaces";
+import { ConversationUpdate } from "@/interfaces/websocketDirectChat.interfaces";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -90,7 +90,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
   }, [fetchUserData, refreshVersion]);
 
   useEffect(() => {
-    const socket = getMeChatSocketIO();
+    const socket = getDirectChatSocketIO();
     const onConversationUpdate = (p: ConversationUpdate) => {
       console.log("[ws me chat conversationUpdate from me Bar]", p);
       const data = p.data;

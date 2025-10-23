@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import AutoLink from "@/components/common/AutoLink";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Message } from "@/interfaces/websocketMeChat.interfaces";
+import { Message } from "@/interfaces/websocketDirectChat.interfaces";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   useState,

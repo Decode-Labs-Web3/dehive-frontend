@@ -1,4 +1,4 @@
-// ===== Server -> Client (listen) =====
+// ===== Server -> Client =====
 export interface IdentityConfirmed {
   userDehiveId: string;
 }
@@ -48,7 +48,16 @@ interface ConversationUpdateData {
   lastMessageAt: string;
 }
 
-// ===== Client -> Server (emit) =====
+export interface ServerToClientDirectChat {
+  identityConfirmed: (p: IdentityConfirmed) => void;
+  newMessage: (m: Message) => void;
+  messageEdited: (m: Message) => void;
+  messageDeleted: (m: Message) => void;
+  error: (e: WsErrorPayload) => void;
+  conversation_update: (p: ConversationUpdate) => void;
+}
+
+// ===== Client -> Server =====
 export interface SendDirectMessageDto {
   conversationId: string;
   content: string;
@@ -65,20 +74,7 @@ export interface DeleteMessageDto {
   messageId: string;
 }
 
-// ===== Event name maps  =====
-
-// server to client
-export interface ServerToClientMeEvents {
-  identityConfirmed: (p: IdentityConfirmed) => void;
-  newMessage: (m: Message) => void;
-  messageEdited: (m: Message) => void;
-  messageDeleted: (m: Message) => void;
-  error: (e: WsErrorPayload) => void;
-  conversation_update: (p: ConversationUpdate) => void;
-}
-
-// client to server
-export interface ClientToServerMeEvents {
+export interface ClientToServerDirectChat {
   identity: (userDehiveId: string) => void;
   sendMessage: (dto: SendDirectMessageDto) => void;
   editMessage: (dto: EditMessageDto) => void;

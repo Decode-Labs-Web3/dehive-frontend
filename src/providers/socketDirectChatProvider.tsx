@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { getMeChatSocketIO } from "@/library/socketioMeChat";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
 import {
   IdentityConfirmed,
   Message,
   WsErrorPayload,
   ConversationUpdate,
-} from "@/interfaces/websocketMeChat.interfaces";
+} from "@/interfaces/websocketDirectChat.interfaces";
 
 interface SocketMeChatProviderProps {
   userId: string;
@@ -18,7 +18,7 @@ export default function SocketMeChatProvider({
   userId,
   children,
 }: SocketMeChatProviderProps) {
-  const socket = useRef(getMeChatSocketIO()).current;
+  const socket = useRef(getDirectChatSocketIO()).current;
 
   useEffect(() => {
     const identify = () => {

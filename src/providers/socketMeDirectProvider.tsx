@@ -1,14 +1,11 @@
 "use client";
 
-import { Socket } from "socket.io-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CallProps } from "@/interfaces/call.interfaces";
-import { getMeCallSocketIO } from "@/library/sooketioMeCall";
+import { getDirectCallSocketIO } from "@/lib/sooketioDirectCall";
 import { MeCallContext } from "@/contexts/MeCallConetext.contexts";
 import {
-  ClientToServerCallEvents,
-  ServerToClientCallEvents,
   WsErrorPayload,
   IdentityConfirmed,
   IncomingCallPayload,
@@ -17,7 +14,7 @@ import {
   CallEndedPayload,
   CallStartedPayload,
   CallTimeoutPayload,
-} from "@/interfaces/websocketMeCall.interfaces";
+} from "@/interfaces/websocketDirectCall.interfaces";
 
 interface SocketMeCallProviderProps {
   userId: string;
@@ -29,9 +26,7 @@ export default function SocketMeCallProvider({
   children,
 }: SocketMeCallProviderProps) {
   const router = useRouter();
-  const socket = useRef<
-    Socket<ServerToClientCallEvents, ClientToServerCallEvents>
-  >(getMeCallSocketIO()).current;
+  const socket = useRef(getDirectCallSocketIO()).current;
 
   const [meCallState, setMeCallState] = useState<CallProps>({
     callId: null,
@@ -89,7 +84,7 @@ export default function SocketMeCallProvider({
 
     const onStarted = (payload: CallStartedPayload) => {
       console.log("[callStarted]", payload);
-      console.log("this is call id",payload.call_id)
+      console.log("this is call id", payload.call_id);
       setMeCallState({
         callId: payload.call_id,
         status: "calling",

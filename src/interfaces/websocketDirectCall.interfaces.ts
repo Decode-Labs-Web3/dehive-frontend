@@ -109,38 +109,27 @@ export interface CallTimeoutPayload {
   timestamp: string;
 }
 
-// ===== Event name maps =====
 
-// server -> client
-export interface ServerToClientCallEvents {
+export interface ServerToClientDirectCall {
   connect: () => void;
   connect_error: (err: Error) => void;
   disconnect: (reason: string) => void;
   error: (data: WsErrorPayload) => void;
-
   identityConfirmed: (data: IdentityConfirmed) => void;
-
   incomingCall: (data: IncomingCallPayload) => void;
   callStarted: (data: CallStartedPayload) => void;
   callAccepted: (data: CallAcceptedPayload) => void;
   callDeclined: (data: CallDeclinedPayload) => void;
   callEnded: (data: CallEndedPayload) => void;
   callTimeout: (data: CallTimeoutPayload) => void;
-
   pong: (data: { timestamp: string; message: "pong" }) => void;
 }
 
-// client -> server
-export interface ClientToServerCallEvents {
+export interface ClientToServerDirectCall {
   identity: (userId: string | { userDehiveId: string }) => void;
-
   startCall: (data: { target_user_id: string }) => void;
-
   acceptCall: (data: { call_id: string }) => void;
-
   declineCall: (data: { call_id: string }) => void;
-
   endCall: (data: { call_id: string }) => void;
-
   ping: () => void;
 }

@@ -1,4 +1,4 @@
-// ===== Server -> Client (listen) =====
+// ===== Server -> Client =====
 export interface IdentityConfirmedChannel {
   message: string;
   userDehiveId: string;
@@ -47,7 +47,20 @@ export interface Pong {
   message: string;
 }
 
-// ===== Client -> Server (emit) =====
+export interface ServerToClientChannelChat {
+  identityConfirmed: (p: IdentityConfirmedChannel) => void;
+  joinedServer: (p: JoinedServer) => void;
+  newMessage: (m: MessageChannel) => void;
+  messageEdited: (m: MessageChannel) => void;
+  messageDeleted: (m: MessageChannel) => void;
+  pong: (p: Pong) => void;
+  error: (e: WsErrorPayloadChannel) => void;
+}
+
+
+
+
+// ===== Client -> Server =====
 export interface CreateMessageChannelDto {
   channelId: string;
   content: string;
@@ -68,21 +81,7 @@ export interface JoinServerDto {
   serverId: string;
 }
 
-// ===== Event name maps  =====
-
-// server to client
-export interface ServerToClientChannelEvents {
-  identityConfirmed: (p: IdentityConfirmedChannel) => void;
-  joinedServer: (p: JoinedServer) => void;
-  newMessage: (m: MessageChannel) => void;
-  messageEdited: (m: MessageChannel) => void;
-  messageDeleted: (m: MessageChannel) => void;
-  pong: (p: Pong) => void;
-  error: (e: WsErrorPayloadChannel) => void;
-}
-
-// client to server
-export interface ClientToServerChannelEvents {
+export interface ClientToServerChannelChat {
   identity: (userDehiveId: string) => void;
   joinServer: (dto: JoinServerDto) => void;
   sendMessage: (dto: CreateMessageChannelDto) => void;

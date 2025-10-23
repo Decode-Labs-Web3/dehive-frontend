@@ -1,13 +1,12 @@
 "use client";
 
 import { useRef, useCallback } from "react";
-import { getMeCallSocketIO } from "@/library/sooketioMeCall";
+import { getDirectCallSocketIO } from "@/lib/sooketioDirectCall";
 import { useMeCallContext } from "@/contexts/MeCallConetext.contexts";
 
 export function useDirectCall(targetUserId: string) {
-  const socket = useRef(getMeCallSocketIO()).current;
+  const socket = useRef(getDirectCallSocketIO()).current;
   const { meCallState } = useMeCallContext();
-
 
   const startCall = useCallback(() => {
     if (meCallState.status !== "idle") {

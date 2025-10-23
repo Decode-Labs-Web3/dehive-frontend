@@ -1,11 +1,11 @@
 "use client";
 
-import { getMeChatSocketIO } from "@/library/socketioMeChat";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Message } from "@/interfaces/websocketMeChat.interfaces";
+import { Message } from "@/interfaces/websocketDirectChat.interfaces";
 
 export function useDirectMessage(conversationId: string) {
-  const socket = useRef(getMeChatSocketIO()).current;
+  const socket = useRef(getDirectChatSocketIO()).current;
   const [page, setPage] = useState<number>(0);
   const [isLastPage, setIsLastPage] = useState(false);
   const [sending, setSending] = useState(false);
