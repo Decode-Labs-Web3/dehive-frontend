@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -189,69 +190,7 @@ export default function DirectMessagePage() {
     newMessageRef.current?.focus();
   };
 
-  const listRef = useRef<HTMLDivElement | null>(null);
-  const prevScrollHeightRef = useRef(0);
-  const prevScrollTopRef = useRef(0);
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  const handleScroll = () => {
-    const el = listRef.current;
-    console.log(
-      "ScrollTop:",
-      el?.scrollTop,
-      "ScrollHeight:",
-      el?.scrollHeight,
-      "loadingMore:",
-      loadingMore,
-      "isLastPage:",
-      isLastPage,
-      "sending:",
-      sending
-    );
-    if (!el || loadingMore || isLastPage || sending) return;
-
-    const THRESHOLD = 100; // Tăng lên
-    if (el.scrollTop <= THRESHOLD) {
-      console.log("Trigger load more");
-      prevScrollHeightRef.current = el.scrollHeight;
-      prevScrollTopRef.current = el.scrollTop;
-      setLoadingMore(true);
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
-
-  useEffect(() => {
-    if (currentPage === 0 && messages.length > 0) {
-      const element = listRef.current;
-      if (element) element.scrollTop = element.scrollHeight;
-    }
-  }, [messages.length, currentPage]);
-
-  useEffect(() => {
-    if (!loadingMore && !sending) {
-      const element = listRef.current;
-      if (element) element.scrollTop = element.scrollHeight;
-    }
-  }, [sending, loadingMore]);
-
-  const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const autoResize = (element: HTMLTextAreaElement | null) => {
-    if (!element) return;
-    element.style.height = "auto";
-    const contentHeight = element.scrollHeight;
-    const maxHeight = Math.min(contentHeight, 200);
-    element.style.height = `${maxHeight}px`;
-    element.style.overflowY = contentHeight > 200 ? "auto" : "hidden";
-  };
-
-  const resizeNew = useCallback(() => autoResize(newMessageRef.current), []);
-
-  useLayoutEffect(() => {
-    resizeNew();
-  }, [newMessage, resizeNew]);
-
-  const fetchUserChatWith = async () => {
+  const fetchUserChatWith = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/user/chat-with", {
         method: "POST",
@@ -275,17 +214,72 @@ export default function DirectMessagePage() {
       console.error(error);
       console.log("Server get user chat with error");
     }
-  };
+  }, [channelId]);
 
   useEffect(() => {
     fetchUserChatWith();
-  }, []);
+  }, [fetchUserChatWith]);
+
+  const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const autoResize = (element: HTMLTextAreaElement | null) => {
+    if (!element) return;
+    element.style.height = "auto";
+    const contentHeight = element.scrollHeight;
+    const maxHeight = Math.min(contentHeight, 200);
+    element.style.height = `${maxHeight}px`;
+    element.style.overflowY = contentHeight > 200 ? "auto" : "hidden";
+  };
+
+  const resizeNew = useCallback(() => autoResize(newMessageRef.current), []);
+
+  useLayoutEffect(() => {
+    resizeNew();
+  }, [newMessage, resizeNew]);
+
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const prevScrollHeightRef = useRef(0);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
-    if (loadingMore) {
-      setLoadingMore(false);
+    const element = listRef.current;
+    if (element && currentPage === 0 && messages.length > 0) {
+      element.scrollTop = element.scrollHeight - element.clientHeight;
     }
-  }, [messages, currentPage]);
+  }, [messages.length, currentPage]);
+
+  const handleScroll = () => {
+    const element = listRef.current;
+    if (!element || isLastPage || loadingMore) return;
+    // const total = element?.scrollTop + element?.clientHeight;
+    // console.log(
+    //   "ScrollHeight:",
+    //   element?.scrollHeight,
+    //   "total:",
+    //   total,
+    //   "ScrollTop:",
+    //   element?.scrollTop,
+    //   "clientHeight:",
+    //   element?.clientHeight
+    // );
+
+    if (element.scrollTop === 0) {
+      console.log("Trigger load more");
+      prevScrollHeightRef.current = element?.scrollHeight;
+      setLoadingMore(true);
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  useEffect(() => {
+    setLoadingMore(false);
+    const element = listRef.current;
+    if (element) {
+      const newScrollHeightRef = element.scrollHeight;
+      element.scrollTop = newScrollHeightRef - prevScrollHeightRef.current;
+      prevScrollHeightRef.current = newScrollHeightRef;
+    }
+  }, [messages]);
 
   return (
     <div className="flex h-screen w-full flex-col bg-[var(--surface-primary)] text-[var(--foreground)]">
@@ -312,7 +306,7 @@ export default function DirectMessagePage() {
           Start Call
         </Button>
         <span className="text-xs text-[var(--muted-foreground)]">
-          Page {currentPage + 1}
+          Page {currentPage}
         </span>
       </div>
 
@@ -322,6 +316,13 @@ export default function DirectMessagePage() {
         className="flex-1 px-6 py-6"
       >
         <div className="flex flex-col gap-2">
+          {loadingMore && (
+            <>
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full" />
+            </>
+          )}
           {messages
             .filter((message) => message.isDeleted === false)
             .map((message) => (
