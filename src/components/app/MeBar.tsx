@@ -153,7 +153,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
                 // onContextMenuCapture={(event) => {
                 //   event.preventDefault();
                 //   event.stopPropagation();
-                //   // console.log("Test Mouse Right click");
+                // console.log("Test Mouse Right click");
                 //   setUserModal((prev) => ({
                 //     ...prev,
                 //     [user.id]: !prev[user.id],

@@ -2,10 +2,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { serverTag } from "@/constants/index.constants";
 import { toastSuccess, toastError } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -13,7 +24,6 @@ import {
 } from "@/components/ui/tooltip";
 import {
   faPlus,
-  faX,
   faGamepad,
   faUserGroup,
   faBookOpen,
@@ -144,10 +154,10 @@ export default function AddServer({ handleGetServer }: Props) {
 
   return (
     <>
-      <div className="relative group w-10 h-10 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition">
+      <div className="relative group w-10 h-10 rounded-md bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground transition">
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
+            <Button
               onClick={() => {
                 setTab({ ...allFalse, tag: true });
                 setModalOpen(true);
@@ -157,164 +167,110 @@ export default function AddServer({ handleGetServer }: Props) {
                   description: "",
                 });
               }}
-              className="w-full h-full flex items-center justify-center rounded-md hover:bg-blue-400"
+              className="w-full h-full flex items-center justify-center rounded-md hover:bg-accent"
             >
               <FontAwesomeIcon icon={faPlus} />
-            </button>
+            </Button>
           </TooltipTrigger>
           <TooltipContent
             side="right"
             align="center"
-            className="bg-black text-white h-10 text-center font-semibold text-xl"
+            className="bg-popover text-popover-foreground border border-border"
           >
             Add Server
           </TooltipContent>
-          {/* <div className="hidden group-hover:block pointer-events-none z-10 absolute ml-2 font-medium top-1/2 -translate-y-1/2 px-2 py-1 left-full rounded bg-black/90 text-white whitespace-nowrap text-xs shadow">
-          Add Server
-        </div> */}
         </Tooltip>
       </div>
-      {modalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          tabIndex={-1}
-          ref={(element: HTMLDivElement) => {
-            element?.focus();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              setTab({ ...allFalse, tag: true });
-              setModalOpen(false);
-              setServerForm({
-                tags: [],
-                name: "",
-                description: "",
-              });
-            }
-          }}
-          className="fixed inset-0 z-40 flex items-center justify-center p-4"
-        >
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => {
-              setTab({ ...allFalse, tag: true });
-              setModalOpen(false);
-              setServerForm({
-                tags: [],
-                name: "",
-                description: "",
-              });
-            }}
-          />
-
-          <div className="relative z-40 w-full max-w-xl rounded-2xl bg-[#2b2d31] text-neutral-100 border border-white/10 shadow-2xl p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                {tab.invite ? (
-                  <h1 className="text-2xl font-bold">Join a Server</h1>
-                ) : (
-                  <h1 className="text-2xl font-bold">Create Your Server</h1>
-                )}
-                {!tab.invite && (
-                  <p className="mt-2 text-neutral-300 leading-relaxed">
-                    Your server is where you and your friends hang out. Make
-                    yours and start talking.
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => {
-                  setTab({ ...allFalse, tag: true });
-                  setModalOpen(false);
-                  setServerForm({
-                    tags: [],
-                    name: "",
-                    description: "",
-                  });
-                }}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-400 hover:text-white hover:bg-white/10 transition"
-              >
-                <FontAwesomeIcon icon={faX} />
-              </button>
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="max-w-xl bg-card text-card-foreground border border-border">
+          <DialogHeader>
+            <div>
+              {tab.invite ? (
+                <DialogTitle className="text-2xl font-bold">
+                  Join a Server
+                </DialogTitle>
+              ) : (
+                <DialogTitle className="text-2xl font-bold">
+                  Create Your Server
+                </DialogTitle>
+              )}
+              {!tab.invite && (
+                <DialogDescription className="mt-2 text-muted-foreground leading-relaxed">
+                  Your server is where you and your friends hang out. Make yours
+                  and start talking.
+                </DialogDescription>
+              )}
             </div>
+          </DialogHeader>
 
+          <div className="space-y-4">
             {tab.info && (
               <>
-                <p className="text-sm text-neutral-400 mb-4">
+                <p className="text-sm text-muted-foreground">
                   Set up your server name and description.
                 </p>
 
-                <label
-                  htmlFor="name"
-                  className="text-xs uppercase tracking-wide text-neutral-400 mb-1 block"
-                >
-                  Server name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={serverForm.name}
-                  onChange={handleChange}
-                  className="w-full border border-white/10 bg-neutral-800 text-neutral-100 placeholder-neutral-400 rounded-md px-3 py-2 mb-3 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  placeholder="e.g. Gaming with friends"
-                  required
-                />
-
-                <label
-                  htmlFor="description"
-                  className="text-xs uppercase tracking-wide text-neutral-400 mb-1 block"
-                >
-                  Server description
-                </label>
-                <input
-                  id="description"
-                  name="description"
-                  type="text"
-                  value={serverForm.description}
-                  onChange={handleChange}
-                  className="w-full border border-white/10 bg-neutral-800 text-neutral-100 placeholder-neutral-400 rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  placeholder="What’s this server about?"
-                  required
-                />
-
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => setModalOpen(false)}
-                    className="border border-white/10 text-neutral-200 rounded px-3 py-2 hover:bg-white/10"
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="name"
+                    className="text-xs uppercase tracking-wide text-muted-foreground"
                   >
-                    Cancel
-                  </button>
+                    Server name
+                  </Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={serverForm.name}
+                    onChange={handleChange}
+                    placeholder="e.g. Gaming with friends"
+                    required
+                  />
+                </div>
 
-                  <button
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="description"
+                    className="text-xs uppercase tracking-wide text-muted-foreground"
+                  >
+                    Server description
+                  </Label>
+                  <Input
+                    id="description"
+                    name="description"
+                    type="text"
+                    value={serverForm.description}
+                    onChange={handleChange}
+                    placeholder="What's this server about?"
+                    required
+                  />
+                </div>
+
+                <DialogFooter>
+                  <Button onClick={() => setModalOpen(false)}>Cancel</Button>
+                  <Button
                     onClick={handleCreateServer}
                     disabled={
                       serverForm.name.trim() === "" ||
                       serverForm.description.trim() === ""
                     }
-                    className={`bg-emerald-600 text-white rounded px-4 py-2 hover:bg-emerald-500 disabled:opacity-50 ${
-                      serverForm.name.trim() === "" &&
-                      serverForm.description.trim() === "" &&
-                      "cursor-not-allowed"
-                    }`}
                   >
                     Create
-                  </button>
-                </div>
+                  </Button>
+                </DialogFooter>
               </>
             )}
 
             {tab.tag && (
               <>
                 <div className="mt-3 mb-2">
-                  <p className="text-xs font-semibold text-neutral-400">
+                  <p className="text-xs font-semibold text-muted-foreground">
                     START FROM A TEMPLATE
                   </p>
                 </div>
                 <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
                   {serverTag.map((tag, index) => (
-                    <button
+                    <Button
                       key={index}
                       onClick={() => {
                         setServerForm((prev) => ({
@@ -323,73 +279,64 @@ export default function AddServer({ handleGetServer }: Props) {
                         }));
                         setTab({ ...allFalse, info: true });
                       }}
-                      className="w-full flex items-center justify-between gap-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-4 transition"
+                      className="w-full flex items-center justify-between gap-3 rounded-xl bg-muted hover:bg-accent border border-border px-4 py-4 transition"
                     >
                       <span className="flex items-center gap-3">
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-emerald-400">
+                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground">
                           <FontAwesomeIcon icon={tagIcon[tag]} />
                         </span>
-                        <span className="text-base text-neutral-100">
-                          {tag}
-                        </span>
+                        <span className="text-base text-foreground">{tag}</span>
                       </span>
                       <FontAwesomeIcon
                         icon={faChevronRight}
-                        className="text-neutral-400"
+                        className="text-muted-foreground"
                       />
-                    </button>
+                    </Button>
                   ))}
                 </div>
 
                 <div className="my-5 text-center">
-                  <p className="text-lg font-semibold text-neutral-100">
+                  <p className="text-lg font-semibold text-foreground">
                     Have an invite already?
                   </p>
                 </div>
-                <button
+                <Button
                   onClick={() => {
                     setInviteLink("");
                     setTab({ ...allFalse, invite: true });
                   }}
-                  className="w-full rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-3 text-neutral-100"
+                  className="w-full rounded-xl bg-muted hover:bg-accent border border-border text-foreground"
                 >
                   Join a Server
-                </button>
+                </Button>
               </>
             )}
 
             {tab.invite && (
               <>
-                <h2 className="text-base font-semibold mb-1">Invite</h2>
-                <p className="text-sm text-neutral-400 mb-3">
+                <h2 className="text-base font-semibold">Invite</h2>
+                <p className="text-sm text-muted-foreground">
                   Join a server with an invite link.
                 </p>
-                <input
+                <Input
                   type="text"
                   value={inviteLink}
-                  onChange={(e) => setInviteLink(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setInviteLink(e.target.value)
+                  }
                   placeholder="Enter invite link"
-                  className="w-full border border-white/10 bg-neutral-800 text-neutral-100 placeholder-neutral-400 rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => setTab({ ...allFalse, tag: true })}
-                    className="border border-white/10 text-neutral-200 rounded px-3 py-2 hover:bg-white/10"
-                  >
+                <DialogFooter>
+                  <Button onClick={() => setTab({ ...allFalse, tag: true })}>
                     Back
-                  </button>
-                  <button
-                    onClick={handleInvite}
-                    className="bg-emerald-600 text-white rounded px-4 py-2 hover:bg-emerald-500"
-                  >
-                    Join Server
-                  </button>
-                </div>
+                  </Button>
+                  <Button onClick={handleInvite}>Join Server</Button>
+                </DialogFooter>
               </>
             )}
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

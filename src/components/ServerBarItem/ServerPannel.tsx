@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import ServerBarItems from "./index";
+import ServerBarItems from "@/components/serverBarItem";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan, faX } from "@fortawesome/free-solid-svg-icons";

@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import ServerBarItems from "@/components/ServerBarItem";
+import ServerBarItems from "@/components/serverBarItem";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
@@ -61,7 +61,7 @@ export default function ServerBar() {
   }, [fetchServerInfo]);
 
   if (loading) {
-       return (
+    return (
       <div className="w-full h-full p-3 space-y-3">
         <Skeleton className="h-9 w-full" />
         <Skeleton className="h-6 w-3/4" />

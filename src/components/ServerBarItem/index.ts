@@ -1,14 +1,14 @@
-import Channels from "./Channels";
-import EditModal from "./EditModal";
-import ChannelPannel from "./ChannelPannel";
-import Categories from "./Categories";
-import CategoryPanel from "./CategoryPannel";
-import ServerPannel from "./ServerPannel";
-import ServerMembers from "./ServerMembers";
-import ServerBans from "./ServerBans";
-import ServerInvite from "./ServerInvite";
-import CategoryDroppable from "./CategoryDroppable"
-import ChannelDraggable from "./ChannelDraggable";
+import Channels from "@/components/serverBarItem/Channels";
+import EditModal from "@/components/serverBarItem/EditModal";
+import ChannelPannel from "@/components/serverBarItem/ChannelPannel";
+import Categories from "@/components/serverBarItem/Categories";
+import CategoryPanel from "@/components/serverBarItem/CategoryPannel";
+import ServerPannel from "@/components/serverBarItem/ServerPannel";
+import ServerMembers from "@/components/serverBarItem/ServerMembers";
+import ServerBans from "@/components/serverBarItem/ServerBans";
+import ServerInvite from "@/components/serverBarItem/ServerInvite";
+import CategoryDroppable from "@/components/serverBarItem/CategoryDroppable";
+import ChannelDraggable from "@/components/serverBarItem/ChannelDraggable";
 
 const ServerBarItems = {
   Channels,

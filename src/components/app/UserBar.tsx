@@ -129,7 +129,6 @@ export default function UserBar() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="outline"
                   size="sm"
                   onClick={handleTheme}
                   className="h-8 w-full"
@@ -145,7 +144,6 @@ export default function UserBar() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="outline"
                   size="sm"
                   onClick={() => setMicrophone((prev) => !prev)}
                   className="h-8 w-full"
@@ -163,7 +161,6 @@ export default function UserBar() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="outline"
                   size="sm"
                   onClick={() => setSound((prev) => !prev)}
                   className="h-8 w-full"
@@ -181,7 +178,6 @@ export default function UserBar() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="outline"
                   size="sm"
                   onClick={() => setUserPannel(true)}
                   className="h-8 w-full"

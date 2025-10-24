@@ -9,11 +9,11 @@ export interface CallProps {
 }
 
 interface UserInfo {
+  _id: string;
   avatar_ipfs_hash: string;
-  bio: string;
+  username: string;
   display_name: string;
   is_active: boolean;
   status: string;
-  username: string;
-  _id: string;
+  bio: string;
 }

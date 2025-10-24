@@ -132,8 +132,8 @@ export default function GuildBar({
 
   return (
     <TooltipProvider>
-      <aside className="flex flex-col gap-2 p-3 w-full h-full bg-[var(--background)] border-r-2 border-[var(--border-color)]">
-        <div className="relative group w-10 h-10 rounded-md bg-[var(--background-secondary)] text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition">
+      <aside className="flex flex-col gap-2 p-3 w-full h-full bg-background border-r-2 border-border">
+        <div className="relative group w-10 h-10 rounded-md bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground transition">
           <span
             className={`absolute -left-3 top-1/2 -translate-y-1/2 w-1 rounded-r-full ${
               activeId === "me" ? "h-8 bg-red-500" : "h-4 bg-blue-500"
@@ -145,7 +145,7 @@ export default function GuildBar({
                 onClick={() => {
                   router.push("/app/channels/me");
                 }}
-                className="w-full h-full flex items-center justify-center rounded-md hover:bg-blue-400"
+                className="w-full h-full flex items-center justify-center rounded-md hover:bg-accent"
               >
                 <FontAwesomeIcon icon={faMessage} />
               </Button>
@@ -153,24 +153,21 @@ export default function GuildBar({
             <TooltipContent
               side="right"
               align="center"
-              className="bg-black text-white h-10 text-center font-semibold text-xl"
+              className="bg-popover text-popover-foreground border border-border"
             >
               <p>Direct Message</p>
             </TooltipContent>
-            {/* <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 px-2 py-1 ml-2 bg-black text-[var(--accent-foreground)] font-semibold z-1000 left-full whitespace-nowrap rounded-md shadow opacity-0 group-hover:opacity-100">
-              Direct Message
-            </div> */}
           </Tooltip>
         </div>
 
-        <Separator className="mx-auto my-1 w-8 h-1 bg-black" />
+        <Separator className="mx-auto my-1 w-8 h-1 bg-border" />
 
         <ScrollArea className="-mx-3">
           {loading && (
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-10 w-10 rounded-md" />
-              <Skeleton className="h-10 w-10 rounded-md" />
-              <Skeleton className="h-10 w-10 rounded-md" />
+              <Skeleton className="h-10 w-10 rounded-md bg-muted" />
+              <Skeleton className="h-10 w-10 rounded-md bg-muted" />
+              <Skeleton className="h-10 w-10 rounded-md bg-muted" />
             </div>
           )}
 
@@ -184,7 +181,7 @@ export default function GuildBar({
                         onClick={() =>
                           router.push(`/app/channels/${server._id}`)
                         }
-                        className="relative group w-10 h-10 rounded-md ml-3 flex items-center font-bold justify-center hover:bg-blue-400"
+                        className="relative group w-10 h-10 rounded-md ml-3 flex items-center font-bold justify-center hover:bg-accent"
                       >
                         {server.name.slice(0, 1).toUpperCase()}
                         <span
@@ -198,7 +195,7 @@ export default function GuildBar({
                     </TooltipTrigger>
                   </ContextMenuTrigger>
 
-                  <ContextMenuContent className="w-48">
+                  <ContextMenuContent className="w-48 bg-popover text-popover-foreground border border-border">
                     <ContextMenuItem
                       onClick={() => router.push(`/app/channels/${server._id}`)}
                     >
@@ -210,7 +207,7 @@ export default function GuildBar({
                       <>
                         <ContextMenuSeparator />
                         <ContextMenuItem
-                          className="text-red-500"
+                          className="text-destructive"
                           onClick={() => handleLeaveServer(server._id)}
                         >
                           Leave server
@@ -226,7 +223,7 @@ export default function GuildBar({
                       Copy Server Id{" "}
                       <FontAwesomeIcon
                         icon={faCopy}
-                        className="ml-2 text-neutral-400"
+                        className="ml-2 text-muted-foreground"
                       />
                     </ContextMenuItem>
                   </ContextMenuContent>
@@ -235,7 +232,7 @@ export default function GuildBar({
                 <TooltipContent
                   side="right"
                   align="center"
-                  className="pointer-events-none bg-black text-white h-10 text-center font-semibold text-xl"
+                  className="bg-popover text-popover-foreground border border-border"
                 >
                   <p>{server.name}</p>
                 </TooltipContent>

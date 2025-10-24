@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { getCookie } from "@/utils/cookie.utils";
-import ServerBarItems from "@/components/ServerBarItem";
+import ServerBarItems from "@/components/serverBarItem";
 import { useState, useCallback, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
