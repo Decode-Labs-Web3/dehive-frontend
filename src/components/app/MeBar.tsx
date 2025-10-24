@@ -9,7 +9,7 @@ import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { faCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
-import { ConversationUpdate } from "@/interfaces/websocketDirectChat.interfaces";
+import { ConversationUpdate } from "@/interfaces/websocketDirectChat.interface";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,

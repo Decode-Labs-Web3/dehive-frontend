@@ -2,11 +2,11 @@
 
 import { useRef, useCallback } from "react";
 import { getDirectCallSocketIO } from "@/lib/sooketioDirectCall";
-import { useMeCallContext } from "@/contexts/MeCallConetext.contexts";
+import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
 
 export function useDirectCall(targetUserId: string) {
   const socket = useRef(getDirectCallSocketIO()).current;
-  const { meCallState } = useMeCallContext();
+  const { meCallState } = useDirectCallContext();
 
   const startCall = useCallback(() => {
     if (meCallState.status !== "idle") {
@@ -22,42 +22,40 @@ export function useDirectCall(targetUserId: string) {
 
   const acceptCall = useCallback(() => {
     if (
-      !meCallState.callId ||
-      meCallState.status !== "ringing" ||
-      !meCallState.isIncoming
+      !meCallState.call_id ||
+      meCallState.status !== "ringing"
     ) {
       console.warn("Cannot accept call - no incoming call");
       return;
     }
 
-    console.log("[useDirectCall] Accepting call:", meCallState.callId);
+    console.log("[useDirectCall] Accepting call:", meCallState.call_id);
     socket.emit("acceptCall", {
-      call_id: meCallState.callId,
+      call_id: meCallState.call_id,
     });
   }, [socket, meCallState]);
 
   const declineCall = useCallback(() => {
     if (
-      !meCallState.callId ||
-      meCallState.status !== "ringing" ||
-      !meCallState.isIncoming
+      !meCallState.call_id ||
+      meCallState.status !== "ringing"
     ) {
       console.warn("Cannot decline call - no incoming call");
       return;
     }
 
-    console.log("[useDirectCall] Declining call:", meCallState.callId);
-    socket.emit("declineCall", { call_id: meCallState.callId });
+    console.log("[useDirectCall] Declining call:", meCallState.call_id);
+    socket.emit("declineCall", { call_id: meCallState.call_id });
   }, [socket, meCallState]);
 
   const endCall = useCallback(() => {
-    if (!meCallState.callId || meCallState.status === "idle") {
+    if (!meCallState.call_id || meCallState.status === "idle") {
       console.warn("Cannot end call - no active call");
       return;
     }
 
-    console.log("[useDirectCall] Ending call:", meCallState.callId);
-    socket.emit("endCall", { call_id: meCallState.callId });
+    console.log("[useDirectCall] Ending call:", meCallState.call_id);
+    socket.emit("endCall", { call_id: meCallState.call_id });
   }, [socket, meCallState]);
 
   return {

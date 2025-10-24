@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import type {
   ServerToClientDirectCall,
   ClientToServerDirectCall,
-} from "../interfaces/websocketDirectCall.interfaces";
+} from "../interfaces/websocketDirectCall.interface";
 
 const URL = process.env.NEXT_PUBLIC_DIRECT_CALL_SIO_URL!;
 let _directCallSocket: Socket<
@@ -16,7 +16,7 @@ export function getDirectCallSocketIO(): Socket<
 > {
   if (_directCallSocket) return _directCallSocket;
 
-  _directCallSocket = io(`${URL}/rtc`, {
+  _directCallSocket = io(URL, {
     transports: ["websocket"],
     autoConnect: false,
     reconnection: true,

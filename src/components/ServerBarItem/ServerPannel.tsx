@@ -3,12 +3,22 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { serverTag } from "@/constants/index.constants";
 import ServerBarItems from "@/components/serverBarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
-import { serverTag } from "@/constants/index.constants";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   faBookOpen,
   faGamepad,
@@ -210,93 +220,69 @@ export default function ServerPannel({
           </div>
 
           <nav className="mt-2 flex-1 space-y-1 px-3">
-            <button
+            <Button
+              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
               onClick={() =>
                 setServerPannelSetting({ ...allFalse, profile: true })
               }
-              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
-                true
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent"
-              }`}
             >
               Server Profile
-            </button>
+            </Button>
 
-            <button
+            <Button
+              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
               onClick={() => setServerPannelSetting({ ...allFalse, tag: true })}
-              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
-                true
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent"
-              }`}
             >
               Server Tag
-            </button>
+            </Button>
 
-            <button
+            <Button
+              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
               onClick={() =>
                 setServerPannelSetting({ ...allFalse, members: true })
               }
-              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
-                true
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent"
-              }`}
             >
               Members
-            </button>
+            </Button>
 
-            <button
+            <Button
+              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
               onClick={() =>
                 setServerPannelSetting({ ...allFalse, invites: true })
               }
-              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
-                true
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent"
-              }`}
             >
               Invites
-            </button>
+            </Button>
 
-            <button
+            <Button
+              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
               onClick={() => {
                 setServerPannelSetting({ ...allFalse, role: true });
               }}
-              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
-                true
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent"
-              }`}
             >
               Role
-            </button>
+            </Button>
 
-            <button
+            <Button
+              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
               onClick={() => {
                 setServerPannelSetting({ ...allFalse, bans: true });
               }}
-              className={`group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
-                true
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent"
-              }`}
             >
               Bans
-            </button>
+            </Button>
 
             <div className="my-4 border border-foreground" />
 
-            <button
+            <Button
+              className="w-full justify-between bg-destructive text-destructive-foreground shadow hover:bg-destructive/90"
               onClick={() => {
                 setServerPannelSetting({ ...allFalse, delete: true });
               }}
-              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-destructive transition hover:bg-destructive/10"
             >
               Delete Server
               <FontAwesomeIcon icon={faTrashCan} />
-            </button>
+            </Button>
           </nav>
         </aside>
 
@@ -313,24 +299,21 @@ export default function ServerPannel({
               </h2>
             </div>
 
-            <button
+            <Button
+              size="sm"
               disabled={serverInfoChange}
               onClick={() => {
                 if (serverInfoChange) return;
                 setServerPannel(false);
                 setServerSettingModal(false);
               }}
-              className={`flex flex-col items-center gap-1 text-xs uppercase tracking-wide transition ${
-                serverInfoChange
-                  ? "cursor-not-allowed text-muted-foreground opacity-60"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              className="flex flex-col items-center gap-1 text-xs uppercase tracking-wide hover:bg-accent hover:text-accent-foreground"
             >
               <span className="rounded-full border border-border p-2">
                 <FontAwesomeIcon icon={faX} />
               </span>
               Esc
-            </button>
+            </Button>
           </header>
 
           <div className="flex-1 overflow-y-auto px-10 py-8">
@@ -354,175 +337,167 @@ export default function ServerPannel({
               <>
                 <div className="max-w-xl mt-4 space-y-6">
                   <div className="space-y-2">
-                    <label
+                    <Label
                       htmlFor="name"
                       className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                     >
                       Server Name
-                    </label>
-                    <div className="relative">
-                      <input
-                        id="name"
-                        name="name"
-                        value={editServerForm.name}
-                        onChange={handleEditServerChange}
-                        autoFocus
-                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
+                    </Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      value={editServerForm.name}
+                      onChange={handleEditServerChange}
+                      autoFocus
+                    />
                   </div>
                 </div>
                 <div className="max-w-xl mt-4 space-y-6">
                   <div className="space-y-2">
-                    <label
+                    <Label
                       htmlFor="description"
                       className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                     >
                       Server Description
-                    </label>
-                    <div className="relative">
-                      <input
-                        id="description"
-                        name="description"
-                        value={editServerForm.description}
-                        onChange={handleEditServerChange}
-                        autoFocus
-                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
+                    </Label>
+                    <Input
+                      id="description"
+                      name="description"
+                      value={editServerForm.description}
+                      onChange={handleEditServerChange}
+                      autoFocus
+                    />
                   </div>
                 </div>
               </>
             )}
+
+            {serverPannelSetting.tag && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Server Tags</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    {serverTag.map((tag) => (
+                      <Button
+                        key={tag}
+                        onClick={() => toggleTag(tag)}
+                        className={`justify-start ${
+                          selectedTags.includes(tag)
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                            <FontAwesomeIcon icon={tagIcon[tag]} />
+                          </span>
+                          <span>{tag}</span>
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
+                    onClick={() => setSelectedTags([])}
+                    className={`mt-3 justify-start ${
+                      selectedTags.length === 0
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    No tag
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {serverInfoChange && (
-            <div className="pointer-events-auto absolute inset-x-8 bottom-6 rounded-2xl border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 px-6 py-4 text-sm text-foreground">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    Careful — you have unsaved changes!
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Save or reset your edits before closing this panel.
-                  </p>
-                </div>
-                <div className="flex shrink-0 gap-3">
-                  <button
-                    onClick={() => {
-                      setEditServerForm({
-                        name: server.name,
-                        description: server.description,
-                      });
-                    }}
-                    className="rounded-lg border border-border px-4 py-2 text-xs font-medium text-foreground transition hover:bg-accent"
-                  >
-                    Reset
-                  </button>
-                  <button
-                    onClick={handleEditServer}
-                    className="rounded-lg bg-[hsl(var(--success))] px-4 py-2 text-xs font-semibold text-[hsl(var(--success-foreground))] transition hover:opacity-90"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {serverPannelSetting.tag && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Server Tags</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  {serverTag.map((tag) => (
+            <Card className="pointer-events-auto absolute inset-x-8 bottom-6 border-success/30 bg-success/10">
+              <CardContent className="px-6 py-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold">
+                      Careful — you have unsaved changes!
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Save or reset your edits before closing this panel.
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-3">
                     <Button
-                      key={tag}
-                      onClick={() => toggleTag(tag)}
-                      className={`justify-start ${
-                        selectedTags.includes(tag)
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
-                      }`}
+                      size="sm"
+                      className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => {
+                        setEditServerForm({
+                          name: server.name,
+                          description: server.description,
+                        });
+                      }}
                     >
-                      <span className="flex items-center gap-3">
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                          <FontAwesomeIcon icon={tagIcon[tag]} />
-                        </span>
-                        <span>{tag}</span>
-                      </span>
+                      Reset
                     </Button>
-                  ))}
+                    <Button
+                      size="sm"
+                      className="bg-success text-success-foreground hover:opacity-90"
+                      onClick={handleEditServer}
+                    >
+                      Save Changes
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  onClick={() => setSelectedTags([])}
-                  className={`mt-3 justify-start ${
-                    selectedTags.length === 0
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  No tag
-                </Button>
               </CardContent>
             </Card>
           )}
         </section>
       </div>
 
-      {serverPannelSetting.delete && (
-        <div
-          role="dialog"
-          className="fixed inset-0 z-[102] flex items-center justify-center"
-        >
-          <div
-            onClick={() =>
-              setServerPannelSetting((prev) => ({
-                ...prev,
-                delete: false,
-                profile: true,
-              }))
-            }
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-[110]"
+      <Dialog
+        open={serverPannelSetting.delete}
+        onOpenChange={(open) =>
+          setServerPannelSetting((prev) => ({
+            ...prev,
+            delete: open,
+            profile: open ? false : true,
+          }))
+        }
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Server</DialogTitle>
+            <DialogDescription>
+              Please type the name of &quot;{server.name}&quot; to confirm.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            id="name"
+            name="name"
+            value={deleteServerForm.name}
+            onChange={handleDeleteServerChange}
           />
-          <div className="relative w-full max-w-md rounded-lg bg-background text-foreground border border-border shadow-xl p-5 z-[120]">
-            <h1 className="text-base font-semibold mb-1">Delete Server</h1>
-            <p className="text-sm text-muted-foreground mb-4">
-              Please type the name of {`"${server.name}"`} to confirm.
-            </p>
-            <input
-              id="name"
-              name="name"
-              value={deleteServerForm.name}
-              onChange={handleDeleteServerChange}
-              className="w-full border border-border bg-muted text-foreground rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-
-            <div className="flex flex-row justify-end gap-2">
-              <button
-                onClick={() =>
-                  setServerPannelSetting((prev) => ({
-                    ...prev,
-                    delete: false,
-                    profile: true,
-                  }))
-                }
-                className="border border-border text-foreground rounded px-3 py-2 hover:bg-muted"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteServer}
-                className="bg-destructive text-destructive-foreground rounded px-4 py-2 hover:opacity-90"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          <DialogFooter>
+            <Button
+              className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
+              onClick={() =>
+                setServerPannelSetting((prev) => ({
+                  ...prev,
+                  delete: false,
+                  profile: true,
+                }))
+              }
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-destructive text-destructive-foreground shadow hover:bg-destructive/90"
+              onClick={handleDeleteServer}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

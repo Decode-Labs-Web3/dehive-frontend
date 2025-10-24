@@ -7,14 +7,14 @@ import {
   Message,
   WsErrorPayload,
   ConversationUpdate,
-} from "@/interfaces/websocketDirectChat.interfaces";
+} from "@/interfaces/websocketDirectChat.interface";
 
 interface SocketMeChatProviderProps {
   userId: string;
   children: React.ReactNode;
 }
 
-export default function SocketMeChatProvider({
+export default function DirectChatProvider({
   userId,
   children,
 }: SocketMeChatProviderProps) {

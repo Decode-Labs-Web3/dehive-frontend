@@ -11,7 +11,7 @@ import type {
   UserLeftChannelPayload,
   PongPayload,
   WsErrorPayload,
-} from "@/interfaces/websocketChannelCall.interfaces";
+} from "@/interfaces/websocketChannelCall.interface";
 
 interface ChannelCallProviderProps {
   userId: string;

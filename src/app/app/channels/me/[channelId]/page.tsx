@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Message } from "@/interfaces/websocketDirectChat.interfaces";
+import { Message } from "@/interfaces/websocketDirectChat.interface";
 import {
   Dialog,
   DialogContent,

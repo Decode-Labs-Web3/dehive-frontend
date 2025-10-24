@@ -3,7 +3,7 @@
 import App from "@/components/app";
 import { getCookie } from "@/utils/cookie.utils";
 import { useState, useCallback, useEffect, useRef } from "react";
-import SocketMeCallProvider from "@/providers/socketMeDirectProvider";
+import SocketMeCallProvider from "@/providers/socketDirectCallProvider";
 import { ServerRefreshContext } from "@/contexts/ServerRefreshContext.contexts";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

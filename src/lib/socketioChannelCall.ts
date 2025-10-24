@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import type {
   ServerToClientChannelCall,
   ClientToServerChannelCall,
-} from "../interfaces/websocketChannelCall.interfaces";
+} from "../interfaces/websocketChannelCall.interface";
 
 const URL = process.env.NEXT_PUBLIC_CHANNEL_CALL_SIO_URL!;
 let _channelCallSocket: Socket<

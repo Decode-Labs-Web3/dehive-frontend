@@ -1,7 +1,7 @@
 import {
   FingerprintResult,
   NavigatorWithUserAgentData,
-} from "@/interfaces/services.interfaces";
+} from "@/interfaces/services.interface";
 
 export async function fingerprintService(
   userAgent?: string

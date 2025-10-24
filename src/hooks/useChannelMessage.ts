@@ -2,7 +2,7 @@
 
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChat";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { MessageChannel } from "@/interfaces/websocketChannelChat.interfaces";
+import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 
 export function useChannelMessage(channelId: string) {
   const socket = useRef(getChannelChatSocketIO()).current;

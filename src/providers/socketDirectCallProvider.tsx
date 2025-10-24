@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { CallProps } from "@/interfaces/call.interfaces";
+import { CallProps } from "@/interfaces/call.interface";
 import { getDirectCallSocketIO } from "@/lib/sooketioDirectCall";
-import { MeCallContext } from "@/contexts/MeCallConetext.contexts";
+import { DirectCallContext } from "@/contexts/DirectCallConetext.contexts";
 import {
   WsErrorPayload,
   IdentityConfirmed,
@@ -14,14 +14,14 @@ import {
   CallEndedPayload,
   CallStartedPayload,
   CallTimeoutPayload,
-} from "@/interfaces/websocketDirectCall.interfaces";
+} from "@/interfaces/websocketDirectCall.interface";
 
 interface SocketMeCallProviderProps {
   userId: string;
   children: React.ReactNode;
 }
 
-export default function SocketMeCallProvider({
+export default function DirectCallProvider({
   userId,
   children,
 }: SocketMeCallProviderProps) {
@@ -29,13 +29,9 @@ export default function SocketMeCallProvider({
   const socket = useRef(getDirectCallSocketIO()).current;
 
   const [meCallState, setMeCallState] = useState<CallProps>({
-    callId: null,
+    call_id: null,
     status: "idle",
-    isIncoming: false,
-    isOutgoing: false,
-    caller_info: null,
-    callee_info: null,
-    isTimeout: false,
+    user_info: null,
   });
 
   useEffect(() => {
@@ -67,90 +63,62 @@ export default function SocketMeCallProvider({
 
     const onIncoming = (payload: IncomingCallPayload) => {
       console.log("[incomingCall]", payload);
-      setMeCallState((prev) => {
-        return {
-          ...prev,
-          callId: payload.call_id,
-          status: "ringing",
-          isIncoming: true,
-          caller_info: payload.caller_info || null,
-          callee_info: null,
-          isTimeout: false,
-        };
+      setMeCallState({
+        call_id: payload.call_id,
+        status: payload.status,
+        user_info: payload.user_info,
       });
-      // console.log("[incomingCall] caller_info", payload.caller_info?._id);
-      router.push(`/app/channels/me/${payload.caller_info?._id}/call`);
+      // console.log("[incomingCall] from directcall", payload.call_id);
+      router.push(`/app/channels/me/${payload.call_id}/call`);
     };
 
     const onStarted = (payload: CallStartedPayload) => {
       console.log("[callStarted]", payload);
-      console.log("this is call id", payload.call_id);
+      // console.log("this is call id", payload.call_id);
       setMeCallState({
-        callId: payload.call_id,
-        status: "calling",
-        isIncoming: false,
-        isOutgoing: true,
-        caller_info: null,
-        callee_info: null,
-        isTimeout: false,
+        call_id: payload.call_id,
+        status: payload.status,
+        user_info: payload.user_info,
       });
     };
 
     const onAccepted = (payload: CallAcceptedPayload) => {
       console.log("[callAccepted]", payload);
       setMeCallState({
-        callId: payload.call_id,
-        status: "connected",
-        isIncoming: false,
-        isOutgoing: false,
-        caller_info: null,
-        callee_info: null,
-        isTimeout: false,
+        call_id: payload.call_id,
+        status: payload.status,
+        user_info: payload.user_info,
       });
     };
 
     const onDeclined = (payload: CallDeclinedPayload) => {
       console.log("[callDeclined]", payload);
       setMeCallState({
-        callId: null,
-        status: "idle",
-        isIncoming: false,
-        isOutgoing: false,
-        caller_info: null,
-        callee_info: null,
-        isTimeout: true,
+        call_id: payload.call_id,
+        status: payload.status,
+        user_info: payload.user_info,
       });
       // console.log("[callDeclined] caller_id", payload.caller_id);
       // console.log("this is quang minh")
-      router.push("/app/channels/me/");
-      setTimeout(() => {
-        setMeCallState((prev) => ({
-          ...prev,
-          isTimeout: false,
-        }));
-      }, 3000);
+      // router.push("/app/channels/me/");
     };
 
     const onEnded = (payload: CallEndedPayload) => {
       console.log("[callEnded]", payload);
       setMeCallState({
-        callId: null,
-        status: "idle",
-        isIncoming: false,
-        isOutgoing: false,
-        caller_info: null,
-        callee_info: null,
-        isTimeout: true,
+        call_id: payload.call_id,
+        status: payload.status,
+        user_info: payload.user_info,
       });
       // console.log("[callEnded] caller_id", payload.caller_id);
       // console.log("this is quang minh")
-      router.push("/app/channels/me/");
-      setTimeout(() => {
-        setMeCallState((prev) => ({
-          ...prev,
-          isTimeout: false,
-        }));
-      }, 3000);
+      // router.push("/app/channels/me/");
+      // setTimeout(() => {
+      //   setMeCallState((prev) => ({
+      //     ...prev,
+      //     isTimeout: false,
+      //   }));
+      // }, 3000);
     };
 
     const onPong = (data: { timestamp: string; message: "pong" }) =>
@@ -159,23 +127,19 @@ export default function SocketMeCallProvider({
     const onTimeout = (payload: CallTimeoutPayload) => {
       console.log("[callTimeout]", payload);
       setMeCallState({
-        callId: null,
-        status: "idle",
-        isIncoming: false,
-        isOutgoing: false,
-        caller_info: null,
-        callee_info: null,
-        isTimeout: true,
+        call_id: payload.call_id,
+        status: payload.status,
+        user_info: payload.user_info,
       });
       // console.log("[callTimeout] caller_id", payload.caller_id);
       // console.log("this is quang minh")
-      router.push("/app/channels/me/");
-      setTimeout(() => {
-        setMeCallState((prev) => ({
-          ...prev,
-          isTimeout: false,
-        }));
-      }, 3000);
+      // router.push("/app/channels/me/");
+      // setTimeout(() => {
+      //   setMeCallState((prev) => ({
+      //     ...prev,
+      //     isTimeout: false,
+      //   }));
+      // }, 3000);
     };
 
     socket.on("connect", onConnect);
@@ -221,9 +185,9 @@ export default function SocketMeCallProvider({
 
   return (
     <>
-      <MeCallContext.Provider value={{ meCallState, setMeCallState }}>
+      <DirectCallContext.Provider value={{ meCallState, setMeCallState }}>
         {children}
-      </MeCallContext.Provider>
+      </DirectCallContext.Provider>
     </>
   );
 }

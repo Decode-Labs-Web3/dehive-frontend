@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import type {
   ServerToClientChannelChat,
   ClientToServerChannelChat,
-} from "@/interfaces/websocketChannelChat.interfaces";
+} from "@/interfaces/websocketChannelChat.interface";
 
 const URL = process.env.NEXT_PUBLIC_CHANNEL_CHAT_SIO_URL!;
 let _channelChatSocket: Socket<

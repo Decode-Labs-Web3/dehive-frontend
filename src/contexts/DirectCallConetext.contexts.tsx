@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext, createContext } from "react";
-import { CallProps } from "@/interfaces/call.interfaces";
+import { CallProps } from "@/interfaces/call.interface";
 
 interface MeCallContextProps {
   meCallState: CallProps;
@@ -9,18 +9,14 @@ interface MeCallContextProps {
 }
 
 const initialMeCall: CallProps = {
-  callId: null,
+  call_id: null,
   status: "idle",
-  isIncoming: false,
-  isOutgoing: false,
-  caller_info: null,
-  callee_info: null,
-  isTimeout: false,
+  user_info: null,
 };
 
-export const MeCallContext = createContext<MeCallContextProps>({
+export const DirectCallContext = createContext<MeCallContextProps>({
   meCallState: initialMeCall,
   setMeCallState: () => {},
 });
 
-export const useMeCallContext = () => useContext(MeCallContext);
+export const useDirectCallContext = () => useContext(DirectCallContext);

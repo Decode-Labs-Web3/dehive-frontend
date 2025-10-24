@@ -27,7 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/providers/socketMeDirectProvider.tsx"
+    "src/providers/socketDirectCallProvider.tsx"
   ],
   "exclude": ["node_modules"]
 }

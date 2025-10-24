@@ -1,4 +1,11 @@
-// ===== Server -> Client =====
+// ---- Server -> Client ----
+type UserInfo = {
+  _id: string;
+  username: string;
+  display_name: string;
+  avatar_ipfs_hash: string;
+};
+
 export interface WsErrorPayload {
   message: string;
   code?: string;
@@ -14,85 +21,41 @@ export interface IdentityConfirmed {
 
 export interface IncomingCallPayload {
   call_id: string;
-  caller_id: string;
-  caller_info?: {
-    _id: string;
-    username: string;
-    display_name: string;
-    avatar_ipfs_hash: string;
-    bio: string;
-    status: string;
-    is_active: boolean;
-  };
-  timestamp: string;
+  status: "ringing";
+  user_info: UserInfo;
 }
 
 export interface CallStartedPayload {
   call_id: string;
-  status: string;
-  target_user_id: string;
-  timestamp: string;
+  status: "calling";
+  user_info: UserInfo;
 }
 
 export interface CallAcceptedPayload {
   call_id: string;
-  callee_id?: string;
-  callee_info?: {
-    _id: string;
-    username: string;
-    display_name: string;
-    avatar_ipfs_hash: string;
-    bio: string;
-    status: string;
-    is_active: boolean;
-  };
-  status?: string;
-  timestamp: string;
+  status: "connected";
+  user_info: UserInfo;
 }
 
 export interface CallDeclinedPayload {
   call_id: string;
-  callee_id?: string;
-  reason?: string;
-  status?: string;
-  timestamp: string;
+  status: "declined";
+  user_info: UserInfo;
 }
 
 export interface CallEndedPayload {
   call_id: string;
-  ended_by?: string;
-  reason?: string;
-  duration?: number;
-  status?: string;
-  timestamp: string;
-}
-
-/** Server→client versions */
-export interface SignalOfferInbound extends SignalOfferDto {
-  from_user_id: string;
-  timestamp?: string;
-}
-export interface SignalAnswerInbound extends SignalAnswerDto {
-  from_user_id: string;
-  timestamp?: string;
-}
-export interface IceCandidateInbound extends IceCandidateDto {
-  from_user_id: string;
-  timestamp?: string;
+  status: "ended";
+  user_info: UserInfo;
 }
 
 export interface CallTimeoutPayload {
   call_id: string;
-  status?: string;
-  caller_id?: string;
-  reason?: string;
-  timestamp: string;
+  status: "ended";
+  user_info: UserInfo;
 }
 
 export interface ServerToClientDirectCall {
-  connect: () => void;
-  connect_error: (err: Error) => void;
-  disconnect: (reason: string) => void;
   error: (data: WsErrorPayload) => void;
   identityConfirmed: (data: IdentityConfirmed) => void;
   incomingCall: (data: IncomingCallPayload) => void;

@@ -9,7 +9,7 @@ import {
   WsErrorPayloadChannel,
   JoinServerDto,
   Pong,
-} from "@/interfaces/websocketChannelChat.interfaces";
+} from "@/interfaces/websocketChannelChat.interface";
 
 interface SocketChannelProviderProps {
   userId: string;
@@ -17,7 +17,7 @@ interface SocketChannelProviderProps {
   children: React.ReactNode;
 }
 
-export default function SocketChannelProvider({
+export default function ChannelChatProvider({
   userId,
   serverId,
   children,
