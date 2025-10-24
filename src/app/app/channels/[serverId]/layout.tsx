@@ -4,7 +4,7 @@ import App from "@/components/app";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getCookie } from "@/utils/cookie.utils";
-import SocketChannelProvider from "@/providers/socketChannelChatProvider";
+import ChannelChatProvider from "@/providers/socketChannelChatProvider";
 
 export default function ServerLayout({
   children,
@@ -23,8 +23,8 @@ export default function ServerLayout({
   }, []);
   return (
     <>
-      {currentId && serverId  ? (
-        <SocketChannelProvider userId={currentId} serverId={serverId}>
+      {currentId && serverId ? (
+        <ChannelChatProvider userId={currentId} serverId={serverId}>
           <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
             <aside className="h-full overflow-y-auto border-r border-black/20">
               <App.ServerBar />
@@ -33,7 +33,7 @@ export default function ServerLayout({
               <div className="h-full min-h-0">{children}</div>
             </section>
           </div>
-        </SocketChannelProvider>
+        </ChannelChatProvider>
       ) : (
         <h1>Loading...nha</h1>
       )}

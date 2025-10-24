@@ -3,7 +3,7 @@
 import App from "@/components/app";
 import { getCookie } from "@/utils/cookie.utils";
 import { useState, useCallback, useEffect, useRef } from "react";
-import SocketMeCallProvider from "@/providers/socketDirectCallProvider";
+import DirectCallProvider from "@/providers/socketDirectCallProvider";
 import { ServerRefreshContext } from "@/contexts/ServerRefreshContext.contexts";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -62,9 +62,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         )}
 
         {userId && (
-          <SocketMeCallProvider userId={userId}>
+          <DirectCallProvider userId={userId}>
             <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
-          </SocketMeCallProvider>
+          </DirectCallProvider>
         )}
 
         <div className="absolute bottom-5 left-5 w-75 h-30 z-10 overflow-visible">

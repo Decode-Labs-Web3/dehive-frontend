@@ -74,7 +74,6 @@ export default function DirectCallProvider({
 
     const onStarted = (payload: CallStartedPayload) => {
       console.log("[callStarted]", payload);
-      // console.log("this is call id", payload.call_id);
       setMeCallState({
         call_id: payload.call_id,
         status: payload.status,
@@ -99,7 +98,6 @@ export default function DirectCallProvider({
         user_info: payload.user_info,
       });
       // console.log("[callDeclined] caller_id", payload.caller_id);
-      // console.log("this is quang minh")
       // router.push("/app/channels/me/");
     };
 
@@ -111,14 +109,7 @@ export default function DirectCallProvider({
         user_info: payload.user_info,
       });
       // console.log("[callEnded] caller_id", payload.caller_id);
-      // console.log("this is quang minh")
       // router.push("/app/channels/me/");
-      // setTimeout(() => {
-      //   setMeCallState((prev) => ({
-      //     ...prev,
-      //     isTimeout: false,
-      //   }));
-      // }, 3000);
     };
 
     const onPong = (data: { timestamp: string; message: "pong" }) =>

@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import UserPannel from "../userBarItem/UserPannel";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -22,11 +23,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+const Popover = dynamic(
+  () => import("@/components/ui/popover").then((mod) => mod.Popover),
+  { ssr: false }
+);
+const PopoverContent = dynamic(
+  () => import("@/components/ui/popover").then((mod) => mod.PopoverContent),
+  { ssr: false }
+);
+const PopoverTrigger = dynamic(
+  () => import("@/components/ui/popover").then((mod) => mod.PopoverTrigger),
+  { ssr: false }
+);
 
 interface UserDataProps {
   _id: string;
@@ -128,11 +136,7 @@ export default function UserBar() {
           <div className="grid grid-cols-4 gap-2 mb-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  onClick={handleTheme}
-                  className="h-8 w-full"
-                >
+                <Button size="sm" onClick={handleTheme} className="h-8 w-full">
                   <FontAwesomeIcon icon={theme ? faSun : faMoon} />
                 </Button>
               </TooltipTrigger>
@@ -196,7 +200,10 @@ export default function UserBar() {
 
           <Popover>
             <PopoverTrigger asChild>
-              <div className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors">
+              <button
+                className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors border-none bg-transparent"
+                type="button"
+              >
                 <Avatar className="w-10 h-10">
                   <AvatarImage
                     src={`https://ipfs.de-id.xyz/ipfs/${userData?.avatar_ipfs_hash}`}
@@ -214,7 +221,7 @@ export default function UserBar() {
                     {userData?.dehive_role}
                   </h4>
                 </div>
-              </div>
+              </button>
             </PopoverTrigger>
             <PopoverContent className="w-80" align="start">
               <Card className="border-0 shadow-none">

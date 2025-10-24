@@ -1,85 +1,215 @@
 "use client";
 
-import { useEffect } from "react";
-import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { useDirectCall } from "@/hooks/useDirectCall";
 import MeCallPage from "@/components/common/CallPage";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useCallback, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface UserChatWith {
+  id: string;
+  displayname: string;
+  username: string;
+  avatar_ipfs_hash: string;
+}
 
 export default function CallPage() {
-  const { userId } = useParams<{ userId: string }>();
-  const { meCallState } = useDirectCallContext();
-  const { startCall, acceptCall, declineCall, endCall } = useDirectCall(userId);
-  console.log(
-    "[CallPage] meCallState",
-    meCallState.status,
-  );
-  console.log("this is quang minh callid:", meCallState.call_id);
+  const router = useRouter();
+  const { channelId } = useParams<{ channelId: string }>();
+  const [userChatWith, setUserChatWith] = useState<UserChatWith>({
+    id: "",
+    displayname: "",
+    username: "",
+    avatar_ipfs_hash: "",
+  });
+
+  const fetchUserChatWith = useCallback(async () => {
+    if (channelId) return;
+    try {
+      const apiResponse = await fetch("/api/user/chat-with", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ conversationId: channelId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (response.statusCode === 200 && response.message === "OK") {
+        setUserChatWith(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server get user chat with error");
+    }
+  }, [channelId]);
 
   useEffect(() => {
-    if (userId && meCallState.status === "idle") {
-      startCall();
-    }
-  }, [userId, meCallState.status, startCall]);
+    fetchUserChatWith();
+  }, [fetchUserChatWith]);
+
+  const { meCallState, setMeCallState } = useDirectCallContext();
+  const { startCall, acceptCall, declineCall, endCall } = useDirectCall(
+    userChatWith.id
+  );
 
   return (
     <div className="h-screen flex items-center justify-center">
       {meCallState.status === "idle" && (
-        <div className="text-center">
-          <h1 className="text-xl mb-2">Preparing Call</h1>
-          <p>Setting up connection...</p>
-        </div>
+        <Card>
+          <CardContent className="text-center p-6">
+            <Button onClick={startCall}>Start call</Button>
+          </CardContent>
+        </Card>
       )}
 
       {meCallState.status === "ended" && (
-        <div className="text-center">
-          <h1 className="text-xl mb-2">Call Timeout</h1>
-          <p>The call request has timed out</p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Call End</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p>The call request has ended</p>
+            <p>{meCallState.user_info?.display_name}</p>
+            <p>{meCallState.user_info?.username}</p>
+            <Avatar>
+              <AvatarImage
+                src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
+              />
+              <AvatarFallback>
+                {meCallState.user_info?.display_name} Avatar
+              </AvatarFallback>
+            </Avatar>
+            <Button
+              onClick={() => {
+                setMeCallState({
+                  call_id: null,
+                  status: "idle",
+                  user_info: null,
+                });
+                router.push(`/app/channels/me/${channelId}`);
+              }}
+            >
+              Close
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {meCallState.status === "declined" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Call Declined</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p>The call request has been declined</p>
+            <p>{meCallState.user_info?.display_name}</p>
+            <p>{meCallState.user_info?.username}</p>
+            <Avatar>
+              <AvatarImage
+                src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
+              />
+              <AvatarFallback>
+                {meCallState.user_info?.display_name} Avatar
+              </AvatarFallback>
+            </Avatar>
+            <Button
+              onClick={() => {
+                setMeCallState({
+                  call_id: null,
+                  status: "idle",
+                  user_info: null,
+                });
+                router.push(`/app/channels/me/${channelId}`);
+              }}
+            >
+              Close
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       {meCallState.status === "ringing" && (
-        <div className="text-center">
-          <h1 className="text-xl mb-2">Incoming Call</h1>
-          <p className="mb-4">{meCallState.user_info?.display_name}</p>
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={() => acceptCall()}
-              className="px-4 py-2 bg-green-500 text-white rounded"
-            >
-              Accept
-            </button>
-            <button
-              onClick={() => declineCall()}
-              className="px-4 py-2 bg-red-500 text-white rounded"
-            >
-              Decline
-            </button>
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Incoming Call</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p>{meCallState.user_info?.display_name}</p>
+            <p>{meCallState.user_info?.username}</p>
+            <Avatar>
+              <AvatarImage
+                src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
+              />
+              <AvatarFallback>
+                {meCallState.user_info?.display_name} Avatar
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex gap-4 justify-center">
+              <Button
+                className="bg-success text-success-foreground hover:opacity-90"
+                onClick={() => acceptCall()}
+              >
+                Accept
+              </Button>
+              <Button
+                className="bg-destructive text-destructive-foreground hover:opacity-90"
+                onClick={() => declineCall()}
+              >
+                Decline
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {meCallState.status === "calling" && (
-        <div className="text-center">
-          <h1 className="text-xl mb-2">Calling...</h1>
-          <p className="mb-4">Connecting to {meCallState.user_info?.display_name}</p>
-          <button
-            onClick={() => endCall()}
-            className="px-4 py-2 bg-red-500 text-white rounded"
-          >
-            End Call
-          </button>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Calling...</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p>{meCallState.user_info?.display_name}</p>
+            <p>{meCallState.user_info?.username}</p>
+            <Avatar>
+              <AvatarImage
+                src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
+              />
+              <AvatarFallback>
+                {meCallState.user_info?.display_name} Avatar
+              </AvatarFallback>
+            </Avatar>
+            <Button
+              className="bg-destructive text-destructive-foreground hover:opacity-90"
+              onClick={() => endCall()}
+            >
+              End Call
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       {meCallState.status === "connected" && (
-        <div className="text-center">
-          <h1 className="text-xl mb-2">Connected</h1>
-          <p className="mb-4">Call ID: {meCallState.user_info?.display_name}</p>
-          {meCallState.call_id && (
-            <MeCallPage callId={meCallState.call_id} endCall={endCall} />
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Connected</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p>Call ID: {meCallState.user_info?.display_name}</p>
+            {meCallState.call_id && (
+              <MeCallPage callId={meCallState.call_id} endCall={endCall} />
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

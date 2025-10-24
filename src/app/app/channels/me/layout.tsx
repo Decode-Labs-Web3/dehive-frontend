@@ -3,7 +3,7 @@
 import App from "@/components/app";
 import { getCookie } from "@/utils/cookie.utils";
 import { useCallback, useEffect, useState } from "react";
-import SocketMeChatProvider from "@/providers/socketDirectChatProvider";
+import DirectChatProvider from "@/providers/socketDirectChatProvider";
 import { ConversationRefreshContext } from "@/contexts/ConversationRefreshContext";
 
 export default function MeLayout({ children }: { children: React.ReactNode }) {
@@ -21,7 +21,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       {currentId ? (
-        <SocketMeChatProvider userId={currentId}>
+        <DirectChatProvider userId={currentId}>
           <ConversationRefreshContext.Provider
             value={{ triggerRefreshConversation }}
           >
@@ -35,7 +35,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
               </section>
             </div>
           </ConversationRefreshContext.Provider>
-        </SocketMeChatProvider>
+        </DirectChatProvider>
       ) : (
         <h1>Loading ...</h1>
       )}

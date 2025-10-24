@@ -59,7 +59,6 @@ export function useDirectCall(targetUserId: string) {
   }, [socket, meCallState]);
 
   return {
-    // Actions
     startCall,
     acceptCall,
     declineCall,
