@@ -1,11 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import ServerBarItems from "@/components/serverBarItem";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ServerBarItems from "@/components/serverBarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashCan, faX } from "@fortawesome/free-solid-svg-icons";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
+import { serverTag } from "@/constants/index.constants";
+import {
+  faBookOpen,
+  faGamepad,
+  faSchool,
+  faTrashCan,
+  faUserGroup,
+  faX,
+  faPeopleGroup,
+  faPalette,
+} from "@fortawesome/free-solid-svg-icons";
+
+const tagIcon: Record<string, IconDefinition> = {
+  Gaming: faGamepad,
+  Friends: faUserGroup,
+  "Study Group": faBookOpen,
+  "School Club": faSchool,
+  "Local Community": faPeopleGroup,
+  "Artist & Creators": faPalette,
+};
 
 interface ServerProps {
   _id: string;
@@ -59,6 +81,14 @@ export default function ServerPannel({
   const [deleteServerForm, setDeleteServerFrom] = useState({
     name: "",
   });
+
+  const [selectedTags, setSelectedTags] = useState<string[]>(server.tags);
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
 
   const handleDeleteServerChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -401,9 +431,43 @@ export default function ServerPannel({
           )}
 
           {serverPannelSetting.tag && (
-            <div className="h-50 w-50 bg-red-500">
-              <h1>This is sever tag</h1>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Server Tags</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3">
+                  {serverTag.map((tag) => (
+                    <Button
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      className={`justify-start ${
+                        selectedTags.includes(tag)
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                          <FontAwesomeIcon icon={tagIcon[tag]} />
+                        </span>
+                        <span>{tag}</span>
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+                <Button
+                  onClick={() => setSelectedTags([])}
+                  className={`mt-3 justify-start ${
+                    selectedTags.length === 0
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  No tag
+                </Button>
+              </CardContent>
+            </Card>
           )}
         </section>
       </div>

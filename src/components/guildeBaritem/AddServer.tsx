@@ -43,8 +43,8 @@ interface ServerForm {
 }
 
 const tagIcon: Record<string, IconDefinition> = {
-  Gaming: faGamepad,
-  Friends: faUserGroup,
+  "Gaming": faGamepad,
+  "Friends": faUserGroup,
   "Study Group": faBookOpen,
   "School Club": faSchool,
   "Local Community": faPeopleGroup,
@@ -154,35 +154,29 @@ export default function AddServer({ handleGetServer }: Props) {
 
   return (
     <>
-      <div className="relative group w-10 h-10 rounded-md bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground transition">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={() => {
-                setTab({ ...allFalse, tag: true });
-                setModalOpen(true);
-                setServerForm({
-                  tags: [],
-                  name: "",
-                  description: "",
-                });
-              }}
-              className="w-full h-full flex items-center justify-center rounded-md hover:bg-accent"
-            >
-              <FontAwesomeIcon icon={faPlus} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            side="right"
-            align="center"
-            className="bg-popover text-popover-foreground border border-border"
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            onClick={() => {
+              setTab({ ...allFalse, tag: true });
+              setModalOpen(true);
+              setServerForm({
+                tags: [],
+                name: "",
+                description: "",
+              });
+            }}
+            className="w-10 h-10"
           >
-            Add Server
-          </TooltipContent>
-        </Tooltip>
-      </div>
+            <FontAwesomeIcon icon={faPlus} />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right" align="center">
+          Add Server
+        </TooltipContent>
+      </Tooltip>
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-xl bg-card text-card-foreground border border-border">
+        <DialogContent className="max-w-xl">
           <DialogHeader>
             <div>
               {tab.invite ? (
@@ -263,12 +257,10 @@ export default function AddServer({ handleGetServer }: Props) {
 
             {tab.tag && (
               <>
-                <div className="mt-3 mb-2">
-                  <p className="text-xs font-semibold text-muted-foreground">
-                    START FROM A TEMPLATE
-                  </p>
-                </div>
-                <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
+                <p className="text-xs font-semibold text-muted-foreground">
+                  START FROM A TEMPLATE
+                </p>
+                <div className="space-y-3 max-h-200 overflow-y-auto">
                   {serverTag.map((tag, index) => (
                     <Button
                       key={index}
@@ -279,24 +271,31 @@ export default function AddServer({ handleGetServer }: Props) {
                         }));
                         setTab({ ...allFalse, info: true });
                       }}
-                      className="w-full flex items-center justify-between gap-3 rounded-xl bg-muted hover:bg-accent border border-border px-4 py-4 transition"
+                      className="w-full flex justify-between px-4 py-3"
                     >
                       <span className="flex items-center gap-3">
                         <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground">
                           <FontAwesomeIcon icon={tagIcon[tag]} />
                         </span>
-                        <span className="text-base text-foreground">{tag}</span>
+                        <span className="text-base">{tag}</span>
                       </span>
-                      <FontAwesomeIcon
-                        icon={faChevronRight}
-                        className="text-muted-foreground"
-                      />
+                      <FontAwesomeIcon icon={faChevronRight} />
                     </Button>
                   ))}
+                  <Button
+                    onClick={() => {
+                      setServerForm((prev) => ({ ...prev, tags: [] }));
+                      setTab({ ...allFalse, info: true });
+                    }}
+                    className="w-full flex justify-between px-4 py-3"
+                  >
+                    <span className="text-base">No tag</span>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                  </Button>
                 </div>
 
                 <div className="my-5 text-center">
-                  <p className="text-lg font-semibold text-foreground">
+                  <p className="text-lg font-semibold">
                     Have an invite already?
                   </p>
                 </div>
@@ -305,7 +304,7 @@ export default function AddServer({ handleGetServer }: Props) {
                     setInviteLink("");
                     setTab({ ...allFalse, invite: true });
                   }}
-                  className="w-full rounded-xl bg-muted hover:bg-accent border border-border text-foreground"
+                  className="w-full"
                 >
                   Join a Server
                 </Button>
