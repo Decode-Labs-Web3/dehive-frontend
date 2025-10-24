@@ -36,62 +36,62 @@ export default function SocketChannelProvider({
     };
 
     const onConnect = () => {
-      console.log("[channel ws connect]", socket.id);
+      console.log("[channel chat ws connect]", socket.id);
       identify();
     };
 
     const onDisconnect = (reason: string) => {
-      console.log("[channel ws disconnect]", reason);
+      console.log("[channel chat ws disconnect]", reason);
     };
 
     const onConnectError = (err: Error) => {
-      console.warn("[channel ws connect_error]", err);
+      console.warn("[channel chat ws connect_error]", err);
     };
 
     const onError = (e: WsErrorPayloadChannel) => {
-      console.warn("[channel ws error]", e);
+      console.warn("[channel chat ws error]", e);
     };
 
     const onManagerReconnect = (n: number) => {
-      console.log("[channel ws reconnect]", n);
+      console.log("[channel chat ws reconnect]", n);
       identify();
     };
 
     const onManagerReconnectAttempt = (n: number) => {
-      console.log("[channel ws reconnect_attempt]", n);
+      console.log("[channel chat ws reconnect_attempt]", n);
     };
 
     const onManagerReconnectError = (err: Error) => {
-      console.warn("[channel ws reconnect_error]", err);
+      console.warn("[channel chat ws reconnect_error]", err);
     };
 
     const onManagerReconnectFailed = () => {
-      console.warn("[channel ws reconnect_failed]");
+      console.warn("[channel chat ws reconnect_failed]");
     };
 
     const onIdentityConfirmed = (p: IdentityConfirmedChannel) => {
-      console.log("[channel identityConfirmed]", p);
+      console.log("[channel chat identityConfirmed]", p);
       tryJoin();
     };
 
     const onJoinedServer = (p: JoinedServer) => {
-      console.log("[channel joinedChannel]", p);
+      console.log("[channel chat joinedChannel]", p);
     };
 
     const onNewMessage = (m: MessageChannel) => {
-      console.log("[channel newMessage]", m);
+      console.log("[channel chat newMessage]", m);
     };
 
     const onMessageEdited = (m: MessageChannel) => {
-      console.log("[channel messageEdited]", m);
+      console.log("[channel chat messageEdited]", m);
     };
 
     const onMessageDeleted = (m: MessageChannel) => {
-      console.log("[channel messageDeleted]", m);
+      console.log("[channel chat messageDeleted]", m);
     };
 
     const onPong = (p: Pong) => {
-      console.log("[channel pong]", p);
+      console.log("[channel chat pong]", p);
     };
 
     socket.on("connect", onConnect);

@@ -16,7 +16,7 @@ export interface PongPayload {
   message: "pong";
 }
 
-export interface PublicUserInfo {
+export interface UserInfo {
   _id: string;
   username: string;
   display_name: string;
@@ -29,17 +29,22 @@ export interface IdentityConfirmedCall {
   timestamp: string;
 }
 
+export interface JoinedServer {
+  serverId: string;
+  message: string;
+}
+
 export interface ChannelJoinedPayload {
   channel_id: string;
   status: string;
-  participants: PublicUserInfo[];
+  participants: UserInfo[];
   timestamp: string;
 }
 
 export interface UserJoinedChannelPayload {
   channel_id: string;
   user_id: string;
-  user_info: PublicUserInfo;
+  user_info: UserInfo;
   timestamp: string;
 }
 
@@ -57,6 +62,7 @@ export interface UserLeftChannelPayload {
 
 export interface ServerToClientChannelCall {
   identityConfirmed: (p: IdentityConfirmedCall) => void;
+  serverJoined: (p: JoinedServer) => void;
   channelJoined: (p: ChannelJoinedPayload) => void;
   userJoinedChannel: (p: UserJoinedChannelPayload) => void;
   channelLeft: (p: ChannelLeftPayload) => void;
@@ -70,6 +76,10 @@ export interface IdentityCallDto {
   userDehiveId: string;
 }
 
+export interface JoinServerDto {
+  serverId: string;
+}
+
 export interface JoinChannelDto {
   channel_id: string;
 }
@@ -79,8 +89,9 @@ export interface LeaveChannelDto {
 }
 
 export interface ClientToServerChannelCall {
-  identity: (payload: IdentityCallDto | string) => void;
-  joinChannel: (dto: JoinChannelDto | string) => void;
-  leaveChannel: (dto: LeaveChannelDto | string) => void;
+  identity: (payload: IdentityCallDto) => void;
+  joinServer: (dto: JoinServerDto) => void;
+  joinChannel: (dto: JoinChannelDto) => void;
+  leaveChannel: (dto: LeaveChannelDto) => void;
   ping: () => void;
 }

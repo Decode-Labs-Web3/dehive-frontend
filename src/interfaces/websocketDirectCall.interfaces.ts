@@ -1,3 +1,4 @@
+// ===== Server -> Client =====
 export interface WsErrorPayload {
   message: string;
   code?: string;
@@ -66,27 +67,6 @@ export interface CallEndedPayload {
   timestamp: string;
 }
 
-/** DTO client→server */
-export interface SignalOfferDto {
-  call_id: string;
-  offer: RTCSessionDescriptionInit;
-  metadata?: unknown;
-}
-
-export interface SignalAnswerDto {
-  call_id: string;
-  answer: RTCSessionDescriptionInit;
-  metadata?: unknown;
-}
-
-export interface IceCandidateDto {
-  call_id: string;
-  candidate: RTCIceCandidateInit;
-  sdpMLineIndex?: number;
-  sdpMid?: string | null;
-  metadata?: unknown;
-}
-
 /** Server→client versions */
 export interface SignalOfferInbound extends SignalOfferDto {
   from_user_id: string;
@@ -109,7 +89,6 @@ export interface CallTimeoutPayload {
   timestamp: string;
 }
 
-
 export interface ServerToClientDirectCall {
   connect: () => void;
   connect_error: (err: Error) => void;
@@ -123,6 +102,27 @@ export interface ServerToClientDirectCall {
   callEnded: (data: CallEndedPayload) => void;
   callTimeout: (data: CallTimeoutPayload) => void;
   pong: (data: { timestamp: string; message: "pong" }) => void;
+}
+
+// ===== Client -> Server =====
+export interface SignalOfferDto {
+  call_id: string;
+  offer: RTCSessionDescriptionInit;
+  metadata?: unknown;
+}
+
+export interface SignalAnswerDto {
+  call_id: string;
+  answer: RTCSessionDescriptionInit;
+  metadata?: unknown;
+}
+
+export interface IceCandidateDto {
+  call_id: string;
+  candidate: RTCIceCandidateInit;
+  sdpMLineIndex?: number;
+  sdpMid?: string | null;
+  metadata?: unknown;
 }
 
 export interface ClientToServerDirectCall {
