@@ -30,7 +30,7 @@ export interface IdentityConfirmedCall {
 }
 
 export interface JoinedServer {
-  serverId: string;
+  server_id: string;
   message: string;
 }
 
@@ -38,26 +38,24 @@ export interface ChannelJoinedPayload {
   channel_id: string;
   status: string;
   participants: UserInfo[];
-  timestamp: string;
 }
 
 export interface UserJoinedChannelPayload {
   channel_id: string;
   user_id: string;
   user_info: UserInfo;
-  timestamp: string;
 }
 
 export interface ChannelLeftPayload {
   channel_id: string;
-  status: string;
-  timestamp: string;
+  user_id: string;
+  user_info: UserInfo;
 }
 
 export interface UserLeftChannelPayload {
   channel_id: string;
   user_id: string;
-  timestamp: string;
+  user_info: UserInfo;
 }
 
 export interface ServerToClientChannelCall {
@@ -65,8 +63,8 @@ export interface ServerToClientChannelCall {
   serverJoined: (p: JoinedServer) => void;
   channelJoined: (p: ChannelJoinedPayload) => void;
   userJoinedChannel: (p: UserJoinedChannelPayload) => void;
-  channelLeft: (p: ChannelLeftPayload) => void;
   userLeftChannel: (p: UserLeftChannelPayload) => void;
+  channelLeft: (p: ChannelLeftPayload) => void;
   pong: (p: PongPayload) => void;
   error: (e: WsErrorPayload) => void;
 }
@@ -77,7 +75,7 @@ export interface IdentityCallDto {
 }
 
 export interface JoinServerDto {
-  serverId: string;
+  server_id: string;
 }
 
 export interface JoinChannelDto {

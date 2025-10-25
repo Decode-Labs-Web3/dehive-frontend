@@ -33,7 +33,7 @@ export default function ChannelCallProvider({
 
     const tryJoinServer = () => {
       if (!serverId) return;
-      socket.emit("joinServer", { serverId });
+      socket.emit("joinServer", { server_id: serverId });
     };
 
     const onConnect = () => {
@@ -113,8 +113,8 @@ export default function ChannelCallProvider({
     socket.on("serverJoined", onServerJoined);
     socket.on("channelJoined", onChannelJoined);
     socket.on("userJoinedChannel", onUserJoinedChannel);
-    socket.on("channelLeft", onChannelLeft);
     socket.on("userLeftChannel", onUserLeftChannel);
+    socket.on("channelLeft", onChannelLeft);
     socket.on("pong", onPong);
 
     if (!socket.connected) socket.connect();
@@ -147,7 +147,7 @@ export default function ChannelCallProvider({
 
   useEffect(() => {
     if (!serverId || !socket.connected) return;
-    socket.emit("joinServer", { serverId });
+    socket.emit("joinServer", { server_id: serverId });
   }, [serverId, socket]);
 
   return <>{children}</>;

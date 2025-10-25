@@ -1,5 +1,6 @@
 "use client";
 
+// import { useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -286,6 +287,21 @@ export default function DirectMessagePage() {
     }
   }, [messages.length, loadingMore]);
 
+  // const handleJumpToPresent = () => {
+  //   const element = listRef.current;
+  //   if (element) {
+  //     element.scrollTop = element.scrollHeight;
+  //   }
+  // };
+
+  // const isAtBottom = useMemo(() => {
+  //   const element = listRef.current;
+  //   if (!element) return false;
+  //   console.log(element?.scrollHeight, element?.scrollTop, element?.clientHeight);
+  //    return element.scrollHeight - (element.scrollTop + element.clientHeight) >= 50;
+
+  // }, [messages.length, loadingMore]);
+
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
@@ -559,6 +575,12 @@ export default function DirectMessagePage() {
       </Dialog>
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
+        {/* {isAtBottom && (
+            <div className="flex flex-row bg-red-500">
+              <h1>You{"'"}re Viewing Older Messages</h1>
+              <Button onClick={handleJumpToPresent}>Jump to present</Button>
+            </div>
+          )} */}
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
           <Button className="h-11 w-11 shrink-0 rounded-full bg-muted text-lg text-muted-foreground hover:bg-accent">
             +

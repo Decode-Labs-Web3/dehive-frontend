@@ -7,7 +7,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useCallback, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface UserChatWith {
   id: string;
@@ -26,8 +25,10 @@ export default function CallPage() {
     avatar_ipfs_hash: "",
   });
 
+  console.log("this is orther user info", userChatWith);
+
   const fetchUserChatWith = useCallback(async () => {
-    if (channelId) return;
+    // if (channelId) return;
     try {
       const apiResponse = await fetch("/api/user/chat-with", {
         method: "POST",
@@ -63,153 +64,159 @@ export default function CallPage() {
   );
 
   return (
-    <div className="h-screen flex items-center justify-center">
+    <div className="h-screen flex items-center justify-center bg-background">
       {meCallState.status === "idle" && (
-        <Card>
-          <CardContent className="text-center p-6">
-            <Button onClick={startCall}>Start call</Button>
-          </CardContent>
-        </Card>
+        <div className="bg-card rounded-lg shadow-md p-6 text-center border">
+          <Button onClick={startCall}>Start call</Button>
+        </div>
       )}
 
       {meCallState.status === "ended" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Call End</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p>The call request has ended</p>
-            <p>{meCallState.user_info?.display_name}</p>
-            <p>{meCallState.user_info?.username}</p>
-            <Avatar>
-              <AvatarImage
-                src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
-              />
-              <AvatarFallback>
-                {meCallState.user_info?.display_name} Avatar
-              </AvatarFallback>
-            </Avatar>
-            <Button
-              onClick={() => {
-                setMeCallState({
-                  call_id: null,
-                  status: "idle",
-                  user_info: null,
-                });
-                router.push(`/app/channels/me/${channelId}`);
-              }}
-            >
-              Close
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="bg-card rounded-lg shadow-md p-6 text-center max-w-sm border">
+          <h2 className="text-card-foreground text-xl font-semibold mb-4">
+            Call Ended
+          </h2>
+          <p className="text-muted-foreground mb-2">The call has ended</p>
+          <p className="text-card-foreground font-medium">
+            {meCallState.user_info?.display_name}
+          </p>
+          <p className="text-muted-foreground text-sm mb-4">
+            @{meCallState.user_info?.username}
+          </p>
+          <Avatar className="mx-auto mb-4">
+            <AvatarImage
+              src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
+            />
+            <AvatarFallback>
+              {meCallState.user_info?.display_name?.[0] || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <Button
+            onClick={() => {
+              setMeCallState({
+                call_id: null,
+                status: "idle",
+                user_info: null,
+              });
+              router.push(`/app/channels/me/${channelId}`);
+            }}
+          >
+            Close
+          </Button>
+        </div>
       )}
 
       {meCallState.status === "declined" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Call Declined</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p>The call request has been declined</p>
-            <p>{meCallState.user_info?.display_name}</p>
-            <p>{meCallState.user_info?.username}</p>
-            <Avatar>
-              <AvatarImage
-                src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
-              />
-              <AvatarFallback>
-                {meCallState.user_info?.display_name} Avatar
-              </AvatarFallback>
-            </Avatar>
-            <Button
-              onClick={() => {
-                setMeCallState({
-                  call_id: null,
-                  status: "idle",
-                  user_info: null,
-                });
-                router.push(`/app/channels/me/${channelId}`);
-              }}
-            >
-              Close
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="bg-card rounded-lg shadow-md p-6 text-center max-w-sm border">
+          <h2 className="text-card-foreground text-xl font-semibold mb-4">
+            Call Declined
+          </h2>
+          <p className="text-muted-foreground mb-2">The call was declined</p>
+          <p className="text-card-foreground font-medium">
+            {meCallState.user_info?.display_name}
+          </p>
+          <p className="text-muted-foreground text-sm mb-4">
+            @{meCallState.user_info?.username}
+          </p>
+          <Avatar className="mx-auto mb-4">
+            <AvatarImage
+              src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
+            />
+            <AvatarFallback>
+              {meCallState.user_info?.display_name?.[0] || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <Button
+            onClick={() => {
+              setMeCallState({
+                call_id: null,
+                status: "idle",
+                user_info: null,
+              });
+              router.push(`/app/channels/me/${channelId}`);
+            }}
+          >
+            Close
+          </Button>
+        </div>
       )}
 
       {meCallState.status === "ringing" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Incoming Call</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p>{meCallState.user_info?.display_name}</p>
-            <p>{meCallState.user_info?.username}</p>
-            <Avatar>
-              <AvatarImage
-                src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
-              />
-              <AvatarFallback>
-                {meCallState.user_info?.display_name} Avatar
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex gap-4 justify-center">
-              <Button
-                className="bg-success text-success-foreground hover:opacity-90"
-                onClick={() => acceptCall()}
-              >
-                Accept
-              </Button>
-              <Button
-                className="bg-destructive text-destructive-foreground hover:opacity-90"
-                onClick={() => declineCall()}
-              >
-                Decline
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-card rounded-lg shadow-md p-6 text-center max-w-sm border">
+          <h2 className="text-card-foreground text-xl font-semibold mb-4">
+            Incoming Call
+          </h2>
+          <p className="text-card-foreground font-medium">
+            {meCallState.user_info?.display_name}
+          </p>
+          <p className="text-muted-foreground text-sm mb-4">
+            @{meCallState.user_info?.username}
+          </p>
+          <Avatar className="mx-auto mb-4">
+            <AvatarImage
+              src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
+            />
+            <AvatarFallback>
+              {meCallState.user_info?.display_name?.[0] || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex gap-4 justify-center">
+            <Button
+              className="bg-green-500 text-white hover:bg-green-600"
+              onClick={() => acceptCall()}
+            >
+              Accept
+            </Button>
+            <Button
+              className="bg-red-500 text-white hover:bg-red-600"
+              onClick={() => declineCall()}
+            >
+              Decline
+            </Button>
+          </div>
+        </div>
       )}
 
       {meCallState.status === "calling" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Calling...</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p>{meCallState.user_info?.display_name}</p>
-            <p>{meCallState.user_info?.username}</p>
-            <Avatar>
-              <AvatarImage
-                src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
-              />
-              <AvatarFallback>
-                {meCallState.user_info?.display_name} Avatar
-              </AvatarFallback>
-            </Avatar>
-            <Button
-              className="bg-destructive text-destructive-foreground hover:opacity-90"
-              onClick={() => endCall()}
-            >
-              End Call
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="bg-card rounded-lg shadow-md p-6 text-center max-w-sm border">
+          <h2 className="text-card-foreground text-xl font-semibold mb-4">
+            Calling...
+          </h2>
+          <p className="text-card-foreground font-medium">
+            {meCallState.user_info?.display_name}
+          </p>
+          <p className="text-muted-foreground text-sm mb-4">
+            @{meCallState.user_info?.username}
+          </p>
+          <Avatar className="mx-auto mb-4">
+            <AvatarImage
+              src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
+            />
+            <AvatarFallback>
+              {meCallState.user_info?.display_name?.[0] || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <Button
+            className="bg-red-500 text-white hover:bg-red-600"
+            onClick={() => endCall()}
+          >
+            End Call
+          </Button>
+        </div>
       )}
 
       {meCallState.status === "connected" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Connected</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p>Call ID: {meCallState.user_info?.display_name}</p>
-            {meCallState.call_id && (
-              <MeCallPage callId={meCallState.call_id} endCall={endCall} />
-            )}
-          </CardContent>
-        </Card>
+        <div className="bg-card rounded-lg shadow-md p-6 text-center max-w-sm border">
+          <h2 className="text-card-foreground text-xl font-semibold mb-4">
+            Connected
+          </h2>
+          <p className="text-muted-foreground mb-4">
+            Call with {meCallState.user_info?.display_name}
+          </p>
+          {meCallState.call_id && (
+            <MeCallPage callId={meCallState.call_id} endCall={endCall} />
+          )}
+        </div>
       )}
     </div>
   );

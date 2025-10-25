@@ -1,10 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import ServerBarItems from "@/components/serverBarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  ChannelJoinedPayload,
+  UserJoinedChannelPayload,
+  UserLeftChannelPayload,
+  ChannelLeftPayload,
+} from "@/interfaces/websocketChannelCall.interface";
 import {
   faGear,
   faHashtag,
@@ -22,6 +29,7 @@ interface ChannelProps {
   updatedAt: string;
   __v: number;
 }
+
 interface ChannelPageProps {
   channel: ChannelProps;
   fetchCategoryInfo: () => void;
@@ -31,6 +39,14 @@ interface ChannelPageProps {
     React.SetStateAction<Record<string, boolean>>
   >;
 }
+
+interface UserChannelProps {
+  _id: string;
+  username: string;
+  display_name: string;
+  avatar_ipfs_hash: string;
+}
+
 export default function Channels({
   channel,
   channelPanel,
@@ -39,8 +55,19 @@ export default function Channels({
   fetchCategoryInfo,
 }: ChannelPageProps) {
   const { serverId } = useParams();
+  const router = useRouter();
   const [channelModal, setChannelModal] = useState(false);
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
+  const [userChannel, setUserChannel] = useState<UserChannelProps[]>([]);
+
+  const handleChannelClick = () => {
+    console.log("Channel clicked:", channel._id, channel.type);
+    if (channel.type === "VOICE") {
+      router.push(`/app/channels/${serverId}/${channel._id}/call`);
+    } else {
+      router.push(`/app/channels/${serverId}/${channel._id}`);
+    }
+  };
   const handleDeleteChannel = async (channelId: string) => {
     try {
       const apiResponse = await fetch("/api/servers/channel/delete", {
@@ -74,6 +101,75 @@ export default function Channels({
       console.log("Server deleted channel fail");
     }
   };
+
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onChannelJoined = (p: ChannelJoinedPayload) => {
+      console.log("[channel call channelJoined] quang minh", p);
+      console.log(
+        "Setting userChannel state with participants:",
+        p.participants
+      );
+      if (p.channel_id === channel._id) {
+        console.log(
+          "Setting userChannel state with participants:",
+          p.participants
+        );
+        setUserChannel(p.participants);
+      }
+    };
+    socket.on("channelJoined", onChannelJoined);
+    return () => {
+      socket.off("channelJoined", onChannelJoined);
+    };
+  }, [channel._id]);
+
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
+      console.log("[channel call userJoinedChannel] quang minh", p);
+      if (p.channel_id === channel._id) {
+        console.log("[channel call userJoinedChannel]", p);
+        setUserChannel((prev) => [...prev, p.user_info]);
+      }
+    };
+    socket.on("userJoinedChannel", onUserJoinedChannel);
+    return () => {
+      socket.off("userJoinedChannel", onUserJoinedChannel);
+    };
+  }, [channel._id]);
+
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onUserLeftChannel = (p: UserLeftChannelPayload) => {
+      console.log("[channel call userLeftChannel] quang minh", p);
+      if (p.channel_id === channel._id) {
+        console.log("User left channel", p);
+        setUserChannel((prev) => prev.filter((user) => user._id !== p.user_info._id));
+      }
+    };
+    socket.on("userLeftChannel", onUserLeftChannel);
+    return () => {
+      socket.off("userLeftChannel", onUserLeftChannel);
+    };
+  }, [channel._id]);
+
+
+    useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onChannelLeft = (p: ChannelLeftPayload) => {
+      console.log("[channel call userLeftChannel] quang minh", p);
+      if (p.channel_id === channel._id) {
+        console.log("User left channel", p);
+        setUserChannel((prev) => prev.filter((user) => user._id !== p.user_info._id));
+      }
+    };
+    socket.on("channelLeft", onChannelLeft);
+    return () => {
+      socket.off("channelLeft", onChannelLeft);
+    };
+  }, [channel._id]);
+
   return (
     <>
       <div
@@ -87,31 +183,47 @@ export default function Channels({
           "relative flex items-center justify-between px-4 py-1 rounded-md hover:bg-[var(--background-secondary)] group w-full h-full"
         }
       >
-        <Link
-          href={
-            channel.type === "TEXT"
-              ? `/app/channels/${serverId}/${channel._id}`
-              : `/app/channels/${serverId}/${channel._id}/call`
-          }
-          className=" flex flex-row justify-between items-center w-full h-full"
+        <div
+          onMouseDown={handleChannelClick}
+          className=" flex flex-row justify-between items-center w-full h-full z-[100]"
         >
-          <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
-            <FontAwesomeIcon
-              icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
-              className="w-4 h-4 text-[var(--muted-foreground)]"
-            />
-            <p className="truncate text-sm">{channel.name}</p>
+          <div className="flex flex-col items-center gap-3 text-sm text-[var(--muted-foreground)]">
+            <div className="flex flex-row items-center gap-2">
+              <FontAwesomeIcon
+                icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
+                className="w-4 h-4 text-[var(--muted-foreground)]"
+              />
+              <p className="truncate text-sm">{channel.name}</p>
+            </div>
+            {channel.type === "VOICE" && (
+              <>
+                {userChannel.map((user) => (
+                  <div key={user._id} className="flex flex-row">
+                    <Avatar className="mx-auto mb-4">
+                      <AvatarImage
+                        src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                      />
+                      <AvatarFallback>{user.display_name}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col ml-2">
+                      <h1>{user.display_name}</h1>
+                      <h1>@{user.username}</h1>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
 
           <div className="flex flex-row gap-1">
-            <button className="text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
+            <button className="text-[var(--muted-foreground)]">
               <FontAwesomeIcon icon={faUserPlus} />
             </button>
-            <button className="p-1 text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100">
+            <button className="p-1 text-[var(--muted-foreground)]">
               <FontAwesomeIcon icon={faGear} />
             </button>
           </div>
-        </Link>
+        </div>
 
         {channelModal && (
           <>

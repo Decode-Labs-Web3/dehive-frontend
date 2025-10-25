@@ -8,10 +8,10 @@ import {
   faSun,
   faMoon,
   faGear,
-  faMicrophoneSlash,
   faMicrophone,
   faVolumeHigh,
   faVolumeXmark,
+  faMicrophoneSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

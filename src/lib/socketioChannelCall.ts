@@ -16,7 +16,7 @@ export function getChannelCallSocketIO(): Socket<
 > {
   if (_channelCallSocket) return _channelCallSocket;
 
-  _channelCallSocket = io(`${URL}/channel-rtc`, {
+  _channelCallSocket = io(URL, {
     transports: ["websocket"],
     autoConnect: false,
     reconnection: true,

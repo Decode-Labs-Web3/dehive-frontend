@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useCallback, useEffect } from "react";
-import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { faCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
-import { ConversationUpdate } from "@/interfaces/websocketDirectChat.interface";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ConversationUpdate } from "@/interfaces/websocketDirectChat.interface";
 import {
   DropdownMenu,
   DropdownMenuTrigger,

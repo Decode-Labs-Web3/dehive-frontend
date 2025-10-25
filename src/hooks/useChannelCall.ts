@@ -1,9 +1,12 @@
 "use client";
 
+import { useRouter, useParams } from "next/navigation";
 import { useRef, useCallback } from "react";
 import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
 
 export function useChannelCall(channelId: string) {
+  const router = useRouter();
+  const { serverId }  = useParams<{serverId: string}>();
   const socket = useRef(getChannelCallSocketIO()).current;
 
   const joinChannel = useCallback(() => {
@@ -20,7 +23,8 @@ export function useChannelCall(channelId: string) {
     socket.emit("leaveChannel", {
       channel_id: channelId,
     });
-  }, [socket, channelId]);
+    router.push(`/app/channels/${serverId}`);
+  }, [socket, channelId, router, serverId]);
 
   return {
     joinChannel,
