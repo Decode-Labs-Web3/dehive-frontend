@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useDirectCall } from "@/hooks/useDirectCall";
-import MeCallPage from "@/components/common/CallPage";
+import CallPage from "@/components/common/CallPage";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useCallback, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,7 +15,7 @@ interface UserChatWith {
   avatar_ipfs_hash: string;
 }
 
-export default function CallPage() {
+export default function DirectCallPage() {
   const router = useRouter();
   const { channelId } = useParams<{ channelId: string }>();
   const [userChatWith, setUserChatWith] = useState<UserChatWith>({
@@ -64,7 +64,7 @@ export default function CallPage() {
   );
 
   return (
-    <div className="h-screen flex items-center justify-center bg-background">
+    <div className="h-screen flex items-center justify-center bg-background w-full ">
       {meCallState.status === "idle" && (
         <div className="bg-card rounded-lg shadow-md p-6 text-center border">
           <Button onClick={startCall}>Start call</Button>
@@ -72,7 +72,7 @@ export default function CallPage() {
       )}
 
       {meCallState.status === "ended" && (
-        <div className="bg-card rounded-lg shadow-md p-6 text-center max-w-sm border">
+        <div className="h-screen bg-card rounded-lg shadow-md p-6 text-center max-w-sm border  w-full">
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Call Ended
           </h2>
@@ -107,7 +107,7 @@ export default function CallPage() {
       )}
 
       {meCallState.status === "declined" && (
-        <div className="bg-card rounded-lg shadow-md p-6 text-center max-w-sm border">
+        <div className=" h-screen bg-card rounded-lg shadow-md p-6 text-center max-w-sm border  w-full">
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Call Declined
           </h2>
@@ -142,7 +142,7 @@ export default function CallPage() {
       )}
 
       {meCallState.status === "ringing" && (
-        <div className="bg-card rounded-lg shadow-md p-6 text-center max-w-sm border">
+        <div className=" h-screen bg-card rounded-lg shadow-md p-6 text-center max-w-sm border  w-full">
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Incoming Call
           </h2>
@@ -178,7 +178,7 @@ export default function CallPage() {
       )}
 
       {meCallState.status === "calling" && (
-        <div className="bg-card rounded-lg shadow-md p-6 text-center max-w-sm border">
+        <div className="h-screen bg-card rounded-lg shadow-md p-6 text-center max-w-sm border  w-full">
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Calling...
           </h2>
@@ -206,7 +206,7 @@ export default function CallPage() {
       )}
 
       {meCallState.status === "connected" && (
-        <div className="bg-card rounded-lg shadow-md p-6 text-center max-w-sm border">
+        <div className="h-screen bg-card rounded-lg shadow-md p-6 text-center max-w-sm border w-full">
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Connected
           </h2>
@@ -214,7 +214,7 @@ export default function CallPage() {
             Call with {meCallState.user_info?.display_name}
           </p>
           {meCallState.call_id && (
-            <MeCallPage callId={meCallState.call_id} endCall={endCall} />
+            <CallPage callId={meCallState.call_id} endCall={endCall} />
           )}
         </div>
       )}

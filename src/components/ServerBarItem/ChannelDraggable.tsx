@@ -46,8 +46,8 @@ export default function ChannelDraggable({
           ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
           : undefined,
       }}
-      {...listeners}
-      {...attributes}
+      {...(isPrivileged ? listeners : {})}
+      {...(isPrivileged ? attributes : {})}
     >
       <ServerBarItems.Channels
         channel={channel}

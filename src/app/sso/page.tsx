@@ -40,7 +40,7 @@ export default function Authorize() {
       }
 
       console.log(apiResponse);
-      router.push("/app");
+      router.push("/app/channels/me");
     } catch (error) {
       console.error(error);
       console.log("Server for SSO error");

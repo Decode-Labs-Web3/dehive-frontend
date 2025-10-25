@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
-import MeCallPage from "@/components/common/CallPage";
+import CallPage from "@/components/common/CallPage";
 import { useChannelCall } from "@/hooks/useChannelCall";
 
-export default function ServerCallPage() {
+export default function ChannelCallPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const { joinChannel, leaveChannel } = useChannelCall(channelId);
   useEffect(() => {
@@ -13,7 +13,7 @@ export default function ServerCallPage() {
   }, [joinChannel]);
   return (
     <>
-      <MeCallPage callId={channelId} endCall={leaveChannel} />
+      <CallPage callId={channelId} endCall={leaveChannel} />
     </>
   );
 }

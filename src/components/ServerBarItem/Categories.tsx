@@ -367,6 +367,7 @@ export default function Categories({ server }: CategoriesProps) {
   };
 
   const OnDragEnd = async ({ active, over }: DragEndEvent) => {
+    if (!isPrivileged) return;
     if (!over) return;
     const channelId = String(active.id);
     const sourceCategoryId = String(active.data.current?.categoryId);
@@ -432,7 +433,7 @@ export default function Categories({ server }: CategoriesProps) {
               className="relative group flex items-center justify-between px-3 py-1 rounded-md hover:bg-accent"
             >
               <button
-                className="flex h-10 items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                className="flex h-10 justify-between w-full items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                 onClick={() =>
                   setOpen((prev) => ({
                     ...prev,
@@ -440,7 +441,7 @@ export default function Categories({ server }: CategoriesProps) {
                   }))
                 }
               >
-                <span className="select-none">{category.name}</span>
+                <span>{category.name}</span>
                 <FontAwesomeIcon
                   icon={open[category._id] ? faChevronDown : faChevronRight}
                   className="text-muted-foreground"

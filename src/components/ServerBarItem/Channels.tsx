@@ -7,10 +7,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  ChannelJoinedPayload,
-  UserJoinedChannelPayload,
-  UserLeftChannelPayload,
+  JoinedServer,
   ChannelLeftPayload,
+  ChannelJoinedPayload,
+  UserLeftChannelPayload,
+  UserJoinedChannelPayload,
 } from "@/interfaces/websocketChannelCall.interface";
 import {
   faGear,
@@ -105,7 +106,7 @@ export default function Channels({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onChannelJoined = (p: ChannelJoinedPayload) => {
-      console.log("[channel call channelJoined] quang minh", p);
+      // console.log("[channel call channelJoined] quang minh", p);
       console.log(
         "Setting userChannel state with participants:",
         p.participants
@@ -127,7 +128,7 @@ export default function Channels({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
-      console.log("[channel call userJoinedChannel] quang minh", p);
+      // console.log("[channel call userJoinedChannel] quang minh", p);
       if (p.channel_id === channel._id) {
         console.log("[channel call userJoinedChannel]", p);
         setUserChannel((prev) => [...prev, p.user_info]);
@@ -142,10 +143,12 @@ export default function Channels({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserLeftChannel = (p: UserLeftChannelPayload) => {
-      console.log("[channel call userLeftChannel] quang minh", p);
+      // console.log("[channel call userLeftChannel] quang minh", p);
       if (p.channel_id === channel._id) {
         console.log("User left channel", p);
-        setUserChannel((prev) => prev.filter((user) => user._id !== p.user_info._id));
+        setUserChannel((prev) =>
+          prev.filter((user) => user._id !== p.user_info._id)
+        );
       }
     };
     socket.on("userLeftChannel", onUserLeftChannel);
@@ -154,14 +157,15 @@ export default function Channels({
     };
   }, [channel._id]);
 
-
-    useEffect(() => {
+  useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onChannelLeft = (p: ChannelLeftPayload) => {
-      console.log("[channel call userLeftChannel] quang minh", p);
+      // console.log("[channel call userLeftChannel] quang minh", p);
       if (p.channel_id === channel._id) {
         console.log("User left channel", p);
-        setUserChannel((prev) => prev.filter((user) => user._id !== p.user_info._id));
+        setUserChannel((prev) =>
+          prev.filter((user) => user._id !== p.user_info._id)
+        );
       }
     };
     socket.on("channelLeft", onChannelLeft);
@@ -169,6 +173,18 @@ export default function Channels({
       socket.off("channelLeft", onChannelLeft);
     };
   }, [channel._id]);
+
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onServerJoined = (p: JoinedServer) => {
+      // console.log("[channel call serverJoined] quang minh", p);
+    setUserChannel(p.channels.find(channelItem => channelItem.channel_id === channel._id)?.participants || []);
+    };
+    socket.on("serverJoined", onServerJoined);
+    return () => {
+      socket.off("serverJoined", onServerJoined);
+    };
+  },[channel._id]);
 
   return (
     <>
@@ -185,104 +201,110 @@ export default function Channels({
       >
         <div
           onMouseDown={handleChannelClick}
-          className=" flex flex-row justify-between items-center w-full h-full z-[100]"
+          className=" flex flex-row justify-between items-center w-full h-full"
         >
-          <div className="flex flex-col items-center gap-3 text-sm text-[var(--muted-foreground)]">
-            <div className="flex flex-row items-center gap-2">
-              <FontAwesomeIcon
-                icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
-                className="w-4 h-4 text-[var(--muted-foreground)]"
-              />
-              <p className="truncate text-sm">{channel.name}</p>
+          <div className="flex flex-col items-center gap-3 text-sm text-[var(--muted-foreground)] w-full">
+            <div className="flex justify-between items-between w-full">
+              <div className="flex gap-2">
+                <FontAwesomeIcon
+                  icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
+                  className="w-4 h-4 text-[var(--muted-foreground)]"
+                />
+                <p className="truncate text-sm">{channel.name}</p>
+              </div>
+
+              <div className="flex gap-1">
+                <button className="text-[var(--muted-foreground)]">
+                  <FontAwesomeIcon icon={faUserPlus} />
+                </button>
+                <button className="p-1 text-[var(--muted-foreground)]">
+                  <FontAwesomeIcon icon={faGear} />
+                </button>
+              </div>
             </div>
-            {channel.type === "VOICE" && (
-              <>
-                {userChannel.map((user) => (
-                  <div key={user._id} className="flex flex-row">
-                    <Avatar className="mx-auto mb-4">
-                      <AvatarImage
-                        src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
-                      />
-                      <AvatarFallback>{user.display_name}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col ml-2">
-                      <h1>{user.display_name}</h1>
-                      <h1>@{user.username}</h1>
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-
-          <div className="flex flex-row gap-1">
-            <button className="text-[var(--muted-foreground)]">
-              <FontAwesomeIcon icon={faUserPlus} />
-            </button>
-            <button className="p-1 text-[var(--muted-foreground)]">
-              <FontAwesomeIcon icon={faGear} />
-            </button>
-          </div>
-        </div>
-
-        {channelModal && (
-          <>
-            <div
-              tabIndex={-1}
-              ref={(element) => element?.focus()}
-              onClick={() => setChannelModal(false)}
-              onKeyDown={(event) =>
-                event.key === "Escape" && setChannelModal(false)
-              }
-              className="fixed inset-0 bg-black/50 z-20"
-            />
-
-            <div className="absolute top-full z-30 left-1/2 -translate-x-1/2 w-56 rounded-md border border-border bg-background text-foreground shadow-lg">
-              {isPrivileged && (
+            <div className="flex flex-col justify-start items-start w-full">
+              {channel.type === "VOICE" && (
                 <>
-                  <button
-                    onClick={() => {
-                      setChannelPannel((prev) => ({
-                        ...prev,
-                        [channel._id]: true,
-                      }));
-                      setChannelModal(false);
-                    }}
-                    className="w-full text-left px-3 py-2 hover:bg-accent"
-                  >
-                    Edit Channel
-                  </button>
-                  <button
-                    onClick={() => {
-                      setChannelModal(false);
-                      setDeleteChannelModal(true);
-                    }}
-                    className="w-full text-left px-3 py-2 text-destructive hover:bg-destructive/10"
-                  >
-                    Delete Channel
-                  </button>
+                  {userChannel.map((user) => (
+                    <div key={user._id} className="flex flex-row">
+                      <Avatar className="mx-auto mb-4">
+                        <AvatarImage
+                          src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                        />
+                        <AvatarFallback>{user.display_name}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col ml-2">
+                        <h1>{user.display_name}</h1>
+                        <h1>@{user.username}</h1>
+                      </div>
+                    </div>
+                  ))}
                 </>
               )}
-              <button
-                onClick={async (event: React.MouseEvent<HTMLButtonElement>) => {
-                  const button = event.currentTarget;
-                  const oldText = button.textContent;
-
-                  await navigator.clipboard.writeText(channel._id);
-
-                  button.textContent = "Copied!";
-                  setTimeout(() => {
-                    button.textContent = oldText;
-                  }, 1000);
-                }}
-                className="w-full flex justify-between text-left px-3 py-2 hover:bg-accent"
-              >
-                Copy Channel ID
-                <FontAwesomeIcon icon={faCopy} />
-              </button>
             </div>
-          </>
-        )}
+          </div>
+
+          {channelModal && (
+            <>
+              <div
+                tabIndex={-1}
+                ref={(element) => element?.focus()}
+                onClick={() => setChannelModal(false)}
+                onKeyDown={(event) =>
+                  event.key === "Escape" && setChannelModal(false)
+                }
+                className="fixed inset-0 bg-black/50 z-20"
+              />
+
+              <div className="absolute top-full z-30 left-1/2 -translate-x-1/2 w-56 rounded-md border border-border bg-background text-foreground shadow-lg">
+                {isPrivileged && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setChannelPannel((prev) => ({
+                          ...prev,
+                          [channel._id]: true,
+                        }));
+                        setChannelModal(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-accent"
+                    >
+                      Edit Channel
+                    </button>
+                    <button
+                      onClick={() => {
+                        setChannelModal(false);
+                        setDeleteChannelModal(true);
+                      }}
+                      className="w-full text-left px-3 py-2 text-destructive hover:bg-destructive/10"
+                    >
+                      Delete Channel
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={async (
+                    event: React.MouseEvent<HTMLButtonElement>
+                  ) => {
+                    const button = event.currentTarget;
+                    const oldText = button.textContent;
+
+                    await navigator.clipboard.writeText(channel._id);
+
+                    button.textContent = "Copied!";
+                    setTimeout(() => {
+                      button.textContent = oldText;
+                    }, 1000);
+                  }}
+                  className="w-full flex justify-between text-left px-3 py-2 hover:bg-accent"
+                >
+                  Copy Channel ID
+                  <FontAwesomeIcon icon={faCopy} />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {channelPanel[channel._id] && (

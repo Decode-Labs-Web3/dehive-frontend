@@ -31,7 +31,12 @@ export interface IdentityConfirmedCall {
 
 export interface JoinedServer {
   server_id: string;
-  message: string;
+  channels: Channels[];
+}
+
+export interface Channels {
+  channel_id: string;
+  participants: UserInfo[];
 }
 
 export interface ChannelJoinedPayload {
