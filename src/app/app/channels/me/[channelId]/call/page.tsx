@@ -72,7 +72,7 @@ export default function DirectCallPage() {
       )}
 
       {meCallState.status === "ended" && (
-        <div className="h-screen bg-card rounded-lg shadow-md p-6 text-center max-w-sm border  w-full">
+        <div className="bg-card rounded-lg shadow-md p-6 text-center border w-full">
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Call Ended
           </h2>
@@ -107,7 +107,7 @@ export default function DirectCallPage() {
       )}
 
       {meCallState.status === "declined" && (
-        <div className=" h-screen bg-card rounded-lg shadow-md p-6 text-center max-w-sm border  w-full">
+        <div className="bg-card rounded-lg shadow-md p-6 text-center border w-full">
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Call Declined
           </h2>
@@ -142,7 +142,7 @@ export default function DirectCallPage() {
       )}
 
       {meCallState.status === "ringing" && (
-        <div className=" h-screen bg-card rounded-lg shadow-md p-6 text-center max-w-sm border  w-full">
+        <div className="bg-card rounded-lg shadow-md p-6 text-center border w-full">
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Incoming Call
           </h2>
@@ -178,7 +178,7 @@ export default function DirectCallPage() {
       )}
 
       {meCallState.status === "calling" && (
-        <div className="h-screen bg-card rounded-lg shadow-md p-6 text-center max-w-sm border  w-full">
+        <div className="bg-card rounded-lg shadow-md p-6 text-center w-full">
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Calling...
           </h2>
@@ -206,7 +206,7 @@ export default function DirectCallPage() {
       )}
 
       {meCallState.status === "connected" && (
-        <div className="h-screen bg-card rounded-lg shadow-md p-6 text-center max-w-sm border w-full">
+        <div className="bg-card rounded-lg shadow-md p-6 text-center border w-full">
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Connected
           </h2>

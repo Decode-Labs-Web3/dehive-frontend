@@ -1,29 +1,25 @@
 "use client";
 
 import {
-  CallControls,
   CallingState,
   SpeakerLayout,
   StreamCall,
   StreamTheme,
   StreamVideo,
   StreamVideoClient,
-  useCall,
   useCallStateHooks,
   type User,
   type Call,
+  CancelCallConfirmButton,
+  ToggleAudioPublishingButton,
+  ToggleVideoPublishingButton,
+  ScreenShareButton,
+  ReactionsButton,
+  CancelCallButton,
 } from "@stream-io/video-react-sdk";
 import { useEffect, useState, useCallback, useMemo } from "react";
 
 import "@stream-io/video-react-sdk/dist/css/styles.css";
-
-// const apiKey = "mmhfdzb5evj2";
-// const token =
-//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3Byb250by5nZXRzdHJlYW0uaW8iLCJzdWIiOiJ1c2VyL0xpbWVfU3Byb3V0IiwidXNlcl9pZCI6IkxpbWVfU3Byb3V0IiwidmFsaWRpdHlfaW5fc2Vjb25kcyI6NjA0ODAwLCJpYXQiOjE3NjA3NzQ4ODcsImV4cCI6MTc2MTM3OTY4N30.bkxIpYHLXqm4nL6vbW-qmS4_jb41OBiryZtvEgMAueM";
-// const userId = "Lime_Sprout";
-// const callId = "u2RO5s5OwzhH040HBfj9w";
-
-// set up the user object
 
 interface UserDataProps {
   _id: string;
@@ -84,7 +80,7 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
       return;
     }
     const response = await apiResponse.json();
-    console.log("this is data", response);
+    // console.log("this is data from callPage", response);
     setToken(response.data.token);
   }, []);
 
@@ -101,14 +97,12 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
     });
     const streamCall = streamVideoClient.call("default", callId);
 
-    // Join the call with camera and mic disabled by default
     streamCall
       .join({
         create: true,
         video: false,
       })
       .then(async () => {
-        // Force tắt camera và mic sau khi join
         try {
           await streamCall.camera.disable();
           await streamCall.microphone.disable();
@@ -125,7 +119,6 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
         setError(error.message || "Failed to join call");
       });
 
-    // Cleanup function
     return () => {
       if (streamCall) {
         streamCall.leave();
@@ -171,29 +164,8 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
 }
 
 const MyUILayout = ({ endCall }: { endCall: () => void }) => {
-  const call = useCall();
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
-
-  const handleEndCall = async () => {
-    if (call) {
-      try {
-        await call.endCall();
-      } catch (error) {
-        console.error("Failed to end call:", error);
-      }
-    }
-  };
-
-  const handleLeaveCall = async () => {
-    if (call) {
-      try {
-        await call.leave();
-      } catch (error) {
-        console.error("Failed to leave call:", error);
-      }
-    }
-  };
 
   if (callingState !== CallingState.JOINED) {
     return (
@@ -210,22 +182,20 @@ const MyUILayout = ({ endCall }: { endCall: () => void }) => {
     <StreamTheme>
       <SpeakerLayout participantsBarPosition="bottom" />
       <div className="flex justify-center items-center gap-4 p-4">
-        <CallControls />
-        <button
-          onClick={handleLeaveCall}
-          className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-        >
-          Leave Call
-        </button>
-        <button
-          onClick={() => {
-            handleEndCall();
+        <ReactionsButton />
+        <ToggleAudioPublishingButton />
+        <ToggleVideoPublishingButton />
+        <ScreenShareButton />
+        <CancelCallButton
+          onLeave={() => {
             endCall();
           }}
-          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-        >
-          End Call
-        </button>
+        />
+        <CancelCallConfirmButton
+          onLeave={() => {
+            endCall();
+          }}
+        />
       </div>
     </StreamTheme>
   );
