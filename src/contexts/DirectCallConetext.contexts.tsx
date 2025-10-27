@@ -9,7 +9,7 @@ interface MeCallContextProps {
 }
 
 const initialMeCall: CallProps = {
-  call_id: null,
+  conversation_id: null,
   status: "idle",
   user_info: null,
 };

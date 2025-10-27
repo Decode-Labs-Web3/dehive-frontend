@@ -1,5 +1,5 @@
 export interface CallProps {
-  call_id: string | null;
+  conversation_id: string | null;
   status: "idle" | "ringing" | "calling" | "connected" | "declined" | "ended";
   user_info?: UserInfo | null;
 }

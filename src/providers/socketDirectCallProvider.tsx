@@ -29,7 +29,7 @@ export default function DirectCallProvider({
   const socket = useRef(getDirectCallSocketIO()).current;
 
   const [meCallState, setMeCallState] = useState<CallProps>({
-    call_id: null,
+    conversation_id: null,
     status: "idle",
     user_info: null,
   });
@@ -64,18 +64,18 @@ export default function DirectCallProvider({
     const onIncoming = (payload: IncomingCallPayload) => {
       console.log("[incomingCall]", payload);
       setMeCallState({
-        call_id: payload.call_id,
+        conversation_id: payload.conversation_id,
         status: payload.status,
         user_info: payload.user_info,
       });
-      // console.log("[incomingCall] from directcall", payload.call_id);
-      router.push(`/app/channels/me/${payload.call_id}/call`);
+      console.log("[incomingCall] from directcall", payload.conversation_id);
+      router.push(`/app/channels/me/${payload.conversation_id}/call`);
     };
 
     const onStarted = (payload: CallStartedPayload) => {
       console.log("[callStarted]", payload);
       setMeCallState({
-        call_id: payload.call_id,
+        conversation_id: payload.conversation_id,
         status: payload.status,
         user_info: payload.user_info,
       });
@@ -84,7 +84,7 @@ export default function DirectCallProvider({
     const onAccepted = (payload: CallAcceptedPayload) => {
       console.log("[callAccepted]", payload);
       setMeCallState({
-        call_id: payload.call_id,
+        conversation_id: payload.conversation_id,
         status: payload.status,
         user_info: payload.user_info,
       });
@@ -93,7 +93,7 @@ export default function DirectCallProvider({
     const onDeclined = (payload: CallDeclinedPayload) => {
       console.log("[callDeclined]", payload);
       setMeCallState({
-        call_id: payload.call_id,
+        conversation_id: payload.conversation_id,
         status: payload.status,
         user_info: payload.user_info,
       });
@@ -104,7 +104,7 @@ export default function DirectCallProvider({
     const onEnded = (payload: CallEndedPayload) => {
       console.log("[callEnded]", payload);
       setMeCallState({
-        call_id: payload.call_id,
+        conversation_id: payload.conversation_id,
         status: payload.status,
         user_info: payload.user_info,
       });
@@ -118,7 +118,7 @@ export default function DirectCallProvider({
     const onTimeout = (payload: CallTimeoutPayload) => {
       console.log("[callTimeout]", payload);
       setMeCallState({
-        call_id: payload.call_id,
+        conversation_id: payload.conversation_id,
         status: payload.status,
         user_info: payload.user_info,
       });

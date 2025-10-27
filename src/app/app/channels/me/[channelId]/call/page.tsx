@@ -94,7 +94,7 @@ export default function DirectCallPage() {
           <Button
             onClick={() => {
               setMeCallState({
-                call_id: null,
+                conversation_id: null,
                 status: "idle",
                 user_info: null,
               });
@@ -129,7 +129,7 @@ export default function DirectCallPage() {
           <Button
             onClick={() => {
               setMeCallState({
-                call_id: null,
+                conversation_id: null,
                 status: "idle",
                 user_info: null,
               });
@@ -213,8 +213,8 @@ export default function DirectCallPage() {
           <p className="text-muted-foreground mb-4">
             Call with {meCallState.user_info?.display_name}
           </p>
-          {meCallState.call_id && (
-            <CallPage callId={meCallState.call_id} endCall={endCall} />
+          {meCallState.conversation_id && (
+            <CallPage callId={meCallState.conversation_id} endCall={endCall} />
           )}
         </div>
       )}
