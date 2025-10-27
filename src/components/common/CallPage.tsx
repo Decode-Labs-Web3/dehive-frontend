@@ -10,7 +10,6 @@ import {
   useCallStateHooks,
   type User,
   type Call,
-  CancelCallConfirmButton,
   ToggleAudioPublishingButton,
   ToggleVideoPublishingButton,
   ScreenShareButton,
@@ -121,7 +120,12 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
 
     return () => {
       if (streamCall) {
-        streamCall.leave();
+        streamCall.leave().catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!/already been left/i.test(msg)) {
+            console.error("Error leaving stream call during cleanup:", err);
+          }
+        });
       }
     };
   }, [token, apiKey, callId, user]);
@@ -187,11 +191,6 @@ const MyUILayout = ({ endCall }: { endCall: () => void }) => {
         <ToggleVideoPublishingButton />
         <ScreenShareButton />
         <CancelCallButton
-          onLeave={() => {
-            endCall();
-          }}
-        />
-        <CancelCallConfirmButton
           onLeave={() => {
             endCall();
           }}

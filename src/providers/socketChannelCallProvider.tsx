@@ -95,6 +95,11 @@ export default function ChannelCallProvider({
       console.log("[channel call userLeftChannel]", p);
     };
 
+    const onUserStatusChanged = (p: unknown) => {
+      const payload = p;
+      console.log("[channel call userStatusChanged]", payload);
+    };
+
     const onPong = (p: PongPayload) => {
       console.log("[channel call pong]", p);
     };
@@ -115,6 +120,8 @@ export default function ChannelCallProvider({
     socket.on("userJoinedChannel", onUserJoinedChannel);
     socket.on("userLeftChannel", onUserLeftChannel);
     socket.on("channelLeft", onChannelLeft);
+    socket.on("userStatusChanged", onUserStatusChanged);
+    socket.off("userStatusChanged", onUserStatusChanged);
     socket.on("pong", onPong);
 
     if (!socket.connected) socket.connect();

@@ -19,6 +19,10 @@ import {
   faVolumeHigh,
   faUserPlus,
   faCopy,
+  faMicrophoneSlash,
+  faVolumeXmark,
+  faVideo,
+  faDisplay,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ChannelProps {
@@ -46,6 +50,10 @@ interface UserChannelProps {
   username: string;
   display_name: string;
   avatar_ipfs_hash: string;
+  isCamera: boolean;
+  isMic: boolean;
+  isHeadphone: boolean;
+  isLive: boolean;
 }
 
 export default function Channels({
@@ -178,13 +186,16 @@ export default function Channels({
     const socket = getChannelCallSocketIO();
     const onServerJoined = (p: JoinedServer) => {
       // console.log("[channel call serverJoined] quang minh", p);
-    setUserChannel(p.channels.find(channelItem => channelItem.channel_id === channel._id)?.participants || []);
+      setUserChannel(
+        p.channels.find((channelItem) => channelItem.channel_id === channel._id)
+          ?.participants || []
+      );
     };
     socket.on("serverJoined", onServerJoined);
     return () => {
       socket.off("serverJoined", onServerJoined);
     };
-  },[channel._id]);
+  }, [channel._id]);
 
   return (
     <>
@@ -226,16 +237,29 @@ export default function Channels({
               {channel.type === "VOICE" && (
                 <>
                   {userChannel.map((user) => (
-                    <div key={user._id} className="flex flex-row">
-                      <Avatar className="mx-auto mb-4">
-                        <AvatarImage
-                          src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
-                        />
-                        <AvatarFallback>{user.display_name}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col ml-2">
-                        <h1>{user.display_name}</h1>
-                        <h1>@{user.username}</h1>
+                    <div key={user._id} className="flex flex-row justify-between items-center w-full">
+                      <div className="flex flex-row">
+                        <Avatar className="mx-auto mb-4">
+                          <AvatarImage
+                            src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                          />
+                          <AvatarFallback>{user.display_name}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col ml-2">
+                          <h1>{user.display_name}</h1>
+                          <h1>@{user.username}</h1>
+                        </div>
+                      </div>
+                      <div className="flex flex-row">
+                        {!user.isMic && (
+                          <FontAwesomeIcon icon={faMicrophoneSlash} />
+                        )}
+                        {!user.isHeadphone && (
+                          <FontAwesomeIcon icon={faVolumeXmark} />
+                        )}
+
+                        {user.isCamera && <FontAwesomeIcon icon={faVideo} />}
+                        {user.isLive && <FontAwesomeIcon icon={faDisplay} />}
                       </div>
                     </div>
                   ))}

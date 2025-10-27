@@ -21,6 +21,10 @@ export interface UserInfo {
   username: string;
   display_name: string;
   avatar_ipfs_hash: string;
+  isCamera: boolean;
+  isMic: boolean;
+  isHeadphone: boolean;
+  isLive: boolean;
 }
 
 export interface IdentityConfirmedCall {
@@ -63,6 +67,11 @@ export interface UserLeftChannelPayload {
   user_info: UserInfo;
 }
 
+export interface UserStatusChangedPayload {
+  channel_id: string;
+  user_info: UserInfo;
+}
+
 export interface ServerToClientChannelCall {
   identityConfirmed: (p: IdentityConfirmedCall) => void;
   serverJoined: (p: JoinedServer) => void;
@@ -70,6 +79,7 @@ export interface ServerToClientChannelCall {
   userJoinedChannel: (p: UserJoinedChannelPayload) => void;
   userLeftChannel: (p: UserLeftChannelPayload) => void;
   channelLeft: (p: ChannelLeftPayload) => void;
+  userStatusChanged: (p: UserStatusChangedPayload) => void;
   pong: (p: PongPayload) => void;
   error: (e: WsErrorPayload) => void;
 }
@@ -96,5 +106,12 @@ export interface ClientToServerChannelCall {
   joinServer: (dto: JoinServerDto) => void;
   joinChannel: (dto: JoinChannelDto) => void;
   leaveChannel: (dto: LeaveChannelDto) => void;
+  updateUserStatus: (payload: {
+    channel_id: string;
+    isCamera?: boolean;
+    isMic?: boolean;
+    isHeadphone?: boolean;
+    isLive?: boolean;
+  }) => void;
   ping: () => void;
 }
