@@ -8,7 +8,7 @@ export interface WsErrorPayload {
     | "AUTHENTICATION_REQUIRED"
     | string;
   details?: string | unknown;
-  timestamp: string;
+  timestamp?: string;
 }
 
 export interface PongPayload {
@@ -30,11 +30,12 @@ export interface UserInfo {
 export interface IdentityConfirmedCall {
   userDehiveId: string;
   status: "success";
-  timestamp: string;
+  timestamp?: string;
 }
 
 export interface JoinedServer {
   server_id: string;
+  status?: string;
   channels: Channels[];
 }
 
@@ -57,14 +58,15 @@ export interface UserJoinedChannelPayload {
 
 export interface ChannelLeftPayload {
   channel_id: string;
-  user_id: string;
-  user_info: UserInfo;
+  user_id?: string;
+  user_info?: UserInfo;
+  status?: string;
 }
 
 export interface UserLeftChannelPayload {
   channel_id: string;
   user_id: string;
-  user_info: UserInfo;
+  user_info?: UserInfo;
 }
 
 export interface UserStatusChangedPayload {
@@ -73,15 +75,15 @@ export interface UserStatusChangedPayload {
 }
 
 export interface ServerToClientChannelCall {
-  identityConfirmed: (p: IdentityConfirmedCall) => void;
-  serverJoined: (p: JoinedServer) => void;
-  channelJoined: (p: ChannelJoinedPayload) => void;
-  userJoinedChannel: (p: UserJoinedChannelPayload) => void;
-  userLeftChannel: (p: UserLeftChannelPayload) => void;
-  channelLeft: (p: ChannelLeftPayload) => void;
-  userStatusChanged: (p: UserStatusChangedPayload) => void;
   pong: (p: PongPayload) => void;
   error: (e: WsErrorPayload) => void;
+  serverJoined: (p: JoinedServer) => void;
+  channelLeft: (p: ChannelLeftPayload) => void;
+  channelJoined: (p: ChannelJoinedPayload) => void;
+  identityConfirmed: (p: IdentityConfirmedCall) => void;
+  userLeftChannel: (p: UserLeftChannelPayload) => void;
+  userJoinedChannel: (p: UserJoinedChannelPayload) => void;
+  userStatusChanged: (p: UserStatusChangedPayload) => void;
 }
 
 // ===== Client -> Server =====
@@ -101,17 +103,18 @@ export interface LeaveChannelDto {
   channel_id: string;
 }
 
+export interface UpdateUserStatusDto {
+  isCamera?: boolean;
+  isMic?: boolean;
+  isHeadphone?: boolean;
+  isLive?: boolean;
+}
+
 export interface ClientToServerChannelCall {
-  identity: (payload: IdentityCallDto) => void;
+  ping: () => void;
   joinServer: (dto: JoinServerDto) => void;
   joinChannel: (dto: JoinChannelDto) => void;
+  identity: (payload: IdentityCallDto) => void;
   leaveChannel: (dto: LeaveChannelDto) => void;
-  updateUserStatus: (payload: {
-    channel_id: string;
-    isCamera?: boolean;
-    isMic?: boolean;
-    isHeadphone?: boolean;
-    isLive?: boolean;
-  }) => void;
-  ping: () => void;
+  updateUserStatus: (payload: UpdateUserStatusDto) => void;
 }

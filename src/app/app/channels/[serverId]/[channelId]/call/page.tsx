@@ -2,18 +2,18 @@
 
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
-import CallPage from "@/components/common/CallPage";
 import { useChannelCall } from "@/hooks/useChannelCall";
+import ChannelCall from "@/components/common/ChannelCall";
 
 export default function ChannelCallPage() {
   const { channelId } = useParams<{ channelId: string }>();
-  const { joinChannel, leaveChannel } = useChannelCall(channelId);
+  const { joinChannel, leaveChannel, updateUserStatus } = useChannelCall(channelId);
   useEffect(() => {
     joinChannel();
   }, [joinChannel]);
   return (
     <>
-      <CallPage callId={channelId} endCall={leaveChannel} />
+      <ChannelCall callId={channelId} endCall={leaveChannel} updateUserStatus={updateUserStatus}/>
     </>
   );
 }

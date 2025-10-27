@@ -10,9 +10,6 @@ import {
   useCallStateHooks,
   type User,
   type Call,
-  ToggleAudioPublishingButton,
-  ToggleVideoPublishingButton,
-  ScreenShareButton,
   ReactionsButton,
   CancelCallButton,
 } from "@stream-io/video-react-sdk";
@@ -20,7 +17,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
-function MicButton({ onAfter }: { onAfter?: () => void }) {
+function MicButton({ onAfter }: { onAfter?: (isMicOn: boolean) => void }) {
   const { useMicrophoneState } = useCallStateHooks();
   const { microphone, isMute } = useMicrophoneState();
 
@@ -28,7 +25,8 @@ function MicButton({ onAfter }: { onAfter?: () => void }) {
     <button
       onClick={async () => {
         await microphone.toggle();
-        onAfter?.();
+        // isMute is the previous state; after toggle the new state is !isMute
+        onAfter?.(!isMute);
       }}
     >
       {isMute ? "Unmute" : "Mute"}
@@ -36,7 +34,7 @@ function MicButton({ onAfter }: { onAfter?: () => void }) {
   );
 }
 
-function CamButton({ onAfter }: { onAfter?: () => void }) {
+function CamButton({ onAfter }: { onAfter?: (isCameraOn: boolean) => void }) {
   const { useCameraState } = useCallStateHooks();
   const { camera, isMute } = useCameraState();
 
@@ -44,7 +42,7 @@ function CamButton({ onAfter }: { onAfter?: () => void }) {
     <button
       onClick={async () => {
         await camera.toggle();
-        onAfter?.();
+        onAfter?.(!isMute);
       }}
     >
       {isMute ? "Camera On" : "Camera Off"}
@@ -52,7 +50,11 @@ function CamButton({ onAfter }: { onAfter?: () => void }) {
   );
 }
 
-function ScreenShareBtn({ onAfter }: { onAfter?: () => void }) {
+function ScreenShareBtn({
+  onAfter,
+}: {
+  onAfter?: (isSharingNow: boolean) => void;
+}) {
   const { useScreenShareState, useHasOngoingScreenShare } = useCallStateHooks();
   const { screenShare, status } = useScreenShareState();
   const someoneSharing = useHasOngoingScreenShare();
@@ -64,7 +66,8 @@ function ScreenShareBtn({ onAfter }: { onAfter?: () => void }) {
       onClick={async () => {
         try {
           await screenShare.toggle();
-          onAfter?.();
+          // after toggle, new sharing state is !isSharing
+          onAfter?.(!isSharing);
         } catch (e) {
           console.warn("screenshare toggle failed:", e);
         }
@@ -93,9 +96,19 @@ interface UserDataProps {
 interface CallPageProps {
   callId: string;
   endCall: () => void;
+  updateUserStatus: (payload: {
+    isCamera?: boolean;
+    isMic?: boolean;
+    isHeadphone?: boolean;
+    isLive?: boolean;
+  }) => void;
 }
 
-export default function CallPage({ callId, endCall }: CallPageProps) {
+export default function ChannelCall({
+  callId,
+  endCall,
+  updateUserStatus,
+}: CallPageProps) {
   const [userData, setUserData] = useState<UserDataProps | null>(null);
   useEffect(() => {
     const userData = localStorage.getItem("userData");
@@ -215,14 +228,25 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
     <StreamVideo client={client}>
       {token && call && (
         <StreamCall call={call}>
-          <MyUILayout endCall={endCall} />
+          <MyUILayout endCall={endCall} updateUserStatus={updateUserStatus} />
         </StreamCall>
       )}
     </StreamVideo>
   );
 }
 
-const MyUILayout = ({ endCall }: { endCall: () => void }) => {
+const MyUILayout = ({
+  endCall,
+  updateUserStatus,
+}: {
+  endCall: () => void;
+  updateUserStatus: (payload: {
+    isCamera?: boolean;
+    isMic?: boolean;
+    isHeadphone?: boolean;
+    isLive?: boolean;
+  }) => void;
+}) => {
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
 
@@ -245,9 +269,15 @@ const MyUILayout = ({ endCall }: { endCall: () => void }) => {
         {/* <ToggleAudioPublishingButton /> */}
         {/* <ToggleVideoPublishingButton /> */}
         {/* <ScreenShareButton /> */}
-        <MicButton onAfter={() => console.log("mic toggled")} />
-        <CamButton onAfter={() => console.log("cam toggled")} />
-        <ScreenShareBtn onAfter={() => console.log("screen toggled")} />
+        <MicButton
+          onAfter={(isMicOn) => updateUserStatus({ isMic: isMicOn })}
+        />
+        <CamButton
+          onAfter={(isCameraOn) => updateUserStatus({ isCamera: isCameraOn })}
+        />
+        <ScreenShareBtn
+          onAfter={(isSharingNow) => updateUserStatus({ isLive: isSharingNow })}
+        />
 
         <CancelCallButton
           onLeave={() => {

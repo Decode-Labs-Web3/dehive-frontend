@@ -155,7 +155,7 @@ export default function Channels({
       if (p.channel_id === channel._id) {
         console.log("User left channel", p);
         setUserChannel((prev) =>
-          prev.filter((user) => user._id !== p.user_info._id)
+          prev.filter((user) => user._id !== p?.user_info?._id)
         );
       }
     };
@@ -172,7 +172,7 @@ export default function Channels({
       if (p.channel_id === channel._id) {
         console.log("User left channel", p);
         setUserChannel((prev) =>
-          prev.filter((user) => user._id !== p.user_info._id)
+          prev.filter((user) => user._id !== p?.user_info?._id)
         );
       }
     };

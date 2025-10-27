@@ -3,14 +3,14 @@
 import { useEffect, useRef } from "react";
 import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
 import type {
-  IdentityConfirmedCall,
-  JoinedServer,
-  ChannelJoinedPayload,
-  UserJoinedChannelPayload,
-  ChannelLeftPayload,
-  UserLeftChannelPayload,
   PongPayload,
+  JoinedServer,
   WsErrorPayload,
+  ChannelLeftPayload,
+  ChannelJoinedPayload,
+  IdentityConfirmedCall,
+  UserLeftChannelPayload,
+  UserJoinedChannelPayload,
 } from "@/interfaces/websocketChannelCall.interface";
 
 interface ChannelCallProviderProps {
@@ -121,7 +121,6 @@ export default function ChannelCallProvider({
     socket.on("userLeftChannel", onUserLeftChannel);
     socket.on("channelLeft", onChannelLeft);
     socket.on("userStatusChanged", onUserStatusChanged);
-    socket.off("userStatusChanged", onUserStatusChanged);
     socket.on("pong", onPong);
 
     if (!socket.connected) socket.connect();
@@ -143,6 +142,7 @@ export default function ChannelCallProvider({
       socket.off("userJoinedChannel", onUserJoinedChannel);
       socket.off("channelLeft", onChannelLeft);
       socket.off("userLeftChannel", onUserLeftChannel);
+      socket.off("userStatusChanged", onUserStatusChanged);
       socket.off("pong", onPong);
     };
   }, [socket, userId, serverId]);
