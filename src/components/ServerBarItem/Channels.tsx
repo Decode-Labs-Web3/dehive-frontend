@@ -29,9 +29,13 @@ import {
   UserJoinedChannelPayload,
 } from "@/interfaces/websocketChannelCall.interface";
 import {
+  faCopy,
   faHashtag,
   faVolumeHigh,
-  faCopy,
+  faVideo,
+  faDisplay,
+  faVolumeXmark,
+  faMicrophoneSlash,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ChannelProps {
@@ -209,8 +213,8 @@ export default function Channels({
     <>
       <ContextMenu>
         <ContextMenuTrigger asChild onClick={handleChannelClick}>
-          <div className="group flex items-center justify-between w-full px-3 py-2 rounded-md hover:bg-accent transition-colors cursor-pointer select-none">
-            <div className="flex items-center gap-3 truncate">
+          <div className="group flex flex-col items-start justify-start w-full px-3 py-2 rounded-md hover:bg-accent transition-colors cursor-pointer select-none">
+            <div className="flex items-center">
               <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md bg-muted text-muted-foreground">
                 <FontAwesomeIcon
                   icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
@@ -220,35 +224,43 @@ export default function Channels({
 
               <div className="min-w-0">
                 <p className="text-sm font-medium truncate">{channel.name}</p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {channel.type === "VOICE"
-                    ? `${userChannel.length} listening`
-                    : "Text channel"}
-                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col m-2">
               {channel.type === "VOICE" && (
-                <div className="flex -space-x-2 items-center">
-                  {userChannel.slice(0, 3).map((u) => (
-                    <Avatar
-                      key={u._id}
-                      className="w-6 h-6 ring-1 ring-background"
+                <div className="flex flex-col items-center gap-1">
+                  {userChannel.map((user) => (
+                    <div
+                      key={user._id}
+                      className="flex items-start justify-start gap-2"
                     >
-                      <AvatarImage
-                        src={`https://ipfs.de-id.xyz/ipfs/${u.avatar_ipfs_hash}`}
-                      />
-                      <AvatarFallback className="text-xs">
-                        {u.display_name}
-                      </AvatarFallback>
-                    </Avatar>
+                      <div className="flex flex-row gap-2">
+                        <Avatar className="w-6 h-6 ring-1 ring-background">
+                          <AvatarImage
+                            src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                          />
+                          <AvatarFallback className="text-xs">
+                            {user.display_name}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <h1>{user.display_name}</h1>
+                          <p>@{user.username}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-row">
+                        {!user.isMic && (
+                          <FontAwesomeIcon icon={faMicrophoneSlash} />
+                        )}
+                        {!user.isHeadphone && (
+                          <FontAwesomeIcon icon={faVolumeXmark} />
+                        )}
+                        {user.isCamera && <FontAwesomeIcon icon={faVideo} />}
+                        {user.isLive && <FontAwesomeIcon icon={faDisplay} />}
+                      </div>
+                    </div>
                   ))}
-                  {userChannel.length > 3 && (
-                    <span className="text-xs text-muted-foreground ml-2">
-                      +{userChannel.length - 3}
-                    </span>
-                  )}
                 </div>
               )}
             </div>
