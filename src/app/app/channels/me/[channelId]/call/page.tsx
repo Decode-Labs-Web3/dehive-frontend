@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useDirectCall } from "@/hooks/useDirectCall";
 import CallPage from "@/components/common/CallPage";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
 
@@ -25,7 +25,7 @@ export default function DirectCallPage() {
     avatar_ipfs_hash: "",
   });
 
-  console.log("this is orther user info", userChatWith);
+  // console.log("this is orther user info", userChatWith);
 
   const fetchUserChatWith = useCallback(async () => {
     // if (channelId) return;
@@ -62,6 +62,22 @@ export default function DirectCallPage() {
   const { startCall, acceptCall, declineCall, endCall } = useDirectCall(
     userChatWith.id
   );
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (meCallState.status === "ringing" || meCallState.status === "calling") {
+      const a = audioRef.current;
+      if (!a) return;
+      a.play().catch(() => {});
+      a.loop = true;
+    } else {
+      const a = audioRef.current;
+      if (!a) return;
+      a.pause();
+      a.currentTime = 0;
+    }
+  }, [meCallState.status]);
 
   return (
     <div className="h-screen flex items-center justify-center bg-background w-full ">
@@ -143,6 +159,7 @@ export default function DirectCallPage() {
 
       {meCallState.status === "ringing" && (
         <div className="bg-card rounded-lg shadow-md p-6 text-center border w-full">
+          <audio ref={audioRef} src="/sounds/ring.wav" preload="auto" />
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Incoming Call
           </h2>
@@ -179,6 +196,8 @@ export default function DirectCallPage() {
 
       {meCallState.status === "calling" && (
         <div className="bg-card rounded-lg shadow-md p-6 text-center w-full">
+          <audio ref={audioRef} src="/sounds/ring.wav" preload="auto" />
+
           <h2 className="text-card-foreground text-xl font-semibold mb-4">
             Calling...
           </h2>
