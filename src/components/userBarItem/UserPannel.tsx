@@ -2,14 +2,16 @@
 
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useEffect, useRef, useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { useSoundContext } from "@/contexts/SoundContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -50,6 +52,9 @@ export default function UserPannel({
 }: UserPannelProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+
+  const { sound, setSound } = useSoundContext();
+
   const handleTheme = (theme: string) => {
     localStorage.setItem("theme", theme);
     if (theme === "dark") {
@@ -554,6 +559,16 @@ export default function UserPannel({
                 >
                   Alt
                 </Button>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="sound"
+                    checked={sound}
+                    onCheckedChange={setSound}
+                  />
+                  <Label htmlFor="sound">
+                    {sound ? "Sound ON" : "Sound OFF"}
+                  </Label>
+                </div>
               </div>
             )}
           </div>

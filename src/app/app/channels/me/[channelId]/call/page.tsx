@@ -1,9 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useDirectCall } from "@/hooks/useDirectCall";
 import CallPage from "@/components/common/CallPage";
+import { useDirectCall } from "@/hooks/useDirectCall";
 import { useParams, useRouter } from "next/navigation";
+import { useSoundContext } from "@/contexts/SoundContext";
 import { useEffect, useCallback, useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
@@ -24,6 +25,8 @@ export default function DirectCallPage() {
     username: "",
     avatar_ipfs_hash: "",
   });
+
+  const { sound } = useSoundContext()
 
   // console.log("this is orther user info", userChatWith);
 
@@ -67,17 +70,18 @@ export default function DirectCallPage() {
 
   useEffect(() => {
     if (meCallState.status === "ringing" || meCallState.status === "calling") {
-      const a = audioRef.current;
-      if (!a) return;
-      a.play().catch(() => {});
-      a.loop = true;
+      const audio = audioRef.current;
+      if (!audio) return;
+      if (!sound) return
+      audio.play().catch(() => {});
+      audio.loop = true;
     } else {
       const a = audioRef.current;
       if (!a) return;
       a.pause();
       a.currentTime = 0;
     }
-  }, [meCallState.status]);
+  }, [meCallState.status, sound]);
 
   return (
     <div className="h-screen flex items-center justify-center bg-background w-full ">

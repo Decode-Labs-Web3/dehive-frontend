@@ -2,26 +2,44 @@
 
 import App from "@/components/app";
 import { getCookie } from "@/utils/cookie.utils";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { SoundContext } from "@/contexts/SoundContext";
 import DirectCallProvider from "@/providers/socketDirectCallProvider";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { ServerRefreshContext } from "@/contexts/ServerRefreshContext.contexts";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isFocus, setIsFocus] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
+  const [sound, setSound] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   console.log("isFocus nha", isFocus);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const triggerRefeshServer = useCallback(() => {
     setRefreshVersion((prev) => prev + 1);
   }, []);
-  const greenAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saveSound = localStorage.getItem("sound");
+    if (!saveSound) {
+      setSound(true);
+      localStorage.setItem("sound", "true");
+      return;
+    }
+    setSound(saveSound === "true");
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("sound", sound ? "true" : "false");
+  }, [sound]);
+
   useEffect(() => {
     const currentUserId = getCookie("userId");
     if (currentUserId) {
       setUserId(currentUserId);
     }
   }, []);
+
+  const greenAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -41,36 +59,40 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     };
   }, [isCalling]);
 
+  const soundValue = useMemo(() => ({ sound, setSound }), [sound]);
+
   return (
-    <ServerRefreshContext.Provider value={{ triggerRefeshServer }}>
-      <div className="relative flex h-screen overflow-hidden">
-        <div className="flex w-15 relative ">
-          <App.GuildBar refreshVersion={refreshVersion} />
+    <SoundContext.Provider value={soundValue}>
+      <ServerRefreshContext.Provider value={{ triggerRefeshServer }}>
+        <div className="relative flex h-screen overflow-hidden">
+          <div className="flex w-15 relative ">
+            <App.GuildBar refreshVersion={refreshVersion} />
+          </div>
+
+          {isCalling && (
+            <div
+              ref={greenAreaRef}
+              className={`bg-green-500 fixed top-0 bottom-0 md:left-75 left-15 right-0 ${
+                isFocus ? "z-[500]" : "z-[-1]"
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFocus(true);
+              }}
+            ></div>
+          )}
+
+          {userId && (
+            <DirectCallProvider userId={userId}>
+              <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
+            </DirectCallProvider>
+          )}
+
+          <div className="absolute bottom-5 left-5 w-75 h-30 z-10 overflow-visible">
+            <App.UserBar />
+          </div>
         </div>
-
-        {isCalling && (
-          <div
-            ref={greenAreaRef}
-            className={`bg-green-500 fixed top-0 bottom-0 md:left-75 left-15 right-0 ${
-              isFocus ? "z-[500]" : "z-[-1]"
-            }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsFocus(true);
-            }}
-          ></div>
-        )}
-
-        {userId && (
-          <DirectCallProvider userId={userId}>
-            <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
-          </DirectCallProvider>
-        )}
-
-        <div className="absolute bottom-5 left-5 w-75 h-30 z-10 overflow-visible">
-          <App.UserBar />
-        </div>
-      </div>
-    </ServerRefreshContext.Provider>
+      </ServerRefreshContext.Provider>
+    </SoundContext.Provider>
   );
 }
