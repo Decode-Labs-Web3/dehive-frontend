@@ -37,6 +37,30 @@ export default function ChannelDraggable({
     id: channel._id,
     data: { categoryId },
   });
+  const safeListeners = isPrivileged
+    ? (() => {
+        const maybe = listeners as unknown as Record<string, unknown>;
+        const originalOnPointerDown = maybe.onPointerDown;
+
+        const onPointerDown = (
+          e: PointerEvent & { button?: number; shiftKey?: boolean }
+        ) => {
+          if (e?.button === 2 || e?.button === 1) return;
+          if (e?.button !== 0) return;
+          if (!e.shiftKey) return;
+          if (typeof originalOnPointerDown === "function") {
+            (originalOnPointerDown as (ev: PointerEvent) => void)(
+              e as PointerEvent
+            );
+          }
+        };
+
+        return {
+          ...(listeners as object),
+          onPointerDown,
+        } as Record<string, unknown>;
+      })()
+    : ({} as Record<string, unknown>);
 
   return (
     <div
@@ -46,7 +70,7 @@ export default function ChannelDraggable({
           ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
           : undefined,
       }}
-      {...(isPrivileged ? listeners : {})}
+      {...(isPrivileged ? (safeListeners as object) : {})}
       {...(isPrivileged ? attributes : {})}
     >
       <ServerBarItems.Channels

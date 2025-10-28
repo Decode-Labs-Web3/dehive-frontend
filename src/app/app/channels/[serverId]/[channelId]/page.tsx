@@ -33,10 +33,11 @@ import {
   useLayoutEffect,
 } from "react";
 import {
-  faArrowTurnUp,
+  faX,
   faPen,
   faTrash,
-  faX,
+  faHashtag,
+  faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 
@@ -46,10 +47,56 @@ interface NewMessage {
   replyTo: string | null;
 }
 
+interface ChannelInfoProps {
+  _id: string;
+  name: string;
+  type: string;
+  category_id: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 export default function ChannelMessagePage() {
   const { channelId } = useParams<{
     channelId: string;
   }>();
+
+  const [channelInfo, setChannelInfo] = useState<ChannelInfoProps | null>(null);
+
+  const fetchChannel = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/servers/channel/get", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ channelId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        setChannelInfo(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server deleted channel fail");
+    }
+  }, [channelId]);
+
+  useEffect(() => {
+    fetchChannel();
+  }, [fetchChannel]);
+
   const [userId, setUserId] = useState<string>("");
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
@@ -258,13 +305,16 @@ export default function ChannelMessagePage() {
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold uppercase text-accent-foreground">
-            <h1>Channel chat</h1>
+          <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md bg-muted text-muted-foreground">
+            <FontAwesomeIcon
+              icon={faHashtag}
+              className="w-4 h-4"
+            />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-foreground">
-                {channelId}
+                {channelInfo?.name}
               </h1>
             </div>
           </div>

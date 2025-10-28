@@ -16,7 +16,6 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -30,15 +29,9 @@ import {
   UserJoinedChannelPayload,
 } from "@/interfaces/websocketChannelCall.interface";
 import {
-  faGear,
   faHashtag,
   faVolumeHigh,
-  faUserPlus,
   faCopy,
-  faMicrophoneSlash,
-  faVolumeXmark,
-  faVideo,
-  faDisplay,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ChannelProps {
@@ -214,61 +207,49 @@ export default function Channels({
 
   return (
     <>
-      <ContextMenu onOpenChange={(open) => console.log("CM open?", open)}>
-        <ContextMenuTrigger asChild>
-          <div className="flex flex-col items-center gap-3 text-sm text-[var(--muted-foreground)] w-full">
-            <div className="flex justify-between items-between w-full">
-              <div className="flex gap-2">
+      <ContextMenu>
+        <ContextMenuTrigger asChild onClick={handleChannelClick}>
+          <div className="group flex items-center justify-between w-full px-3 py-2 rounded-md hover:bg-accent transition-colors cursor-pointer select-none">
+            <div className="flex items-center gap-3 truncate">
+              <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md bg-muted text-muted-foreground">
                 <FontAwesomeIcon
                   icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
-                  className="w-4 h-4 text-[var(--muted-foreground)]"
+                  className="w-4 h-4"
                 />
-                <p className="truncate text-sm">{channel.name}</p>
               </div>
 
-              <div className="flex gap-1">
-                <button className="text-[var(--muted-foreground)]">
-                  <FontAwesomeIcon icon={faUserPlus} />
-                </button>
-                <button className="p-1 text-[var(--muted-foreground)]">
-                  <FontAwesomeIcon icon={faGear} />
-                </button>
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">{channel.name}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {channel.type === "VOICE"
+                    ? `${userChannel.length} listening`
+                    : "Text channel"}
+                </p>
               </div>
             </div>
-            <div className="flex flex-col justify-start items-start w-full">
-              {channel.type === "VOICE" && (
-                <>
-                  {userChannel.map((user) => (
-                    <div
-                      key={user._id}
-                      className="flex flex-row justify-between items-center w-full"
-                    >
-                      <div className="flex flex-row">
-                        <Avatar className="mx-auto mb-4">
-                          <AvatarImage
-                            src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
-                          />
-                          <AvatarFallback>{user.display_name}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col ml-2">
-                          <h1>{user.display_name}</h1>
-                          <h1>@{user.username}</h1>
-                        </div>
-                      </div>
-                      <div className="flex flex-row">
-                        {!user.isMic && (
-                          <FontAwesomeIcon icon={faMicrophoneSlash} />
-                        )}
-                        {!user.isHeadphone && (
-                          <FontAwesomeIcon icon={faVolumeXmark} />
-                        )}
 
-                        {user.isCamera && <FontAwesomeIcon icon={faVideo} />}
-                        {user.isLive && <FontAwesomeIcon icon={faDisplay} />}
-                      </div>
-                    </div>
+            <div className="flex items-center gap-2">
+              {channel.type === "VOICE" && (
+                <div className="flex -space-x-2 items-center">
+                  {userChannel.slice(0, 3).map((u) => (
+                    <Avatar
+                      key={u._id}
+                      className="w-6 h-6 ring-1 ring-background"
+                    >
+                      <AvatarImage
+                        src={`https://ipfs.de-id.xyz/ipfs/${u.avatar_ipfs_hash}`}
+                      />
+                      <AvatarFallback className="text-xs">
+                        {u.display_name}
+                      </AvatarFallback>
+                    </Avatar>
                   ))}
-                </>
+                  {userChannel.length > 3 && (
+                    <span className="text-xs text-muted-foreground ml-2">
+                      +{userChannel.length - 3}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -278,7 +259,7 @@ export default function Channels({
           {isPrivileged && (
             <>
               <ContextMenuItem
-                onPointerDown={() => {
+                onClick={() => {
                   console.log("edit channel click trigger channel pannel");
                   setChannelPannel((prev) => ({
                     ...prev,
@@ -290,7 +271,7 @@ export default function Channels({
                 Edit Channel
               </ContextMenuItem>
               <ContextMenuItem
-                onPointerDown={() => {
+                onClick={() => {
                   console.log("delete channel click");
                   setDeleteChannelModal(true);
                 }}
@@ -300,8 +281,10 @@ export default function Channels({
               </ContextMenuItem>
             </>
           )}
+
           <ContextMenuItem
-            onPointerDown={async () => {
+            onClick={async () => {
+              console.log("copy channel id click");
               await navigator.clipboard.writeText(channel._id);
             }}
             className="w-full flex justify-between text-left px-3 py-2 hover:bg-accent"
@@ -311,6 +294,46 @@ export default function Channels({
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
+
+      <Dialog open={deleteChannelModal} onOpenChange={setDeleteChannelModal}>
+        <DialogContent className="z-[1000] max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Channel</DialogTitle>
+            <DialogDescription className="mt-1">
+              Are you sure you want to delete{" "}
+              <FontAwesomeIcon
+                icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
+                className="w-4 h-4 text-muted-foreground"
+              />{" "}
+              <span className="font-bold">{channel.name}</span>? This action{" "}
+              {"can't"} be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="gap-3 sm:gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                console.log("cancel delete channel");
+                setDeleteChannelModal(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => {
+                console.log("confirm delete channel");
+                handleDeleteChannel(channel._id);
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {channelPanel[channel._id] && (
         <>
@@ -322,84 +345,6 @@ export default function Channels({
           />
         </>
       )}
-
-      {deleteChannelModal && (
-        <div
-          role="dialog"
-          tabIndex={-1}
-          ref={(element: HTMLDivElement) => {
-            element?.focus();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              setDeleteChannelModal(false);
-            }
-          }}
-          className="fixed inset-0 flex items-center justify-center z-30"
-        >
-          <div
-            onClick={() => {
-              setDeleteChannelModal(false);
-            }}
-            className="fixed inset-0 bg-black/50"
-          />
-          <div className="bg-background text-foreground rounded-lg p-5 w-full max-w-md z-50 shadow-2xl border border-border">
-            <div className="flex items-start gap-3">
-              <div className="min-w-0">
-                <h3 className="text-lg font-semibold">Delete Channel</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Are you sure you want to delete{" "}
-                  <FontAwesomeIcon
-                    icon={channel.type === "TEXT" ? faHashtag : faVolumeHigh}
-                    className="w-4 h-4 text-muted-foreground"
-                  />{" "}
-                  <span className="font-bold">{channel.name}</span>? This action{" "}
-                  {"can't"} be undone.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-row justify-end gap-3 mt-5">
-              <button
-                onClick={() => {
-                  setDeleteChannelModal(false);
-                }}
-                className="px-3 py-2 rounded-md text-sm bg-muted text-foreground hover:opacity-90"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  handleDeleteChannel(channel._id);
-                }}
-                className="px-3 py-2 rounded-md text-sm bg-destructive text-destructive-foreground hover:opacity-90"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
-}
-
-{
-  /* {channelModal && (
-        <div className="absolute left-1/2 -translate-x-1/2  w-55 h-50 z-20">
-          <div
-            onClick={() => setChannelModal((prev) => !prev)}
-            className="fixed -left-10 inset-0 bg-black/50 w-screen h-screen z-30"
-          />
-          <div className="bg-yellow-200 z-100">
-            <button className="w-full text-left px-3 py-2 hover:bg-[var(--background-secondary)]">
-              Edit Channel
-            </button>
-
-            <button className="w-full text-left px-3 py-2 text-red-500 hover:bg-[var(--background-secondary)]">
-              Delete Channel
-            </button>
-          </div>
-        </div>
-      )} */
 }

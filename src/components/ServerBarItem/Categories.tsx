@@ -358,7 +358,8 @@ export default function Categories({ server }: CategoriesProps) {
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        fetchCategoryInfo();
+        // fetchCategoryInfo();
+        console.log("moving channel successfully, slient move");
       }
     } catch (error) {
       console.error(error);

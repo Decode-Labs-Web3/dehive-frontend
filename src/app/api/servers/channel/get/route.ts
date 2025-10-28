@@ -43,12 +43,26 @@ export async function POST(req: Request) {
       );
     }
 
+     const fingerprint = (await cookies()).get("fingerprint")?.value;
+
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: httpStatus.BAD_REQUEST,
+          message: "Missing fingerprint header",
+        },
+        { status: httpStatus.BAD_REQUEST }
+      );
+    }
+
     const backendResponse = await fetch(
       `${process.env.DEHIVE_SERVER}/api/servers/channels/${channelId}`,
       {
         method: "GET",
         headers: {
           "x-session-id": sessionId,
+          "x-fingerprint-hashed": fingerprint,
         },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
