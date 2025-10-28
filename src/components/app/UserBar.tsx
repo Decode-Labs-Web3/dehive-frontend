@@ -5,8 +5,6 @@ import UserPannel from "../userBarItem/UserPannel";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faSun,
-  faMoon,
   faGear,
   faMicrophone,
   faVolumeHigh,
@@ -54,6 +52,7 @@ interface UserDataProps {
 export default function UserBar() {
   const [sound, setSound] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState<string>("light");
   const [userPannel, setUserPannel] = useState(false);
   const [microphone, setMicrophone] = useState(false);
   const [userData, setUserData] = useState<UserDataProps | null>(null);
@@ -90,6 +89,26 @@ export default function UserBar() {
     handleUserData();
   }, [handleUserData]);
 
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (!saved || saved === "light") {
+      setTheme("light");
+      document.documentElement.classList.remove("dark", "alt");
+      return;
+    }
+    if (saved === "dark") {
+      setTheme("dark");
+      document.documentElement.classList.remove("alt");
+      document.documentElement.classList.add("dark");
+      return;
+    }
+    if (saved === "alt") {
+      setTheme("alt");
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("alt");
+      return;
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -106,7 +125,6 @@ export default function UserBar() {
       <Card className="w-full h-full p-2">
         <div className="flex flex-col justify-end w-full h-full">
           <div className="grid grid-cols-4 gap-2 mb-2">
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -155,7 +173,7 @@ export default function UserBar() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="bg-popover text-popover-foreground border border-border">
-                <p >Settings</p>
+                <p>Settings</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -237,8 +255,10 @@ export default function UserBar() {
       </Card>
       {userPannel && userData && (
         <UserPannel
-          setUserPannel={setUserPannel}
+          theme={theme}
+          setTheme={setTheme}
           userData={userData}
+          setUserPannel={setUserPannel}
           handleUserData={handleUserData}
         />
       )}

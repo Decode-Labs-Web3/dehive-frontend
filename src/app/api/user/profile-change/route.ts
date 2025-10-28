@@ -13,7 +13,7 @@ interface ProfileChangeInput {
   bio?: string;
 }
 
-export function diffProfileChanges(
+function diffProfileChanges(
   current: ProfileChangeInput,
   original: ProfileChangeInput
 ) {

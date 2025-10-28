@@ -40,6 +40,24 @@ export default function Authorize() {
       }
 
       console.log(apiResponse);
+
+      const userInfoResponse = await fetch("/api/user/user-info", {
+        method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        credentials: "include",
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!userInfoResponse.ok) {
+        console.error("Failed to fetch user info");
+        toastError("Failed to load user info");
+        router.push("/");
+        return;
+      }
+
       router.push("/app/channels/me");
     } catch (error) {
       console.error(error);

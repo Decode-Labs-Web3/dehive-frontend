@@ -34,18 +34,21 @@ interface UserDataProps {
   is_active: boolean;
 }
 interface UserPannelProps {
+  theme: string;
+  setTheme: React.Dispatch<React.SetStateAction<string>>;
   userData: UserDataProps;
   handleUserData: () => void;
   setUserPannel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function UserPannel({
+  theme,
   userData,
-  handleUserData,
+  setTheme,
   setUserPannel,
+  handleUserData,
 }: UserPannelProps) {
   const router = useRouter();
-  const [theme, setTheme] = useState<string>("light");
   const [mounted, setMounted] = useState(false);
   const handleTheme = (theme: string) => {
     localStorage.setItem("theme", theme);
@@ -62,30 +65,6 @@ export default function UserPannel({
       document.documentElement.classList.remove("dark", "alt");
     }
   };
-
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (!saved || saved === "light") {
-      setTheme("light");
-      localStorage.setItem("theme", theme);
-      document.documentElement.classList.remove("dark", "alt");
-      return;
-    }
-    if (saved === "dark") {
-      setTheme("dark");
-      localStorage.setItem("theme", theme);
-      document.documentElement.classList.remove("alt");
-      document.documentElement.classList.add("dark");
-      return;
-    }
-    if (saved === "alt") {
-      setTheme("alt");
-      localStorage.setItem("theme", theme);
-      document.documentElement.classList.remove("dark");
-      document.documentElement.classList.add("alt");
-      return;
-    }
-  }, []);
 
   const allFalse = { account: false, profile: false, theme: false };
   const [userPannelSetting, setUserPannelSetting] = useState<
@@ -548,21 +527,33 @@ export default function UserPannel({
 
             {userPannelSetting.theme && (
               <div className="max-w-2xl space-y-5">
-                <h2 className="text-xl font-semibold text-foreground mb-5">
+                <h2 className="text-xl font-semibold text-foreground m-4">
                   Theme
                 </h2>
                 <Button
-                  className="bg-white"
+                  className={`bg-white m-2 ${
+                    theme === "light" ? "ring-4 ring-blue-500" : ""
+                  }`}
                   onClick={() => handleTheme("light")}
-                />
+                >
+                  Light
+                </Button>
                 <Button
-                  className="bg-black"
+                  className={`bg-black m-2 text-white ${
+                    theme === "dark" ? "ring-4 ring-blue-500" : ""
+                  }`}
                   onClick={() => handleTheme("dark")}
-                />
+                >
+                  Dark
+                </Button>
                 <Button
-                  className="bg-blue-500"
+                  className={`bg-violet-500 m-2 ${
+                    theme === "alt" ? "ring-4 ring-blue-500" : ""
+                  }`}
                   onClick={() => handleTheme("alt")}
-                />
+                >
+                  Alt
+                </Button>
               </div>
             )}
           </div>
