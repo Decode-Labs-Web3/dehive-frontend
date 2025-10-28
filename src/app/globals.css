@@ -5,62 +5,62 @@
 @import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 224 71.4% 4.1%;
+  --background: 220 14% 98%;
+  --foreground: 220 8% 8%;
   --card: 0 0% 100%;
-  --card-foreground: 224 71.4% 4.1%;
+  --card-foreground: 220 8% 8%;
   --popover: 0 0% 100%;
-  --popover-foreground: 224 71.4% 4.1%;
-  --primary: 262.1 83.3% 57.8%;
-  --primary-foreground: 210 20% 98%;
-  --secondary: 220 14.3% 95.9%;
-  --secondary-foreground: 220.9 39.3% 11%;
-  --muted: 220 14.3% 95.9%;
-  --muted-foreground: 220 8.9% 46.1%;
-  --accent: 220 14.3% 95.9%;
-  --accent-foreground: 220.9 39.3% 11%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 20% 98%;
+  --popover-foreground: 220 8% 8%;
+  --primary: 234 79% 64%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 14% 95%;
+  --secondary-foreground: 220 8% 8%;
+  --muted: 220 14% 95%;
+  --muted-foreground: 220 8% 46%;
+  --accent: 234 79% 64%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 358 65% 54%;
+  --destructive-foreground: 0 0% 100%;
   --border: 220 13% 91%;
   --input: 220 13% 91%;
-  --ring: 262.1 83.3% 57.8%;
+  --ring: 234 79% 64%;
   --radius: 0.5rem;
 
   --success: 142 76% 36%;
-  --success-foreground: 210 20% 98%;
+  --success-foreground: 0 0% 100%;
   --warning: 38 92% 50%;
   --warning-foreground: 224 71.4% 4.1%;
   --info: 221 83% 53%;
-  --info-foreground: 210 20% 98%;
+  --info-foreground: 0 0% 100%;
 }
 
 .dark {
-  --background: 224 71.4% 4.1%;
-  --foreground: 210 20% 98%;
-  --card: 224 71.4% 4.1%;
-  --card-foreground: 210 20% 98%;
-  --popover: 224 71.4% 4.1%;
-  --popover-foreground: 210 20% 98%;
-  --primary: 263.4 70% 50.4%;
-  --primary-foreground: 210 20% 98%;
-  --secondary: 215 27.9% 16.9%;
-  --secondary-foreground: 210 20% 98%;
-  --muted: 215 27.9% 16.9%;
-  --muted-foreground: 217.9 10.6% 64.9%;
-  --accent: 215 27.9% 16.9%;
-  --accent-foreground: 210 20% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 20% 98%;
-  --border: 215 27.9% 16.9%;
-  --input: 215 27.9% 16.9%;
-  --ring: 263.4 70% 50.4%;
+  --background: 232 11% 13%;
+  --foreground: 0 0% 96%;
+  --card: 232 11% 20%;
+  --card-foreground: 0 0% 96%;
+  --popover: 232 11% 18%;
+  --popover-foreground: 0 0% 96%;
+  --primary: 234 79% 64%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 232 11% 16%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 232 10% 28%;
+  --muted-foreground: 220 6% 70%;
+  --accent: 234 79% 64%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 358 65% 54%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 232 10% 22%;
+  --input: 232 10% 18%;
+  --ring: 234 79% 64%;
 
   --success: 142 76% 36%;
-  --success-foreground: 210 20% 98%;
+  --success-foreground: 0 0% 100%;
   --warning: 38 92% 50%;
   --warning-foreground: 224 71.4% 4.1%;
   --info: 221 83% 53%;
-  --info-foreground: 210 20% 98%;
+  --info-foreground: 0 0% 100%;
 }
 
 @layer base {
