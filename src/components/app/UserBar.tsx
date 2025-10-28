@@ -52,7 +52,6 @@ interface UserDataProps {
 }
 
 export default function UserBar() {
-  const [theme, setTheme] = useState(false);
   const [sound, setSound] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userPannel, setUserPannel] = useState(false);
@@ -91,33 +90,6 @@ export default function UserBar() {
     handleUserData();
   }, [handleUserData]);
 
-  const handleTheme = () => {
-    setTheme((prev) => !prev);
-    const next = theme ? "light" : "dark";
-    localStorage.setItem("theme", next);
-    if (next === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
-
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (!saved) {
-      localStorage.setItem("theme", "dark");
-      setTheme(false);
-      document.documentElement.classList.add("dark");
-      return;
-    }
-    if (saved === "light") {
-      setTheme(true);
-      document.documentElement.classList.remove("dark");
-      return;
-    }
-    setTheme(false);
-    document.documentElement.classList.add("dark");
-  }, []);
 
   if (loading) {
     return (
@@ -134,16 +106,6 @@ export default function UserBar() {
       <Card className="w-full h-full p-2">
         <div className="flex flex-col justify-end w-full h-full">
           <div className="grid grid-cols-4 gap-2 mb-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="sm" onClick={handleTheme} className="h-8 w-full bg-background text-foreground hover:bg-accent">
-                  <FontAwesomeIcon icon={theme ? faSun : faMoon} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-popover text-popover-foreground border border-border ">
-                <p>{theme ? "Switch to dark" : "Switch to light"}</p>
-              </TooltipContent>
-            </Tooltip>
 
             <Tooltip>
               <TooltipTrigger asChild>

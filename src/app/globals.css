@@ -63,6 +63,35 @@
   --info-foreground: 0 0% 100%;
 }
 
+.alt {
+  --background: 260 18% 9%;
+  --foreground: 0 0% 98%;
+  --card: 260 18% 16%;
+  --card-foreground: 0 0% 98%;
+  --popover: 260 18% 14%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 278 76% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 250 16% 20%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 250 14% 24%;
+  --muted-foreground: 220 6% 70%;
+  --accent: 278 76% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 358 65% 54%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 260 12% 18%;
+  --input: 260 12% 16%;
+  --ring: 278 76% 60%;
+
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 224 71.4% 4.1%;
+  --info: 221 83% 53%;
+  --info-foreground: 0 0% 100%;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
