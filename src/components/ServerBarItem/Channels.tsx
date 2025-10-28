@@ -211,7 +211,7 @@ export default function Channels({
         }
       >
         <div
-          onMouseDown={handleChannelClick}
+          // onMouseDown={handleChannelClick}
           className=" flex flex-row justify-between items-center w-full h-full"
         >
           <div className="flex flex-col items-center gap-3 text-sm text-[var(--muted-foreground)] w-full">
@@ -237,7 +237,10 @@ export default function Channels({
               {channel.type === "VOICE" && (
                 <>
                   {userChannel.map((user) => (
-                    <div key={user._id} className="flex flex-row justify-between items-center w-full">
+                    <div
+                      key={user._id}
+                      className="flex flex-row justify-between items-center w-full"
+                    >
                       <div className="flex flex-row">
                         <Avatar className="mx-auto mb-4">
                           <AvatarImage
@@ -269,7 +272,7 @@ export default function Channels({
           </div>
 
           {channelModal && (
-            <>
+            <div>
               <div
                 tabIndex={-1}
                 ref={(element) => element?.focus()}
@@ -277,14 +280,17 @@ export default function Channels({
                 onKeyDown={(event) =>
                   event.key === "Escape" && setChannelModal(false)
                 }
-                className="fixed inset-0 bg-black/50 z-20"
+                className="fixed inset-0 bg-black/50 z-40"
               />
 
-              <div className="absolute top-full z-30 left-1/2 -translate-x-1/2 w-56 rounded-md border border-border bg-background text-foreground shadow-lg">
+              <div className="absolute top-full z-[100] left-1/2 -translate-x-1/2 w-56 rounded-md border border-border bg-background text-foreground shadow-lg">
                 {isPrivileged && (
                   <>
                     <button
                       onClick={() => {
+                        console.log(
+                          "edit channel click trigger channel pannel"
+                        );
                         setChannelPannel((prev) => ({
                           ...prev,
                           [channel._id]: true,
@@ -326,12 +332,12 @@ export default function Channels({
                   <FontAwesomeIcon icon={faCopy} />
                 </button>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>
 
-      {channelPanel[channel._id] && (
+      {/* {channelPanel[channel._id] && (
         <>
           <ServerBarItems.ChannelPannel
             channel={channel}
@@ -340,7 +346,7 @@ export default function Channels({
             handleDeleteChannel={handleDeleteChannel}
           />
         </>
-      )}
+      )} */}
 
       {deleteChannelModal && (
         <div

@@ -456,7 +456,7 @@ export default function Categories({ server }: CategoriesProps) {
                       [category._id]: !prev[category._id],
                     }))
                   }
-                  className="p-1 h-10 rounded hover:bg-accent/10 text-primary"
+                  className="p-1 h-10 rounded bg-background text-foreground hover:bg-accent "
                   aria-label={`Create channel in ${category.name}`}
                 >
                   <FontAwesomeIcon icon={faPlus} />

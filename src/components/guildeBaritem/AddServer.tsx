@@ -166,12 +166,12 @@ export default function AddServer({ handleGetServer }: Props) {
                 description: "",
               });
             }}
-            className="w-10 h-10"
+            className="w-10 h-10 bg-background text-foreground hover:bg-accent"
           >
             <FontAwesomeIcon icon={faPlus} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="right" align="center">
+        <TooltipContent side="right" align="center" className="bg-popover text-popover-foreground border border-border">
           Add Server
         </TooltipContent>
       </Tooltip>

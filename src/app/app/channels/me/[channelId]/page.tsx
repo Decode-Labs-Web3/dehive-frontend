@@ -138,7 +138,6 @@ export default function DirectMessagePage() {
     }
   };
 
-  const listRef = useRef<HTMLDivElement | null>(null);
 
   const handleNewMessageKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -236,6 +235,7 @@ export default function DirectMessagePage() {
   }, [newMessage, resizeNew]);
 
   const prevScrollHeightRef = useRef(0);
+  const listRef = useRef<HTMLDivElement | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
@@ -278,14 +278,14 @@ export default function DirectMessagePage() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (!loadingMore) {
-      const element = listRef.current;
-      if (element) {
-        element.scrollTop = element.scrollHeight;
-      }
-    }
-  }, [messages.length, loadingMore]);
+  // useEffect(() => {
+  //   if (!loadingMore) {
+  //     const element = listRef.current;
+  //     if (element) {
+  //       element.scrollTop = element.scrollHeight;
+  //     }
+  //   }
+  // }, [messages.length, loadingMore]);
 
   // const handleJumpToPresent = () => {
   //   const element = listRef.current;

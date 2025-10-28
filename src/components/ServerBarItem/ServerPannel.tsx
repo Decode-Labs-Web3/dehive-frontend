@@ -221,7 +221,7 @@ export default function ServerPannel({
 
           <nav className="mt-2 flex-1 space-y-1 px-3">
             <Button
-              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
+              className="w-full justify-start bg-background text-foreground hover:bg-accent"
               onClick={() =>
                 setServerPannelSetting({ ...allFalse, profile: true })
               }
@@ -230,14 +230,14 @@ export default function ServerPannel({
             </Button>
 
             <Button
-              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
+              className="w-full justify-start bg-background text-foreground hover:bg-accent"
               onClick={() => setServerPannelSetting({ ...allFalse, tag: true })}
             >
               Server Tag
             </Button>
 
             <Button
-              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
+              className="w-full justify-start bg-background text-foreground hover:bg-accent"
               onClick={() =>
                 setServerPannelSetting({ ...allFalse, members: true })
               }
@@ -246,7 +246,7 @@ export default function ServerPannel({
             </Button>
 
             <Button
-              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
+              className="w-full justify-start bg-background text-foreground hover:bg-accent"
               onClick={() =>
                 setServerPannelSetting({ ...allFalse, invites: true })
               }
@@ -255,7 +255,7 @@ export default function ServerPannel({
             </Button>
 
             <Button
-              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
+              className="w-full justify-start bg-background text-foreground hover:bg-accent"
               onClick={() => {
                 setServerPannelSetting({ ...allFalse, role: true });
               }}
@@ -264,7 +264,7 @@ export default function ServerPannel({
             </Button>
 
             <Button
-              className="w-full justify-start hover:bg-accent hover:text-accent-foreground"
+              className="w-full justify-start bg-background text-foreground hover:bg-accent"
               onClick={() => {
                 setServerPannelSetting({ ...allFalse, bans: true });
               }}
@@ -307,9 +307,9 @@ export default function ServerPannel({
                 setServerPannel(false);
                 setServerSettingModal(false);
               }}
-              className="flex flex-col items-center gap-1 text-xs uppercase tracking-wide hover:bg-accent hover:text-accent-foreground"
+              className="flex flex-col items-center gap-1 text-xs uppercase bg-background text-foreground hover:bg-accent"
             >
-              <span className="rounded-full border border-border p-2">
+              <span className="rounded-full border border-border p-2 ">
                 <FontAwesomeIcon icon={faX} />
               </span>
               Esc
@@ -385,7 +385,7 @@ export default function ServerPannel({
                         onClick={() => toggleTag(tag)}
                         className={`justify-start ${
                           selectedTags.includes(tag)
-                            ? "bg-primary text-primary-foreground"
+                            ? "bg-background text-primary-foreground"
                             : "bg-muted text-muted-foreground"
                         }`}
                       >
@@ -402,7 +402,7 @@ export default function ServerPannel({
                     onClick={() => setSelectedTags([])}
                     className={`mt-3 justify-start ${
                       selectedTags.length === 0
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-background text-primary-foreground"
                         : "bg-muted text-muted-foreground"
                     }`}
                   >

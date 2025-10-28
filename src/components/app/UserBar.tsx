@@ -136,11 +136,11 @@ export default function UserBar() {
           <div className="grid grid-cols-4 gap-2 mb-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="sm" onClick={handleTheme} className="h-8 w-full">
+                <Button size="sm" onClick={handleTheme} className="h-8 w-full bg-background text-foreground hover:bg-accent">
                   <FontAwesomeIcon icon={theme ? faSun : faMoon} />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-popover text-popover-foreground border border-border ">
                 <p>{theme ? "Switch to dark" : "Switch to light"}</p>
               </TooltipContent>
             </Tooltip>
@@ -150,14 +150,14 @@ export default function UserBar() {
                 <Button
                   size="sm"
                   onClick={() => setMicrophone((prev) => !prev)}
-                  className="h-8 w-full"
+                  className="h-8 w-full bg-background text-foreground hover:bg-accent"
                 >
                   <FontAwesomeIcon
                     icon={microphone ? faMicrophone : faMicrophoneSlash}
                   />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-popover text-popover-foreground border border-border">
                 <p>{microphone ? "Mute microphone" : "Unmute microphone"}</p>
               </TooltipContent>
             </Tooltip>
@@ -167,14 +167,14 @@ export default function UserBar() {
                 <Button
                   size="sm"
                   onClick={() => setSound((prev) => !prev)}
-                  className="h-8 w-full"
+                  className="h-8 w-full bg-background text-foreground hover:bg-accent"
                 >
                   <FontAwesomeIcon
                     icon={sound ? faVolumeHigh : faVolumeXmark}
                   />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-popover text-popover-foreground border border-border">
                 <p>{sound ? "Mute sound" : "Unmute sound"}</p>
               </TooltipContent>
             </Tooltip>
@@ -184,7 +184,7 @@ export default function UserBar() {
                 <Button
                   size="sm"
                   onClick={() => setUserPannel(true)}
-                  className="h-8 w-full"
+                  className="h-8 w-full bg-background text-foreground hover:bg-accent"
                 >
                   <FontAwesomeIcon
                     className="hover:animate-spin"
@@ -192,8 +192,8 @@ export default function UserBar() {
                   />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>Settings</p>
+              <TooltipContent className="bg-popover text-popover-foreground border border-border">
+                <p >Settings</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -223,7 +223,7 @@ export default function UserBar() {
                 </div>
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-80" align="start">
+            <PopoverContent className="w-80 mb-12" align="start">
               <Card className="border-0 shadow-none">
                 <CardContent className="p-0">
                   <div className="flex flex-col gap-4">

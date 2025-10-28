@@ -245,14 +245,14 @@ export default function ChannelMessagePage() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (!loadingMore) {
-      const element = listRef.current;
-      if (element) {
-        element.scrollTop = element.scrollHeight;
-      }
-    }
-  }, [messages.length, loadingMore]);
+  // useEffect(() => {
+  //   if (!loadingMore) {
+  //     const element = listRef.current;
+  //     if (element) {
+  //       element.scrollTop = element.scrollHeight;
+  //     }
+  //   }
+  // }, [messages.length, loadingMore]);
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">

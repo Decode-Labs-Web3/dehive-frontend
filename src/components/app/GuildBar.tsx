@@ -145,7 +145,7 @@ export default function GuildBar({
                 onClick={() => {
                   router.push("/app/channels/me");
                 }}
-                className="w-full h-full flex items-center justify-center rounded-md hover:bg-accent"
+                className="w-full h-full bg-background flex items-center text-foreground justify-center rounded-md hover:bg-accent"
               >
                 <FontAwesomeIcon icon={faMessage} />
               </Button>
@@ -177,11 +177,11 @@ export default function GuildBar({
                 <ContextMenu>
                   <ContextMenuTrigger asChild>
                     <TooltipTrigger asChild>
-                      <button
+                      <Button
                         onClick={() =>
                           router.push(`/app/channels/${server._id}`)
                         }
-                        className="relative group w-10 h-10 rounded-md ml-3 flex items-center font-bold justify-center hover:bg-accent"
+                        className="relative mb-2 group w-10 h-10 rounded-md ml-3 text-foreground flex items-center bg-background font-bold justify-center hover:bg-accent"
                       >
                         {server.name.slice(0, 1).toUpperCase()}
                         <span
@@ -191,7 +191,7 @@ export default function GuildBar({
                               : "h-4 bg-blue-500"
                           }`}
                         />
-                      </button>
+                      </Button>
                     </TooltipTrigger>
                   </ContextMenuTrigger>
 
