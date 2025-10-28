@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { useParams, useRouter } from "next/navigation";
 import ServerBarItems from "@/components/serverBarItem";
-import { Button } from "@/components/ui/button";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -18,9 +21,6 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   JoinedServer,
   ChannelLeftPayload,

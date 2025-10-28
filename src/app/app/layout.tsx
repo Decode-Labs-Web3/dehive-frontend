@@ -88,7 +88,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </DirectCallProvider>
           )}
 
-          <div className="absolute bottom-5 left-5 w-75 h-30 z-10 overflow-visible">
+          <div className="absolute bottom-5 left-5 w-60 h-30 z-10 overflow-visible">
             <App.UserBar />
           </div>
         </div>

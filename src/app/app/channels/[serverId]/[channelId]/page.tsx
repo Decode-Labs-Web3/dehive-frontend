@@ -7,8 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import { Card, CardContent } from "@/components/ui/card";
+import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getChannelChatSocketIO } from "@/lib/socketioChannelChat";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -61,7 +63,7 @@ export default function ChannelMessagePage() {
   const { channelId } = useParams<{
     channelId: string;
   }>();
-
+  const { sound } = useSoundContext();
   const [channelInfo, setChannelInfo] = useState<ChannelInfoProps | null>(null);
 
   const fetchChannel = useCallback(async () => {
@@ -300,16 +302,34 @@ export default function ChannelMessagePage() {
   //     }
   //   }
   // }, [messages.length, loadingMore]);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
+
+  useEffect(() => {
+    const socket = getChannelChatSocketIO();
+    const onNewMessage = (message: MessageChannel) => {
+      console.log("play sound on new message");
+      if (message.sender.dehive_id !== userId) {
+        const audio = audioRef.current;
+        if (!audio) return;
+        if (!sound) return;
+        audio.play().catch(() => {});
+      }
+    };
+    socket.on("newMessage", onNewMessage);
+    return () => {
+      socket.off("newMessage", onNewMessage);
+    };
+  }, [userId, sound]);
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
+        <audio ref={audioRef} src="/sounds/ting.wav" preload="auto" />
+
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md bg-muted text-muted-foreground">
-            <FontAwesomeIcon
-              icon={faHashtag}
-              className="w-4 h-4"
-            />
+            <FontAwesomeIcon icon={faHashtag} className="w-4 h-4" />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">

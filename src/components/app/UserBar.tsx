@@ -121,138 +121,137 @@ export default function UserBar() {
   }
 
   return (
-    <TooltipProvider>
-      <Card className="w-full h-full p-2">
-        <div className="flex flex-col justify-end w-full h-full">
-          <div className="grid grid-cols-4 gap-2 mb-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  onClick={() => setMicrophone((prev) => !prev)}
-                  className="h-8 w-full bg-background text-foreground hover:bg-accent"
-                >
-                  <FontAwesomeIcon
-                    icon={microphone ? faMicrophone : faMicrophoneSlash}
-                  />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-popover text-popover-foreground border border-border">
-                <p>{microphone ? "Mute microphone" : "Unmute microphone"}</p>
-              </TooltipContent>
-            </Tooltip>
+    <>
+      <TooltipProvider>
+        <Card className="w-full h-full p-3">
+          <div className="flex flex-col h-full gap-3">
+            <div className="flex-1 flex items-center justify-center">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors border-none bg-transparent w-full max-w-xs"
+                    type="button"
+                  >
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage
+                        src={`https://ipfs.de-id.xyz/ipfs/${userData?.avatar_ipfs_hash}`}
+                        alt="Avatar"
+                      />
+                      <AvatarFallback>
+                        {userData?.display_name} Avatar
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1 text-left">
+                      <h3 className="text-sm font-semibold truncate">
+                        {userData?.display_name}
+                      </h3>
+                      <h4 className="text-xs text-muted-foreground truncate">
+                        {userData?.dehive_role}
+                      </h4>
+                    </div>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-60 mb-2" align="center">
+                  <Card className="border-0 shadow-none">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col items-center gap-4">
+                        <Avatar className="w-16 h-16">
+                          <AvatarImage
+                            src={`https://ipfs.de-id.xyz/ipfs/${userData?.avatar_ipfs_hash}`}
+                            alt="Avatar"
+                          />
+                          <AvatarFallback>
+                            {userData?.display_name}
+                          </AvatarFallback>
+                        </Avatar>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  onClick={() => setSound((prev) => !prev)}
-                  className="h-8 w-full bg-background text-foreground hover:bg-accent"
-                >
-                  <FontAwesomeIcon
-                    icon={sound ? faVolumeHigh : faVolumeXmark}
-                  />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-popover text-popover-foreground border border-border">
-                <p>{sound ? "Mute sound" : "Unmute sound"}</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  onClick={() => setUserPannel(true)}
-                  className="h-8 w-full bg-background text-foreground hover:bg-accent"
-                >
-                  <FontAwesomeIcon
-                    className="hover:animate-spin"
-                    icon={faGear}
-                  />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-popover text-popover-foreground border border-border">
-                <p>Settings</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors border-none bg-transparent"
-                type="button"
-              >
-                <Avatar className="w-10 h-10">
-                  <AvatarImage
-                    src={`https://ipfs.de-id.xyz/ipfs/${userData?.avatar_ipfs_hash}`}
-                    alt="Avatar"
-                  />
-                  <AvatarFallback>
-                    {userData?.display_name} Avatar
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold truncate">
-                    {userData?.display_name}
-                  </h3>
-                  <h4 className="text-xs text-muted-foreground truncate">
-                    {userData?.dehive_role}
-                  </h4>
-                </div>
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 mb-12" align="start">
-              <Card className="border-0 shadow-none">
-                <CardContent className="p-0">
-                  <div className="flex flex-col gap-4">
-                    <div className="flex flex-row gap-3">
-                      <Avatar className="w-16 h-16">
-                        <AvatarImage
-                          src={`https://ipfs.de-id.xyz/ipfs/${userData?.avatar_ipfs_hash}`}
-                          alt="Avatar"
-                        />
-                        <AvatarFallback>
-                          {userData?.display_name}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2 mb-2">
-                          <div className="min-w-0">
-                            <h3 className="text-sm font-semibold truncate">
-                              {userData?.display_name}
-                            </h3>
-                            <div className="text-xs text-muted-foreground truncate">
-                              @{userData?.username}
-                            </div>
+                        <div className="text-center">
+                          <h3 className="text-lg font-semibold truncate">
+                            {userData?.display_name}
+                          </h3>
+                          <div className="text-sm text-muted-foreground truncate">
+                            @{userData?.username}
                           </div>
-                          <Badge variant="secondary">
+                          <Badge variant="secondary" className="mt-2 text-xs">
                             {userData?.dehive_role}
                           </Badge>
                         </div>
 
                         <div className="flex gap-2 text-xs">
-                          <Badge variant="outline">
+                          <Badge variant="outline" className="text-xs">
                             Followers: {userData?.followers_number}
                           </Badge>
-                          <Badge variant="outline">
+                          <Badge variant="outline" className="text-xs">
                             Following: {userData?.following_number}
                           </Badge>
                         </div>
+
+                        <p className="text-sm text-muted-foreground text-center line-clamp-3">
+                          {userData?.bio || "No bio yet."}
+                        </p>
                       </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {userData?.bio || "No bio yet."}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </PopoverContent>
-          </Popover>
-        </div>
-      </Card>
+                    </CardContent>
+                  </Card>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    onClick={() => setMicrophone((prev) => !prev)}
+                    className="h-10 w-full bg-background text-foreground hover:bg-accent rounded-lg"
+                  >
+                    <FontAwesomeIcon
+                      icon={microphone ? faMicrophone : faMicrophoneSlash}
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-popover text-popover-foreground border border-border">
+                  <p>{microphone ? "Mute microphone" : "Unmute microphone"}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    onClick={() => setSound((prev) => !prev)}
+                    className="h-10 w-full bg-background text-foreground hover:bg-accent rounded-lg"
+                  >
+                    <FontAwesomeIcon
+                      icon={sound ? faVolumeHigh : faVolumeXmark}
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-popover text-popover-foreground border border-border">
+                  <p>{sound ? "Mute sound" : "Unmute sound"}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    onClick={() => setUserPannel(true)}
+                    className="h-10 w-full bg-background text-foreground hover:bg-accent rounded-lg"
+                  >
+                    <FontAwesomeIcon
+                      className="hover:animate-spin"
+                      icon={faGear}
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-popover text-popover-foreground border border-border">
+                  <p>Settings</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        </Card>
+      </TooltipProvider>
       {userPannel && userData && (
         <UserPannel
           theme={theme}
@@ -262,6 +261,6 @@ export default function UserBar() {
           handleUserData={handleUserData}
         />
       )}
-    </TooltipProvider>
+    </>
   );
 }

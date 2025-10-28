@@ -1,8 +1,8 @@
 "use client";
 
 import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 
 export function useDirectMessage(conversationId: string) {
   const socket = useRef(getDirectChatSocketIO()).current;

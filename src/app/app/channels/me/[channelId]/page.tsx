@@ -8,8 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import { Card, CardContent } from "@/components/ui/card";
+import { useSoundContext } from "@/contexts/SoundContext";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
 import {
@@ -56,6 +58,7 @@ interface UserChatWith {
 
 export default function DirectMessagePage() {
   // console.log("edwedwedwed", conversation);
+  const { sound } = useSoundContext();
   const router = useRouter();
   const { channelId } = useParams<{
     channelId: string;
@@ -137,7 +140,6 @@ export default function DirectMessagePage() {
       setEditMessage({ id: "", messageEdit: "" });
     }
   };
-
 
   const handleNewMessageKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -301,10 +303,29 @@ export default function DirectMessagePage() {
   //    return element.scrollHeight - (element.scrollTop + element.clientHeight) >= 50;
 
   // }, [messages.length, loadingMore]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const socket = getDirectChatSocketIO();
+    const onNewMessage = (message: Message) => {
+      console.log("play sound on new message");
+      if (message.sender.dehive_id === userChatWith.id) {
+        const audio = audioRef.current;
+        if (!audio) return;
+        if (!sound) return;
+        audio.play().catch(() => {});
+      }
+    };
+    socket.on("newMessage", onNewMessage);
+    return () => {
+      socket.off("newMessage", onNewMessage);
+    };
+  }, [userChatWith.id, sound]);
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
+        <audio ref={audioRef} src="/sounds/ting.wav" preload="auto" />
         <div className="flex items-center gap-3">
           <Avatar className="w-8 h-8">
             <AvatarImage
