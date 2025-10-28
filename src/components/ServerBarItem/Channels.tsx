@@ -3,6 +3,22 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ServerBarItems from "@/components/serverBarItem";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -65,7 +81,6 @@ export default function Channels({
 }: ChannelPageProps) {
   const { serverId } = useParams();
   const router = useRouter();
-  const [channelModal, setChannelModal] = useState(false);
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
   const [userChannel, setUserChannel] = useState<UserChannelProps[]>([]);
 
@@ -199,21 +214,8 @@ export default function Channels({
 
   return (
     <>
-      <div
-        onContextMenuCapture={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          // console.log("Test Mouse Right click channel modal");
-          setChannelModal((prev) => !prev);
-        }}
-        className={
-          "relative flex items-center justify-between px-4 py-1 rounded-md hover:bg-[var(--background-secondary)] group w-full h-full"
-        }
-      >
-        <div
-          // onMouseDown={handleChannelClick}
-          className=" flex flex-row justify-between items-center w-full h-full"
-        >
+      <ContextMenu onOpenChange={(open) => console.log("CM open?", open)}>
+        <ContextMenuTrigger asChild>
           <div className="flex flex-col items-center gap-3 text-sm text-[var(--muted-foreground)] w-full">
             <div className="flex justify-between items-between w-full">
               <div className="flex gap-2">
@@ -270,74 +272,47 @@ export default function Channels({
               )}
             </div>
           </div>
+        </ContextMenuTrigger>
 
-          {channelModal && (
-            <div>
-              <div
-                tabIndex={-1}
-                ref={(element) => element?.focus()}
-                onClick={() => setChannelModal(false)}
-                onKeyDown={(event) =>
-                  event.key === "Escape" && setChannelModal(false)
-                }
-                className="fixed inset-0 bg-black/50 z-40"
-              />
-
-              <div className="absolute top-full z-[100] left-1/2 -translate-x-1/2 w-56 rounded-md border border-border bg-background text-foreground shadow-lg">
-                {isPrivileged && (
-                  <>
-                    <button
-                      onClick={() => {
-                        console.log(
-                          "edit channel click trigger channel pannel"
-                        );
-                        setChannelPannel((prev) => ({
-                          ...prev,
-                          [channel._id]: true,
-                        }));
-                        setChannelModal(false);
-                      }}
-                      className="w-full text-left px-3 py-2 hover:bg-accent"
-                    >
-                      Edit Channel
-                    </button>
-                    <button
-                      onClick={() => {
-                        setChannelModal(false);
-                        setDeleteChannelModal(true);
-                      }}
-                      className="w-full text-left px-3 py-2 text-destructive hover:bg-destructive/10"
-                    >
-                      Delete Channel
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={async (
-                    event: React.MouseEvent<HTMLButtonElement>
-                  ) => {
-                    const button = event.currentTarget;
-                    const oldText = button.textContent;
-
-                    await navigator.clipboard.writeText(channel._id);
-
-                    button.textContent = "Copied!";
-                    setTimeout(() => {
-                      button.textContent = oldText;
-                    }, 1000);
-                  }}
-                  className="w-full flex justify-between text-left px-3 py-2 hover:bg-accent"
-                >
-                  Copy Channel ID
-                  <FontAwesomeIcon icon={faCopy} />
-                </button>
-              </div>
-            </div>
+        <ContextMenuContent>
+          {isPrivileged && (
+            <>
+              <ContextMenuItem
+                onPointerDown={() => {
+                  console.log("edit channel click trigger channel pannel");
+                  setChannelPannel((prev) => ({
+                    ...prev,
+                    [channel._id]: true,
+                  }));
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-accent"
+              >
+                Edit Channel
+              </ContextMenuItem>
+              <ContextMenuItem
+                onPointerDown={() => {
+                  console.log("delete channel click");
+                  setDeleteChannelModal(true);
+                }}
+                className="w-full text-left px-3 py-2 text-destructive hover:bg-destructive/10"
+              >
+                Delete Channel
+              </ContextMenuItem>
+            </>
           )}
-        </div>
-      </div>
+          <ContextMenuItem
+            onPointerDown={async () => {
+              await navigator.clipboard.writeText(channel._id);
+            }}
+            className="w-full flex justify-between text-left px-3 py-2 hover:bg-accent"
+          >
+            Copy Channel ID
+            <FontAwesomeIcon icon={faCopy} />
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
 
-      {/* {channelPanel[channel._id] && (
+      {channelPanel[channel._id] && (
         <>
           <ServerBarItems.ChannelPannel
             channel={channel}
@@ -346,7 +321,7 @@ export default function Channels({
             handleDeleteChannel={handleDeleteChannel}
           />
         </>
-      )} */}
+      )}
 
       {deleteChannelModal && (
         <div
