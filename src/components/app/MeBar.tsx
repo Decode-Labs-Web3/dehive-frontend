@@ -19,13 +19,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface UserDataProps {
-  id: string;
+  user_id: string;
+  status: string;
   conversationid: string;
   displayname: string;
-  username: string;
+  username: "william";
   avatar_ipfs_hash: string;
-  isActive: boolean;
   isCall: boolean;
+  last_seen: string;
   lastMessageAt: string;
 }
 
@@ -45,7 +46,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
   const fetchUserData = useCallback(async () => {
     setLoading(true);
     try {
-      const apiResponse = await fetch("/api/user/user-chat", {
+      const apiResponse = await fetch("/api/user/user-status", {
         method: "GET",
         headers: {
           "X-Frontend-Internal-Request": "true",
@@ -61,19 +62,19 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
 
       const response = await apiResponse.json();
       // console.log("This is response data", response)
-      if (response.statusCode === 200 && response.message === "OK") {
-        const userChatData = response.data.filter(
+      if (response.statusCode === 200 && response.message === "Successfully fetched following users status") {
+        const userChatData = response.data.users.filter(
           (user: UserDataProps) => user.conversationid !== ""
         );
         setUserData(userChatData);
         setUserDropdown(
           Object.fromEntries(
-            userChatData.map((user: UserDataProps) => [user.id, false])
+            userChatData.map((user: UserDataProps) => [user.user_id, false])
           )
         );
         setUserProfileModal(
           Object.fromEntries(
-            userChatData.map((user: UserDataProps) => [user.id, false])
+            userChatData.map((user: UserDataProps) => [user.user_id, false])
           )
         );
       }
@@ -105,15 +106,15 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
         const newList = [...prev];
         newList[listIndex] = {
           ...newList[listIndex],
-          isActive: data.isActive,
+          status: data.status,
           isCall: data.isCall,
           lastMessageAt: data.lastMessageAt,
         };
 
         newList.sort(
           (a, b) =>
-            new Date(b.lastMessageAt).getTime() -
-            new Date(a.lastMessageAt).getTime()
+            new Date(b.last_seen).getTime() -
+            new Date(a.last_seen).getTime()
         );
         return newList;
       });
@@ -149,7 +150,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
             )
             .map((user) => (
               <div
-                key={user.id}
+                key={user.user_id}
                 // onContextMenuCapture={(event) => {
                 //   event.preventDefault();
                 //   event.stopPropagation();
@@ -163,9 +164,9 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
               >
                 <DropdownMenu
                   modal={false}
-                  open={userDropdown[user.id]}
+                  open={userDropdown[user.user_id]}
                   onOpenChange={() =>
-                    setUserDropdown((prev) => ({ ...prev, [user.id]: false }))
+                    setUserDropdown((prev) => ({ ...prev, [user.user_id]: false }))
                   }
                 >
                   <DropdownMenuTrigger asChild>
@@ -176,7 +177,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
                         e.preventDefault();
                         setUserDropdown((prev) => ({
                           ...prev,
-                          [user.id]: true,
+                          [user.user_id]: true,
                         }));
                       }}
                       onPointerDown={(e) => {
@@ -201,7 +202,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
                           <FontAwesomeIcon
                             icon={faCircle}
                             className={`h-2 w-2 ${
-                              user.isActive
+                              user.status === "online"
                                 ? "text-emerald-500"
                                 : "text-zinc-400"
                             }`}
@@ -219,7 +220,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
                       onClick={() =>
                         setUserProfileModal((prev) => ({
                           ...prev,
-                          [user.id]: true,
+                          [user.user_id]: true,
                         }))
                       }
                     >
@@ -236,7 +237,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
                     <DropdownMenuItem>Call</DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={async () => {
-                        await navigator.clipboard.writeText(user.id);
+                        await navigator.clipboard.writeText(user.user_id);
                       }}
                       className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
@@ -263,9 +264,9 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                {userProfileModal[user.id] && (
+                {userProfileModal[user.user_id] && (
                   <UserInfoModal
-                    userId={user.id}
+                    userId={user.user_id}
                     setUserProfileModal={setUserProfileModal}
                   />
                 )}

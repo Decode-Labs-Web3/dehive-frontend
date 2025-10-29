@@ -13,7 +13,7 @@ export function getStatusSocketIO(): Socket<
   ClientToServerStatus
 > {
   if (_statusSocket) return _statusSocket;
-  _statusSocket = io(`${URL}/status`, {
+  _statusSocket = io(URL, {
     transports: ["websocket"],
     autoConnect: false,
     reconnection: true,

@@ -43,7 +43,7 @@ export interface ConversationUpdate {
 
 interface ConversationUpdateData {
   conversationId: string;
-  isActive: boolean;
+  status: "online" | "offline";
   isCall: boolean;
   lastMessageAt: string;
 }
