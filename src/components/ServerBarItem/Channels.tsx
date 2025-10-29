@@ -126,11 +126,13 @@ export default function Channels({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onServerJoined = (p: JoinedServer) => {
-      // console.log("[channel call serverJoined] quang minh", p);
-      setUserChannel(
-        p.channels.find((channelItem) => channelItem.channel_id === channel._id)
-          ?.participants || []
-      );
+      console.log("[channel call serverJoined] quang minh", p);
+      const participants =
+        p?.channels?.find(
+          (channelItem) => channelItem.channel_id === channel._id
+        )?.participants ?? [];
+
+      setUserChannel(participants);
     };
     socket.on("serverJoined", onServerJoined);
     return () => {
@@ -144,7 +146,12 @@ export default function Channels({
       // console.log("[channel call userJoinedChannel] quang minh", p);
       if (p.channel_id === channel._id) {
         console.log("[channel call userJoinedChannel]", p);
-        setUserChannel((prev) => [...prev, p.user_info]);
+        setUserChannel((prev) => {
+          if (!p.user_info || !p.user_info._id) return prev;
+          const exists = prev.some((u) => u._id === p.user_info._id);
+          if (exists) return prev;
+          return [...prev, p.user_info];
+        });
       }
     };
     socket.on("userJoinedChannel", onUserJoinedChannel);
@@ -159,9 +166,24 @@ export default function Channels({
       // console.log("[channel call userLeftChannel] quang minh", p);
       if (p.channel_id === channel._id) {
         console.log("User status channel", p);
-        setUserChannel((prev) =>
-          prev.find((user) => user._id !== p?.user_info?._id)
-        );
+        setUserChannel((prev) => {
+          if (!p.user_info || !p.user_info._id) return prev;
+          const userIndex = prev.findIndex(
+            (oldUser) => oldUser._id === p.user_info._id
+          );
+          if (userIndex === -1) return prev;
+
+          const next = [...prev];
+          next[userIndex] = {
+            ...next[userIndex],
+            isCamera: !!p.user_info.isCamera,
+            isMic: !!p.user_info.isMic,
+            isHeadphone: !!p.user_info.isHeadphone,
+            isLive: !!p.user_info.isLive,
+          };
+
+          return next;
+        });
       }
     };
     socket.on("userStatusChanged", onUserStatusChanged);
@@ -176,8 +198,11 @@ export default function Channels({
       // console.log("[channel call userLeftChannel] quang minh", p);
       if (p.channel_id === channel._id) {
         console.log("User left channel", p);
+        const idToRemove = p?.user_info?._id || p.user_id;
+        if (!idToRemove) return;
+
         setUserChannel((prev) =>
-          prev.filter((user) => user._id !== p?.user_info?._id)
+          prev.filter((user) => user._id !== idToRemove)
         );
       }
     };
@@ -191,7 +216,17 @@ export default function Channels({
     <>
       <ContextMenu>
         <ContextMenuTrigger asChild onClick={handleChannelClick}>
-          <div className="group flex flex-col items-start justify-start w-full px-3 py-2 rounded-md hover:bg-accent transition-colors cursor-pointer select-none">
+          <div
+            className="group flex flex-col items-start justify-start w-full px-3 py-2 rounded-md hover:bg-accent transition-colors cursor-pointer select-none"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleChannelClick();
+              }
+            }}
+          >
             <div className="flex items-center">
               <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md bg-muted text-muted-foreground">
                 <FontAwesomeIcon
@@ -217,25 +252,42 @@ export default function Channels({
                         <Avatar className="w-6 h-6 ring-1 ring-background">
                           <AvatarImage
                             src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                            alt={user.display_name || user.username || "avatar"}
                           />
                           <AvatarFallback className="text-xs">
-                            {user.display_name}
+                            {user.display_name?.[0] ??
+                              user.username?.[0] ??
+                              "U"}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex flex-col">
-                          <h1>{user.display_name}</h1>
-                          <p>@{user.username}</p>
+                        <div className="flex flex-col min-w-0">
+                          <p className="text-sm font-medium truncate max-w-[140px]">
+                            {user.display_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate max-w-[140px]">
+                            @{user.username}
+                          </p>
                         </div>
                       </div>
                       <div className="flex flex-row">
                         {!user.isMic && (
-                          <FontAwesomeIcon icon={faMicrophoneSlash} />
+                          <FontAwesomeIcon
+                            icon={faMicrophoneSlash}
+                            title="Microphone off"
+                          />
                         )}
                         {!user.isHeadphone && (
-                          <FontAwesomeIcon icon={faVolumeXmark} />
+                          <FontAwesomeIcon
+                            icon={faVolumeXmark}
+                            title="Headphones disconnected"
+                          />
                         )}
-                        {user.isCamera && <FontAwesomeIcon icon={faVideo} />}
-                        {user.isLive && <FontAwesomeIcon icon={faDisplay} />}
+                        {user.isCamera && (
+                          <FontAwesomeIcon icon={faVideo} title="Camera on" />
+                        )}
+                        {user.isLive && (
+                          <FontAwesomeIcon icon={faDisplay} title="Live" />
+                        )}
                       </div>
                     </div>
                   ))}

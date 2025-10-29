@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
 import type {
-  PongPayload,
   JoinedServer,
   WsErrorPayload,
   IdentityConfirmedCall,
@@ -90,10 +89,6 @@ export default function ChannelCallProvider({
       console.log("[channel call userStatusChanged]", p);
     };
 
-    const onPong = (p: PongPayload) => {
-      console.log("[channel call pong]", p);
-    };
-
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("connect_error", onConnectError);
@@ -109,7 +104,6 @@ export default function ChannelCallProvider({
     socket.on("userJoinedChannel", onUserJoinedChannel);
     socket.on("userStatusChanged", onUserStatusChanged);
     socket.on("userLeftChannel", onUserLeftChannel);
-    socket.on("pong", onPong);
 
     if (!socket.connected) socket.connect();
 
@@ -129,7 +123,6 @@ export default function ChannelCallProvider({
       socket.off("userJoinedChannel", onUserJoinedChannel);
       socket.off("userStatusChanged", onUserStatusChanged);
       socket.off("userLeftChannel", onUserLeftChannel);
-      socket.off("pong", onPong);
     };
   }, [socket, userId, serverId]);
 

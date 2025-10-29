@@ -26,7 +26,7 @@ function MicButton({ onAfter }: { onAfter?: (isMicOn: boolean) => void }) {
       onClick={async () => {
         await microphone.toggle();
         // isMute is the previous state; after toggle the new state is !isMute
-        onAfter?.(!isMute);
+        onAfter?.(isMute);
       }}
     >
       {isMute ? "Unmute" : "Mute"}
@@ -42,7 +42,7 @@ function CamButton({ onAfter }: { onAfter?: (isCameraOn: boolean) => void }) {
     <button
       onClick={async () => {
         await camera.toggle();
-        onAfter?.(!isMute);
+        onAfter?.(isMute);
       }}
     >
       {isMute ? "Camera On" : "Camera Off"}

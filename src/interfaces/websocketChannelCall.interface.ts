@@ -11,11 +11,6 @@ export interface WsErrorPayload {
   timestamp?: string;
 }
 
-export interface PongPayload {
-  timestamp: string;
-  message: "pong";
-}
-
 export interface UserInfo {
   _id: string;
   username: string;
@@ -62,7 +57,6 @@ export interface UserStatusChangedPayload {
 }
 
 export interface ServerToClientChannelCall {
-  pong: (p: PongPayload) => void;
   error: (e: WsErrorPayload) => void;
   serverJoined: (p: JoinedServer) => void;
   identityConfirmed: (p: IdentityConfirmedCall) => void;
