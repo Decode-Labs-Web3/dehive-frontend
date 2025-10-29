@@ -38,6 +38,7 @@ import {
   faX,
   faPen,
   faTrash,
+  faCircle,
   faHashtag,
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
@@ -59,12 +60,24 @@ interface ChannelInfoProps {
   __v: number;
 }
 
+interface UserInServerProps {
+  user_id: string;
+  status: "online" | "offline";
+  conversationid: string;
+  displayname: string;
+  username: string;
+  avatar_ipfs_hash: string;
+  isCall: boolean;
+  last_seen: string;
+}
+
 export default function ChannelMessagePage() {
   const { channelId } = useParams<{
     channelId: string;
   }>();
   const { sound } = useSoundContext();
   const [channelInfo, setChannelInfo] = useState<ChannelInfoProps | null>(null);
+  const [userInServer, setUserInServer] = useState<UserInServerProps[]>([]);
 
   const fetchChannel = useCallback(async () => {
     try {
@@ -98,6 +111,38 @@ export default function ChannelMessagePage() {
   useEffect(() => {
     fetchChannel();
   }, [fetchChannel]);
+
+  const fetchServerUsers = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/servers/members/status", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 200 &&
+        response.message === "Successfully fetched online server members"
+      ) {
+        setUserInServer(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server deleted channel fail");
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchServerUsers();
+  }, [fetchServerUsers]);
 
   const [userId, setUserId] = useState<string>("");
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
@@ -302,8 +347,7 @@ export default function ChannelMessagePage() {
   //     }
   //   }
   // }, [messages.length, loadingMore]);
-    const audioRef = useRef<HTMLAudioElement | null>(null);
-
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const socket = getChannelChatSocketIO();
@@ -393,6 +437,14 @@ export default function ChannelMessagePage() {
                       {message.sender.display_name} Avatar
                     </AvatarFallback>
                   </Avatar>
+                  {userInServer.find(
+                    (user) => user.user_id === message.sender.dehive_id
+                  )?.status === "online" && (
+                    <FontAwesomeIcon
+                      icon={faCircle}
+                      className="h-2 w-2 text-emerald-500"
+                    />
+                  )}
                   <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
                     {!editMessageField[message._id] ? (
                       <div className="w-full">
