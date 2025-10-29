@@ -26,7 +26,7 @@ export default function DirectCallPage() {
     avatar_ipfs_hash: "",
   });
 
-  const { sound } = useSoundContext()
+  const { sound } = useSoundContext();
 
   // console.log("this is orther user info", userChatWith);
 
@@ -69,18 +69,16 @@ export default function DirectCallPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (!sound) return;
     if (meCallState.status === "ringing" || meCallState.status === "calling") {
-      const audio = audioRef.current;
-      if (!audio) return;
-      if (!sound) return
       audio.play().catch(() => {});
       audio.loop = true;
-    } else {
-      const a = audioRef.current;
-      if (!a) return;
-      a.pause();
-      a.currentTime = 0;
+      return;
     }
+    audio.pause();
+    audio.currentTime = 0;
   }, [meCallState.status, sound]);
 
   return (

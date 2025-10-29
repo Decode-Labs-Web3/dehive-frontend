@@ -23,10 +23,9 @@ import {
 } from "@/components/ui/context-menu";
 import {
   JoinedServer,
-  ChannelLeftPayload,
-  ChannelJoinedPayload,
-  UserLeftChannelPayload,
   UserJoinedChannelPayload,
+  UserStatusChangedPayload,
+  UserLeftChannelPayload,
 } from "@/interfaces/websocketChannelCall.interface";
 import {
   faCopy,
@@ -89,6 +88,7 @@ export default function Channels({
       router.push(`/app/channels/${serverId}/${channel._id}`);
     }
   };
+
   const handleDeleteChannel = async (channelId: string) => {
     try {
       const apiResponse = await fetch("/api/servers/channel/delete", {
@@ -125,23 +125,16 @@ export default function Channels({
 
   useEffect(() => {
     const socket = getChannelCallSocketIO();
-    const onChannelJoined = (p: ChannelJoinedPayload) => {
-      // console.log("[channel call channelJoined] quang minh", p);
-      console.log(
-        "Setting userChannel state with participants:",
-        p.participants
+    const onServerJoined = (p: JoinedServer) => {
+      // console.log("[channel call serverJoined] quang minh", p);
+      setUserChannel(
+        p.channels.find((channelItem) => channelItem.channel_id === channel._id)
+          ?.participants || []
       );
-      if (p.channel_id === channel._id) {
-        console.log(
-          "Setting userChannel state with participants:",
-          p.participants
-        );
-        setUserChannel(p.participants);
-      }
     };
-    socket.on("channelJoined", onChannelJoined);
+    socket.on("serverJoined", onServerJoined);
     return () => {
-      socket.off("channelJoined", onChannelJoined);
+      socket.off("serverJoined", onServerJoined);
     };
   }, [channel._id]);
 
@@ -162,6 +155,23 @@ export default function Channels({
 
   useEffect(() => {
     const socket = getChannelCallSocketIO();
+    const onUserStatusChanged = (p: UserStatusChangedPayload) => {
+      // console.log("[channel call userLeftChannel] quang minh", p);
+      if (p.channel_id === channel._id) {
+        console.log("User status channel", p);
+        setUserChannel((prev) =>
+          prev.find((user) => user._id !== p?.user_info?._id)
+        );
+      }
+    };
+    socket.on("userStatusChanged", onUserStatusChanged);
+    return () => {
+      socket.off("userStatusChanged", onUserStatusChanged);
+    };
+  }, [channel._id]);
+
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
     const onUserLeftChannel = (p: UserLeftChannelPayload) => {
       // console.log("[channel call userLeftChannel] quang minh", p);
       if (p.channel_id === channel._id) {
@@ -174,38 +184,6 @@ export default function Channels({
     socket.on("userLeftChannel", onUserLeftChannel);
     return () => {
       socket.off("userLeftChannel", onUserLeftChannel);
-    };
-  }, [channel._id]);
-
-  useEffect(() => {
-    const socket = getChannelCallSocketIO();
-    const onChannelLeft = (p: ChannelLeftPayload) => {
-      // console.log("[channel call userLeftChannel] quang minh", p);
-      if (p.channel_id === channel._id) {
-        console.log("User left channel", p);
-        setUserChannel((prev) =>
-          prev.filter((user) => user._id !== p?.user_info?._id)
-        );
-      }
-    };
-    socket.on("channelLeft", onChannelLeft);
-    return () => {
-      socket.off("channelLeft", onChannelLeft);
-    };
-  }, [channel._id]);
-
-  useEffect(() => {
-    const socket = getChannelCallSocketIO();
-    const onServerJoined = (p: JoinedServer) => {
-      // console.log("[channel call serverJoined] quang minh", p);
-      setUserChannel(
-        p.channels.find((channelItem) => channelItem.channel_id === channel._id)
-          ?.participants || []
-      );
-    };
-    socket.on("serverJoined", onServerJoined);
-    return () => {
-      socket.off("serverJoined", onServerJoined);
     };
   }, [channel._id]);
 

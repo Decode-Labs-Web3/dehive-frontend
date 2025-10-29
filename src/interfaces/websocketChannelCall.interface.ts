@@ -44,23 +44,10 @@ export interface Channels {
   participants: UserInfo[];
 }
 
-export interface ChannelJoinedPayload {
-  channel_id: string;
-  status: string;
-  participants: UserInfo[];
-}
-
 export interface UserJoinedChannelPayload {
   channel_id: string;
   user_id: string;
   user_info: UserInfo;
-}
-
-export interface ChannelLeftPayload {
-  channel_id: string;
-  user_id?: string;
-  user_info?: UserInfo;
-  status?: string;
 }
 
 export interface UserLeftChannelPayload {
@@ -78,8 +65,6 @@ export interface ServerToClientChannelCall {
   pong: (p: PongPayload) => void;
   error: (e: WsErrorPayload) => void;
   serverJoined: (p: JoinedServer) => void;
-  channelLeft: (p: ChannelLeftPayload) => void;
-  channelJoined: (p: ChannelJoinedPayload) => void;
   identityConfirmed: (p: IdentityConfirmedCall) => void;
   userLeftChannel: (p: UserLeftChannelPayload) => void;
   userJoinedChannel: (p: UserJoinedChannelPayload) => void;
@@ -111,7 +96,6 @@ export interface UpdateUserStatusDto {
 }
 
 export interface ClientToServerChannelCall {
-  ping: () => void;
   joinServer: (dto: JoinServerDto) => void;
   joinChannel: (dto: JoinChannelDto) => void;
   identity: (payload: IdentityCallDto) => void;

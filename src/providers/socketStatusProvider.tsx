@@ -1,173 +1,122 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from "react";
-import type { Socket as IOSocket } from "socket.io-client";
+"use client";
+
+import { useEffect, useRef } from "react";
 import { getStatusSocketIO } from "@/lib/socketioStatus";
-import type {
-  UserStatusChanged,
+import {
   IdentityConfirmed,
-  ServerToClientStatus,
-  ClientToServerStatus,
+  WsErrorPayload,
+  UserStatusChanged,
 } from "@/interfaces/websocketStatus";
 
-type UserStatusListener = (payload: UserStatusChanged) => void;
+interface SocketStatusProviderProps {
+  userId: string;
+  fingerprintHash: string;
+  children: React.ReactNode;
+}
 
-type SocketStatusContextValue = {
-  socket: IOSocket<ServerToClientStatus, ClientToServerStatus> | null;
-  connected: boolean;
-  identified: boolean;
-  connect: () => void;
-  disconnect: () => void;
-  identify: (payload: {
-    userDehiveId: string;
-    fingerprintHash: string;
-  }) => void;
-  addUserStatusListener: (cb: UserStatusListener) => () => void;
-};
-
-const SocketStatusContext = createContext<SocketStatusContextValue | undefined>(
-  undefined
-);
-
-export const SocketStatusProvider: React.FC<{ children: React.ReactNode }> = ({
+export default function SocketStatusProvider({
+  userId,
+  fingerprintHash,
   children,
-}) => {
-  const socketRef = useRef<IOSocket<
-    ServerToClientStatus,
-    ClientToServerStatus
-  > | null>(null);
-  const listenersRef = useRef<Set<UserStatusListener>>(new Set());
-  const [connected, setConnected] = useState(false);
-  const [identified, setIdentified] = useState(false);
+}: SocketStatusProviderProps) {
+  const socket = useRef(getStatusSocketIO()).current;
 
   useEffect(() => {
-    socketRef.current = getStatusSocketIO();
-
-    const s = socketRef.current;
-    if (!s) return;
-
-    const onConnect = () => setConnected(true);
-    const onDisconnect = () => {
-      setConnected(false);
-      setIdentified(false);
-    };
-
-    const safeParse = (data: unknown) => {
-      if (typeof data === "string") {
-        try {
-          return JSON.parse(data);
-        } catch {
-          return null;
-        }
-      }
-      return data;
-    };
-
-    const onIdentityConfirmed = (raw: IdentityConfirmed | string) => {
-      const parsed = safeParse(raw) as IdentityConfirmed | null;
-      if (parsed && parsed.userDehiveId) {
-        setIdentified(true);
+    const identify = () => {
+      if (userId && fingerprintHash) {
+        socket.emit("identity", { userDehiveId: userId, fingerprintHash });
       }
     };
 
-    const onError = (raw: unknown) => {
-      const parsed = safeParse(raw) as { message?: string } | null;
-      console.warn("Status socket error:", parsed ?? raw);
+    const onConnect = () => {
+      console.log("[ws status connect]");
+      identify();
     };
 
-    const onUserStatusChanged = (raw: UserStatusChanged | string) => {
-      const parsed = safeParse(raw) as UserStatusChanged | null;
-      if (!parsed) return;
-      for (const cb of listenersRef.current) {
-        try {
-          cb(parsed);
-        } catch (err) {
-          console.error("UserStatus listener failed:", err);
-        }
-      }
+    const onManagerReconnect = (attempt: number) => {
+      console.log("[ws status reconnect]", attempt);
+      identify();
+    };
+
+    const onManagerReconnectAttempt = (attempt: number) => {
+      console.log("[ws status reconnect_attempt]", attempt);
+    };
+
+    const onManagerReconnectError = (err: Error) => {
+      console.warn("[ws status reconnect_error]", err);
+    };
+
+    const onManagerReconnectFailed = () => {
+      console.warn("[ws status reconnect_failed]");
+    };
+
+    const onConnectError = (error: Error) => {
+      console.warn("[ws status connect_error]", error);
+    };
+
+    const onError = (error: string | WsErrorPayload) => {
+      console.warn("[ws status error]", error);
+    };
+
+    const onDisconnect = (reason: string) => {
+      console.log("[ws status disconnect]", reason);
+    };
+
+    const onIdentityConfirmed = (p: string | IdentityConfirmed) => {
+      console.log("[ws status identityConfirmed]", p);
+    };
+
+    const onUserStatusChanged = (p: string | UserStatusChanged) => {
+      console.log("[ws status userStatusChanged]", p);
     };
 
     const onIdentityConfirmedWrapper = (raw: unknown) =>
-      onIdentityConfirmed(raw as IdentityConfirmed | string);
-    const onErrorWrapper = (raw: unknown) => onError(raw);
+      onIdentityConfirmed(raw as string | IdentityConfirmed);
     const onUserStatusChangedWrapper = (raw: unknown) =>
-      onUserStatusChanged(raw as UserStatusChanged | string);
+      onUserStatusChanged(raw as string | UserStatusChanged);
 
-    s.on("connect", onConnect);
-    s.on("disconnect", onDisconnect);
-    s.on("identityConfirmed", onIdentityConfirmedWrapper);
-    s.on("error", onErrorWrapper);
-    s.on("userStatusChanged", onUserStatusChangedWrapper);
+    socket.on("connect", onConnect);
 
-    if (!s.connected) s.connect();
+    socket.on("connect_error", onConnectError);
+    socket.on("error", onError);
+    socket.on("disconnect", onDisconnect);
+
+    socket.io.on("reconnect", onManagerReconnect);
+    socket.io.on("reconnect_attempt", onManagerReconnectAttempt);
+    socket.io.on("reconnect_error", onManagerReconnectError);
+    socket.io.on("reconnect_failed", onManagerReconnectFailed);
+
+    socket.on("identityConfirmed", onIdentityConfirmedWrapper);
+    socket.on("userStatusChanged", onUserStatusChangedWrapper);
+
+    if (!socket.connected) socket.connect();
 
     return () => {
-      s.off("connect", onConnect);
-      s.off("disconnect", onDisconnect);
-      s.off("identityConfirmed", onIdentityConfirmedWrapper);
-      s.off("error", onErrorWrapper);
-      s.off("userStatusChanged", onUserStatusChangedWrapper);
+      socket.off("connect", onConnect);
+
+      socket.off("connect_error", onConnectError);
+      socket.off("error", onError);
+      socket.off("disconnect", onDisconnect);
+
+      socket.io.off("reconnect", onManagerReconnect);
+      socket.io.off("reconnect_attempt", onManagerReconnectAttempt);
+      socket.io.off("reconnect_error", onManagerReconnectError);
+      socket.io.off("reconnect_failed", onManagerReconnectFailed);
+
+      socket.off("identityConfirmed", onIdentityConfirmedWrapper);
+      socket.off("userStatusChanged", onUserStatusChangedWrapper);
     };
-  }, []);
+  }, [socket, userId, fingerprintHash]);
 
-  const connect = useCallback(() => {
-    const s = socketRef.current ?? getStatusSocketIO();
-    if (!s) return;
-    if (!s.connected) s.connect();
-  }, []);
+  useEffect(() => {
+    if (userId && fingerprintHash && socket.connected) {
+      console.log(
+        "[ws status re-identify due to userId/fingerprint change]",
+        userId
+      );
+      socket.emit("identity", { userDehiveId: userId, fingerprintHash });
+    }
+  }, [userId, fingerprintHash, socket]);
 
-  const disconnect = useCallback(() => {
-    const s = socketRef.current;
-    if (!s) return;
-    if (s.connected) s.disconnect();
-  }, []);
-
-  const identify = useCallback(
-    (payload: { userDehiveId: string; fingerprintHash: string }) => {
-      const s = socketRef.current;
-      if (!s) return;
-      s.emit("identity", payload);
-    },
-    []
-  );
-
-  const addUserStatusListener = useCallback((cb: UserStatusListener) => {
-    listenersRef.current.add(cb);
-    return () => {
-      listenersRef.current.delete(cb);
-    };
-  }, []);
-
-  const value: SocketStatusContextValue = {
-    socket: socketRef.current,
-    connected,
-    identified,
-    connect,
-    disconnect,
-    identify,
-    addUserStatusListener,
-  };
-
-  return (
-    <SocketStatusContext.Provider value={value}>
-      {children}
-    </SocketStatusContext.Provider>
-  );
-};
-
-export function useSocketStatus(): SocketStatusContextValue {
-  const ctx = useContext(SocketStatusContext);
-  if (!ctx) {
-    throw new Error(
-      "useSocketStatus must be used within a SocketStatusProvider"
-    );
-  }
-  return ctx;
+  return <>{children}</>;
 }
-
-export default SocketStatusProvider;

@@ -6,11 +6,10 @@ import type {
   PongPayload,
   JoinedServer,
   WsErrorPayload,
-  ChannelLeftPayload,
-  ChannelJoinedPayload,
   IdentityConfirmedCall,
   UserLeftChannelPayload,
   UserJoinedChannelPayload,
+  UserStatusChangedPayload,
 } from "@/interfaces/websocketChannelCall.interface";
 
 interface ChannelCallProviderProps {
@@ -79,25 +78,16 @@ export default function ChannelCallProvider({
       console.log("[channel call serverJoined]", p);
     };
 
-    const onChannelJoined = (p: ChannelJoinedPayload) => {
-      console.log("[channel call channelJoined]", p);
-    };
-
     const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
       console.log("[channel call userJoinedChannel]", p);
-    };
-
-    const onChannelLeft = (p: ChannelLeftPayload) => {
-      console.log("[channel call channelLeft]", p);
     };
 
     const onUserLeftChannel = (p: UserLeftChannelPayload) => {
       console.log("[channel call userLeftChannel]", p);
     };
 
-    const onUserStatusChanged = (p: unknown) => {
-      const payload = p;
-      console.log("[channel call userStatusChanged]", payload);
+    const onUserStatusChanged = (p: UserStatusChangedPayload) => {
+      console.log("[channel call userStatusChanged]", p);
     };
 
     const onPong = (p: PongPayload) => {
@@ -116,11 +106,9 @@ export default function ChannelCallProvider({
 
     socket.on("identityConfirmed", onIdentityConfirmed);
     socket.on("serverJoined", onServerJoined);
-    socket.on("channelJoined", onChannelJoined);
     socket.on("userJoinedChannel", onUserJoinedChannel);
-    socket.on("userLeftChannel", onUserLeftChannel);
-    socket.on("channelLeft", onChannelLeft);
     socket.on("userStatusChanged", onUserStatusChanged);
+    socket.on("userLeftChannel", onUserLeftChannel);
     socket.on("pong", onPong);
 
     if (!socket.connected) socket.connect();
@@ -138,11 +126,9 @@ export default function ChannelCallProvider({
 
       socket.off("identityConfirmed", onIdentityConfirmed);
       socket.off("serverJoined", onServerJoined);
-      socket.off("channelJoined", onChannelJoined);
       socket.off("userJoinedChannel", onUserJoinedChannel);
-      socket.off("channelLeft", onChannelLeft);
-      socket.off("userLeftChannel", onUserLeftChannel);
       socket.off("userStatusChanged", onUserStatusChanged);
+      socket.off("userLeftChannel", onUserLeftChannel);
       socket.off("pong", onPong);
     };
   }, [socket, userId, serverId]);
