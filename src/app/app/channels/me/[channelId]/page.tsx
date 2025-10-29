@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
+import { getStatusSocketIO } from "@/lib/socketioStatus";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
@@ -37,10 +38,11 @@ import {
   useLayoutEffect,
 } from "react";
 import {
-  faArrowTurnUp,
+  faX,
   faPen,
   faTrash,
-  faX,
+  faCircle,
+  faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface NewMessage {
@@ -54,12 +56,13 @@ interface UserChatWith {
   displayname: string;
   username: string;
   avatar_ipfs_hash: string;
+  status?: string;
 }
 
 export default function DirectMessagePage() {
   // console.log("edwedwedwed", conversation);
-  const { sound } = useSoundContext();
   const router = useRouter();
+  const { sound } = useSoundContext();
   const { channelId } = useParams<{
     channelId: string;
   }>();
@@ -322,6 +325,26 @@ export default function DirectMessagePage() {
     };
   }, [userChatWith.id, sound]);
 
+  useEffect(() => {
+    const socket = getStatusSocketIO();
+    const onUserStatusChanged = (
+      p: string | { userId: string; status: string }
+    ) => {
+      console.log("[ws me bar userStatusChanged]", p);
+      if (typeof p === "string") return;
+      if (p.userId === userChatWith.id) {
+        setUserChatWith((prev) => ({
+          ...prev,
+          status: p.status,
+        }));
+      }
+    };
+    socket.on("userStatusChanged", onUserStatusChanged);
+    return () => {
+      socket.off("userStatusChanged", onUserStatusChanged);
+    };
+  }, [userChatWith.id]);
+
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
@@ -398,9 +421,25 @@ export default function DirectMessagePage() {
                       src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
                     />
                     <AvatarFallback>
-                      {userChatWith.displayname} Avatar
+                      {message.sender.display_name} Avatar
                     </AvatarFallback>
                   </Avatar>
+                  {message.sender.dehive_id !== userChatWith.id && (
+                    <FontAwesomeIcon
+                      icon={faCircle}
+                      className="h-2 w-2 text-emerald-500"
+                    />
+                  )}
+                  {message.sender.dehive_id === userChatWith.id && (
+                    <FontAwesomeIcon
+                      icon={faCircle}
+                      className={`h-2 w-2 ${
+                        userChatWith.status === "online"
+                          ? "text-emerald-500"
+                          : "text-zinc-400"
+                      }`}
+                    />
+                  )}
                   <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
                     {!editMessageField[message._id] ? (
                       <div className="w-full">

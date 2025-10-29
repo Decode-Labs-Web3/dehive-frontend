@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getStatusSocketIO } from "@/lib/socketioStatus";
 import { useState, useCallback, useEffect } from "react";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -62,7 +63,10 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
 
       const response = await apiResponse.json();
       // console.log("This is response data", response)
-      if (response.statusCode === 200 && response.message === "Successfully fetched following users status") {
+      if (
+        response.statusCode === 200 &&
+        response.message === "Successfully fetched following users status"
+      ) {
         const userChatData = response.data.users.filter(
           (user: UserDataProps) => user.conversationid !== ""
         );
@@ -113,8 +117,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
 
         newList.sort(
           (a, b) =>
-            new Date(b.last_seen).getTime() -
-            new Date(a.last_seen).getTime()
+            new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime()
         );
         return newList;
       });
@@ -123,7 +126,24 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
     return () => {
       socket.off("conversation_update", onConversationUpdate);
     };
-  });
+  }, [fetchUserData]);
+
+  useEffect(() => {
+    const socket = getStatusSocketIO();
+    const onUserStatusChanged = (p: string | { userId: string; status: string }) => {
+      console.log("[ws me bar userStatusChanged]", p);
+      if (typeof p === "string") return;
+      setUserData((prev: UserDataProps[]) =>
+        prev.map((user) =>
+          user.user_id === p.userId ? { ...user, status: p.status } : user
+        )
+      );
+    };
+    socket.on("userStatusChanged", onUserStatusChanged);
+    return () => {
+      socket.off("userStatusChanged", onUserStatusChanged);
+    };
+  }, []);
 
   return (
     <div className="w-full h-full bg-background border-r border-border text-foreground overflow-y-auto">
@@ -166,7 +186,10 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
                   modal={false}
                   open={userDropdown[user.user_id]}
                   onOpenChange={() =>
-                    setUserDropdown((prev) => ({ ...prev, [user.user_id]: false }))
+                    setUserDropdown((prev) => ({
+                      ...prev,
+                      [user.user_id]: false,
+                    }))
                   }
                 >
                   <DropdownMenuTrigger asChild>

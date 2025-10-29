@@ -72,6 +72,7 @@ export default function SocketStatusProvider({
 
     const onIdentityConfirmedWrapper = (raw: unknown) =>
       onIdentityConfirmed(raw as string | IdentityConfirmed);
+
     const onUserStatusChangedWrapper = (raw: unknown) =>
       onUserStatusChanged(raw as string | UserStatusChanged);
 
