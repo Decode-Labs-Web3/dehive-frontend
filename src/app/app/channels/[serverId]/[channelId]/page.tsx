@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import { Card, CardContent } from "@/components/ui/card";
+import { getStatusSocketIO } from "@/lib/socketioStatus";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -72,7 +73,8 @@ interface UserInServerProps {
 }
 
 export default function ChannelMessagePage() {
-  const { channelId } = useParams<{
+  const { serverId, channelId } = useParams<{
+    serverId: string;
     channelId: string;
   }>();
   const { sound } = useSoundContext();
@@ -115,11 +117,12 @@ export default function ChannelMessagePage() {
   const fetchServerUsers = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/servers/members/status", {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
+        body: JSON.stringify({ serverId: serverId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -130,15 +133,16 @@ export default function ChannelMessagePage() {
       const response = await apiResponse.json();
       if (
         response.statusCode === 200 &&
-        response.message === "Successfully fetched online server members"
+        response.message === "Successfully fetched all server members"
       ) {
-        setUserInServer(response.data);
+        console.log("This is server users", response.data);
+        setUserInServer(response.data.users);
       }
     } catch (error) {
       console.error(error);
       console.log("Server deleted channel fail");
     }
-  }, []);
+  }, [serverId]);
 
   useEffect(() => {
     fetchServerUsers();
@@ -366,6 +370,30 @@ export default function ChannelMessagePage() {
     };
   }, [userId, sound]);
 
+  useEffect(() => {
+    const socket = getStatusSocketIO();
+    const onUserStatusChanged = (
+      p: string | { userId: string; status: string }
+    ) => {
+      console.log("[ws me bar userStatusChanged]", p);
+      if (typeof p === "string") return;
+      const index = userInServer.findIndex((user) => user.user_id === p.userId);
+      if (index === -1) return;
+      setUserInServer((prevUsers) => {
+        const next = [...prevUsers];
+        next[index] = {
+          ...next[index],
+          status: p.status as "online" | "offline",
+        };
+        return next;
+      });
+    };
+    socket.on("userStatusChanged", onUserStatusChanged);
+    return () => {
+      socket.off("userStatusChanged", onUserStatusChanged);
+    };
+  }, [userInServer]);
+  
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">

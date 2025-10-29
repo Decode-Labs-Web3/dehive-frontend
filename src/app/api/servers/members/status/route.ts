@@ -7,7 +7,7 @@ import {
   guardInternal,
 } from "@/utils/index.utils";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
   const denied = guardInternal(req);
@@ -27,6 +27,20 @@ export async function GET(req: Request) {
       );
     }
 
+    const body = await req.json();
+    const { serverId } = body;
+
+    if (!serverId) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: httpStatus.BAD_REQUEST,
+          message: "Missing serverId in request body",
+        },
+        { status: httpStatus.BAD_REQUEST }
+      );
+    }
+
     const fingerprint = (await cookies()).get("fingerprint")?.value;
 
     if (!fingerprint) {
@@ -43,7 +57,7 @@ export async function GET(req: Request) {
     // console.log("this is ssoToken and state from sso", ssoToken, state);
 
     const backendRes = await fetch(
-      `${process.env.DEHIVE_STATUS_ONLINE}/status/server/68e09f0f8f924bd8b03d957a?page=0&limit=100`,
+      `${process.env.DEHIVE_STATUS_ONLINE}/status/server/${serverId}/all?page=0&limit=100`,
       {
         method: "GET",
         headers: {
@@ -75,7 +89,7 @@ export async function GET(req: Request) {
         success: true,
         statusCode: response.statusCode || httpStatus.OK,
         message:
-          response.message || "Successfully fetched online server members",
+          response.message || "Successfully fetched all server members",
         data: response.data,
       },
       { status: response.statusCode || httpStatus.OK }

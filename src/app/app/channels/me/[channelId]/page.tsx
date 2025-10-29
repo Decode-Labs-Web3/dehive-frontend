@@ -56,7 +56,7 @@ interface UserChatWith {
   displayname: string;
   username: string;
   avatar_ipfs_hash: string;
-  status?: string;
+  status: string;
 }
 
 export default function DirectMessagePage() {
@@ -77,6 +77,7 @@ export default function DirectMessagePage() {
     displayname: "",
     username: "",
     avatar_ipfs_hash: "",
+    status: "offline",
   });
   const [messageDelete, setMessageDelete] = useState<Message | null>(null);
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
@@ -430,16 +431,13 @@ export default function DirectMessagePage() {
                       className="h-2 w-2 text-emerald-500"
                     />
                   )}
-                  {message.sender.dehive_id === userChatWith.id && (
-                    <FontAwesomeIcon
-                      icon={faCircle}
-                      className={`h-2 w-2 ${
-                        userChatWith.status === "online"
-                          ? "text-emerald-500"
-                          : "text-zinc-400"
-                      }`}
-                    />
-                  )}
+                  {message.sender.dehive_id === userChatWith.id &&
+                    userChatWith.status === "online" && (
+                      <FontAwesomeIcon
+                        icon={faCircle}
+                        className="h-2 w-2 text-emerald-500"
+                      />
+                    )}
                   <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
                     {!editMessageField[message._id] ? (
                       <div className="w-full">
