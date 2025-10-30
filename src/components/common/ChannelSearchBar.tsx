@@ -24,7 +24,7 @@ interface SenderProps {
   avatar_ipfs_hash: string;
 }
 
-export default function SearchBar() {
+export default function ChannelSearchBar() {
   const [keyword, setKeyword] = useState("");
   const { channelId } = useParams<{
     channelId: string;
@@ -37,7 +37,7 @@ export default function SearchBar() {
 
   const fetchSearchList = useCallback(async () => {
     try {
-      const apiResponse = await fetch("/api/search/direct", {
+      const apiResponse = await fetch("/api/search/channel", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

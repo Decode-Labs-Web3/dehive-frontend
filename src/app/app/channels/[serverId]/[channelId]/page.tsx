@@ -12,6 +12,7 @@ import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChat";
+import ChannelSearchBar from "@/components/common/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -393,7 +394,7 @@ export default function ChannelMessagePage() {
       socket.off("userStatusChanged", onUserStatusChanged);
     };
   }, [userInServer]);
-  
+
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
@@ -411,6 +412,7 @@ export default function ChannelMessagePage() {
             </div>
           </div>
         </div>
+        <ChannelSearchBar />
         <span className="text-xs text-muted-foreground">
           Page {currentPage}
         </span>
