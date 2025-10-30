@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.debug("get-category success response", response);
+    // console.debug(`${pathname}`, response);
 
     return NextResponse.json(
       {

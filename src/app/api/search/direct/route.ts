@@ -30,9 +30,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { channelId, keyword } = body;
 
-    console.log("eduhwdilhewodhlwiedukhwedu", channelId)
-    console.log("eduhwdilhewodhlwiedukhwedu", keyword)
-
+    console.log("eduhwdilhewodhlwiedukhwedu", channelId);
+    console.log("eduhwdilhewodhlwiedukhwedu", keyword);
 
     if (!channelId || !keyword) {
       return NextResponse.json(
@@ -87,7 +86,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.debug("get-category success response", response);
+    // console.debug(`${pathname}`, response);
 
     return NextResponse.json(
       {
