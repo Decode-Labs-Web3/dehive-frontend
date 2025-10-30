@@ -10,9 +10,9 @@ import {
   useCallStateHooks,
   type User,
   type Call,
-  ToggleAudioPublishingButton,
-  ToggleVideoPublishingButton,
-  ScreenShareButton,
+  // ToggleAudioPublishingButton,
+  // ToggleVideoPublishingButton,
+  // ScreenShareButton,
   ReactionsButton,
   CancelCallButton,
 } from "@stream-io/video-react-sdk";

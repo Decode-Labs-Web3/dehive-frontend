@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
+import SearchBar from "@/components/common/SearchBar";
 import { getStatusSocketIO } from "@/lib/socketioStatus";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSoundContext } from "@/contexts/SoundContext";
@@ -371,6 +372,7 @@ export default function DirectMessagePage() {
         >
           Start Call
         </Button>
+        <SearchBar />
         <span className="text-xs text-muted-foreground">
           Page {currentPage}
         </span>
