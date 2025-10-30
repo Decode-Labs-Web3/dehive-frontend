@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
-import DirectSearchBar from "@/components/common/DirectSearchBar";
+import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { getStatusSocketIO } from "@/lib/socketioStatus";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSoundContext } from "@/contexts/SoundContext";

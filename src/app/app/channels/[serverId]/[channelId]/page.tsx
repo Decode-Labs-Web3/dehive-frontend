@@ -12,7 +12,7 @@ import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChat";
-import ChannelSearchBar from "@/components/common/ChannelSearchBar";
+import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
