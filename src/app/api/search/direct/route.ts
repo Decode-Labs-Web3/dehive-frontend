@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/conversations/${channelId}/search?search=${keyword}&page=${countPage}&limit=10`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/conversations/${channelId}/search?search=${keyword}&page=${countPage}&limit=20`,
       {
         method: "GET",
         headers: {

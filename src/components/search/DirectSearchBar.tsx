@@ -1,8 +1,8 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
@@ -37,10 +37,12 @@ export default function DirectSearchBar() {
   const [countPage, setCountPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  const { channelId } = useParams<{
+  const [searchResult, setSerachResult] = useState<SearchResultProps[]>([]);
+  const { channelId, serverId } = useParams<{
+    serverId: string;
     channelId: string;
   }>();
-  const [searchResult, setSerachResult] = useState<SearchResultProps[]>([]);
+  const router = useRouter();
   const handleKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setKeyword(event.target.value);
     setCountPage(0);
@@ -136,11 +138,19 @@ export default function DirectSearchBar() {
             <DialogTitle>Search Result</DialogTitle>
           </DialogHeader>
           <ScrollArea ref={searchRef} onScrollViewport={handleScroll}>
-            {searchResult.map((result) => (
-              <div key={result._id}>
-                <h1 className="bg-red-500">{result.content}</h1>
-              </div>
-            ))}
+            <div className="flex flex-col">
+              {searchResult.map((result) => (
+                <button
+                  key={result._id}
+                  onClick={() => {
+                    router.push(`/app/channels/me/${channelId}/${result._id}`);
+                    setOpen(false);
+                  }}
+                >
+                  <h1 className="bg-red-500">{result.content}</h1>
+                </button>
+              ))}
+            </div>
             <ScrollBar orientation="vertical" />
           </ScrollArea>
         </DialogContent>
