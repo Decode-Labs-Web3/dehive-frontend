@@ -1,5 +1,34 @@
 "use client";
 
+// import { useMemo } from "react";
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
+import AutoLink from "@/components/common/AutoLink";
+import { getStatusSocketIO } from "@/lib/socketioStatus";
+import { Card, CardContent } from "@/components/ui/card";
+import { useSoundContext } from "@/contexts/SoundContext";
+import { useDirectMessage } from "@/hooks/useDirectMessage";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   useState,
   useEffect,
@@ -7,8 +36,13 @@ import {
   useRef,
   useLayoutEffect,
 } from "react";
-import { useParams } from "next/navigation";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import {
+  faX,
+  faPen,
+  faTrash,
+  faCircle,
+  faArrowTurnUp,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface MessageProps {
   _id: string;
@@ -23,34 +57,79 @@ interface MessageProps {
   attachments: [];
   isEdited: false;
   isDeleted: false;
-  replyTo: null | string;
+  replyTo: null | ReplyMessage;
   createdAt: string;
   updatedAt: string;
   __v: number;
 }
 
-export default function DirectSearch() {
-  const [isEndUp, setIsEndUp] = useState(false);
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const { messageId } = useParams<{ messageId: string }>();
-  const [messages, setMessages] = useState<MessageProps[]>([]);
+interface ReplyMessage {
+  _id: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+}
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const messageRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
-  const [loadingMore, setLoadingMore] = useState(false);
-  const prevScrollHeightRef = useRef(0);
-  const lastOpRef = useRef<"prepend" | "append" | null>(null);
-  const initialCenteredRef = useRef(false);
-  const isFetchingRef = useRef(false);
+interface UserChatWith {
+  id: string;
+  displayname: string;
+  username: string;
+  avatar_ipfs_hash: string;
+  status: string;
+}
+
+export default function DirectHistory() {
+  const router = useRouter();
+  const { channelId, messageId } = useParams();
+  const [messages, setMessages] = useState<MessageProps[]>([]);
+  const [isEndUp, setIsEndUp] = useState(false);
+  const [pageUp, setPageUp] = useState<number>(0);
+  const [isEndDown, setIsEndDown] = useState(false);
+  const [pageDown, setPageDown] = useState<number>(0);
+  const [loadingUp, setLoadingUp] = useState(false);
+  const [loadingDown, setLoadingDown] = useState(false);
+
+  const [userChatWith, setUserChatWith] = useState<UserChatWith>({
+    id: "",
+    displayname: "",
+    username: "",
+    avatar_ipfs_hash: "",
+    status: "offline",
+  });
+
+  const fetchUserChatWith = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/user/chat-with", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ conversationId: channelId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (response.statusCode === 200 && response.message === "OK") {
+        setUserChatWith(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server get user chat with error");
+    }
+  }, [channelId]);
+
+  useEffect(() => {
+    fetchUserChatWith();
+  }, [fetchUserChatWith]);
 
   const fetchMessageUp = useCallback(async () => {
-    if (isEndUp || loadingMore) return;
+    if (isEndUp) return;
     try {
-      const el = containerRef.current;
-      if (el) prevScrollHeightRef.current = el.scrollHeight;
-      isFetchingRef.current = true;
-      setLoadingMore(true);
-
       const apiResponse = await fetch("/api/search/direct-up", {
         method: "POST",
         headers: {
@@ -59,7 +138,7 @@ export default function DirectSearch() {
         },
         body: JSON.stringify({
           messageId,
-          pageUp: currentPage,
+          pageUp,
         }),
       });
 
@@ -72,7 +151,6 @@ export default function DirectSearch() {
       if (response.success === true && response.statusCode === 200) {
         setMessages((prev) => [...response.data.items, ...prev]);
         setIsEndUp(response.data.metadata.is_last_page);
-        lastOpRef.current = "prepend";
       }
     } catch (error) {
       console.group();
@@ -80,148 +158,341 @@ export default function DirectSearch() {
       console.log("Server direct message up error");
       console.groupEnd();
     } finally {
-      isFetchingRef.current = false;
-      setLoadingMore(false);
+      setLoadingUp(false);
     }
-  }, [messageId, currentPage, isEndUp, loadingMore]);
+  }, [messageId, pageUp, isEndUp]);
 
   useEffect(() => {
     fetchMessageUp();
   }, [fetchMessageUp]);
 
-  // handle scroll viewport events from ScrollArea
+  const fetchMessageDown = useCallback(async () => {
+    if (isEndDown) return;
+    try {
+      const apiResponse = await fetch("/api/search/direct-down", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({
+          messageId,
+          pageDown,
+        }),
+      });
+
+      if (!apiResponse.ok) {
+        console.error("Failed to fetch messages up");
+        return;
+      }
+
+      const response = await apiResponse.json();
+      if (response.success === true && response.statusCode === 200) {
+        setMessages((prev) => [...prev, ...response.data.items]);
+        setIsEndDown(response.data.metadata.is_last_page);
+      }
+    } catch (error) {
+      console.group();
+      console.error("Error fetching messages up:", error);
+      console.log("Server direct message up error");
+      console.groupEnd();
+    } finally {
+      setLoadingDown(false);
+    }
+  }, [messageId, pageDown, isEndDown]);
+
+  useEffect(() => {
+    fetchMessageDown();
+  }, [fetchMessageDown]);
+
+  const prevScrollHeightRef = useRef(0);
+  const listRef = useRef<HTMLDivElement | null>(null);
+
   const handleScroll = () => {
-    const element = containerRef.current;
-    if (!element || isEndUp || loadingMore) return;
+    const element = listRef.current;
+    if (!element || isEndUp || loadingUp) return;
+    // const total = element?.scrollTop + element?.clientHeight;
+    // console.log(
+    //   "ScrollHeight:",
+    //   element?.scrollHeight,
+    //   "total:",
+    //   total,
+    //   "ScrollTop:",
+    //   element?.scrollTop,
+    //   "clientHeight:",
+    //   element?.clientHeight
+    // );
+
     if (element.scrollTop === 0) {
-      console.log("Trigger load more");
-      prevScrollHeightRef.current = element.scrollHeight;
-      setLoadingMore(true);
-      setCurrentPage((prev) => prev + 1);
+      console.log("Trigger load up more");
+      prevScrollHeightRef.current = element?.scrollHeight;
+      setLoadingUp(true);
+      setPageUp((prev) => prev + 1);
+    }
+    if (element.scrollHeight === element.scrollTop + element.clientHeight){
+      console.log("Trigger load down more");
+      prevScrollHeightRef.current = element?.scrollHeight;
+      setLoadingDown(true);
+      setPageDown((prev) => prev + 1);
     }
   };
 
-  // preserve scroll position when messages are prepended or set center for initial load
-  useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    // If we just prepended messages, adjust scroll to keep view stable
-    if (lastOpRef.current === "prepend") {
-      const newScrollHeight = el.scrollHeight;
-      el.scrollTop = newScrollHeight - prevScrollHeightRef.current;
-      lastOpRef.current = null;
-      prevScrollHeightRef.current = newScrollHeight;
-      return;
-    }
-
-    // On initial load or when messages change, center the selected message if available
-    if (!initialCenteredRef.current && messages.length > 0) {
-      // try to center the selected message if available
-      if (messageId) {
-        const target = messageRefs.current.get(messageId);
-        if (target) {
-          const targetTop = target.offsetTop;
-          const targetHeight = target.offsetHeight;
-          const center = targetTop - el.clientHeight / 2 + targetHeight / 2;
-          el.scrollTop = Math.max(
-            0,
-            Math.min(center, el.scrollHeight - el.clientHeight)
-          );
-        } else {
-          // fallback to center whole container
-          el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
-        }
-      } else {
-        el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
-      }
-      initialCenteredRef.current = true;
-      lastOpRef.current = null;
-      return;
-    }
-  }, [messages, messageId]);
-
-  // auto-center when route messageId changes
   useEffect(() => {
-    if (!messageId) return;
-    const raf = requestAnimationFrame(() => {
-      const el = containerRef.current;
-      if (!el) return;
-      const target = messageRefs.current.get(messageId);
-      if (target) {
-        const targetTop = target.offsetTop;
-        const targetHeight = target.offsetHeight;
-        const center = targetTop - el.clientHeight / 2 + targetHeight / 2;
-        el.scrollTop = Math.max(
-          0,
-          Math.min(center, el.scrollHeight - el.clientHeight)
-        );
-      }
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [messageId, messages]);
+    setLoadingUp(false);
+    const element = listRef.current;
+    if (element) {
+      const newScrollHeightRef = element.scrollHeight;
+      element.scrollTop = newScrollHeightRef - prevScrollHeightRef.current;
+      prevScrollHeightRef.current = newScrollHeightRef;
+    }
+  }, [messages]);
+
+    useEffect(() => {
+    setLoadingDown(false);
+    const element = listRef.current;
+    if (element) {
+      element.scrollTop = prevScrollHeightRef.current;
+      prevScrollHeightRef.current = element.scrollHeight;
+    }
+  }, [messages]);
 
   return (
-    <div className="h-full w-full relative">
-      {/* central marker */}
-      <div className="pointer-events-none absolute left-0 right-0 top-1/2 -translate-y-1/2 flex justify-center">
-        <div className="h-[2px] w-full max-w-3xl bg-indigo-200/60" />
+    <div className="flex h-screen w-full flex-col bg-background text-foreground">
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
+        <div className="flex items-center gap-3">
+          <Avatar className="w-8 h-8">
+            <AvatarImage
+            // src={`https://ipfs.de-id.xyz/ipfs/${userChatWith.avatar_ipfs_hash}`}
+            />
+            {/* <AvatarFallback>{userChatWith.displayname} Avatar</AvatarFallback> */}
+          </Avatar>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-semibold text-foreground">
+                {/* {userChatWith?.displayname} */}
+              </h1>
+            </div>
+          </div>
+        </div>
+        <Button
+          onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/80"
+        >
+          Start Call
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          Page up: {pageUp} --- Page down: {pageDown}
+        </span>
       </div>
 
-      {/* top loader */}
-      {loadingMore && (
-        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-3 z-10">
-          <div className="h-3 w-3 border-2 border-t-transparent border-gray-500 rounded-full animate-spin" />
-        </div>
-      )}
-
       <ScrollArea
-        ref={containerRef}
+        ref={listRef}
         onScrollViewport={handleScroll}
-        className="h-full"
+        className="flex-1 px-6 py-6 bg-background"
       >
-        <div className="flex flex-col">
-          {loadingMore && (
+        <div className="flex flex-col gap-4">
+          {loadingUp && (
             <>
-              <div className="h-20 w-full bg-muted animate-pulse rounded" />
-              <div className="h-20 w-full bg-muted animate-pulse rounded" />
-              <div className="h-20 w-full bg-muted animate-pulse rounded" />
+              <Skeleton className="h-20 w-full bg-muted" />
+              <Skeleton className="h-20 w-full bg-muted" />
+              <Skeleton className="h-20 w-full bg-muted" />
+              <h1>Loading page up...</h1>
             </>
           )}
-          {messages.map((m) => (
-            <div
-              key={m._id}
-              ref={(el) => {
-                if (el) messageRefs.current.set(m._id, el);
-                else messageRefs.current.delete(m._id);
-              }}
-              className={`px-2 py-2 transition-colors duration-150 ${
-                m._id === messageId
-                  ? "ring-2 ring-indigo-400 bg-indigo-50"
-                  : "hover:bg-slate-50"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className="h-8 w-8 rounded-full bg-gray-200 flex-shrink-0" />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <div className="font-medium text-sm text-slate-900">
-                      {m.sender?.display_name || m.sender?.username}
+          {messages
+            .filter((message) => message.isDeleted === false)
+            .map((message) => (
+              <div
+                key={message._id}
+                data-anchor-id={message._id}
+                className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
+              >
+                {message.replyTo?._id && (
+                  <>
+                    {messages
+                      .filter((m) => m._id === message.replyTo?._id)
+                      .map((replied) => (
+                        <div
+                          key={replied._id}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent mb-2 max-w-full"
+                        >
+                          <span className="text-xs font-semibold text-foreground mr-2">
+                            Replying to {replied.sender.display_name}
+                          </span>
+                          <span className="truncate text-xs text-foreground">
+                            {replied.content}
+                          </span>
+                        </div>
+                      ))}
+                  </>
+                )}
+
+                <div className="flex w-full">
+                  <Avatar className="w-8 h-8 shrink-0">
+                    <AvatarImage
+                      src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
+                    />
+                    <AvatarFallback>
+                      {message.sender.display_name} Avatar
+                    </AvatarFallback>
+                  </Avatar>
+                  {message.sender.dehive_id !== userChatWith.id && (
+                    <FontAwesomeIcon
+                      icon={faCircle}
+                      className="h-2 w-2 text-emerald-500"
+                    />
+                  )}
+                  {message.sender.dehive_id === userChatWith.id &&
+                    userChatWith.status === "online" && (
+                      <FontAwesomeIcon
+                        icon={faCircle}
+                        className="h-2 w-2 text-emerald-500"
+                      />
+                    )}
+                  <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
+                    <div className="w-full">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-sm font-semibold text-foreground">
+                          {message.sender.display_name}
+                        </h2>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(message.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
+                        <AutoLink text={message.content} />
+                        {message.isEdited && (
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            (edited)
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-500">
-                      {new Date(m.createdAt).toLocaleString()}
-                    </div>
-                  </div>
-                  <div className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">
-                    {m.content}
+                    {/* {!editMessageField[message._id] ? (
+                    ) : (
+                      <Textarea
+                        name="editMessage"
+                        value={editMessage.messageEdit}
+                        onChange={handleEditMessageChange}
+                        onKeyDown={(event) =>
+                          handleEditMessageKeyDown(event, message.content)
+                        }
+                        placeholder="Edit message"
+                        autoFocus
+                        disabled={sending}
+                        className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border"
+                      />
+                    )}
+
+                    {!editMessageField[message._id] && (
+                      <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                onClick={() => handleMessageReply(message)}
+                                className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faArrowTurnUp}
+                                  rotation={270}
+                                />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-black">
+                              Reply
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        {userChatWith.id !== message.sender.dehive_id && (
+                          <>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
+                                    // onClick={() => {
+                                    //   setEditMessageField(
+                                    //     Object.fromEntries(
+                                    //       messages.map((messagelist) => [
+                                    //         messagelist._id,
+                                    //         messagelist._id === message._id,
+                                    //       ])
+                                    //     )
+                                    //   );
+                                    //   setEditMessage({
+                                    //     id: message._id,
+                                    //     messageEdit: message.content,
+                                    //   });
+                                    // }}
+                                  >
+                                    <FontAwesomeIcon icon={faPen} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-black">
+                                  Edit
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    className="h-8 w-8 p-0 text-destructive bg-secondary hover:bg-accent"
+                                    // onClick={() => {
+                                    //   setDeleteMessageModal(true);
+                                    //   setMessageDelete(message);
+                                    // }}
+                                  >
+                                    <FontAwesomeIcon icon={faTrash} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-black">
+                                  Delete
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </>
+                        )}
+                      </div>
+                    )} */}
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          {loadingDown && (
+            <>
+              <h1>Loading page down...</h1>
+              <Skeleton className="h-20 w-full bg-muted" />
+              <Skeleton className="h-20 w-full bg-muted" />
+              <Skeleton className="h-20 w-full bg-muted" />
+            </>
+          )}
         </div>
         <ScrollBar orientation="vertical" />
       </ScrollArea>
+
+      <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
+        {/* {isAtBottom && (
+            <div className="flex flex-row bg-red-500">
+              <h1>You{"'"}re Viewing Older Messages</h1>
+              <Button onClick={handleJumpToPresent}>Jump to present</Button>
+            </div>
+          )} */}
+        <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
+          <Button className="h-11 w-11 shrink-0 rounded-full bg-muted text-lg text-muted-foreground hover:bg-accent">
+            +
+          </Button>
+          <div className="flex-1">
+            <Textarea
+              name="content"
+              placeholder="Message"
+              className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border placeholder-muted-foreground"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

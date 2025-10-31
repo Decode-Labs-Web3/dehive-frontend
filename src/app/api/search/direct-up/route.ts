@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/messages/${messageId}/up?page=${pageUp}&limit=10`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/messages/${messageId}/up?page=${pageUp}&limit=30`,
       {
         method: "GET",
         headers: {
