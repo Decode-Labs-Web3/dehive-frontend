@@ -88,6 +88,7 @@ export default function DirectHistory() {
   const [pageDown, setPageDown] = useState<number>(0);
   const [loadingUp, setLoadingUp] = useState(false);
   const [loadingDown, setLoadingDown] = useState(false);
+  const [fristLoad, setfirstLoad] = useState(0);
 
   const [userChatWith, setUserChatWith] = useState<UserChatWith>({
     id: "",
@@ -151,14 +152,13 @@ export default function DirectHistory() {
       if (response.success === true && response.statusCode === 200) {
         setMessages((prev) => [...response.data.items, ...prev]);
         setIsEndUp(response.data.metadata.is_last_page);
+        setfirstLoad((prev) => prev + 1);
       }
     } catch (error) {
       console.group();
       console.error("Error fetching messages up:", error);
       console.log("Server direct message up error");
       console.groupEnd();
-    } finally {
-      setLoadingUp(false);
     }
   }, [messageId, pageUp, isEndUp]);
 
@@ -190,14 +190,13 @@ export default function DirectHistory() {
       if (response.success === true && response.statusCode === 200) {
         setMessages((prev) => [...prev, ...response.data.items]);
         setIsEndDown(response.data.metadata.is_last_page);
+        setfirstLoad((prev) => prev + 1);
       }
     } catch (error) {
       console.group();
       console.error("Error fetching messages up:", error);
       console.log("Server direct message up error");
       console.groupEnd();
-    } finally {
-      setLoadingDown(false);
     }
   }, [messageId, pageDown, isEndDown]);
 
@@ -208,9 +207,13 @@ export default function DirectHistory() {
   const prevScrollHeightRef = useRef(0);
   const listRef = useRef<HTMLDivElement | null>(null);
 
+  const [lastLoadDirection, setLastLoadDirection] = useState<
+    "up" | "down" | "init"
+  >("init");
+
   const handleScroll = () => {
     const element = listRef.current;
-    if (!element || isEndUp || loadingUp) return;
+    if (!element || loadingDown || loadingUp || lastLoadDirection !== "init") return;
     // const total = element?.scrollTop + element?.clientHeight;
     // console.log(
     //   "ScrollHeight:",
@@ -223,14 +226,18 @@ export default function DirectHistory() {
     //   element?.clientHeight
     // );
 
-    if (element.scrollTop === 0) {
+    if (element.scrollTop === 0 && !isEndUp) {
       console.log("Trigger load up more");
-      prevScrollHeightRef.current = element?.scrollHeight;
+      setLastLoadDirection("up");
       setLoadingUp(true);
+      prevScrollHeightRef.current = element?.scrollHeight;
       setPageUp((prev) => prev + 1);
-    }
-    if (element.scrollHeight === element.scrollTop + element.clientHeight){
+    } else if (
+      element.scrollHeight === element.scrollTop + element.clientHeight &&
+      !isEndDown
+    ) {
       console.log("Trigger load down more");
+      setLastLoadDirection("down");
       prevScrollHeightRef.current = element?.scrollHeight;
       setLoadingDown(true);
       setPageDown((prev) => prev + 1);
@@ -238,23 +245,22 @@ export default function DirectHistory() {
   };
 
   useEffect(() => {
-    setLoadingUp(false);
+    if (lastLoadDirection === "init") return;
     const element = listRef.current;
-    if (element) {
+    if (!element) return;
+    if (lastLoadDirection === "up") {
       const newScrollHeightRef = element.scrollHeight;
       element.scrollTop = newScrollHeightRef - prevScrollHeightRef.current;
       prevScrollHeightRef.current = newScrollHeightRef;
-    }
-  }, [messages]);
-
-    useEffect(() => {
-    setLoadingDown(false);
-    const element = listRef.current;
-    if (element) {
-      element.scrollTop = prevScrollHeightRef.current;
+      setLoadingUp(false);
+      setLastLoadDirection("init");
+    } else if (lastLoadDirection === "down") {
+      element.scrollTop = element.scrollHeight - element.clientHeight;
       prevScrollHeightRef.current = element.scrollHeight;
+      setLoadingDown(false);
+      setLastLoadDirection("init");
     }
-  }, [messages]);
+  }, [messages, lastLoadDirection, fristLoad]);
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
@@ -281,7 +287,8 @@ export default function DirectHistory() {
           Start Call
         </Button>
         <span className="text-xs text-muted-foreground">
-          Page up: {pageUp} --- Page down: {pageDown}
+          Page up: {pageUp} {isEndUp && "yes"} --- Page down: {pageDown}{" "}
+          {isEndDown && "yes"}
         </span>
       </div>
 
@@ -299,76 +306,77 @@ export default function DirectHistory() {
               <h1>Loading page up...</h1>
             </>
           )}
-          {messages
-            .filter((message) => message.isDeleted === false)
-            .map((message) => (
-              <div
-                key={message._id}
-                data-anchor-id={message._id}
-                className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
-              >
-                {message.replyTo?._id && (
-                  <>
-                    {messages
-                      .filter((m) => m._id === message.replyTo?._id)
-                      .map((replied) => (
-                        <div
-                          key={replied._id}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent mb-2 max-w-full"
-                        >
-                          <span className="text-xs font-semibold text-foreground mr-2">
-                            Replying to {replied.sender.display_name}
-                          </span>
-                          <span className="truncate text-xs text-foreground">
-                            {replied.content}
-                          </span>
-                        </div>
-                      ))}
-                  </>
-                )}
-
-                <div className="flex w-full">
-                  <Avatar className="w-8 h-8 shrink-0">
-                    <AvatarImage
-                      src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
-                    />
-                    <AvatarFallback>
-                      {message.sender.display_name} Avatar
-                    </AvatarFallback>
-                  </Avatar>
-                  {message.sender.dehive_id !== userChatWith.id && (
-                    <FontAwesomeIcon
-                      icon={faCircle}
-                      className="h-2 w-2 text-emerald-500"
-                    />
+          {fristLoad > 1 &&
+            messages
+              .filter((message) => !message.isDeleted)
+              .map((message) => (
+                <div
+                  key={message._id}
+                  data-anchor-id={message._id}
+                  className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
+                >
+                  {message.replyTo?._id && (
+                    <>
+                      {messages
+                        .filter((m) => m._id === message.replyTo?._id)
+                        .map((replied) => (
+                          <div
+                            key={replied._id}
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent mb-2 max-w-full"
+                          >
+                            <span className="text-xs font-semibold text-foreground mr-2">
+                              Replying to {replied.sender.display_name}
+                            </span>
+                            <span className="truncate text-xs text-foreground">
+                              {replied.content}
+                            </span>
+                          </div>
+                        ))}
+                    </>
                   )}
-                  {message.sender.dehive_id === userChatWith.id &&
-                    userChatWith.status === "online" && (
+
+                  <div className="flex w-full">
+                    <Avatar className="w-8 h-8 shrink-0">
+                      <AvatarImage
+                        src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
+                      />
+                      <AvatarFallback>
+                        {message.sender.display_name} Avatar
+                      </AvatarFallback>
+                    </Avatar>
+                    {message.sender.dehive_id !== userChatWith.id && (
                       <FontAwesomeIcon
                         icon={faCircle}
                         className="h-2 w-2 text-emerald-500"
                       />
                     )}
-                  <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
-                    <div className="w-full">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-sm font-semibold text-foreground">
-                          {message.sender.display_name}
-                        </h2>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(message.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
-                        <AutoLink text={message.content} />
-                        {message.isEdited && (
-                          <span className="ml-2 text-xs text-muted-foreground">
-                            (edited)
+                    {message.sender.dehive_id === userChatWith.id &&
+                      userChatWith.status === "online" && (
+                        <FontAwesomeIcon
+                          icon={faCircle}
+                          className="h-2 w-2 text-emerald-500"
+                        />
+                      )}
+                    <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
+                      <div className="w-full">
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-sm font-semibold text-foreground">
+                            {message.sender.display_name}
+                          </h2>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(message.createdAt).toLocaleString()}
                           </span>
-                        )}
+                        </div>
+                        <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
+                          <AutoLink text={message.content} />
+                          {message.isEdited && (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              (edited)
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    {/* {!editMessageField[message._id] ? (
+                      {/* {!editMessageField[message._id] ? (
                     ) : (
                       <Textarea
                         name="editMessage"
@@ -457,10 +465,10 @@ export default function DirectHistory() {
                         )}
                       </div>
                     )} */}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           {loadingDown && (
             <>
               <h1>Loading page down...</h1>
