@@ -29,27 +29,27 @@ interface MessageProps {
   __v: number;
 }
 
-export default function DirectSearchBar() {
+export default function DirectSearch() {
   const [isEndUp, setIsEndUp] = useState(false);
-  const [isEndDown, setIsEndDown] = useState(false);
-  const [pageUp, setPageUp] = useState<number>(0);
-  const [pageDown, setPageDown] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(0);
   const { messageId } = useParams<{ messageId: string }>();
   const [messages, setMessages] = useState<MessageProps[]>([]);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const messageRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  const [loadingMore, setLoadingMore] = useState(false);
   const prevScrollHeightRef = useRef(0);
   const lastOpRef = useRef<"prepend" | "append" | null>(null);
   const initialCenteredRef = useRef(false);
-  const isFetchingUpRef = useRef(false);
-  const isFetchingDownRef = useRef(false);
+  const isFetchingRef = useRef(false);
 
   const fetchMessageUp = useCallback(async () => {
-    if (isEndUp || isFetchingUpRef.current) return;
+    if (isEndUp || loadingMore) return;
     try {
       const el = containerRef.current;
       if (el) prevScrollHeightRef.current = el.scrollHeight;
-      isFetchingUpRef.current = true;
+      isFetchingRef.current = true;
+      setLoadingMore(true);
 
       const apiResponse = await fetch("/api/search/direct-up", {
         method: "POST",
@@ -59,7 +59,7 @@ export default function DirectSearchBar() {
         },
         body: JSON.stringify({
           messageId,
-          pageUp,
+          pageUp: currentPage,
         }),
       });
 
@@ -71,7 +71,6 @@ export default function DirectSearchBar() {
       const response = await apiResponse.json();
       if (response.success === true && response.statusCode === 200) {
         setMessages((prev) => [...response.data.items, ...prev]);
-        setPageUp((prev) => prev + 1);
         setIsEndUp(response.data.metadata.is_last_page);
         lastOpRef.current = "prepend";
       }
@@ -81,73 +80,24 @@ export default function DirectSearchBar() {
       console.log("Server direct message up error");
       console.groupEnd();
     } finally {
-      isFetchingUpRef.current = false;
+      isFetchingRef.current = false;
+      setLoadingMore(false);
     }
-  }, [messageId, pageUp, isEndUp]);
-
-  const fetchMessageDown = useCallback(async () => {
-    if (isEndDown || isFetchingDownRef.current) return;
-    try {
-      isFetchingDownRef.current = true;
-      const apiResponse = await fetch("/api/search/direct-down", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
-        body: JSON.stringify({
-          messageId,
-          pageDown,
-        }),
-      });
-
-      if (!apiResponse.ok) {
-        console.error("Failed to fetch messages down");
-        return;
-      }
-
-      const response = await apiResponse.json();
-      if (response.success === true && response.statusCode === 200) {
-        setMessages((prev) => [...prev, ...response.data.items]);
-        setPageDown((prev) => prev + 1);
-        setIsEndDown(response.data.metadata.is_last_page);
-        lastOpRef.current = "append";
-      }
-    } catch (error) {
-      console.group();
-      console.error("Error fetching messages down:", error);
-      console.log("Server direct message down error");
-      console.groupEnd();
-    } finally {
-      isFetchingDownRef.current = false;
-    }
-  }, [messageId, pageDown, isEndDown]);
+  }, [messageId, currentPage, isEndUp, loadingMore]);
 
   useEffect(() => {
     fetchMessageUp();
   }, [fetchMessageUp]);
 
-  useEffect(() => {
-    fetchMessageDown();
-  }, [fetchMessageDown]);
-
   // handle scroll viewport events from ScrollArea
   const handleScroll = () => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const threshold = 48; // pixels from top/bottom to trigger
-    if (el.scrollTop <= threshold) {
-      // reached top -> load previous messages
-      if (!isEndUp && !isFetchingUpRef.current) {
-        // set prev scroll height already done inside fetchMessageUp
-        fetchMessageUp();
-      }
-    } else if (el.scrollHeight - el.scrollTop - el.clientHeight <= threshold) {
-      // reached bottom -> load next messages
-      if (!isEndDown && !isFetchingDownRef.current) {
-        fetchMessageDown();
-      }
+    const element = containerRef.current;
+    if (!element || isEndUp || loadingMore) return;
+    if (element.scrollTop === 0) {
+      console.log("Trigger load more");
+      prevScrollHeightRef.current = element.scrollHeight;
+      setLoadingMore(true);
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
@@ -156,41 +106,117 @@ export default function DirectSearchBar() {
     const el = containerRef.current;
     if (!el) return;
 
-    // If first time we have messages, center the view
-    if (!initialCenteredRef.current && messageId.length > 0) {
-      // center vertically
-      el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
+    // If we just prepended messages, adjust scroll to keep view stable
+    if (lastOpRef.current === "prepend") {
+      const newScrollHeight = el.scrollHeight;
+      el.scrollTop = newScrollHeight - prevScrollHeightRef.current;
+      lastOpRef.current = null;
+      prevScrollHeightRef.current = newScrollHeight;
+      return;
+    }
+
+    // On initial load or when messages change, center the selected message if available
+    if (!initialCenteredRef.current && messages.length > 0) {
+      // try to center the selected message if available
+      if (messageId) {
+        const target = messageRefs.current.get(messageId);
+        if (target) {
+          const targetTop = target.offsetTop;
+          const targetHeight = target.offsetHeight;
+          const center = targetTop - el.clientHeight / 2 + targetHeight / 2;
+          el.scrollTop = Math.max(
+            0,
+            Math.min(center, el.scrollHeight - el.clientHeight)
+          );
+        } else {
+          // fallback to center whole container
+          el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
+        }
+      } else {
+        el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
+      }
       initialCenteredRef.current = true;
       lastOpRef.current = null;
       return;
     }
+  }, [messages, messageId]);
 
-    // If we just prepended messages, adjust scroll to keep view stable
-    if (lastOpRef.current === "prepend") {
-      const prev = prevScrollHeightRef.current || 0;
-      const newScroll = el.scrollHeight - prev + el.scrollTop;
-      // clamp
-      el.scrollTop = Math.max(
-        0,
-        Math.min(newScroll, el.scrollHeight - el.clientHeight)
-      );
-      lastOpRef.current = null;
-      prevScrollHeightRef.current = 0;
-    }
-  }, [messageId]);
+  // auto-center when route messageId changes
+  useEffect(() => {
+    if (!messageId) return;
+    const raf = requestAnimationFrame(() => {
+      const el = containerRef.current;
+      if (!el) return;
+      const target = messageRefs.current.get(messageId);
+      if (target) {
+        const targetTop = target.offsetTop;
+        const targetHeight = target.offsetHeight;
+        const center = targetTop - el.clientHeight / 2 + targetHeight / 2;
+        el.scrollTop = Math.max(
+          0,
+          Math.min(center, el.scrollHeight - el.clientHeight)
+        );
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [messageId, messages]);
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full relative">
+      {/* central marker */}
+      <div className="pointer-events-none absolute left-0 right-0 top-1/2 -translate-y-1/2 flex justify-center">
+        <div className="h-[2px] w-full max-w-3xl bg-indigo-200/60" />
+      </div>
+
+      {/* top loader */}
+      {loadingMore && (
+        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-3 z-10">
+          <div className="h-3 w-3 border-2 border-t-transparent border-gray-500 rounded-full animate-spin" />
+        </div>
+      )}
+
       <ScrollArea
         ref={containerRef}
         onScrollViewport={handleScroll}
         className="h-full"
       >
         <div className="flex flex-col">
+          {loadingMore && (
+            <>
+              <div className="h-20 w-full bg-muted animate-pulse rounded" />
+              <div className="h-20 w-full bg-muted animate-pulse rounded" />
+              <div className="h-20 w-full bg-muted animate-pulse rounded" />
+            </>
+          )}
           {messages.map((m) => (
-            <div key={m._id} className="px-2 py-1">
-              {/* Minimal rendering; replace with real message UI */}
-              <div className="rounded bg-secondary/10 p-2">{m._id}</div>
+            <div
+              key={m._id}
+              ref={(el) => {
+                if (el) messageRefs.current.set(m._id, el);
+                else messageRefs.current.delete(m._id);
+              }}
+              className={`px-2 py-2 transition-colors duration-150 ${
+                m._id === messageId
+                  ? "ring-2 ring-indigo-400 bg-indigo-50"
+                  : "hover:bg-slate-50"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="h-8 w-8 rounded-full bg-gray-200 flex-shrink-0" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="font-medium text-sm text-slate-900">
+                      {m.sender?.display_name || m.sender?.username}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {new Date(m.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">
+                    {m.content}
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
