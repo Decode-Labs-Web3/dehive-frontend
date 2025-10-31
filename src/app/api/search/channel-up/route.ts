@@ -28,18 +28,18 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { channelId, keyword } = body;
+    const { channelId, messageId, pageUp } = body;
 
-    // console.log("eduhwdilhewodhlwiedukhwedu", channelId)
-    // console.log("eduhwdilhewodhlwiedukhwedu", keyword)
+    console.log("eduhwdilhewodhlwiedukhwedu", channelId);
+    console.log("eduhwdilhewodhlwiedukhwedu", messageId);
+    console.log("eduhwdilhewodhlwiedukhwedu", pageUp);
 
-
-    if (!channelId || !keyword) {
+    if (!messageId || !channelId) {
       return NextResponse.json(
         {
           success: false,
           statusCode: httpStatus.BAD_REQUEST,
-          message: "Missing channelId or keyword",
+          message: "Missing messageId or pageDown",
         },
         { status: httpStatus.BAD_REQUEST }
       );
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_CHANNEL_MESSAGING}/api/messages/channels/${channelId}/search?search=${keyword}&page=0&limit=20`,
+      `${process.env.DEHIVE_CHANNEL_MESSAGING}/api/messages/channels/${channelId}/messages/${messageId}/up?page=${pageUp}&limit=30`,
       {
         method: "GET",
         headers: {
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
       {
         success: true,
         statusCode: response.statusCode || httpStatus.OK,
-        message: response.message || "Search completed successfully",
+        message: response.message || "OK",
         data: response.data,
       },
       { status: response.statusCode || httpStatus.OK }
