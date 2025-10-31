@@ -131,7 +131,7 @@ export default function DirectHistory() {
   const fetchMessageUp = useCallback(async () => {
     if (isEndUp) return;
     try {
-      const apiResponse = await fetch("/api/search/direct-up", {
+      const apiResponse = await fetch("/api/search/channel-up", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -170,7 +170,7 @@ export default function DirectHistory() {
   const fetchMessageDown = useCallback(async () => {
     if (isEndDown) return;
     try {
-      const apiResponse = await fetch("/api/search/direct-down", {
+      const apiResponse = await fetch("/api/search/channel-down", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
