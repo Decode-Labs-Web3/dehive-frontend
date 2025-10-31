@@ -38,8 +38,7 @@ export default function DirectSearchBar() {
   const [isLastPage, setIsLastPage] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResult, setSerachResult] = useState<SearchResultProps[]>([]);
-  const { channelId, serverId } = useParams<{
-    serverId: string;
+  const { channelId } = useParams<{
     channelId: string;
   }>();
   const router = useRouter();
