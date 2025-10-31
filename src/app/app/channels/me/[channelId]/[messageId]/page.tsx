@@ -204,8 +204,8 @@ export default function DirectHistory() {
     fetchMessageDown();
   }, [fetchMessageDown]);
 
-  const prevScrollHeightRef = useRef(0);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const prevScrollHeightRef = useRef(0);
 
   const [lastLoadDirection, setLastLoadDirection] = useState<
     "up" | "down" | "init"
@@ -213,7 +213,8 @@ export default function DirectHistory() {
 
   const handleScroll = () => {
     const element = listRef.current;
-    if (!element || loadingDown || loadingUp || lastLoadDirection !== "init") return;
+    if (!element || loadingDown || loadingUp || lastLoadDirection !== "init")
+      return;
     // const total = element?.scrollTop + element?.clientHeight;
     // console.log(
     //   "ScrollHeight:",
@@ -228,13 +229,13 @@ export default function DirectHistory() {
 
     if (element.scrollTop === 0 && !isEndUp) {
       console.log("Trigger load up more");
+
       setLastLoadDirection("up");
       setLoadingUp(true);
       prevScrollHeightRef.current = element?.scrollHeight;
       setPageUp((prev) => prev + 1);
     } else if (
-      element.scrollHeight === element.scrollTop + element.clientHeight &&
-      !isEndDown
+      element.scrollHeight === element.scrollTop + element.clientHeight && !isEndDown
     ) {
       console.log("Trigger load down more");
       setLastLoadDirection("down");
@@ -260,7 +261,30 @@ export default function DirectHistory() {
       setLoadingDown(false);
       setLastLoadDirection("init");
     }
-  }, [messages, lastLoadDirection, fristLoad]);
+  }, [messages, lastLoadDirection]);
+
+  const targetMessageRef = useRef<HTMLDivElement | null>(null);
+  const firstPinRef = useRef(false);
+
+  useLayoutEffect(() => {
+    if (firstPinRef.current) return;
+    if (fristLoad < 2) return;
+
+    const listEl = listRef.current;
+    const targetEl = targetMessageRef.current;
+    if (!listEl || !targetEl) return;
+
+    const targetOffset = targetEl.offsetTop;
+    const targetHeight = targetEl.offsetHeight;
+    const containerHeight = listEl.clientHeight;
+
+    const desiredScrollTop =
+      targetOffset - (containerHeight / 2 - targetHeight / 2);
+
+    listEl.scrollTop = desiredScrollTop < 0 ? 0 : desiredScrollTop;
+
+    firstPinRef.current = true;
+  }, [fristLoad, messages]);
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
@@ -312,7 +336,7 @@ export default function DirectHistory() {
               .map((message) => (
                 <div
                   key={message._id}
-                  data-anchor-id={message._id}
+                  ref={message._id === messageId ? targetMessageRef : null}
                   className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
                 >
                   {message.replyTo?._id && (
@@ -335,7 +359,7 @@ export default function DirectHistory() {
                     </>
                   )}
 
-                  <div className="flex w-full">
+                  <div className={`flex w-full ${message._id === messageId ? "bg-red-500" : null}`}>
                     <Avatar className="w-8 h-8 shrink-0">
                       <AvatarImage
                         src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
