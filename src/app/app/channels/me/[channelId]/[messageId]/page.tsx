@@ -229,15 +229,18 @@ export default function DirectHistory() {
 
     if (element.scrollTop === 0 && !isEndUp) {
       console.log("Trigger load up more");
-
       setLastLoadDirection("up");
       setLoadingUp(true);
-      prevScrollHeightRef.current = element?.scrollHeight;
+
+      prevScrollHeightRef.current = element.scrollHeight;
+      console.log(element.scrollHeight)
+      console.log("Previous scroll height:", prevScrollHeightRef.current);
       setPageUp((prev) => prev + 1);
     } else if (
-      element.scrollHeight === element.scrollTop + element.clientHeight && !isEndDown
+      element.scrollHeight === element.scrollTop + element.clientHeight &&
+      !isEndDown
     ) {
-      console.log("Trigger load down more");
+      // console.log("Trigger load down more");
       setLastLoadDirection("down");
       prevScrollHeightRef.current = element?.scrollHeight;
       setLoadingDown(true);
@@ -250,13 +253,17 @@ export default function DirectHistory() {
     const element = listRef.current;
     if (!element) return;
     if (lastLoadDirection === "up") {
+      // console.log("chaỵ vào day ne");
       const newScrollHeightRef = element.scrollHeight;
-      element.scrollTop = newScrollHeightRef - prevScrollHeightRef.current;
+      // console.log("New scroll height:", newScrollHeightRef);
+      // console.log("Previous scroll height:", prevScrollHeightRef.current);
+      element.scrollTop = newScrollHeightRef - prevScrollHeightRef.current + element.clientHeight;
+      console.log(element.scrollTop);
       prevScrollHeightRef.current = newScrollHeightRef;
       setLoadingUp(false);
       setLastLoadDirection("init");
     } else if (lastLoadDirection === "down") {
-      element.scrollTop = element.scrollHeight - element.clientHeight;
+      element.scrollTop = prevScrollHeightRef.current - element.clientHeight;
       prevScrollHeightRef.current = element.scrollHeight;
       setLoadingDown(false);
       setLastLoadDirection("init");
@@ -359,7 +366,11 @@ export default function DirectHistory() {
                     </>
                   )}
 
-                  <div className={`flex w-full ${message._id === messageId ? "bg-red-500" : null}`}>
+                  <div
+                    className={`flex w-full ${
+                      message._id === messageId ? "bg-red-500" : null
+                    }`}
+                  >
                     <Avatar className="w-8 h-8 shrink-0">
                       <AvatarImage
                         src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
