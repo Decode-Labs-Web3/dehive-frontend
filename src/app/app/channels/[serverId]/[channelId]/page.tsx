@@ -46,7 +46,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 
-interface NewMessage {
+interface NewMessageProps {
   content: string;
   uploadIds: string[];
   replyTo: string | null;
@@ -151,7 +151,7 @@ export default function ChannelMessagePage() {
 
   const [userId, setUserId] = useState<string>("");
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
-  const [newMessage, setNewMessage] = useState<NewMessage>({
+  const [newMessage, setNewMessage] = useState<NewMessageProps>({
     content: "",
     uploadIds: [],
     replyTo: null,

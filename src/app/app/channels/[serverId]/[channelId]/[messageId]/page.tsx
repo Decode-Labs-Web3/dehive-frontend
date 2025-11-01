@@ -46,6 +46,11 @@ import {
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
 
+interface NewMessageProps {
+  content: string;
+  uploadIds: string[];
+  replyTo: string | null;
+}
 interface MessageProps {
   _id: string;
   conversationId: string;
@@ -57,8 +62,8 @@ interface MessageProps {
   };
   content: string;
   attachments: [];
-  isEdited: false;
-  isDeleted: false;
+  isEdited: boolean;
+  isDeleted: boolean;
   replyTo: null | ReplyMessage;
   createdAt: string;
   updatedAt: string;
@@ -90,6 +95,10 @@ export default function DirectHistory() {
     channelId: string;
     messageId: string;
   }>();
+  const [deleteMessageModal, setDeleteMessageModal] = useState(false);
+  const [messageDelete, setMessageDelete] = useState<MessageProps | null>(
+    null
+  );
   const [messages, setMessages] = useState<MessageProps[]>([]);
   const [isEndUp, setIsEndUp] = useState(false);
   const [pageUp, setPageUp] = useState<number>(0);
@@ -111,7 +120,29 @@ export default function DirectHistory() {
     }
   }, []);
 
-  const { send, edit, remove } = useChannelMessage(channelId);
+    const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
+
+
+  const { send, edit, remove, sending } = useChannelMessage(channelId);
+    const [messageReply, setMessageReply] = useState<MessageProps | null>(null);
+      const [newMessage, setNewMessage] = useState<NewMessageProps>({
+        content: "",
+        uploadIds: [],
+        replyTo: null,
+      });
+
+    const handleMessageReply = (messageReply: MessageProps) => {
+      setMessageReply(messageReply);
+      setNewMessage((prev) => ({
+        ...prev,
+        replyTo: messageReply._id,
+      }));
+      setEditMessageField(
+        Object.fromEntries(messages.map((message) => [message._id, false]))
+      );
+
+      newMessageRef.current?.focus();
+    };
 
   const [editMessageField, setEditMessageField] = useState<
     Record<string, boolean>
@@ -250,6 +281,13 @@ export default function DirectHistory() {
       const messageId = editMessage.id;
       if (content) {
         edit(messageId, content);
+        setMessages((prev) =>
+          prev.map((message) =>
+            message._id === messageId
+              ? { ...message, content: content, isEdited: true }
+              : message
+          )
+        );
         setEditMessage({
           id: "",
           messageEdit: "",
@@ -270,6 +308,35 @@ export default function DirectHistory() {
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setEditMessage((prev) => ({ ...prev, messageEdit: event.target.value }));
+  };
+
+    const handleNewMessageChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setNewMessage((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+    const handleNewMessageKeyDown = (
+    event: React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      const message = newMessage.content.trim();
+      if (message && !sending) {
+        send(message, newMessage.uploadIds, newMessage.replyTo);
+        setNewMessage({
+          content: "",
+          uploadIds: [],
+          replyTo: null,
+        });
+        setMessageReply(null);
+        router.push(`/app/channels/${serverId}/${channelId}`);
+        return;
+      }
+    }
   };
 
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -496,7 +563,7 @@ export default function DirectHistory() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
-                                  // onClick={() => handleMessageReply(message)}
+                                  onClick={() => handleMessageReply(message)}
                                   className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
                                 >
                                   <FontAwesomeIcon
@@ -517,20 +584,20 @@ export default function DirectHistory() {
                                   <TooltipTrigger asChild>
                                     <Button
                                       className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
-                                      // onClick={() => {
-                                      //   setEditMessageField(
-                                      //     Object.fromEntries(
-                                      //       messages.map((messagelist) => [
-                                      //         messagelist._id,
-                                      //         messagelist._id === message._id,
-                                      //       ])
-                                      //     )
-                                      //   );
-                                      //   setEditMessage({
-                                      //     id: message._id,
-                                      //     messageEdit: message.content,
-                                      //   });
-                                      // }}
+                                      onClick={() => {
+                                        setEditMessageField(
+                                          Object.fromEntries(
+                                            messages.map((messagelist) => [
+                                              messagelist._id,
+                                              messagelist._id === message._id,
+                                            ])
+                                          )
+                                        );
+                                        setEditMessage({
+                                          id: message._id,
+                                          messageEdit: message.content,
+                                        });
+                                      }}
                                     >
                                       <FontAwesomeIcon icon={faPen} />
                                     </Button>
@@ -546,10 +613,11 @@ export default function DirectHistory() {
                                   <TooltipTrigger asChild>
                                     <Button
                                       className="h-8 w-8 p-0 text-destructive bg-secondary hover:bg-accent"
-                                      // onClick={() => {
-                                      //   setDeleteMessageModal(true);
-                                      //   setMessageDelete(message);
-                                      // }}
+                                      onClick={() => {
+                                        console.log("Delete message", message);
+                                        setDeleteMessageModal(true);
+                                        setMessageDelete(message);
+                                      }}
                                     >
                                       <FontAwesomeIcon icon={faTrash} />
                                     </Button>
@@ -579,6 +647,82 @@ export default function DirectHistory() {
         <ScrollBar orientation="vertical" />
       </ScrollArea>
 
+      <Dialog
+        open={deleteMessageModal}
+        onOpenChange={(open) => {
+          setDeleteMessageModal(open);
+          if (!open) setMessageDelete(null);
+        }}
+      >
+        <DialogContent className="bg-popover border-border text-popover-foreground">
+          {messageDelete ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-popover-foreground">
+                  Delete Message
+                </DialogTitle>
+                <DialogDescription className="text-muted-foreground">
+                  Are you sure you want to delete this message?
+                </DialogDescription>
+              </DialogHeader>
+
+              <Card className="mt-4 bg-card border-border">
+                <CardContent className="px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <Avatar>
+                      <AvatarImage
+                        src={`https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`}
+                      />
+                      <AvatarFallback>
+                        {messageDelete.sender.display_name} Avatar
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-base font-semibold text-accent">
+                          {messageDelete.sender.username}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(messageDelete.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">
+                        {messageDelete.content}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <DialogFooter>
+                <Button
+                  onClick={() => {
+                    setDeleteMessageModal(false);
+                    setMessageDelete(null);
+                  }}
+                  className="h-12 w-full max-w-[240px] rounded-xl bg-secondary text-secondary-foreground shadow-sm transition hover:bg-accent"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    remove(messageDelete._id);
+                    setMessages(prev => (
+                      prev.filter(message => message._id !== messageDelete._id)
+                    ))
+                    setDeleteMessageModal(false);
+                    setMessageDelete(null);
+                  }}
+                  className="h-12 w-full max-w-[240px] rounded-xl bg-destructive text-destructive-foreground shadow-sm transition hover:bg-destructive/80"
+                >
+                  Delete
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
         {/* {isAtBottom && (
             <div className="flex flex-row bg-red-500">
@@ -591,9 +735,45 @@ export default function DirectHistory() {
             +
           </Button>
           <div className="flex-1">
+            {messageReply && (
+              <div className="flex justify-between items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent">
+                <div>
+                  <span className="text-xs font-semibold text-accent">
+                    Replying to {messageReply.sender.display_name}
+                  </span>
+                  <span className="truncate text-xs text-foreground">
+                    {messageReply.content}
+                  </span>
+                </div>
+                <Button
+                  onClick={() => {
+                    setNewMessage((prev) => ({
+                      ...prev,
+                      replyTo: null,
+                    }));
+                    setMessageReply(null);
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <FontAwesomeIcon icon={faX} />
+                </Button>
+              </div>
+            )}
             <Textarea
+              ref={newMessageRef}
               name="content"
+              value={newMessage.content}
+              onChange={handleNewMessageChange}
+              onKeyDown={handleNewMessageKeyDown}
+              onClick={() =>
+                setEditMessageField(
+                  Object.fromEntries(
+                    messages.map((message) => [message._id, false])
+                  )
+                )
+              }
               placeholder="Message"
+              disabled={sending}
               className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border placeholder-muted-foreground"
             />
           </div>
