@@ -9,12 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import { getCookie } from "@/utils/cookie.utils";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
-import { getStatusSocketIO } from "@/lib/socketioStatus";
 import { Card, CardContent } from "@/components/ui/card";
-import { useSoundContext } from "@/contexts/SoundContext";
-import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -88,7 +84,7 @@ interface UserInServerProps {
   last_seen: string;
 }
 
-export default function DirectHistory() {
+export default function ChannelHistory() {
   const router = useRouter();
   const { serverId, channelId, messageId } = useParams<{
     serverId: string;
@@ -96,9 +92,7 @@ export default function DirectHistory() {
     messageId: string;
   }>();
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
-  const [messageDelete, setMessageDelete] = useState<MessageProps | null>(
-    null
-  );
+  const [messageDelete, setMessageDelete] = useState<MessageProps | null>(null);
   const [messages, setMessages] = useState<MessageProps[]>([]);
   const [isEndUp, setIsEndUp] = useState(false);
   const [pageUp, setPageUp] = useState<number>(0);
@@ -120,29 +114,28 @@ export default function DirectHistory() {
     }
   }, []);
 
-    const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
-
+  const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
 
   const { send, edit, remove, sending } = useChannelMessage(channelId);
-    const [messageReply, setMessageReply] = useState<MessageProps | null>(null);
-      const [newMessage, setNewMessage] = useState<NewMessageProps>({
-        content: "",
-        uploadIds: [],
-        replyTo: null,
-      });
+  const [messageReply, setMessageReply] = useState<MessageProps | null>(null);
+  const [newMessage, setNewMessage] = useState<NewMessageProps>({
+    content: "",
+    uploadIds: [],
+    replyTo: null,
+  });
 
-    const handleMessageReply = (messageReply: MessageProps) => {
-      setMessageReply(messageReply);
-      setNewMessage((prev) => ({
-        ...prev,
-        replyTo: messageReply._id,
-      }));
-      setEditMessageField(
-        Object.fromEntries(messages.map((message) => [message._id, false]))
-      );
+  const handleMessageReply = (messageReply: MessageProps) => {
+    setMessageReply(messageReply);
+    setNewMessage((prev) => ({
+      ...prev,
+      replyTo: messageReply._id,
+    }));
+    setEditMessageField(
+      Object.fromEntries(messages.map((message) => [message._id, false]))
+    );
 
-      newMessageRef.current?.focus();
-    };
+    newMessageRef.current?.focus();
+  };
 
   const [editMessageField, setEditMessageField] = useState<
     Record<string, boolean>
@@ -310,7 +303,7 @@ export default function DirectHistory() {
     setEditMessage((prev) => ({ ...prev, messageEdit: event.target.value }));
   };
 
-    const handleNewMessageChange = (
+  const handleNewMessageChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setNewMessage((prev) => ({
@@ -319,13 +312,15 @@ export default function DirectHistory() {
     }));
   };
 
-    const handleNewMessageKeyDown = (
+  const handleNewMessageKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
   ) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       const message = newMessage.content.trim();
+      console.log("New message content Quang Minh:", message);
       if (message && !sending) {
+        console.log("Send message  Quang Minh:", message);
         send(message, newMessage.uploadIds, newMessage.replyTo);
         setNewMessage({
           content: "",
@@ -333,6 +328,7 @@ export default function DirectHistory() {
           replyTo: null,
         });
         setMessageReply(null);
+        console.log("Push to channel after send message");
         router.push(`/app/channels/${serverId}/${channelId}`);
         return;
       }
@@ -476,165 +472,179 @@ export default function DirectHistory() {
           {fristLoad > 1 &&
             messages
               .filter((message) => !message.isDeleted)
-              .map((message) => (
-                <div
-                  key={message._id}
-                  ref={message._id === messageId ? targetMessageRef : null}
-                  className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
-                >
-                  {message.replyTo?._id && (
-                    <>
-                      {messages
-                        .filter((m) => m._id === message.replyTo?._id)
-                        .map((replied) => (
-                          <div
-                            key={replied._id}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent mb-2 max-w-full"
-                          >
-                            <span className="text-xs font-semibold text-foreground mr-2">
-                              Replying to {replied.sender.display_name}
-                            </span>
-                            <span className="truncate text-xs text-foreground">
-                              {replied.content}
-                            </span>
-                          </div>
-                        ))}
-                    </>
-                  )}
+              .map((message) => {
+                const referencedMessage = message.replyTo
+                  ? messages.find((m) => m._id === message.replyTo?._id)
+                  : null;
+                const replyInfo = message.replyTo
+                  ? {
+                      displayName:
+                        referencedMessage?.sender.display_name ??
+                        userInServer.find(
+                          (user) => user.user_id === message.replyTo?.senderId
+                        )?.displayname ??
+                        "Unknown user",
+                      content:
+                        referencedMessage?.content ??
+                        message.replyTo?.content ??
+                        "Message unavailable",
+                    }
+                  : null;
 
+                return (
                   <div
-                    className={`flex w-full ${
-                      message._id === messageId ? "bg-red-500" : null
-                    }`}
+                    key={message._id}
+                    ref={message._id === messageId ? targetMessageRef : null}
+                    className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
                   >
-                    <Avatar className="w-8 h-8 shrink-0">
-                      <AvatarImage
-                        src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
-                      />
-                      <AvatarFallback>
-                        {message.sender.display_name} Avatar
-                      </AvatarFallback>
-                    </Avatar>
-                    {userInServer.find(
-                      (user) => user.user_id === message.sender.dehive_id
-                    )?.status === "online" && (
-                      <FontAwesomeIcon
-                        icon={faCircle}
-                        className="h-2 w-2 text-emerald-500"
-                      />
+                    {replyInfo && (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent mb-2 max-w-full">
+                        <span className="text-xs font-semibold text-foreground mr-2">
+                          Replying to {replyInfo.displayName}
+                        </span>
+                        <span className="truncate text-xs text-foreground">
+                          {replyInfo.content}
+                        </span>
+                      </div>
                     )}
-                    <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
-                      {!editMessageField[message._id] ? (
-                        <div className="w-full">
-                          <div className="flex items-center gap-2">
-                            <h2 className="text-sm font-semibold text-foreground">
-                              {message.sender.display_name}
-                            </h2>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(message.createdAt).toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
-                            <AutoLink text={message.content} />
-                            {message.isEdited && (
-                              <span className="ml-2 text-xs text-muted-foreground">
-                                (edited)
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <Textarea
-                          name="editMessage"
-                          value={editMessage.messageEdit}
-                          onChange={handleEditMessageChange}
-                          onKeyDown={(event) =>
-                            handleEditMessageKeyDown(event, message.content)
-                          }
-                          placeholder="Edit message"
-                          autoFocus
-                          className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border"
+
+                    <div
+                      className={`flex w-full ${
+                        message._id === messageId ? "bg-red-500" : null
+                      }`}
+                    >
+                      <Avatar className="w-8 h-8 shrink-0">
+                        <AvatarImage
+                          src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
+                        />
+                        <AvatarFallback>
+                          {message.sender.display_name} Avatar
+                        </AvatarFallback>
+                      </Avatar>
+                      {userInServer.find(
+                        (user) => user.user_id === message.sender.dehive_id
+                      )?.status === "online" && (
+                        <FontAwesomeIcon
+                          icon={faCircle}
+                          className="h-2 w-2 text-emerald-500"
                         />
                       )}
+                      <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
+                        {!editMessageField[message._id] ? (
+                          <div className="w-full">
+                            <div className="flex items-center gap-2">
+                              <h2 className="text-sm font-semibold text-foreground">
+                                {message.sender.display_name}
+                              </h2>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(message.createdAt).toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
+                              <AutoLink text={message.content} />
+                              {message.isEdited && (
+                                <span className="ml-2 text-xs text-muted-foreground">
+                                  (edited)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <Textarea
+                            name="editMessage"
+                            value={editMessage.messageEdit}
+                            onChange={handleEditMessageChange}
+                            onKeyDown={(event) =>
+                              handleEditMessageKeyDown(event, message.content)
+                            }
+                            placeholder="Edit message"
+                            autoFocus
+                            className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border"
+                          />
+                        )}
 
-                      {!editMessageField[message._id] && (
-                        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  onClick={() => handleMessageReply(message)}
-                                  className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
-                                >
-                                  <FontAwesomeIcon
-                                    icon={faArrowTurnUp}
-                                    rotation={270}
-                                  />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-black">
-                                Reply
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          {userId === message.sender.dehive_id && (
-                            <>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
-                                      onClick={() => {
-                                        setEditMessageField(
-                                          Object.fromEntries(
-                                            messages.map((messagelist) => [
-                                              messagelist._id,
-                                              messagelist._id === message._id,
-                                            ])
-                                          )
-                                        );
-                                        setEditMessage({
-                                          id: message._id,
-                                          messageEdit: message.content,
-                                        });
-                                      }}
-                                    >
-                                      <FontAwesomeIcon icon={faPen} />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="bg-black">
-                                    Edit
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                        {!editMessageField[message._id] && (
+                          <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    onClick={() => handleMessageReply(message)}
+                                    className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
+                                  >
+                                    <FontAwesomeIcon
+                                      icon={faArrowTurnUp}
+                                      rotation={270}
+                                    />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-black">
+                                  Reply
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            {userId === message.sender.dehive_id && (
+                              <>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
+                                        onClick={() => {
+                                          setEditMessageField(
+                                            Object.fromEntries(
+                                              messages.map((messagelist) => [
+                                                messagelist._id,
+                                                messagelist._id === message._id,
+                                              ])
+                                            )
+                                          );
+                                          setEditMessage({
+                                            id: message._id,
+                                            messageEdit: message.content,
+                                          });
+                                        }}
+                                      >
+                                        <FontAwesomeIcon icon={faPen} />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-black">
+                                      Edit
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
 
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      className="h-8 w-8 p-0 text-destructive bg-secondary hover:bg-accent"
-                                      onClick={() => {
-                                        console.log("Delete message", message);
-                                        setDeleteMessageModal(true);
-                                        setMessageDelete(message);
-                                      }}
-                                    >
-                                      <FontAwesomeIcon icon={faTrash} />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="bg-black">
-                                    Delete
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </>
-                          )}
-                        </div>
-                      )}
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        className="h-8 w-8 p-0 text-destructive bg-secondary hover:bg-accent"
+                                        onClick={() => {
+                                          console.log(
+                                            "Delete message",
+                                            message
+                                          );
+                                          setDeleteMessageModal(true);
+                                          setMessageDelete(message);
+                                        }}
+                                      >
+                                        <FontAwesomeIcon icon={faTrash} />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-black">
+                                      Delete
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
           {loadingDown && (
             <>
               <h1>Loading page down...</h1>
@@ -707,9 +717,11 @@ export default function DirectHistory() {
                 <Button
                   onClick={() => {
                     remove(messageDelete._id);
-                    setMessages(prev => (
-                      prev.filter(message => message._id !== messageDelete._id)
-                    ))
+                    setMessages((prev) =>
+                      prev.filter(
+                        (message) => message._id !== messageDelete._id
+                      )
+                    );
                     setDeleteMessageModal(false);
                     setMessageDelete(null);
                   }}
