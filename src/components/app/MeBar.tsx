@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getStatusSocketIO } from "@/lib/socketioStatus";
+import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { useState, useCallback, useEffect } from "react";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { faCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -130,7 +130,9 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
 
   useEffect(() => {
     const socket = getStatusSocketIO();
-    const onUserStatusChanged = (p: string | { userId: string; status: string }) => {
+    const onUserStatusChanged = (
+      p: string | { userId: string; status: string }
+    ) => {
       console.log("[ws me bar userStatusChanged]", p);
       if (typeof p === "string") return;
       setUserData((prev: UserDataProps[]) =>

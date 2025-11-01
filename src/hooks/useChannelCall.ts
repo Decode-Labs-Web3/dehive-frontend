@@ -2,7 +2,7 @@
 
 import { useRouter, useParams } from "next/navigation";
 import { useRef, useCallback } from "react";
-import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
+import { getChannelCallSocketIO } from "@/lib/socketioChannelCallSingleton";
 
 export function useChannelCall(channelId: string) {
   const router = useRouter();

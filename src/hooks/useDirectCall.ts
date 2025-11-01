@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useCallback } from "react";
-import { getDirectCallSocketIO } from "@/lib/sooketioDirectCall";
+import { getDirectCallSocketIO } from "@/lib/sooketioDirectCallSingleton";
 import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
 
 export function useDirectCall(targetUserId: string) {
@@ -21,10 +21,7 @@ export function useDirectCall(targetUserId: string) {
   }, [socket, meCallState.status, targetUserId]);
 
   const acceptCall = useCallback(() => {
-    if (
-      !meCallState.conversation_id ||
-      meCallState.status !== "ringing"
-    ) {
+    if (!meCallState.conversation_id || meCallState.status !== "ringing") {
       console.warn("Cannot accept call - no incoming call");
       return;
     }
@@ -36,16 +33,15 @@ export function useDirectCall(targetUserId: string) {
   }, [socket, meCallState]);
 
   const declineCall = useCallback(() => {
-    if (
-      !meCallState.conversation_id ||
-      meCallState.status !== "ringing"
-    ) {
+    if (!meCallState.conversation_id || meCallState.status !== "ringing") {
       console.warn("Cannot decline call - no incoming call");
       return;
     }
 
     console.log("[useDirectCall] Declining call:", meCallState.conversation_id);
-    socket.emit("declineCall", { conversation_id: meCallState.conversation_id });
+    socket.emit("declineCall", {
+      conversation_id: meCallState.conversation_id,
+    });
   }, [socket, meCallState]);
 
   const endCall = useCallback(() => {

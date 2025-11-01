@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { getStatusSocketIO } from "@/lib/socketioStatus";
+import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import {
   IdentityConfirmed,
   WsErrorPayload,

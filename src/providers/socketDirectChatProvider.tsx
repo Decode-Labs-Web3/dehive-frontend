@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import {
   IdentityConfirmed,
   Message,

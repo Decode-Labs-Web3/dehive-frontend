@@ -8,12 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
-import { getStatusSocketIO } from "@/lib/socketioStatus";
+import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getDirectChatSocketIO } from "@/lib/socketioDirectChat";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
 import {

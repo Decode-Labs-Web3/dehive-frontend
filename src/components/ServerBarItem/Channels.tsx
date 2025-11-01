@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useParams, useRouter } from "next/navigation";
 import ServerBarItems from "@/components/serverBarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
+import { getChannelCallSocketIO } from "@/lib/socketioChannelCallSingleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,

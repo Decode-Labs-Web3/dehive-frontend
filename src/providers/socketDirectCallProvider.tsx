@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CallProps } from "@/interfaces/call.interface";
-import { getDirectCallSocketIO } from "@/lib/sooketioDirectCall";
+import { getDirectCallSocketIO } from "@/lib/sooketioDirectCallSingleton";
 import { DirectCallContext } from "@/contexts/DirectCallConetext.contexts";
 import {
   WsErrorPayload,

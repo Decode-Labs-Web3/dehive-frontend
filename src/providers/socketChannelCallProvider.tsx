@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { getChannelCallSocketIO } from "@/lib/socketioChannelCall";
+import { getChannelCallSocketIO } from "@/lib/socketioChannelCallSingleton";
 import type {
   JoinedServer,
   WsErrorPayload,
