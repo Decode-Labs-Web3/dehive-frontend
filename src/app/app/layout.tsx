@@ -1,5 +1,6 @@
 "use client";
 
+import { Web3Providers } from "@/components/message-onchain/wallet";
 import App from "@/components/app";
 import { getCookie } from "@/utils/cookie.utils";
 import { SoundContext } from "@/contexts/SoundContext";
@@ -73,6 +74,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
+        <Web3Providers>
     <SocketStatusProvider userId={userId} fingerprintHash={fingerprintHash}>
       <SoundContext.Provider value={soundValue}>
         <ServerRefreshContext.Provider value={{ triggerRefeshServer }}>
@@ -107,5 +109,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </ServerRefreshContext.Provider>
       </SoundContext.Provider>
     </SocketStatusProvider>
+        </Web3Providers>
+
   );
 }
