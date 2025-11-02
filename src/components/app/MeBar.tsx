@@ -115,10 +115,9 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
           lastMessageAt: data.lastMessageAt,
         };
 
-        newList.sort(
-          (a, b) =>
-            new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime()
-        );
+        const getSortTime = (x: UserDataProps) =>
+          new Date(x.lastMessageAt || x.last_seen || 0).getTime();
+        newList.sort((a, b) => getSortTime(b) - getSortTime(a));
         return newList;
       });
     };
@@ -164,12 +163,16 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
           </>
         )}
         {userData.length > 0 &&
-          userData
-            .sort(
-              (a, b) =>
-                new Date(b.lastMessageAt).getTime() -
-                new Date(a.lastMessageAt).getTime()
-            )
+          [...userData]
+            .sort((a, b) => {
+              const ta = new Date(
+                a.lastMessageAt || a.last_seen || 0
+              ).getTime();
+              const tb = new Date(
+                b.lastMessageAt || b.last_seen || 0
+              ).getTime();
+              return tb - ta; // newest first
+            })
             .map((user) => (
               <div
                 key={user.user_id}
