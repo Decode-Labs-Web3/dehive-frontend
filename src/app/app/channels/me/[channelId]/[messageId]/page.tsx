@@ -55,8 +55,8 @@ interface MessageProps {
   };
   content: string;
   attachments: [];
-  isEdited: false;
-  isDeleted: false;
+  isEdited: boolean;
+  isDeleted: boolean;
   replyTo: null | ReplyMessage;
   createdAt: string;
   updatedAt: string;
@@ -80,8 +80,10 @@ interface UserChatWith {
 
 export default function DirectHistory() {
   const router = useRouter();
-  const { channelId, messageId } = useParams();
-  const [messages, setMessages] = useState<MessageProps[]>([]);
+  const { channelId, messageId } = useParams<{
+    channelId: string;
+    messageId: string;
+  }>();
   const [isEndUp, setIsEndUp] = useState(false);
   const [pageUp, setPageUp] = useState<number>(0);
   const [isEndDown, setIsEndDown] = useState(false);
@@ -89,6 +91,69 @@ export default function DirectHistory() {
   const [loadingUp, setLoadingUp] = useState(false);
   const [loadingDown, setLoadingDown] = useState(false);
   const [fristLoad, setfirstLoad] = useState(0);
+  const [messages, setMessages] = useState<MessageProps[]>([]);
+
+  const { send, edit, remove, sending, err } = useDirectMessage(channelId);
+  console.log("This is error", err);
+
+  const [editMessageField, setEditMessageField] = useState<
+    Record<string, boolean>
+  >({});
+
+  const [editMessage, setEditMessage] = useState({
+    id: "",
+    messageEdit: "",
+  });
+
+  const handleEditMessageChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setEditMessage((prev) => ({ ...prev, messageEdit: event.target.value }));
+  };
+
+  const handleEditMessageKeyDown = (
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+    originMessage: string
+  ) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      const content = editMessage.messageEdit.trim();
+      if (originMessage === content) return;
+      const messageId = editMessage.id;
+      if (content && !sending) {
+        setMessages((prev) =>
+          prev.map((message) =>
+            message._id === messageId
+              ? { ...message, content: content, isEdited: true }
+              : message
+          )
+        );
+        edit(messageId, content);
+        setEditMessage({
+          id: "",
+          messageEdit: "",
+        });
+      }
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setEditMessageField(
+        Object.fromEntries(messages.map((message) => [message._id, false]))
+      );
+      setEditMessage({ id: "", messageEdit: "" });
+    }
+  };
+
+  const editMessageModal = useCallback(() => {
+    setEditMessageField(
+      Object.fromEntries(messages.map((message) => [message._id, false]))
+    );
+  }, [messages]);
+
+  useEffect(() => {
+    editMessageModal();
+  }, [editMessageModal]);
 
   const [userChatWith, setUserChatWith] = useState<UserChatWith>({
     id: "",
@@ -394,113 +459,113 @@ export default function DirectHistory() {
                         />
                       )}
                     <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
-                      <div className="w-full">
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-sm font-semibold text-foreground">
-                            {message.sender.display_name}
-                          </h2>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(message.createdAt).toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
-                          <AutoLink text={message.content} />
-                          {message.isEdited && (
-                            <span className="ml-2 text-xs text-muted-foreground">
-                              (edited)
+                      {!editMessageField[message._id] ? (
+                        <div className="w-full">
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-sm font-semibold text-foreground">
+                              {message.sender.display_name}
+                            </h2>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(message.createdAt).toLocaleString()}
                             </span>
+                          </div>
+                          <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
+                            <AutoLink text={message.content} />
+                            {message.isEdited && (
+                              <span className="ml-2 text-xs text-muted-foreground">
+                                (edited)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <Textarea
+                          name="editMessage"
+                          value={editMessage.messageEdit}
+                          onChange={handleEditMessageChange}
+                          onKeyDown={(event) =>
+                            handleEditMessageKeyDown(event, message.content)
+                          }
+                          placeholder="Edit message"
+                          autoFocus
+                          disabled={sending}
+                          className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border"
+                        />
+                      )}
+
+                      {!editMessageField[message._id] && (
+                        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  // onClick={() => handleMessageReply(message)}
+                                  className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faArrowTurnUp}
+                                    rotation={270}
+                                  />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-black">
+                                Reply
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          {userChatWith.id !== message.sender.dehive_id && (
+                            <>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
+                                      onClick={() => {
+                                        setEditMessageField(
+                                          Object.fromEntries(
+                                            messages.map((messagelist) => [
+                                              messagelist._id,
+                                              messagelist._id === message._id,
+                                            ])
+                                          )
+                                        );
+                                        setEditMessage({
+                                          id: message._id,
+                                          messageEdit: message.content,
+                                        });
+                                      }}
+                                    >
+                                      <FontAwesomeIcon icon={faPen} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="bg-black">
+                                    Edit
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      className="h-8 w-8 p-0 text-destructive bg-secondary hover:bg-accent"
+                                      // onClick={() => {
+                                      //   setDeleteMessageModal(true);
+                                      //   setMessageDelete(message);
+                                      // }}
+                                    >
+                                      <FontAwesomeIcon icon={faTrash} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="bg-black">
+                                    Delete
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </>
                           )}
                         </div>
-                      </div>
-                      {/* {!editMessageField[message._id] ? (
-                    ) : (
-                      <Textarea
-                        name="editMessage"
-                        value={editMessage.messageEdit}
-                        onChange={handleEditMessageChange}
-                        onKeyDown={(event) =>
-                          handleEditMessageKeyDown(event, message.content)
-                        }
-                        placeholder="Edit message"
-                        autoFocus
-                        disabled={sending}
-                        className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border"
-                      />
-                    )}
-
-                    {!editMessageField[message._id] && (
-                      <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                onClick={() => handleMessageReply(message)}
-                                className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
-                              >
-                                <FontAwesomeIcon
-                                  icon={faArrowTurnUp}
-                                  rotation={270}
-                                />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-black">
-                              Reply
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        {userChatWith.id !== message.sender.dehive_id && (
-                          <>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
-                                    // onClick={() => {
-                                    //   setEditMessageField(
-                                    //     Object.fromEntries(
-                                    //       messages.map((messagelist) => [
-                                    //         messagelist._id,
-                                    //         messagelist._id === message._id,
-                                    //       ])
-                                    //     )
-                                    //   );
-                                    //   setEditMessage({
-                                    //     id: message._id,
-                                    //     messageEdit: message.content,
-                                    //   });
-                                    // }}
-                                  >
-                                    <FontAwesomeIcon icon={faPen} />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent className="bg-black">
-                                  Edit
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    className="h-8 w-8 p-0 text-destructive bg-secondary hover:bg-accent"
-                                    // onClick={() => {
-                                    //   setDeleteMessageModal(true);
-                                    //   setMessageDelete(message);
-                                    // }}
-                                  >
-                                    <FontAwesomeIcon icon={faTrash} />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent className="bg-black">
-                                  Delete
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </>
-                        )}
-                      </div>
-                    )} */}
+                      )}
                     </div>
                   </div>
                 </div>
