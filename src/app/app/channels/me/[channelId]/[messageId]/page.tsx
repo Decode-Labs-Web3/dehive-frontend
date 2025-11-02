@@ -7,12 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
-import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { useSoundContext } from "@/contexts/SoundContext";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -92,6 +89,8 @@ export default function DirectHistory() {
   const [loadingDown, setLoadingDown] = useState(false);
   const [fristLoad, setfirstLoad] = useState(0);
   const [messages, setMessages] = useState<MessageProps[]>([]);
+  const [messageDelete, setMessageDelete] = useState<MessageProps | null>(null);
+  const [deleteMessageModal, setDeleteMessageModal] = useState(false);
 
   const { send, edit, remove, sending, err } = useDirectMessage(channelId);
   console.log("This is error", err);
@@ -549,10 +548,10 @@ export default function DirectHistory() {
                                   <TooltipTrigger asChild>
                                     <Button
                                       className="h-8 w-8 p-0 text-destructive bg-secondary hover:bg-accent"
-                                      // onClick={() => {
-                                      //   setDeleteMessageModal(true);
-                                      //   setMessageDelete(message);
-                                      // }}
+                                      onClick={() => {
+                                        setDeleteMessageModal(true);
+                                        setMessageDelete(message);
+                                      }}
                                     >
                                       <FontAwesomeIcon icon={faTrash} />
                                     </Button>
@@ -581,6 +580,80 @@ export default function DirectHistory() {
         </div>
         <ScrollBar orientation="vertical" />
       </ScrollArea>
+
+      <Dialog
+        open={deleteMessageModal}
+        onOpenChange={(open) => {
+          setDeleteMessageModal(open);
+          if (!open) setMessageDelete(null);
+        }}
+      >
+        <DialogContent className="bg-popover border-border text-popover-foreground">
+          {messageDelete ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-popover-foreground">
+                  Delete Message
+                </DialogTitle>
+                <DialogDescription className="text-muted-foreground">
+                  Are you sure you want to delete this message?
+                </DialogDescription>
+              </DialogHeader>
+
+              <Card className="mt-4 bg-card border-border">
+                <CardContent className="px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <Avatar>
+                      <AvatarImage
+                        src={`https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`}
+                      />
+                      <AvatarFallback>
+                        {messageDelete.sender.display_name} Avatar
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-base font-semibold text-accent">
+                          {messageDelete.sender.username}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(messageDelete.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">
+                        {messageDelete.content}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <DialogFooter>
+                <Button
+                  onClick={() => {
+                    setDeleteMessageModal(false);
+                    setMessageDelete(null);
+                  }}
+                  className="h-12 w-full max-w-[240px] rounded-xl bg-secondary text-secondary-foreground shadow-sm transition hover:bg-accent"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    remove(messageDelete._id);
+                    setMessages(prev => prev ? prev.filter(message => message._id !== messageDelete._id) : prev);
+                    setDeleteMessageModal(false);
+                    setMessageDelete(null);
+                  }}
+                  className="h-12 w-full max-w-[240px] rounded-xl bg-destructive text-destructive-foreground shadow-sm transition hover:bg-destructive/80"
+                >
+                  Delete
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
         {/* {isAtBottom && (
