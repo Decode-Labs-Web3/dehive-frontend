@@ -320,7 +320,7 @@ export default function ChannelHistory() {
       const message = newMessage.content.trim();
       console.log("New message content Quang Minh:", message);
       if (message && !sending) {
-        console.log("Send message  Quang Minh:", message);
+        // console.log("Send message  Quang Minh:", message);
         send(message, newMessage.uploadIds, newMessage.replyTo);
         setNewMessage({
           content: "",
@@ -328,7 +328,7 @@ export default function ChannelHistory() {
           replyTo: null,
         });
         setMessageReply(null);
-        console.log("Push to channel after send message");
+        // console.log("Push to channel after send message");
         router.push(`/app/channels/${serverId}/${channelId}`);
         return;
       }
