@@ -269,100 +269,122 @@ export default function PayAsYouGoTestPage() {
         errors?: unknown;
       };
       if (json.errors) throw new Error(JSON.stringify(json.errors));
-      const list = json.data?.messageSents || [];
-      const out = list.map(
-        (m) =>
-          `${m.blockNumber} ${m.from.slice(0, 6)} -> ${m.to.slice(0, 6)}: ${
-            m.encryptedMessage
-          }`
-      );
-      setLogs((l) => [...out, ...l]);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setLogs((l) => [`fetchMessages error (subgraph): ${msg}`, ...l]);
-      // Fallback to direct RPC logs if subgraph fails and RPC allows
+
+      const events = json.data?.messageSents ?? [];
+      if (events.length > 0) {
+        const lines = [
+          `Subgraph: ${events.length} MessageSent events for ${cid.toString()}`,
+          ...events.map(
+            (e, i) =>
+              `#${i + 1} from ${e.from} to ${e.to}: ${
+                e.encryptedMessage
+              } (block ${e.blockNumber})`
+          ),
+        ];
+        setLogs((l) => [...lines, ...l]);
+        return;
+      }
+
+      // Fallback to RPC logs if subgraph returned none
       try {
-        let cid = convId;
-        if (!cid) {
-          if (!(address && isAddress(recipient))) return;
-          cid = computeConversationId(address, recipient);
-        }
         const event = parseAbiItem(
-          "event MessageSent(uint256 indexed conversationId, address indexed from, address indexed to, string encryptedMessage)"
+          "event MessageSent(uint256 conversationId, address from, address to, string encryptedMessage)"
         );
-        const logsOnchain = await publicClient!.getLogs({
+        const rpcLogs = await publicClient!.getLogs({
           address: proxy,
           event,
           args: { conversationId: cid },
           fromBlock: BigInt(0),
-          toBlock: "latest",
         });
-        const out = logsOnchain.map((lg) => {
-          const { args } = lg as unknown as {
-            args: {
-              conversationId: bigint;
-              from: `0x${string}`;
-              to: `0x${string}`;
-              encryptedMessage: string;
+        const lines = [
+          `RPC: ${rpcLogs.length} MessageSent events for ${cid.toString()}`,
+          ...rpcLogs.map((ev, i) => {
+            const anyEv = ev as unknown as {
+              args?: { from?: string; to?: string; encryptedMessage?: string };
+              blockNumber?: bigint;
             };
-          };
-          return `${lg.blockNumber} ${args.from.slice(0, 6)} -> ${args.to.slice(
-            0,
-            6
-          )}: ${args.encryptedMessage}`;
-        });
-        setLogs((l) => [...out.reverse(), ...l]);
-      } catch (e2: unknown) {
-        const msg2 = e2 instanceof Error ? e2.message : String(e2);
+            return `#${i + 1} from ${anyEv.args?.from} to ${anyEv.args?.to}: ${
+              anyEv.args?.encryptedMessage
+            } (block ${anyEv.blockNumber?.toString()})`;
+          }),
+        ];
+        setLogs((l) => [...lines, ...l]);
+      } catch (err) {
         setLogs((l) => [
-          `fetchMessages error: HTTP request failed.\n\n${msg2}`,
+          `RPC logs fallback failed: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
           ...l,
         ]);
       }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setLogs((l) => [`fetchMessages error: ${msg}`, ...l]);
     }
   };
 
   return (
-    <main style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2>Dehive On-chain Messaging – Pay-as-you-go (Sepolia)</h2>
+    <main className="px-6 py-6 max-w-3xl mx-auto">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">
+          Dehive On-chain Messaging – Pay-as-you-go (Sepolia)
+        </h2>
         <ConnectButton />
       </div>
 
-      <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
-        <div style={{ display: "grid", gap: 8 }}>
-          <label>Recipient (0x...)</label>
+      <div className="mt-4 grid gap-3">
+        <div className="grid gap-2">
+          <label className="text-sm text-neutral-400">Recipient (0x...)</label>
           <input
             value={recipient}
             onChange={(e) => setRecipient(e.target.value.trim())}
             placeholder="0x..."
-            style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+            className="w-full rounded-md border border-neutral-700 bg-neutral-900 text-neutral-100 placeholder:text-neutral-500 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div className="flex flex-wrap items-center gap-2">
           <button
+            title="Tạo cuộc trò chuyện on-chain giữa ví của bạn (A) và người nhận (B). Chỉ cần 1 lần. Nếu đã tồn tại, có thể bỏ qua."
             disabled={busy || !recipient || !isAddress(recipient)}
             onClick={createConversation}
+            className="inline-flex items-center rounded-md bg-neutral-800 hover:bg-neutral-700 text-neutral-100 px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? "Processing..." : "Create conversation"}
           </button>
           <button
+            title="Gửi tin nhắn kèm theo phí pay-as-you-go trực tiếp từ ví của bạn."
             disabled={busy || !convId || !message.trim()}
             onClick={sendPayAsYouGo}
+            className="inline-flex items-center rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? "Sending..." : "Send (pay-as-you-go)"}
           </button>
-          <button onClick={fetchMessages}>Fetch messages</button>
+          <button
+            title="Lấy lịch sử MessageSent cho conversationId hiện tại (ưu tiên từ The Graph)."
+            onClick={fetchMessages}
+            className="inline-flex items-center rounded-md bg-neutral-800 hover:bg-neutral-700 text-neutral-100 px-4 py-2 text-sm font-medium"
+          >
+            Fetch messages
+          </button>
         </div>
 
-        <div>
+        <div className="text-xs text-neutral-400 space-y-1">
+          <div>
+            <b>Create conversation</b>: tạo hội thoại on-chain (chỉ cần 1 lần,
+            hai địa chỉ A/B sẽ có conversationId cố định).
+          </div>
+          <div>
+            <b>Send (pay-as-you-go)</b>: gửi tin nhắn từ ví của bạn, trả phí mỗi
+            tin nhắn = payAsYouGoFee.
+          </div>
+          <div>
+            <b>Fetch messages</b>: tải danh sách sự kiện MessageSent theo
+            conversationId (qua Subgraph, fallback RPC nếu cần).
+          </div>
+        </div>
+
+        <div className="text-sm space-y-1">
           <div>
             <b>Proxy:</b> {proxy}
           </div>
@@ -379,30 +401,32 @@ export default function PayAsYouGoTestPage() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gap: 8 }}>
-          <label>Message</label>
+        <div className="grid gap-2">
+          <label className="text-sm text-neutral-400">Message</label>
           <textarea
             rows={3}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your message... (POC will store plaintext as 'encryptedMessage')"
-            style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+            className="w-full rounded-md border border-neutral-700 bg-neutral-900 text-neutral-100 placeholder:text-neutral-500 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
       </div>
 
-      <h3 style={{ marginTop: 24 }}>Logs</h3>
-      <pre
-        style={{
-          background: "#0b0b0b",
-          color: "#c8facc",
-          padding: 12,
-          borderRadius: 8,
-          minHeight: 160,
-        }}
-      >
-        {logs.join("\n")}
-      </pre>
+      <h3 className="mt-6 font-semibold">Logs</h3>
+      <div className="bg-neutral-900 text-emerald-100 p-3 rounded-lg min-h-[220px] max-h-[320px] overflow-y-auto font-mono text-xs leading-relaxed border border-neutral-800 whitespace-pre-wrap break-words">
+        {logs.length === 0 ? (
+          <div className="opacity-60">
+            No logs yet. Actions will appear here…
+          </div>
+        ) : (
+          logs.map((line, idx) => (
+            <div key={idx} className="py-0.5">
+              {line}
+            </div>
+          ))
+        )}
+      </div>
     </main>
   );
 }
