@@ -74,52 +74,7 @@ export default function PayAsYouGoTestPage() {
     await switchChainAsync({ chainId: sepolia.id });
   };
 
-  const createConversation = async () => {
-    if (!proxy) return alert("Proxy address missing");
-    if (!isConnected) return alert("Please connect wallet");
-    if (!address) return alert("No account");
-    if (!isAddress(recipient)) return alert("Invalid recipient");
-    try {
-      setBusy(true);
-      await ensureSepolia();
-      // POC: use same random 32-byte "encrypted key" for both participants
-      const enc = randomBytesHex(32);
-      const txHash = await writeContractAsync({
-        address: proxy,
-        abi: messageAbi,
-        functionName: "createConversation",
-        args: [getAddress(recipient), enc, enc],
-        chainId: sepolia.id,
-      });
-      const rc = await publicClient!.waitForTransactionReceipt({
-        hash: txHash,
-      });
-      // compute deterministic conversation id off-chain
-      const cid = computeConversationId(address, recipient);
-      setConvId(cid);
-      setLogs((l) => [
-        `createConversation tx: ${txHash} (block ${rc.blockNumber})`,
-        `conversationId: ${cid.toString()}`,
-        ...l,
-      ]);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      // In case conversation already exists (tx revert), still compute deterministic convId so user can continue
-      if (address && isAddress(recipient)) {
-        const cid = computeConversationId(address, recipient);
-        setConvId(cid);
-        setLogs((l) => [
-          `createConversation error: ${msg}`,
-          `Using computed conversationId (maybe already exists): ${cid.toString()}`,
-          ...l,
-        ]);
-      } else {
-        setLogs((l) => [`createConversation error: ${msg}`, ...l]);
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
+  // (Removed createConversation UI; sending will auto-create if missing)
 
   // Auto-compute deterministic conversationId whenever address/recipient is valid
   useEffect(() => {
@@ -345,14 +300,6 @@ export default function PayAsYouGoTestPage() {
 
         <div className="flex flex-wrap items-center gap-2">
           <button
-            title="Tạo cuộc trò chuyện on-chain giữa ví của bạn (A) và người nhận (B). Chỉ cần 1 lần. Nếu đã tồn tại, có thể bỏ qua."
-            disabled={busy || !recipient || !isAddress(recipient)}
-            onClick={createConversation}
-            className="inline-flex items-center rounded-md bg-neutral-800 hover:bg-neutral-700 text-neutral-100 px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {busy ? "Processing..." : "Create conversation"}
-          </button>
-          <button
             title="Gửi tin nhắn kèm theo phí pay-as-you-go trực tiếp từ ví của bạn."
             disabled={busy || !convId || !message.trim()}
             onClick={sendPayAsYouGo}
@@ -371,12 +318,8 @@ export default function PayAsYouGoTestPage() {
 
         <div className="text-xs text-neutral-400 space-y-1">
           <div>
-            <b>Create conversation</b>: tạo hội thoại on-chain (chỉ cần 1 lần,
-            hai địa chỉ A/B sẽ có conversationId cố định).
-          </div>
-          <div>
-            <b>Send (pay-as-you-go)</b>: gửi tin nhắn từ ví của bạn, trả phí mỗi
-            tin nhắn = payAsYouGoFee.
+            <b>Send (pay-as-you-go)</b>: gửi tin nhắn từ ví của bạn; nếu
+            conversation chưa tồn tại, app sẽ tự tạo rồi gửi.
           </div>
           <div>
             <b>Fetch messages</b>: tải danh sách sự kiện MessageSent theo
