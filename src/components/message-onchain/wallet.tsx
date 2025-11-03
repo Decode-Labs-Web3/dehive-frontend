@@ -14,9 +14,9 @@ const wcProjectId =
   process.env.NEXT_PUBLIC_WC_PROJECT_ID ||
   "";
 if (!wcProjectId && typeof window !== "undefined") {
-  console.warn(
-    "WalletConnect projectId missing. Injected wallets still work, but some WC features will be disabled. Set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID to remove this warning."
-  );
+  // console.warn(
+  //   "WalletConnect projectId missing. Injected wallets still work, but some WC features will be disabled. Set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID to remove this warning."
+  // );
 }
 // If projectId available: use RainbowKit default (WalletConnect enabled)
 // Else: fall back to a minimal wagmi config with only injected connector (no calls to web3modal API)
@@ -26,14 +26,14 @@ const config = wcProjectId
       projectId: wcProjectId,
       chains: [sepolia],
       transports: {
-        [sepolia.id]: http("https://eth-sepolia.public.blastapi.io"),
+        [sepolia.id]: http("https://1rpc.io/sepolia"),
       },
     })
   : createConfig({
       chains: [sepolia],
       connectors: [injected()],
       transports: {
-        [sepolia.id]: http("https://eth-sepolia.public.blastapi.io"),
+        [sepolia.id]: http("https://1rpc.io/sepolia"),
       },
       ssr: true,
     });
