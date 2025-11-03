@@ -104,19 +104,19 @@ function generateConversationKey(seed?: string): string {
   return hexFromBytes(bytes);
 }
 
-function getStoredConvKey(cid: bigint): string | null {
+function getStoredConvKey(conversationId: bigint): string | null {
   if (typeof window === "undefined") return null;
   try {
-    return localStorage.getItem(`convKey:${cid.toString()}`);
+    return localStorage.getItem(`convKey:${conversationId.toString()}`);
   } catch {
     return null;
   }
 }
 
-function setStoredConvKey(cid: bigint, key: string) {
+function setStoredConvKey(conversationId: bigint, key: string) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(`convKey:${cid.toString()}`, key);
+    localStorage.setItem(`convKey:${conversationId.toString()}`, key);
   } catch {
     // ignore
   }
@@ -125,7 +125,7 @@ function setStoredConvKey(cid: bigint, key: string) {
 export default function PayAsYouGoTestPage() {
   const [recipient, setRecipient] = useState<string>("");
   const [message, setMessage] = useState<string>("");
-  const [convId, setConvId] = useState<bigint | null>(null);
+  const [conversationId, setConversationId] = useState<bigint | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -156,13 +156,16 @@ export default function PayAsYouGoTestPage() {
   useEffect(() => {
     if (address && isAddress(recipient)) {
       try {
-        const cid = computeConversationId(address, recipient);
-        setConvId(cid);
+        const computedConversationId = computeConversationId(
+          address,
+          recipient
+        );
+        setConversationId(computedConversationId);
       } catch {
-        setConvId(null);
+        setConversationId(null);
       }
     } else {
-      setConvId(null);
+      setConversationId(null);
     }
   }, [address, recipient]);
 
@@ -175,11 +178,11 @@ export default function PayAsYouGoTestPage() {
       setBusy(true);
       await ensureSepolia();
       // Ensure we have a conversationId (compute deterministically if missing)
-      let cid = convId;
-      if (!cid) {
+      let conversationIdLocal = conversationId;
+      if (!conversationIdLocal) {
         if (!isAddress(recipient)) throw new Error("Invalid recipient");
-        cid = computeConversationId(address, recipient);
-        setConvId(cid);
+        conversationIdLocal = computeConversationId(address, recipient);
+        setConversationId(conversationIdLocal);
       }
       // Check if conversation exists on-chain; if not, create it
       type ConversationTuple = readonly [
@@ -189,60 +192,66 @@ export default function PayAsYouGoTestPage() {
         `0x${string}`,
         bigint
       ];
-      const onchainConv = await publicClient!.readContract({
+      const onchainConversation = await publicClient!.readContract({
         address: proxy,
         abi: messageAbi,
         functionName: "conversations",
-        args: [cid!],
+        args: [conversationIdLocal!],
       });
-      const [, , , , createdAt] = onchainConv as ConversationTuple;
+      const [, , , , createdAt] = onchainConversation as ConversationTuple;
       if (!createdAt || createdAt === BigInt(0)) {
-        const enc = randomBytesHex(32);
-        const txCreate = await writeContractAsync({
+        const placeholderEncryptedKey = randomBytesHex(32);
+        const createConversationTxHash = await writeContractAsync({
           address: proxy,
           abi: messageAbi,
           functionName: "createConversation",
-          args: [getAddress(recipient), enc, enc],
+          args: [
+            getAddress(recipient),
+            placeholderEncryptedKey,
+            placeholderEncryptedKey,
+          ],
           chainId: sepolia.id,
         });
-        await publicClient!.waitForTransactionReceipt({ hash: txCreate });
+        await publicClient!.waitForTransactionReceipt({
+          hash: createConversationTxHash,
+        });
       }
       // Ensure we have or create a local conversation key for encryption
-      let convKey = getStoredConvKey(cid!);
-      if (!convKey) {
-        convKey = generateConversationKey();
-        setStoredConvKey(cid!, convKey);
-        setLogs((l) => [
-          `Generated new local conversation key for ${cid!.toString()}`,
-          ...l,
+      let conversationKey = getStoredConvKey(conversationIdLocal!);
+      if (!conversationKey) {
+        conversationKey = generateConversationKey();
+        setStoredConvKey(conversationIdLocal!, conversationKey);
+        setLogs((prevLogs) => [
+          `Generated new local conversation key for ${conversationIdLocal!.toString()}`,
+          ...prevLogs,
         ]);
       }
 
       // Encrypt message using mock scheme (prefix + base64)
-      const ciphertext = mockEncryptMessage(message, convKey);
+      const ciphertext = mockEncryptMessage(message, conversationKey);
 
       const fee = (payAsYouGoFee as bigint | undefined) ?? BigInt(0);
       const txHash = await writeContractAsync({
         address: proxy,
         abi: messageAbi,
         functionName: "sendMessage",
-        args: [cid!, getAddress(recipient), ciphertext],
+        args: [conversationIdLocal!, getAddress(recipient), ciphertext],
         chainId: sepolia.id,
         value: fee,
       });
-      const rc = await publicClient!.waitForTransactionReceipt({
+      const receipt = await publicClient!.waitForTransactionReceipt({
         hash: txHash,
       });
-      setLogs((l) => [
+      setLogs((prevLogs) => [
         `sendMessage tx: ${txHash} (fee ${Number(fee) / 1e18} ETH, block ${
-          rc.blockNumber
+          receipt.blockNumber
         })`,
-        ...l,
+        ...prevLogs,
       ]);
       setMessage("");
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      setLogs((l) => [`sendMessage error: ${msg}`, ...l]);
+      setLogs((prevLogs) => [`sendMessage error: ${msg}`, ...prevLogs]);
     } finally {
       setBusy(false);
     }
@@ -251,12 +260,12 @@ export default function PayAsYouGoTestPage() {
   const fetchMessages = async () => {
     if (!proxy) return alert("Proxy address missing");
     try {
-      let cid = convId;
-      if (!cid) {
+      let conversationIdLocal = conversationId;
+      if (!conversationIdLocal) {
         if (!(address && isAddress(recipient)))
           return alert("No conversationId");
-        cid = computeConversationId(address, recipient);
-        setConvId(cid);
+        conversationIdLocal = computeConversationId(address, recipient);
+        setConversationId(conversationIdLocal);
       }
 
       // Prefer The Graph subgraph to avoid RPC endpoints that block eth_getLogs
@@ -293,7 +302,11 @@ export default function PayAsYouGoTestPage() {
 
       const body = JSON.stringify({
         query,
-        variables: { conversationId: cid.toString(), first: 50, skip: 0 },
+        variables: {
+          conversationId: conversationIdLocal.toString(),
+          first: 50,
+          skip: 0,
+        },
         operationName: "GetMessagesByConversation",
       });
 
@@ -317,20 +330,22 @@ export default function PayAsYouGoTestPage() {
 
       const events = json.data?.messageSents ?? [];
       if (events.length > 0) {
-        const convKey = getStoredConvKey(cid);
+        const conversationKey = getStoredConvKey(conversationIdLocal!);
         const lines: string[] = [
-          `Subgraph: ${events.length} MessageSent events for ${cid.toString()}`,
+          `Subgraph: ${
+            events.length
+          } MessageSent events for ${conversationIdLocal!.toString()}`,
         ];
         events.forEach((e, i) => {
-          const enc = e.encryptedMessage;
+          const encrypted = e.encryptedMessage;
           const header = `#${i + 1} from ${e.from} -> ${e.to} [block ${
             e.blockNumber
           }]`;
-          const encLine = `#${i + 1} ciphertext: ${enc}`;
+          const encLine = `#${i + 1} ciphertext: ${encrypted}`;
           let decLine = `#${i + 1} decrypted: `;
-          if (convKey) {
+          if (conversationKey) {
             try {
-              const decrypted = mockDecryptMessage(enc, convKey);
+              const decrypted = mockDecryptMessage(encrypted, conversationKey);
               decLine += decrypted;
             } catch {
               decLine += `(failed to decrypt)`;
@@ -340,7 +355,7 @@ export default function PayAsYouGoTestPage() {
           }
           lines.push(header, encLine, decLine);
         });
-        setLogs((l) => [...lines, ...l]);
+        setLogs((prevLogs) => [...lines, ...prevLogs]);
         return;
       }
 
@@ -352,28 +367,32 @@ export default function PayAsYouGoTestPage() {
         const rpcLogs = await publicClient!.getLogs({
           address: proxy,
           event,
-          args: { conversationId: cid },
+          args: { conversationId: conversationIdLocal },
           fromBlock: BigInt(0),
         });
-        const convKey = getStoredConvKey(cid);
+        const conversationKey = getStoredConvKey(conversationIdLocal!);
         const lines: string[] = [
-          `RPC: ${rpcLogs.length} MessageSent events for ${cid.toString()}`,
+          `RPC: ${
+            rpcLogs.length
+          } MessageSent events for ${conversationIdLocal!.toString()}`,
         ];
-        rpcLogs.forEach((ev, i) => {
-          const anyEv = ev as unknown as {
+        rpcLogs.forEach((logEntry, i) => {
+          const anyLog = logEntry as unknown as {
             args?: { from?: string; to?: string; encryptedMessage?: string };
             blockNumber?: bigint;
           };
-          const blockNo = anyEv.blockNumber?.toString();
-          const from = anyEv.args?.from;
-          const to = anyEv.args?.to;
-          const enc = anyEv.args?.encryptedMessage ?? "";
-          const header = `#${i + 1} from ${from} -> ${to} [block ${blockNo}]`;
-          const encLine = `#${i + 1} ciphertext: ${enc}`;
+          const blockNumberStr = anyLog.blockNumber?.toString();
+          const from = anyLog.args?.from;
+          const to = anyLog.args?.to;
+          const encrypted = anyLog.args?.encryptedMessage ?? "";
+          const header = `#${
+            i + 1
+          } from ${from} -> ${to} [block ${blockNumberStr}]`;
+          const encLine = `#${i + 1} ciphertext: ${encrypted}`;
           let decLine = `#${i + 1} decrypted: `;
-          if (convKey) {
+          if (conversationKey) {
             try {
-              const decrypted = mockDecryptMessage(enc, convKey);
+              const decrypted = mockDecryptMessage(encrypted, conversationKey);
               decLine += decrypted;
             } catch {
               decLine += `(failed to decrypt)`;
@@ -383,18 +402,18 @@ export default function PayAsYouGoTestPage() {
           }
           lines.push(header, encLine, decLine);
         });
-        setLogs((l) => [...lines, ...l]);
+        setLogs((prevLogs) => [...lines, ...prevLogs]);
       } catch (err) {
-        setLogs((l) => [
+        setLogs((prevLogs) => [
           `RPC logs fallback failed: ${
             err instanceof Error ? err.message : String(err)
           }`,
-          ...l,
+          ...prevLogs,
         ]);
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      setLogs((l) => [`fetchMessages error: ${msg}`, ...l]);
+      setLogs((prevLogs) => [`fetchMessages error: ${msg}`, ...prevLogs]);
     }
   };
 
@@ -421,7 +440,7 @@ export default function PayAsYouGoTestPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             title="Gửi tin nhắn kèm theo phí pay-as-you-go trực tiếp từ ví của bạn."
-            disabled={busy || !convId || !message.trim()}
+            disabled={busy || !conversationId || !message.trim()}
             onClick={sendPayAsYouGo}
             className="inline-flex items-center rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -460,7 +479,7 @@ export default function PayAsYouGoTestPage() {
             {payAsYouGoFee ? `${Number(payAsYouGoFee) / 1e18} ETH` : "..."}
           </div>
           <div>
-            <b>ConversationId:</b> {convId?.toString() ?? "(none)"}
+            <b>ConversationId:</b> {conversationId?.toString() ?? "(none)"}
           </div>
         </div>
 
