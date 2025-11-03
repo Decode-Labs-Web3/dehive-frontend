@@ -268,67 +268,37 @@ export default function PayAsYouGoTestPage() {
         setConversationId(conversationIdLocal);
       }
 
-      // Prefer The Graph subgraph to avoid RPC endpoints that block eth_getLogs
-      const SUBGRAPH_URL =
-        process.env.NEXT_PUBLIC_SUBGRAPH_URL ||
-        "https://api.studio.thegraph.com/query/1713799/dehive-messaging/version/latest";
-      const SUBGRAPH_TOKEN = process.env.NEXT_PUBLIC_SUBGRAPH_TOKEN;
-
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (SUBGRAPH_TOKEN) headers["Authorization"] = `Bearer ${SUBGRAPH_TOKEN}`;
-
-      const query = `
-        query GetMessagesByConversation($conversationId: BigInt!, $first: Int!, $skip: Int!) {
-          messageSents(
-            where: { conversationId: $conversationId }
-            first: $first,
-            skip: $skip,
-            orderBy: blockTimestamp,
-            orderDirection: asc
-          ) {
-            id
-            conversationId
-            from
-            to
-            encryptedMessage
-            blockNumber
-            blockTimestamp
-            transactionHash
-          }
-        }
-      `;
-
-      const body = JSON.stringify({
-        query,
-        variables: {
+      // Fetch from our secure server API to avoid exposing subgraph token
+      const res = await fetch("/api/sc-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({
           conversationId: conversationIdLocal.toString(),
           first: 50,
           skip: 0,
-        },
-        operationName: "GetMessagesByConversation",
+        }),
+        cache: "no-store",
       });
-
-      const res = await fetch(SUBGRAPH_URL, { method: "POST", headers, body });
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw new Error(`HTTP ${res.status} ${res.statusText}\n${text}`);
+        throw new Error(`API HTTP ${res.status} ${res.statusText}\n${text}`);
       }
       const json = (await res.json()) as {
-        data?: {
-          messageSents: Array<{
-            blockNumber: string;
-            from: `0x${string}`;
-            to: `0x${string}`;
-            encryptedMessage: string;
-          }>;
-        };
-        errors?: unknown;
+        messageSents?: Array<{
+          blockNumber: string;
+          from: `0x${string}`;
+          to: `0x${string}`;
+          encryptedMessage: string;
+        }>;
+        error?: string;
+        details?: unknown;
       };
-      if (json.errors) throw new Error(JSON.stringify(json.errors));
+      if (json.error) throw new Error(json.error);
 
-      const events = json.data?.messageSents ?? [];
+      const events = json.messageSents ?? [];
       if (events.length > 0) {
         const conversationKey = getStoredConvKey(conversationIdLocal!);
         const lines: string[] = [
