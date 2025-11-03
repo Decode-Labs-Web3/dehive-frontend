@@ -46,6 +46,82 @@ function randomBytesHex(len = 32): `0x${string}` {
   return toHex(bytes);
 }
 
+// ===== Mock encryption (matches dehive-sc/test/helpers/mockEncryption.ts semantics) =====
+// NOTE: This is for POC/demo only. Not production-grade crypto.
+function base64EncodeUnicode(str: string): string {
+  // Encode Unicode safely for base64 (btoa expects Latin1)
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function base64DecodeUnicode(b64: string): string {
+  return decodeURIComponent(escape(atob(b64)));
+}
+
+// Equivalent to mock encryptMessage: prefix + base64(message)
+function mockEncryptMessage(message: string, key: string): string {
+  const keyPrefix = base64EncodeUnicode(key.substring(0, 8)).substring(0, 8);
+  const encoded = base64EncodeUnicode(message);
+  return `${keyPrefix}${encoded}`;
+}
+
+function mockDecryptMessage(encryptedMessage: string, key: string): string {
+  const keyPrefix = base64EncodeUnicode(key.substring(0, 8)).substring(0, 8);
+  if (!encryptedMessage.startsWith(keyPrefix)) {
+    throw new Error("Invalid encryption key or corrupted message");
+  }
+  const encoded = encryptedMessage.substring(keyPrefix.length);
+  return base64DecodeUnicode(encoded);
+}
+
+// Simple conversation key management (local only)
+function hexFromBytes(buf: Uint8Array): string {
+  return Array.from(buf)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function generateConversationKey(seed?: string): string {
+  if (seed) {
+    // Deterministic: use Web Crypto SHA-256 of seed
+    // But SubtleCrypto is async — for simplicity in this POC, use a quick hash fallback
+    // Warning: This is NOT cryptographically strong; for demo only.
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++)
+      hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+    // Expand to 32 bytes pseudo-hex
+    const out: string[] = [];
+    for (let i = 0; i < 32; i++) {
+      hash = (hash * 1664525 + 1013904223) | 0;
+      out.push(((hash >>> 0) & 0xff).toString(16).padStart(2, "0"));
+    }
+    return out.join("");
+  }
+  const bytes = new Uint8Array(32);
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < 32; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  return hexFromBytes(bytes);
+}
+
+function getStoredConvKey(cid: bigint): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(`convKey:${cid.toString()}`);
+  } catch {
+    return null;
+  }
+}
+
+function setStoredConvKey(cid: bigint, key: string) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(`convKey:${cid.toString()}`, key);
+  } catch {
+    // ignore
+  }
+}
+
 export default function PayAsYouGoTestPage() {
   const [recipient, setRecipient] = useState<string>("");
   const [message, setMessage] = useState<string>("");
@@ -131,12 +207,26 @@ export default function PayAsYouGoTestPage() {
         });
         await publicClient!.waitForTransactionReceipt({ hash: txCreate });
       }
+      // Ensure we have or create a local conversation key for encryption
+      let convKey = getStoredConvKey(cid!);
+      if (!convKey) {
+        convKey = generateConversationKey();
+        setStoredConvKey(cid!, convKey);
+        setLogs((l) => [
+          `Generated new local conversation key for ${cid!.toString()}`,
+          ...l,
+        ]);
+      }
+
+      // Encrypt message using mock scheme (prefix + base64)
+      const ciphertext = mockEncryptMessage(message, convKey);
+
       const fee = (payAsYouGoFee as bigint | undefined) ?? BigInt(0);
       const txHash = await writeContractAsync({
         address: proxy,
         abi: messageAbi,
         functionName: "sendMessage",
-        args: [cid!, getAddress(recipient), message], // POC: store plaintext as "encryptedMessage"
+        args: [cid!, getAddress(recipient), ciphertext],
         chainId: sepolia.id,
         value: fee,
       });
@@ -227,15 +317,29 @@ export default function PayAsYouGoTestPage() {
 
       const events = json.data?.messageSents ?? [];
       if (events.length > 0) {
-        const lines = [
+        const convKey = getStoredConvKey(cid);
+        const lines: string[] = [
           `Subgraph: ${events.length} MessageSent events for ${cid.toString()}`,
-          ...events.map(
-            (e, i) =>
-              `#${i + 1} from ${e.from} to ${e.to}: ${
-                e.encryptedMessage
-              } (block ${e.blockNumber})`
-          ),
         ];
+        events.forEach((e, i) => {
+          const enc = e.encryptedMessage;
+          const header = `#${i + 1} from ${e.from} -> ${e.to} [block ${
+            e.blockNumber
+          }]`;
+          const encLine = `#${i + 1} ciphertext: ${enc}`;
+          let decLine = `#${i + 1} decrypted: `;
+          if (convKey) {
+            try {
+              const decrypted = mockDecryptMessage(enc, convKey);
+              decLine += decrypted;
+            } catch {
+              decLine += `(failed to decrypt)`;
+            }
+          } else {
+            decLine += `(no local key)`;
+          }
+          lines.push(header, encLine, decLine);
+        });
         setLogs((l) => [...lines, ...l]);
         return;
       }
@@ -251,18 +355,34 @@ export default function PayAsYouGoTestPage() {
           args: { conversationId: cid },
           fromBlock: BigInt(0),
         });
-        const lines = [
+        const convKey = getStoredConvKey(cid);
+        const lines: string[] = [
           `RPC: ${rpcLogs.length} MessageSent events for ${cid.toString()}`,
-          ...rpcLogs.map((ev, i) => {
-            const anyEv = ev as unknown as {
-              args?: { from?: string; to?: string; encryptedMessage?: string };
-              blockNumber?: bigint;
-            };
-            return `#${i + 1} from ${anyEv.args?.from} to ${anyEv.args?.to}: ${
-              anyEv.args?.encryptedMessage
-            } (block ${anyEv.blockNumber?.toString()})`;
-          }),
         ];
+        rpcLogs.forEach((ev, i) => {
+          const anyEv = ev as unknown as {
+            args?: { from?: string; to?: string; encryptedMessage?: string };
+            blockNumber?: bigint;
+          };
+          const blockNo = anyEv.blockNumber?.toString();
+          const from = anyEv.args?.from;
+          const to = anyEv.args?.to;
+          const enc = anyEv.args?.encryptedMessage ?? "";
+          const header = `#${i + 1} from ${from} -> ${to} [block ${blockNo}]`;
+          const encLine = `#${i + 1} ciphertext: ${enc}`;
+          let decLine = `#${i + 1} decrypted: `;
+          if (convKey) {
+            try {
+              const decrypted = mockDecryptMessage(enc, convKey);
+              decLine += decrypted;
+            } catch {
+              decLine += `(failed to decrypt)`;
+            }
+          } else {
+            decLine += `(no local key)`;
+          }
+          lines.push(header, encLine, decLine);
+        });
         setLogs((l) => [...lines, ...l]);
       } catch (err) {
         setLogs((l) => [
