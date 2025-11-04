@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
   useAccount,
@@ -23,7 +23,6 @@ function computeConversationId(a: string, b: string): bigint {
   const [smaller, larger] = A.toLowerCase() < B.toLowerCase() ? [A, B] : [B, A];
   const packed = encodePacked(["address", "address"], [smaller, larger]);
   const hash = keccak256(packed);
-  // interpret keccak256 bytes32 as uint256
   return BigInt(hash);
 }
 
@@ -117,16 +116,17 @@ function setStoredConvKey(conversationId: bigint, key: string) {
 
 export default function PayAsYouGoTestPage() {
   const [recipient, setRecipient] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
+  const [newMessage, setNewMessage] = useState<string>("");
   const [conversationId, setConversationId] = useState<bigint | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
+  const [messages, setMessages] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const { address, chainId, isConnected } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const publicClient = usePublicClient();
 
-  const proxy = useMemo(() => PROXY_ADDRESS, []);
+  const proxy = PROXY_ADDRESS;
 
   const { data: payAsYouGoFee } = useReadContract({
     address: proxy,
@@ -139,6 +139,10 @@ export default function PayAsYouGoTestPage() {
   const { writeContractAsync } = useWriteContract();
 
   const isFetchingRef = useRef(false);
+  const messageOrderRef = useRef<string[]>([]);
+  const messageMapRef = useRef<
+    Map<string, { blockNumber: string; from: string; to: string; dec: string }>
+  >(new Map());
 
   const ensureSepolia = async () => {
     if (chainId === sepolia.id) return;
@@ -168,7 +172,7 @@ export default function PayAsYouGoTestPage() {
     if (!proxy) return alert("Proxy address missing");
     if (!isConnected) return alert("Please connect wallet");
     if (!address) return alert("No account");
-    if (!message.trim()) return alert("Message empty");
+    if (!newMessage.trim()) return alert("Message empty");
     try {
       setBusy(true);
       await ensureSepolia();
@@ -216,14 +220,15 @@ export default function PayAsYouGoTestPage() {
       if (!conversationKey) {
         conversationKey = generateConversationKey();
         setStoredConvKey(conversationIdLocal!, conversationKey);
-        setLogs((prevLogs) => [
+        // record a short info line in messages so user can see the key generation event
+        setMessages((prev) => [
           `Generated new local conversation key for ${conversationIdLocal!.toString()}`,
-          ...prevLogs,
+          ...prev,
         ]);
       }
 
       // Encrypt message using mock scheme (prefix + base64)
-      const ciphertext = mockEncryptMessage(message, conversationKey);
+      const ciphertext = mockEncryptMessage(newMessage, conversationKey);
 
       const fee = (payAsYouGoFee as bigint | undefined) ?? BigInt(0);
       const txHash = await writeContractAsync({
@@ -237,16 +242,17 @@ export default function PayAsYouGoTestPage() {
       const receipt = await publicClient!.waitForTransactionReceipt({
         hash: txHash,
       });
-      setLogs((prevLogs) => [
+      setMessages((prev) => [
         `sendMessage tx: ${txHash} (fee ${Number(fee) / 1e18} ETH, block ${
           receipt.blockNumber
         })`,
-        ...prevLogs,
+        ...prev,
       ]);
-      setMessage("");
+      setNewMessage("");
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      setLogs((prevLogs) => [`sendMessage error: ${msg}`, ...prevLogs]);
+      console.error("sendPayAsYouGo error", msg);
+      setError(`sendMessage error: ${msg}`);
     } finally {
       setBusy(false);
     }
@@ -297,42 +303,65 @@ export default function PayAsYouGoTestPage() {
       const events = json.messageSents ?? [];
       if (events.length > 0) {
         const conversationKey = getStoredConvKey(conversationIdLocal!);
-        const lines: string[] = [
-          `Subgraph: ${
-            events.length
-          } MessageSent events for ${conversationIdLocal!.toString()}`,
-        ];
-        events.forEach((e, i) => {
-          const encrypted = e.encryptedMessage;
-          const header = `#${i + 1} from ${e.from} -> ${e.to} [block ${
-            e.blockNumber
-          }]`;
-          const encLine = `#${i + 1} ciphertext: ${encrypted}`;
-          let decLine = `#${i + 1} decrypted: `;
+        const newIds: string[] = [];
+        // events come ascending (oldest -> newest). Collect unseen events into map
+        events.forEach((e) => {
+          const eventId = `${e.blockNumber}:${e.from}:${e.to}:${e.encryptedMessage}`;
+          if (messageMapRef.current.has(eventId)) return; // already recorded
+          // build display lines
+          let decText = "";
           if (conversationKey) {
             try {
-              const decrypted = mockDecryptMessage(encrypted, conversationKey);
-              decLine += decrypted;
+              decText = mockDecryptMessage(e.encryptedMessage, conversationKey);
             } catch {
-              decLine += `(failed to decrypt)`;
+              decText = `(failed to decrypt)`;
             }
           } else {
-            decLine += `(no local key)`;
+            decText = `(no local key)`;
           }
-          lines.push(header, encLine, decLine);
+          messageMapRef.current.set(eventId, {
+            blockNumber: e.blockNumber,
+            from: e.from,
+            to: e.to,
+            dec: decText,
+          });
+          newIds.push(eventId);
         });
-        setLogs((prevLogs) => [...lines, ...prevLogs]);
+        if (newIds.length > 0) {
+          // Add new ids to the map then rebuild ordered list by blockNumber ascending
+          for (const id of newIds) {
+            messageOrderRef.current.push(id);
+          }
+          // Rebuild order from map values sorted by blockNumber asc
+          const ordered = Array.from(messageMapRef.current.keys()).sort(
+            (a, b) => {
+              const aa = Number(messageMapRef.current.get(a)!.blockNumber);
+              const bb = Number(messageMapRef.current.get(b)!.blockNumber);
+              return aa - bb;
+            }
+          );
+          messageOrderRef.current = ordered;
+          // Rebuild logs in chronological order (oldest first) as simple lines: "<sender>: <message>"
+          const rebuilt: string[] = [];
+          for (let idx = 0; idx < ordered.length; idx++) {
+            const id = ordered[idx];
+            const data = messageMapRef.current.get(id)!;
+            const line = `${data.from}: ${data.dec}`;
+            rebuilt.push(line);
+          }
+          setMessages(rebuilt);
+        }
         return;
       }
 
       // Subgraph returned no events; RPC fallback removed — relying on subgraph only
-      setLogs((prevLogs) => [
-        `No on-chain MessageSent events found via subgraph for ${conversationIdLocal!.toString()}`,
-        ...prevLogs,
-      ]);
+      const info = `No on-chain MessageSent events found via subgraph for ${conversationIdLocal!.toString()}`;
+      console.info(info);
+      setError(info);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      setLogs((prevLogs) => [`fetchMessages error: ${msg}`, ...prevLogs]);
+      console.error("fetchMessages error", msg);
+      setError(`fetchMessages error: ${msg}`);
     } finally {
       isFetchingRef.current = false;
     }
@@ -340,6 +369,9 @@ export default function PayAsYouGoTestPage() {
 
   useEffect(() => {
     if (!conversationId) return;
+    // Reset message maps when conversation changes
+    messageOrderRef.current = [];
+    messageMapRef.current.clear();
     fetchMessages();
     const id = setInterval(() => {
       fetchMessages();
@@ -370,23 +402,12 @@ export default function PayAsYouGoTestPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             title="Gửi tin nhắn kèm theo phí pay-as-you-go trực tiếp từ ví của bạn."
-            disabled={busy || !message.trim()}
+            disabled={busy || !newMessage.trim()}
             onClick={sendPayAsYouGo}
             className="inline-flex items-center rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? "Sending..." : "Send (pay-as-you-go)"}
           </button>
-        </div>
-
-        <div className="text-xs text-neutral-400 space-y-1">
-          <div>
-            <b>Send (pay-as-you-go)</b>: gửi tin nhắn từ ví của bạn; nếu
-            conversation chưa tồn tại, app sẽ tự tạo rồi gửi.
-          </div>
-          <div>
-            <b>Fetch messages</b>: tải danh sách sự kiện MessageSent theo
-            conversationId (qua Subgraph, fallback RPC nếu cần).
-          </div>
         </div>
 
         <div className="text-sm space-y-1">
@@ -410,8 +431,8 @@ export default function PayAsYouGoTestPage() {
           <label className="text-sm text-neutral-400">Message</label>
           <textarea
             rows={3}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type your message... (POC will store plaintext as 'encryptedMessage')"
             className="w-full rounded-md border border-neutral-700 bg-neutral-900 text-neutral-100 placeholder:text-neutral-500 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
@@ -420,12 +441,14 @@ export default function PayAsYouGoTestPage() {
 
       <h3 className="mt-6 font-semibold">Logs</h3>
       <div className="bg-neutral-900 text-emerald-100 p-3 rounded-lg min-h-[220px] max-h-[320px] overflow-y-auto font-mono text-xs leading-relaxed border border-neutral-800 whitespace-pre-wrap break-words">
-        {logs.length === 0 ? (
+        {error ? <div className="text-red-400 py-1">{error}</div> : null}
+
+        {messages.length === 0 ? (
           <div className="opacity-60">
-            No logs yet. Actions will appear here…
+            No messages yet. Actions will appear here…
           </div>
         ) : (
-          logs.map((line, idx) => (
+          messages.map((line: string, idx: number) => (
             <div key={idx} className="py-0.5">
               {line}
             </div>
