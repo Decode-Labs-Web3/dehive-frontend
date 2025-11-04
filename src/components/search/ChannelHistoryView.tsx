@@ -3,13 +3,14 @@
 // import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { getCookie } from "@/utils/cookie.utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
-import { getCookie } from "@/utils/cookie.utils";
-import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { Card, CardContent } from "@/components/ui/card";
+import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
@@ -37,6 +38,7 @@ import {
 import {
   faX,
   faPen,
+  faPlus,
   faTrash,
   faCircle,
   faArrowTurnUp,
@@ -97,7 +99,6 @@ export default function ChannelHistoryView({
   messageSearchId,
   setMessageSearchId,
 }: ChannelHistoryViewProps) {
-  const router = useRouter();
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
   const [messageDelete, setMessageDelete] = useState<MessageProps | null>(null);
   const [messages, setMessages] = useState<MessageProps[]>([]);
@@ -275,11 +276,11 @@ export default function ChannelHistoryView({
     fetchMessageDown();
   }, [fetchMessageDown]);
 
-  useEffect (() => {
-    if(isEndDown){
+  useEffect(() => {
+    if (isEndDown) {
       setMessageSearchId(null);
     }
-  }, [isEndDown, setMessageSearchId])
+  }, [isEndDown, setMessageSearchId]);
 
   const editMessageModal = useCallback(() => {
     setEditMessageField(
@@ -471,20 +472,21 @@ export default function ChannelHistoryView({
             </div>
           </div>
         </div>
-        <Button
-          onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/80"
-        >
-          Start Call
-        </Button>
         <ChannelSearchBar
           channelId={channelId}
           setMessageSearchId={setMessageSearchId}
         />
-        <span className="text-xs text-muted-foreground">
-          Page up: {pageUp} {isEndUp && "yes"} --- Page down: {pageDown}{" "}
-          {isEndDown && "yes"}
-        </span>
+        <div className="flex items-center gap-3">
+          <ChannelSearchBar
+            channelId={channelId}
+            setMessageSearchId={setMessageSearchId}
+          />
+          <AirdropDropdown serverId={serverId} />
+          {/* <span className="text-xs text-muted-foreground">
+                      Page up: {pageUp} {isEndUp && "yes"} --- Page down: {pageDown}{" "}
+                      {isEndDown && "yes"}
+                    </span> */}
+        </div>
       </div>
 
       <ScrollArea
@@ -770,15 +772,9 @@ export default function ChannelHistoryView({
       </Dialog>
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
-        {/* {isAtBottom && (
-            <div className="flex flex-row bg-red-500">
-              <h1>You{"'"}re Viewing Older Messages</h1>
-              <Button onClick={handleJumpToPresent}>Jump to present</Button>
-            </div>
-          )} */}
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
-          <Button className="h-11 w-11 shrink-0 rounded-full bg-muted text-lg text-muted-foreground hover:bg-accent">
-            +
+          <Button className="h-11 w-11 rounded-full">
+            <FontAwesomeIcon icon={faPlus} />
           </Button>
           <div className="flex-1">
             {messageReply && (

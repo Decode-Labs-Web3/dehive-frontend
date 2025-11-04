@@ -36,6 +36,8 @@ import {
 import {
   faX,
   faPen,
+  faPlus,
+  faPhone,
   faTrash,
   faCircle,
   faArrowTurnUp,
@@ -475,17 +477,21 @@ export default function DirectHistoryView({
             </div>
           </div>
         </div>
-        <Button
-          onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/80"
-        >
-          Start Call
-        </Button>
-        <DirectSearchBar setMessageSearchId={setMessageSearchId} />
-        <span className="text-xs text-muted-foreground">
-          Page up: {pageUp} {isEndUp && "yes"} --- Page down: {pageDown}{" "}
-          {isEndDown && "yes"}
-        </span>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+          >
+            <FontAwesomeIcon icon={faPhone} className="w-4 h-4" />
+          </Button>
+          <DirectSearchBar setMessageSearchId={setMessageSearchId} />
+          {/* <span className="text-xs text-muted-foreground">
+            Page up: {pageUp} {isEndUp && "yes"} --- Page down: {pageDown}{" "}
+            {isEndDown && "yes"}
+          </span> */}
+        </div>
       </div>
 
       <ScrollArea
@@ -774,15 +780,9 @@ export default function DirectHistoryView({
       </Dialog>
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
-        {/* {isAtBottom && (
-            <div className="flex flex-row bg-red-500">
-              <h1>You{"'"}re Viewing Older Messages</h1>
-              <Button onClick={handleJumpToPresent}>Jump to present</Button>
-            </div>
-          )} */}
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
-          <Button className="h-11 w-11 shrink-0 rounded-full bg-muted text-lg text-muted-foreground hover:bg-accent">
-            +
+          <Button className="h-11 w-11 rounded-full">
+            <FontAwesomeIcon icon={faPlus} />
           </Button>
           <div className="flex-1">
             {messageReply && (

@@ -35,7 +35,9 @@ interface DirectSearchBarProps {
   setMessageSearchId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-export default function DirectSearchBar({setMessageSearchId} : DirectSearchBarProps) {
+export default function DirectSearchBar({
+  setMessageSearchId,
+}: DirectSearchBarProps) {
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [countPage, setCountPage] = useState(0);

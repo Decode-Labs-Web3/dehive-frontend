@@ -10,12 +10,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
-import ChannelHistoryView from "@/components/search/ChannelHistoryView";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
-import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
+import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import ChannelHistoryView from "@/components/search/ChannelHistoryView";
+import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -41,6 +41,7 @@ import {
 import {
   faX,
   faPen,
+  faPlus,
   faTrash,
   faCircle,
   faHashtag,
@@ -427,15 +428,15 @@ export default function ChannelMessagePage() {
             </div>
           </div>
         </div>
-        <ChannelSearchBar
-          channelId={channelId}
-          setMessageSearchId={setMessageSearchId}
-        />
         <div className="flex items-center gap-3">
+          <ChannelSearchBar
+            channelId={channelId}
+            setMessageSearchId={setMessageSearchId}
+          />
           <AirdropDropdown serverId={serverId} />
-          <span className="text-xs text-muted-foreground">
+          {/* <span className="text-xs text-muted-foreground">
             Page {currentPage}
-          </span>
+          </span> */}
         </div>
       </div>
 
@@ -701,8 +702,8 @@ export default function ChannelMessagePage() {
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
-          <Button className="h-11 w-11 shrink-0 rounded-full bg-muted text-lg text-muted-foreground hover:bg-accent">
-            +
+          <Button className="h-11 w-11 rounded-full">
+            <FontAwesomeIcon icon={faPlus} />
           </Button>
           <div className="flex-1">
             {messageReply && (

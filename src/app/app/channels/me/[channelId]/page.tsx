@@ -45,6 +45,8 @@ import {
 import {
   faX,
   faPen,
+  faPlus,
+  faPhone,
   faTrash,
   faCircle,
   faArrowTurnUp,
@@ -316,8 +318,10 @@ export default function DirectMessagePage() {
       (wallet) => wallet.is_primary === true
     );
     if (privateMode) {
-      if(index !== -1) {
-        router.push(`/app/channels/me/${channelId}/${userChatWith.wallets[index].address}`);
+      if (index !== -1) {
+        router.push(
+          `/app/channels/me/${channelId}/${userChatWith.wallets[index].address}`
+        );
       }
     }
   }, [privateMode, channelId, router, userChatWith.wallets]);
@@ -362,12 +366,6 @@ export default function DirectMessagePage() {
             </div>
           </div>
         </div>
-        <Button
-          onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/80"
-        >
-          Start Call
-        </Button>
         <DirectSearchBar setMessageSearchId={setMessageSearchId} />
         {isAllowPrivate && (
           <>
@@ -387,9 +385,20 @@ export default function DirectMessagePage() {
             )}
           </>
         )}
-        <span className="text-xs text-muted-foreground">
-          Page {currentPage}
-        </span>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+          >
+            <FontAwesomeIcon icon={faPhone} className="w-4 h-4" />
+          </Button>
+          <DirectSearchBar setMessageSearchId={setMessageSearchId} />
+          {/* <span className="text-xs text-muted-foreground">
+                      Page {currentPage}
+                    </span> */}
+        </div>
       </div>
 
       <ScrollArea
@@ -660,8 +669,8 @@ export default function DirectMessagePage() {
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
-          <Button className="h-11 w-11 shrink-0 rounded-full bg-muted text-lg text-muted-foreground hover:bg-accent">
-            +
+          <Button className="h-11 w-11 rounded-full">
+            <FontAwesomeIcon icon={faPlus} />
           </Button>
           <div className="flex-1">
             {messageReply && (

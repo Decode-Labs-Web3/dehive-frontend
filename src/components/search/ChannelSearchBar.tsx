@@ -4,12 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 interface SearchResultProps {
   _id: string;
@@ -45,16 +47,23 @@ export default function ChannelSearchBar({
   const [isLastPage, setIsLastPage] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResult, setSerachResult] = useState<SearchResultProps[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const handleKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setKeyword(event.target.value);
     setCountPage(0);
-    fetchSearchList(event.target.value);
+    setIsLastPage(false);
+    setSerachResult([]);
+    if (event.target.value.trim().length > 0) {
+      fetchSearchList(event.target.value);
+    }
   };
 
   const fetchSearchList = useCallback(
     async (keywordSearch: string) => {
       if (isLastPage) return;
       try {
+        setError(null);
+        setSearchLoading(true);
         const apiResponse = await fetch("/api/search/channel", {
           method: "POST",
           headers: {
@@ -77,6 +86,7 @@ export default function ChannelSearchBar({
           console.error(apiResponse);
           console.log("api response error");
           console.groupEnd();
+          setError("Failed to search messages");
           return;
         }
         const response = await apiResponse.json();
@@ -99,6 +109,9 @@ export default function ChannelSearchBar({
         console.error(error);
         console.log("server search message error");
         console.groupEnd();
+        setError("Server error while searching");
+      } finally {
+        setSearchLoading(false);
       }
     },
     [channelId, isLastPage, countPage]
@@ -126,37 +139,94 @@ export default function ChannelSearchBar({
   }, [searchResult]);
 
   return (
-    <>
-      <Label htmlFor="keyword">Search keyword here</Label>
-      <Input
-        id="keyword"
-        name="keyword"
-        value={keyword}
-        onChange={handleKeywordChange}
-      />
-      <Dialog open={open} onOpenChange={(open) => setOpen(open)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Search Result</DialogTitle>
-          </DialogHeader>
-          <ScrollArea ref={searchRef} onScrollViewport={handleScroll}>
-            <div className="flex flex-col">
-              {searchResult.map((result) => (
-                <button
-                  key={result._id}
-                  onClick={() => {
-                    setMessageSearchId(result._id);
-                    setOpen(false);
-                  }}
-                >
-                  <h1 className="bg-red-500">{result.content}</h1>
-                </button>
-              ))}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <FontAwesomeIcon icon={faMagnifyingGlass} className="w-4 h-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[500px] p-0" sideOffset={8}>
+        <div className="flex flex-col h-[600px]">
+          <div className="px-4 py-3 border-b border-border space-y-2">
+            <div className="space-y-1">
+              <Label htmlFor="channel-search" className="text-xs">
+                Search
+              </Label>
+              <Input
+                id="channel-search"
+                placeholder="Type a keyword to search..."
+                value={keyword}
+                onChange={handleKeywordChange}
+                className="h-8"
+              />
             </div>
+          </div>
+
+          <ScrollArea
+            className="flex-1"
+            ref={searchRef}
+            onScrollViewport={handleScroll}
+          >
+            {keyword.trim().length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                Start typing to search messages
+              </div>
+            ) : searchLoading && searchResult.length === 0 ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                Searching...
+              </div>
+            ) : error ? (
+              <div className="p-4 text-center">
+                <p className="text-sm text-destructive mb-2">{error}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => fetchSearchList(keyword)}
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : searchResult.length === 0 ? (
+              <div className="p-8 text-center">
+                <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <FontAwesomeIcon
+                    icon={faMagnifyingGlass}
+                    className="w-8 h-8 text-muted-foreground"
+                  />
+                </div>
+                <p className="font-semibold mb-2">No results found</p>
+                <p className="text-sm text-muted-foreground">
+                  Try a different keyword
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                {searchResult.map((result) => (
+                  <button
+                    key={result._id}
+                    className="text-left px-4 py-3 hover:bg-muted border-b border-border"
+                    onClick={() => {
+                      setMessageSearchId(result._id);
+                      setOpen(false);
+                    }}
+                  >
+                    <div className="text-sm line-clamp-2">{result.content}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {new Date(result.createdAt).toLocaleString()}
+                    </div>
+                  </button>
+                ))}
+                {searchLoading && (
+                  <div className="p-3 text-center text-xs text-muted-foreground">
+                    Loading more...
+                  </div>
+                )}
+              </div>
+            )}
             <ScrollBar orientation="vertical" />
           </ScrollArea>
-        </DialogContent>
-      </Dialog>
-    </>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
