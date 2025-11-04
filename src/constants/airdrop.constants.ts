@@ -19,7 +19,7 @@ export const GRAPH_CONFIG = {
   apiKey: "112c016bdd600a7de3fa8e9379471bf2",
 } as const;
 
-export const IPFS_GATEWAY = "https://ipfs.de-id.xyz/ipfs";
+export const IPFS_GATEWAY = "https://ipfs.io/ipfs";
 
 export const SEPOLIA_CHAIN_ID = sepolia.id;
 

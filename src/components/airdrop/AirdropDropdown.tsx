@@ -157,11 +157,28 @@ export default function AirdropDropdown({ serverId }: { serverId: string }) {
           campaignsWithMetadata.map((c) => ({
             id: c.id,
             name: c.campaignName,
+            createdAt: c.createdAt,
           }))
         );
 
-        setCampaignsWithMetadata(campaignsWithMetadata);
-        setFilteredCampaigns(campaignsWithMetadata);
+        // Sort by createdAt (newest first) - createdAt is a timestamp string
+        const sortedCampaigns = [...campaignsWithMetadata].sort((a, b) => {
+          const timeA = parseInt(a.createdAt) || 0;
+          const timeB = parseInt(b.createdAt) || 0;
+          return timeB - timeA; // Descending order (newest first)
+        });
+
+        console.log(
+          "Sorted campaigns (newest first):",
+          sortedCampaigns.map((c) => ({
+            id: c.id,
+            name: c.campaignName,
+            createdAt: c.createdAt,
+          }))
+        );
+
+        setCampaignsWithMetadata(sortedCampaigns);
+        setFilteredCampaigns(sortedCampaigns);
       } catch (error) {
         console.error("Failed to fetch campaign metadata:", error);
         // Still set campaigns without metadata so they can be displayed
@@ -306,6 +323,7 @@ export default function AirdropDropdown({ serverId }: { serverId: string }) {
       campaignsWithMetadata.map((c) => ({
         id: c.id,
         name: c.campaignName,
+        createdAt: c.createdAt,
       }))
     );
 
@@ -329,14 +347,25 @@ export default function AirdropDropdown({ serverId }: { serverId: string }) {
       console.log("Filtered campaigns after search:", filtered.length);
     }
 
+    // Sort filtered results by createdAt (newest first) to maintain order
+    filtered.sort((a, b) => {
+      const timeA = parseInt(a.createdAt) || 0;
+      const timeB = parseInt(b.createdAt) || 0;
+      return timeB - timeA; // Descending order (newest first)
+    });
+
     // Note: Eligible filter requires checking IPFS metadata for user address
     // This will be handled in AirdropCampaignList component
-    console.log("Final filtered campaigns:", filtered.length);
+    console.log(
+      "Final filtered campaigns (sorted by newest first):",
+      filtered.length
+    );
     console.log(
       "Filtered campaigns:",
       filtered.map((c) => ({
         id: c.id,
         name: c.campaignName,
+        createdAt: c.createdAt,
       }))
     );
     setFilteredCampaigns(filtered);
