@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   useAccount,
   usePublicClient,
@@ -12,6 +12,13 @@ import {
 import { sepolia } from "wagmi/chains";
 import { isAddress, encodePacked, getAddress, keccak256 } from "viem";
 import { messageAbi } from "@/abi/messageAbi";
+
+// UI components to mirror DirectMessagePage
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import AutoLink from "@/components/common/AutoLink";
 
 const PROXY_ADDRESS = process.env.NEXT_PUBLIC_PROXY_ADDRESS as
   | `0x${string}`
@@ -124,13 +131,31 @@ async function decryptConversationKeyForAddress(
   return out;
 }
 
-export default function PayAsYouGoTestPage() {
-  const [recipient, setRecipient] = useState<string>("");
+export default function SmartContractMessagePage() {
+  const router = useRouter();
+  const { channelId, recipientWallet } = useParams<{
+    channelId: string;
+    recipientWallet: string;
+  }>();
   const [newMessage, setNewMessage] = useState<string>("");
   const [conversationId, setConversationId] = useState<bigint | null>(null);
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<
+    Array<{
+      id: string;
+      blockNumber: string;
+      from: `0x${string}`;
+      to: `0x${string}`;
+      content: string;
+      createdAt: string; // display time only
+      sender: {
+        dehive_id: string;
+        display_name: string;
+        avatar_ipfs_hash: string;
+      };
+    }>
+  >([]);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { address, chainId, isConnected } = useAccount();
   const { switchChainAsync } = useSwitchChain();
@@ -164,6 +189,38 @@ export default function PayAsYouGoTestPage() {
   >(new Map());
   const conversationKeyRef = useRef<string | null>(null);
 
+  // UI sibling data (chat partner info), mirroring DirectMessagePage
+  interface WalletProps {
+    _id: string;
+    address: string;
+    user_id: string;
+    name_service: null | string;
+    is_primary: boolean;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  }
+  interface UserChatWith {
+    id: string;
+    displayname: string;
+    username: string;
+    avatar_ipfs_hash: string;
+    wallets: WalletProps[];
+    status: string;
+  }
+  const [userChatWith, setUserChatWith] = useState<UserChatWith>({
+    id: "",
+    displayname: "",
+    username: "",
+    avatar_ipfs_hash: "",
+    wallets: [],
+    status: "offline",
+  });
+  const counterpartPrimaryWallet = useMemo(() => {
+    const w = userChatWith.wallets.find((w) => w.is_primary);
+    return w?.address ?? recipientWallet;
+  }, [userChatWith.wallets, recipientWallet]);
+
   const ensureSepolia = async () => {
     if (chainId === sepolia.id) return;
     await switchChainAsync({ chainId: sepolia.id });
@@ -173,11 +230,11 @@ export default function PayAsYouGoTestPage() {
 
   // Auto-compute deterministic conversationId whenever address/recipient is valid
   useEffect(() => {
-    if (address && isAddress(recipient)) {
+    if (address && isAddress(recipientWallet)) {
       try {
         const computedConversationId = computeConversationId(
           address,
-          recipient
+          recipientWallet
         );
         setConversationId(computedConversationId);
       } catch {
@@ -186,22 +243,48 @@ export default function PayAsYouGoTestPage() {
     } else {
       setConversationId(null);
     }
-  }, [address, recipient]);
+  }, [address, recipientWallet]);
+
+  // Fetch user chat-with info to populate header avatar/name (same API as DirectMessagePage)
+  const fetchUserChatWith = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/user/chat-with", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ conversationId: channelId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) return;
+      const response = await apiResponse.json();
+      if (response.statusCode === 200 && response.message === "OK") {
+        setUserChatWith(response.data as UserChatWith);
+      }
+    } catch (err) {
+      console.error("fetchUserChatWith error", err);
+    }
+  }, [channelId]);
+  useEffect(() => {
+    fetchUserChatWith();
+  }, [fetchUserChatWith]);
 
   const sendPayAsYouGo = async () => {
     if (!proxy) return alert("Proxy address missing");
-    if (!isConnected) return alert("Please connect wallet");
+    if (!isConnected) return alert("Please connect recipientWallet");
     if (!address) return alert("No account");
     if (!newMessage.trim()) return alert("Message empty");
     try {
-      setBusy(true);
+      setLoading(true);
       await ensureSepolia();
 
       // Ensure we have a conversationId (compute deterministically if missing)
       let conversationIdLocal = conversationId;
       if (!conversationIdLocal) {
-        if (!isAddress(recipient)) throw new Error("Invalid recipient");
-        conversationIdLocal = computeConversationId(address, recipient);
+        if (!isAddress(recipientWallet)) throw new Error("Invalid recipient");
+        conversationIdLocal = computeConversationId(address, recipientWallet);
         setConversationId(conversationIdLocal);
       }
 
@@ -262,14 +345,14 @@ export default function PayAsYouGoTestPage() {
         );
         const encForReceiver = await encryptConversationKeyForAddress(
           convKey,
-          recipient
+          recipientWallet
         );
         const txHash = await writeContractAsync({
           address: proxy,
           abi: messageAbi,
           functionName: "createConversation",
           args: [
-            getAddress(recipient),
+            getAddress(recipientWallet),
             `0x${encForSender}`,
             `0x${encForReceiver}`,
           ],
@@ -347,14 +430,29 @@ export default function PayAsYouGoTestPage() {
         address: proxy,
         abi: messageAbi,
         functionName: "sendMessage",
-        args: [conversationIdLocal!, getAddress(recipient), ciphertext],
+        args: [conversationIdLocal!, getAddress(recipientWallet), ciphertext],
         chainId: sepolia.id,
         value: (payAsYouGoFee as bigint | undefined) ?? BigInt(0),
       });
       await publicClient!.waitForTransactionReceipt({ hash: sendTxHash });
 
-      // Optimistically append my message locally
-      setMessages((prev) => [...prev, `${getAddress(address)}: ${newMessage}`]);
+      // Optimistically append my message locally (styled like DirectMessagePage)
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `${Date.now()}`,
+          blockNumber: "",
+          from: getAddress(address) as `0x${string}`,
+          to: getAddress(recipientWallet) as `0x${string}`,
+          content: newMessage,
+          createdAt: new Date().toISOString(),
+          sender: {
+            dehive_id: "me",
+            display_name: "You",
+            avatar_ipfs_hash: "",
+          },
+        },
+      ]);
       setNewMessage("");
       setError(null);
     } catch (e: unknown) {
@@ -362,7 +460,7 @@ export default function PayAsYouGoTestPage() {
       console.error("sendPayAsYouGo error", msg);
       setError(`sendMessage error: ${msg}`);
     } finally {
-      setBusy(false);
+      setLoading(false);
     }
   };
 
@@ -373,9 +471,9 @@ export default function PayAsYouGoTestPage() {
     try {
       let conversationIdLocal = conversationId;
       if (!conversationIdLocal) {
-        if (!(address && isAddress(recipient)))
+        if (!(address && isAddress(recipientWallet)))
           return alert("No conversationId");
-        conversationIdLocal = computeConversationId(address, recipient);
+        conversationIdLocal = computeConversationId(address, recipientWallet);
         setConversationId(conversationIdLocal);
       }
 
@@ -545,23 +643,54 @@ export default function PayAsYouGoTestPage() {
             }
           );
           messageOrderRef.current = ordered;
-          // Rebuild logs in chronological order (oldest first) as simple lines: "<sender>: <message>"
-          const rebuilt: string[] = [];
+          // Rebuild styled messages list like DirectMessagePage
+          const rebuilt: Array<{
+            id: string;
+            blockNumber: string;
+            from: `0x${string}`;
+            to: `0x${string}`;
+            content: string;
+            createdAt: string;
+            sender: {
+              dehive_id: string;
+              display_name: string;
+              avatar_ipfs_hash: string;
+            };
+          }> = [];
           for (let idx = 0; idx < ordered.length; idx++) {
             const id = ordered[idx];
             const data = messageMapRef.current.get(id)!;
-            const line = `${data.from}: ${data.dec}`;
-            rebuilt.push(line);
+            const isCounterpart =
+              getAddress(data.from as `0x${string}`) ===
+              getAddress(counterpartPrimaryWallet as `0x${string}`);
+            rebuilt.push({
+              id,
+              blockNumber: data.blockNumber,
+              from: getAddress(data.from as `0x${string}`) as `0x${string}`,
+              to: getAddress(data.to as `0x${string}`) as `0x${string}`,
+              content: data.dec,
+              createdAt: new Date().toISOString(),
+              sender: isCounterpart
+                ? {
+                    dehive_id: userChatWith.id || "counterpart",
+                    display_name: userChatWith.displayname || "Counterpart",
+                    avatar_ipfs_hash: userChatWith.avatar_ipfs_hash || "",
+                  }
+                : {
+                    dehive_id: "me",
+                    display_name: "You",
+                    avatar_ipfs_hash: "",
+                  },
+            });
           }
           setMessages(rebuilt);
         }
         return;
       }
 
-      // Subgraph returned no events; RPC fallback removed — relying on subgraph only
-      const info = `No on-chain MessageSent events found via subgraph for ${conversationIdLocal!.toString()}`;
-      console.info(info);
-      setError(info);
+      // No events found for this conversation: do not treat as an error.
+      // Keep messages array empty so UI can render the "No messages yet" state.
+      setError(null);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error("fetchMessages error", msg);
@@ -569,7 +698,17 @@ export default function PayAsYouGoTestPage() {
     } finally {
       isFetchingRef.current = false;
     }
-  }, [conversationId, address, recipient, proxy, publicClient]);
+  }, [
+    conversationId,
+    address,
+    recipientWallet,
+    proxy,
+    publicClient,
+    counterpartPrimaryWallet,
+    userChatWith.id,
+    userChatWith.displayname,
+    userChatWith.avatar_ipfs_hash,
+  ]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -584,82 +723,134 @@ export default function PayAsYouGoTestPage() {
     return () => clearInterval(id);
   }, [conversationId, fetchMessages]);
 
+  // Auto scroll to bottom when messages change (like Direct initial behavior)
+  const listRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = listRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight - el.clientHeight;
+    }
+  }, [messages.length]);
+
+  const handleComposerKeyDown = (
+    event: React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      const msg = newMessage.trim();
+      if (msg && !loading) {
+        // reuse sendPayAsYouGo
+        void sendPayAsYouGo();
+      }
+    }
+  };
+
   return (
-    <main className="px-6 py-6 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
-          Dehive On-chain Messaging – Pay-as-you-go (Sepolia)
-        </h2>
-        <ConnectButton />
-      </div>
-
-      <div className="mt-4 grid gap-3">
-        <div className="grid gap-2">
-          <label className="text-sm text-neutral-400">Recipient (0x...)</label>
-          <input
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value.trim())}
-            placeholder="0x..."
-            className="w-full rounded-md border border-neutral-700 bg-neutral-900 text-neutral-100 placeholder:text-neutral-500 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            title="Gửi tin nhắn kèm theo phí pay-as-you-go trực tiếp từ ví của bạn."
-            disabled={busy || !newMessage.trim()}
-            onClick={sendPayAsYouGo}
-            className="inline-flex items-center rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {busy ? "Sending..." : "Send (pay-as-you-go)"}
-          </button>
-        </div>
-
-        <div className="text-sm space-y-1">
-          <div>
-            <b>Proxy:</b> {proxy}
-          </div>
-          <div>
-            <b>Network:</b> {chainId ?? "?"}{" "}
-            {chainId !== sepolia.id && "(switch to Sepolia)"}
-          </div>
-          <div>
-            <b>Pay-as-you-go fee:</b>{" "}
-            {payAsYouGoFee ? `${Number(payAsYouGoFee) / 1e18} ETH` : "..."}
-          </div>
-          <div>
-            <b>ConversationId:</b> {conversationId?.toString() ?? "(none)"}
-          </div>
-        </div>
-
-        <div className="grid gap-2">
-          <label className="text-sm text-neutral-400">Message</label>
-          <textarea
-            rows={3}
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message... (POC will store plaintext as 'encryptedMessage')"
-            className="w-full rounded-md border border-neutral-700 bg-neutral-900 text-neutral-100 placeholder:text-neutral-500 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
-      </div>
-
-      <h3 className="mt-6 font-semibold">Logs</h3>
-      <div className="bg-neutral-900 text-emerald-100 p-3 rounded-lg min-h-[220px] max-h-[320px] overflow-y-auto font-mono text-xs leading-relaxed border border-neutral-800 whitespace-pre-wrap break-words">
-        {error ? <div className="text-red-400 py-1">{error}</div> : null}
-
-        {messages.length === 0 ? (
-          <div className="opacity-60">
-            No messages yet. Actions will appear here…
-          </div>
-        ) : (
-          messages.map((line: string, idx: number) => (
-            <div key={idx} className="py-0.5">
-              {line}
+    <div className="flex h-screen w-full flex-col bg-background text-foreground">
+      {/* Header: avatar, name, start call (no search, no private toggle here) */}
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
+        <div className="flex items-center gap-3">
+          <Avatar className="w-8 h-8">
+            <AvatarImage
+              src={`https://ipfs.de-id.xyz/ipfs/${userChatWith.avatar_ipfs_hash}`}
+            />
+            <AvatarFallback>{userChatWith.displayname} Avatar</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-semibold text-foreground">
+                {userChatWith?.displayname || getAddress(recipientWallet)}
+              </h1>
             </div>
-          ))
-        )}
+          </div>
+        </div>
+        <Button
+          onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/80"
+        >
+          Start Call
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          Network {chainId ?? "?"}{" "}
+          {chainId !== sepolia.id && "(switch to Sepolia)"}
+        </span>
       </div>
-    </main>
+
+      {/* Messages list */}
+      <ScrollArea ref={listRef} className="flex-1 bg-background">
+        <div className="flex flex-col gap-4 px-6 py-6">
+          {error ? (
+            <span className="px-3 text-xs text-red-400">{error}</span>
+          ) : null}
+
+          {messages.length === 0 ? (
+            <div className="opacity-60 text-sm">No messages yet.</div>
+          ) : (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
+              >
+                <div className="flex w-full">
+                  <Avatar className="w-8 h-8 shrink-0">
+                    <AvatarImage
+                      src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
+                    />
+                    <AvatarFallback>
+                      {message.sender.display_name} Avatar
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
+                    <div className="w-full">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-sm font-semibold text-foreground">
+                          {message.sender.display_name}
+                        </h2>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(message.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
+                        <AutoLink text={message.content} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        <ScrollBar orientation="vertical" />
+      </ScrollArea>
+
+      {/* Composer */}
+      <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
+        <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
+          <Button
+            className="h-11 w-11 shrink-0 rounded-full bg-muted text-lg text-muted-foreground hover:bg-accent"
+            disabled
+            title="Attachments are disabled in this view"
+          >
+            +
+          </Button>
+          <div className="flex-1">
+            <Textarea
+              name="content"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={handleComposerKeyDown}
+              placeholder={
+                payAsYouGoFee
+                  ? `Message (fee ~ ${Number(payAsYouGoFee) / 1e18} ETH)`
+                  : "Message"
+              }
+              disabled={loading}
+              className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border placeholder-muted-foreground"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

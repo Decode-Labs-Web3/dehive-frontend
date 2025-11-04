@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import Wallet from "@/components/common/Wallet";
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
@@ -362,7 +362,7 @@ export default function UserPannel({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 flex justify-center">
-                    <ConnectButton />
+                    <Wallet />
                   </CardContent>
                 </Card>
 

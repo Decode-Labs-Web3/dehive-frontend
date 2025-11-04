@@ -115,9 +115,11 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
           lastMessageAt: data.lastMessageAt,
         };
 
-        const getSortTime = (x: UserDataProps) =>
-          new Date(x.lastMessageAt || x.last_seen || 0).getTime();
-        newList.sort((a, b) => getSortTime(b) - getSortTime(a));
+        newList.sort(
+          (a, b) =>
+            new Date(b.lastMessageAt).getTime() -
+            new Date(a.lastMessageAt).getTime()
+        );
         return newList;
       });
     };
@@ -163,143 +165,129 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
           </>
         )}
         {userData.length > 0 &&
-          [...userData]
-            .sort((a, b) => {
-              const ta = new Date(
-                a.lastMessageAt || a.last_seen || 0
-              ).getTime();
-              const tb = new Date(
-                b.lastMessageAt || b.last_seen || 0
-              ).getTime();
-              return tb - ta; // newest first
-            })
-            .map((user) => (
-              <div
-                key={user.user_id}
-                // onContextMenuCapture={(event) => {
-                //   event.preventDefault();
-                //   event.stopPropagation();
-                // console.log("Test Mouse Right click");
-                //   setUserModal((prev) => ({
-                //     ...prev,
-                //     [user.id]: !prev[user.id],
-                //   }));
-                // }}
-                className="relative"
+          userData.map((user) => (
+            <div
+              key={user.user_id}
+              // onContextMenuCapture={(event) => {
+              //   event.preventDefault();
+              //   event.stopPropagation();
+              // console.log("Test Mouse Right click");
+              //   setUserModal((prev) => ({
+              //     ...prev,
+              //     [user.id]: !prev[user.id],
+              //   }));
+              // }}
+              className="relative"
+            >
+              <DropdownMenu
+                modal={false}
+                open={userDropdown[user.user_id]}
+                onOpenChange={() =>
+                  setUserDropdown((prev) => ({
+                    ...prev,
+                    [user.user_id]: false,
+                  }))
+                }
               >
-                <DropdownMenu
-                  modal={false}
-                  open={userDropdown[user.user_id]}
-                  onOpenChange={() =>
-                    setUserDropdown((prev) => ({
-                      ...prev,
-                      [user.user_id]: false,
-                    }))
-                  }
-                >
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="group flex w-full items-center gap-3 px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left"
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        setUserDropdown((prev) => ({
-                          ...prev,
-                          [user.user_id]: true,
-                        }));
-                      }}
-                      onPointerDown={(e) => {
-                        if (e.button !== 2) e.preventDefault();
-                      }}
-                      onClick={() =>
-                        router.push(`/app/channels/me/${user.conversationid}`)
-                      }
-                    >
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage
-                          src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="group flex w-full items-center gap-3 px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left"
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setUserDropdown((prev) => ({
+                        ...prev,
+                        [user.user_id]: true,
+                      }));
+                    }}
+                    onPointerDown={(e) => {
+                      if (e.button !== 2) e.preventDefault();
+                    }}
+                    onClick={() =>
+                      router.push(`/app/channels/me/${user.conversationid}`)
+                    }
+                  >
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage
+                        src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
+                      />
+                      <AvatarFallback>{user.displayname} Avatar</AvatarFallback>
+                    </Avatar>
+
+                    <div className="min-w-0 leading-tight">
+                      <h1 className="font-medium text-[15px] truncate">
+                        {user.displayname}{" "}
+                        <FontAwesomeIcon
+                          icon={faCircle}
+                          className={`h-2 w-2 ${
+                            user.status === "online"
+                              ? "text-emerald-500"
+                              : "text-zinc-400"
+                          }`}
                         />
-                        <AvatarFallback>
-                          {user.displayname} Avatar
-                        </AvatarFallback>
-                      </Avatar>
+                      </h1>
+                      <p className="text-xs text-muted-foreground truncate">
+                        @{user.username}
+                      </p>
+                    </div>
+                  </button>
+                </DropdownMenuTrigger>
 
-                      <div className="min-w-0 leading-tight">
-                        <h1 className="font-medium text-[15px] truncate">
-                          {user.displayname}{" "}
-                          <FontAwesomeIcon
-                            icon={faCircle}
-                            className={`h-2 w-2 ${
-                              user.status === "online"
-                                ? "text-emerald-500"
-                                : "text-zinc-400"
-                            }`}
-                          />
-                        </h1>
-                        <p className="text-xs text-muted-foreground truncate">
-                          @{user.username}
-                        </p>
-                      </div>
-                    </button>
-                  </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuItem
+                    onClick={() =>
+                      setUserProfileModal((prev) => ({
+                        ...prev,
+                        [user.user_id]: true,
+                      }))
+                    }
+                  >
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    asChild
+                    onClick={() => {
+                      router.push(`/app/channels/me/${user.conversationid}`);
+                    }}
+                  >
+                    Message
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>Call</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(user.user_id);
+                    }}
+                    className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    Copy User ID
+                    <FontAwesomeIcon
+                      icon={faCopy}
+                      className="ml-2 text-muted-foreground"
+                    />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(user.conversationid);
+                    }}
+                    className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    Copy Conversation ID
+                    <FontAwesomeIcon
+                      icon={faCopy}
+                      className="ml-2 text-muted-foreground"
+                    />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-                  <DropdownMenuContent className="w-56">
-                    <DropdownMenuItem
-                      onClick={() =>
-                        setUserProfileModal((prev) => ({
-                          ...prev,
-                          [user.user_id]: true,
-                        }))
-                      }
-                    >
-                      Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      asChild
-                      onClick={() => {
-                        router.push(`/app/channels/me/${user.conversationid}`);
-                      }}
-                    >
-                      Message
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>Call</DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        await navigator.clipboard.writeText(user.user_id);
-                      }}
-                      className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-accent hover:text-accent-foreground transition-colors"
-                    >
-                      Copy User ID
-                      <FontAwesomeIcon
-                        icon={faCopy}
-                        className="ml-2 text-muted-foreground"
-                      />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        await navigator.clipboard.writeText(
-                          user.conversationid
-                        );
-                      }}
-                      className="flex items-center justify-between w-full px-3 py-2 rounded text-left hover:bg-accent hover:text-accent-foreground transition-colors"
-                    >
-                      Copy Conversation ID
-                      <FontAwesomeIcon
-                        icon={faCopy}
-                        className="ml-2 text-muted-foreground"
-                      />
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {userProfileModal[user.user_id] && (
-                  <UserInfoModal
-                    userId={user.user_id}
-                    setUserProfileModal={setUserProfileModal}
-                  />
-                )}
-              </div>
-            ))}
+              {userProfileModal[user.user_id] && (
+                <UserInfoModal
+                  userId={user.user_id}
+                  setUserProfileModal={setUserProfileModal}
+                />
+              )}
+            </div>
+          ))}
         <ScrollBar orientation="vertical" />
       </ScrollArea>
     </div>

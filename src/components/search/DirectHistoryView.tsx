@@ -240,7 +240,7 @@ export default function DirectHistoryView({
     status: "offline",
   });
 
-    useEffect(() => {
+  useEffect(() => {
     setMessages([]);
     setPageUp(0);
     setPageDown(0);
@@ -360,6 +360,12 @@ export default function DirectHistoryView({
   useEffect(() => {
     fetchMessageDown();
   }, [fetchMessageDown]);
+
+  useEffect(() => {
+    if (isEndDown) {
+      setMessageSearchId(null);
+    }
+  }, [isEndDown, setMessageSearchId]);
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const prevScrollHeightRef = useRef(0);

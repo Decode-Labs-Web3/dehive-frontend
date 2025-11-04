@@ -275,6 +275,12 @@ export default function ChannelHistoryView({
     fetchMessageDown();
   }, [fetchMessageDown]);
 
+  useEffect (() => {
+    if(isEndDown){
+      setMessageSearchId(null);
+    }
+  }, [isEndDown, setMessageSearchId])
+
   const editMessageModal = useCallback(() => {
     setEditMessageField(
       Object.fromEntries(messages.map((message) => [message._id, false]))

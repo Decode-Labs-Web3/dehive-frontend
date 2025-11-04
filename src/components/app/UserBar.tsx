@@ -44,9 +44,22 @@ interface UserDataProps {
   bio: string;
   avatar_ipfs_hash: string;
   last_login: string;
+  primary_wallet?: PrimaryWalletProps;
   following_number: number;
   followers_number: number;
   is_active: boolean;
+  last_account_deactivation: string;
+}
+
+interface PrimaryWalletProps {
+  _id: string;
+  address: string;
+  user_id: string;
+  name_service: null;
+  is_primary: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export default function UserBar() {

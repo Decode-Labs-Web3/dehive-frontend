@@ -1,10 +1,10 @@
 "use client";
-"use client";
 
-// import { useMemo } from "react";
+import { useAccount } from "wagmi";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
+import Wallet from "@/components/common/Wallet";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -78,6 +78,7 @@ interface WalletProps {
 
 export default function DirectMessagePage() {
   const router = useRouter();
+  const { isConnected } = useAccount();
   const { sound } = useSoundContext();
   const { channelId } = useParams<{ channelId: string }>();
   const [messageSearchId, setMessageSearchId] = useState<string | null>(null);
@@ -310,18 +311,27 @@ export default function DirectMessagePage() {
     };
   }, [userChatWith.id]);
 
-  if (privateMode) {
-    router.push(`/app/me/${channelId}/`); /// tý đụng vào
-  }
+  useEffect(() => {
+    const index = userChatWith.wallets.findIndex(
+      (wallet) => wallet.is_primary === true
+    );
+    if (privateMode) {
+      if(index !== -1) {
+        router.push(`/app/channels/me/${channelId}/${userChatWith.wallets[index].address}`);
+      }
+    }
+  }, [privateMode, channelId, router, userChatWith.wallets]);
 
   const [isAllowPrivate, setIsAllowPrivate] = useState(false);
 
   useEffect(() => {
-    const isAllow = userChatWith.wallets.find(wallet => wallet.is_primary === true);
-    if(isAllow !== undefined){
+    const isAllow = userChatWith.wallets.find(
+      (wallet) => wallet.is_primary === true
+    );
+    if (isAllow !== undefined) {
       setIsAllowPrivate(true);
     }
-  },[userChatWith.wallets]);
+  }, [userChatWith.wallets]);
 
   if (messageSearchId) {
     return (
@@ -360,14 +370,22 @@ export default function DirectMessagePage() {
         </Button>
         <DirectSearchBar setMessageSearchId={setMessageSearchId} />
         {isAllowPrivate && (
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="private"
-              checked={privateMode}
-              onCheckedChange={setPrivateMode}
-            />
-            <Label htmlFor="private">{privateMode ? "Private ON" : "Private OFF"}</Label>
-          </div>
+          <>
+            {isConnected ? (
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="private"
+                  checked={privateMode}
+                  onCheckedChange={setPrivateMode}
+                />
+                <Label htmlFor="private">
+                  {privateMode ? "Private ON" : "Private OFF"}
+                </Label>
+              </div>
+            ) : (
+              <Wallet />
+            )}
+          </>
         )}
         <span className="text-xs text-muted-foreground">
           Page {currentPage}
