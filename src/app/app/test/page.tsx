@@ -151,7 +151,16 @@ export default function PayAsYouGoTestPage() {
   const isFetchingRef = useRef(false);
   const messageOrderRef = useRef<string[]>([]);
   const messageMapRef = useRef<
-    Map<string, { blockNumber: string; from: string; to: string; dec: string }>
+    Map<
+      string,
+      {
+        blockNumber: string;
+        from: string;
+        to: string;
+        encryptedMessage: string;
+        dec: string;
+      }
+    >
   >(new Map());
   const conversationKeyRef = useRef<string | null>(null);
 
@@ -194,6 +203,37 @@ export default function PayAsYouGoTestPage() {
         if (!isAddress(recipient)) throw new Error("Invalid recipient");
         conversationIdLocal = computeConversationId(address, recipient);
         setConversationId(conversationIdLocal);
+      }
+
+      // Early attempt: derive my conversation key from the conversations tuple (no msg.sender needed)
+      if (!conversationKeyRef.current && address) {
+        try {
+          const conv = (await publicClient!.readContract({
+            address: proxy,
+            abi: messageAbi,
+            functionName: "conversations",
+            args: [conversationIdLocal!],
+          })) as readonly [
+            `0x${string}`,
+            `0x${string}`,
+            `0x${string}`,
+            `0x${string}`,
+            bigint
+          ];
+          const [smaller, , encSmall, encLarge, cAt] = conv;
+          if (cAt && cAt !== BigInt(0)) {
+            const me = getAddress(address);
+            const isSmaller = me.toLowerCase() === smaller.toLowerCase();
+            const enc = isSmaller ? encSmall : encLarge;
+            const encHex2 = enc.startsWith("0x") ? enc.slice(2) : enc;
+            if (encHex2) {
+              conversationKeyRef.current =
+                await decryptConversationKeyForAddress(encHex2, address);
+            }
+          }
+        } catch {
+          // ignore — conversation may not exist yet
+        }
       }
 
       // Check if conversation exists on-chain; if not, create it
@@ -339,6 +379,37 @@ export default function PayAsYouGoTestPage() {
         setConversationId(conversationIdLocal);
       }
 
+      // Try to obtain conversation key early from tuple so decrypt works right after refresh
+      if (!conversationKeyRef.current && address) {
+        try {
+          const conv = (await publicClient!.readContract({
+            address: proxy,
+            abi: messageAbi,
+            functionName: "conversations",
+            args: [conversationIdLocal!],
+          })) as readonly [
+            `0x${string}`,
+            `0x${string}`,
+            `0x${string}`,
+            `0x${string}`,
+            bigint
+          ];
+          const [smaller, , encSmall, encLarge, cAt] = conv;
+          if (cAt && cAt !== BigInt(0)) {
+            const me = getAddress(address);
+            const isSmaller = me.toLowerCase() === smaller.toLowerCase();
+            const enc = isSmaller ? encSmall : encLarge;
+            const encHex2 = enc.startsWith("0x") ? enc.slice(2) : enc;
+            if (encHex2) {
+              conversationKeyRef.current =
+                await decryptConversationKeyForAddress(encHex2, address);
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       const res = await fetch("/api/sc-message", {
         method: "POST",
         headers: {
@@ -370,6 +441,22 @@ export default function PayAsYouGoTestPage() {
 
       const events = json.messageSents ?? [];
       if (events.length > 0) {
+        // If we obtained a key and have cached entries from a previous run, re-decrypt them now
+        if (conversationKeyRef.current && messageMapRef.current.size > 0) {
+          try {
+            for (const [id, data] of messageMapRef.current.entries()) {
+              try {
+                const dec = mockDecryptMessage(
+                  data.encryptedMessage,
+                  conversationKeyRef.current
+                );
+                messageMapRef.current.set(id, { ...data, dec });
+              } catch {
+                // leave as is
+              }
+            }
+          } catch {}
+        }
         // Ensure decrypted conversation key available for current user (only if conversation exists and I'm a participant)
         if (!conversationKeyRef.current && address) {
           try {
@@ -439,6 +526,7 @@ export default function PayAsYouGoTestPage() {
             blockNumber: e.blockNumber,
             from: e.from,
             to: e.to,
+            encryptedMessage: e.encryptedMessage,
             dec: decText,
           });
           newIds.push(eventId);
