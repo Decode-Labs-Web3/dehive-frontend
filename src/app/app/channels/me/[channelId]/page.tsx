@@ -2,6 +2,7 @@
 "use client";
 
 // import { useMemo } from "react";
+import { DirectHistoryView } from "@/components/search/DirectHistoryView";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -293,6 +294,10 @@ export default function DirectMessagePage() {
       socket.off("userStatusChanged", onUserStatusChanged);
     };
   }, [userChatWith.id]);
+
+  if(messageId){
+    return <DirectHistoryView channelId={channelId} messageId={messageId} onClose={onClose}/>
+  }
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
