@@ -10,7 +10,7 @@ import {
   useWriteContract,
 } from "wagmi";
 import { sepolia } from "wagmi/chains";
-import { isAddress, encodePacked, getAddress, keccak256, toHex } from "viem";
+import { isAddress, encodePacked, getAddress, keccak256 } from "viem";
 import { messageAbi } from "@/abi/messageAbi";
 
 const PROXY_ADDRESS = process.env.NEXT_PUBLIC_PROXY_ADDRESS as
@@ -26,17 +26,7 @@ function computeConversationId(a: string, b: string): bigint {
   return BigInt(hash);
 }
 
-function randomBytesHex(len = 32): `0x${string}` {
-  // Using crypto.getRandomValues via viem's toHex on random bytes
-  const bytes = new Uint8Array(len);
-  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
-    crypto.getRandomValues(bytes);
-  } else {
-    // Fallback: pseudo-random (not secure, but this is a POC UI)
-    for (let i = 0; i < len; i++) bytes[i] = Math.floor(Math.random() * 256);
-  }
-  return toHex(bytes);
-}
+// (randomBytesHex removed; not needed with contract-based key flow)
 
 // ===== Mock encryption (matches dehive-sc/test/helpers/mockEncryption.ts semantics) =====
 // NOTE: This is for POC/demo only. Not production-grade crypto.
@@ -64,7 +54,7 @@ function mockDecryptMessage(encryptedMessage: string, key: string): string {
   return base64DecodeUnicode(encoded);
 }
 
-// Simple conversation key management (local only)
+// Simple conversation key generation (no persistent storage)
 function hexFromBytes(buf: Uint8Array): string {
   return Array.from(buf)
     .map((b) => b.toString(16).padStart(2, "0"))
@@ -96,22 +86,42 @@ function generateConversationKey(seed?: string): string {
   return hexFromBytes(bytes);
 }
 
-function getStoredConvKey(conversationId: bigint): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return localStorage.getItem(`convKey:${conversationId.toString()}`);
-  } catch {
-    return null;
-  }
+// Address-key encryption helpers (mock XOR with sha256(address) like test helpers)
+async function sha256Hex(input: string): Promise<string> {
+  const enc = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", enc);
+  const bytes = new Uint8Array(digest);
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
-function setStoredConvKey(conversationId: bigint, key: string) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(`convKey:${conversationId.toString()}`, key);
-  } catch {
-    // ignore
+async function encryptConversationKeyForAddress(
+  conversationKey: string,
+  address: string
+): Promise<string> {
+  const hashHex = await sha256Hex(address.toLowerCase());
+  let out = "";
+  for (let i = 0; i < conversationKey.length; i++) {
+    const a = parseInt(conversationKey[i], 16);
+    const b = parseInt(hashHex[i % hashHex.length], 16);
+    out += ((a ^ b) & 0xf).toString(16);
   }
+  return out;
+}
+
+async function decryptConversationKeyForAddress(
+  encryptedKeyHex: string,
+  address: string
+): Promise<string> {
+  const hashHex = await sha256Hex(address.toLowerCase());
+  let out = "";
+  for (let i = 0; i < encryptedKeyHex.length; i++) {
+    const a = parseInt(encryptedKeyHex[i], 16);
+    const b = parseInt(hashHex[i % hashHex.length], 16);
+    out += ((a ^ b) & 0xf).toString(16);
+  }
+  return out;
 }
 
 export default function PayAsYouGoTestPage() {
@@ -143,6 +153,7 @@ export default function PayAsYouGoTestPage() {
   const messageMapRef = useRef<
     Map<string, { blockNumber: string; from: string; to: string; dec: string }>
   >(new Map());
+  const conversationKeyRef = useRef<string | null>(null);
 
   const ensureSepolia = async () => {
     if (chainId === sepolia.id) return;
@@ -176,6 +187,7 @@ export default function PayAsYouGoTestPage() {
     try {
       setBusy(true);
       await ensureSepolia();
+
       // Ensure we have a conversationId (compute deterministically if missing)
       let conversationIdLocal = conversationId;
       if (!conversationIdLocal) {
@@ -183,6 +195,7 @@ export default function PayAsYouGoTestPage() {
         conversationIdLocal = computeConversationId(address, recipient);
         setConversationId(conversationIdLocal);
       }
+
       // Check if conversation exists on-chain; if not, create it
       type ConversationTuple = readonly [
         `0x${string}`,
@@ -191,64 +204,119 @@ export default function PayAsYouGoTestPage() {
         `0x${string}`,
         bigint
       ];
-      const onchainConversation = await publicClient!.readContract({
+      const convData = (await publicClient!.readContract({
         address: proxy,
         abi: messageAbi,
         functionName: "conversations",
         args: [conversationIdLocal!],
-      });
-      const [, , , , createdAt] = onchainConversation as ConversationTuple;
+      })) as ConversationTuple;
+      const [, , , , createdAt] = convData;
+
+      let localConvKey: string | null = null;
       if (!createdAt || createdAt === BigInt(0)) {
-        const placeholderEncryptedKey = randomBytesHex(32);
-        const createConversationTxHash = await writeContractAsync({
+        // Create a new conversation with encrypted keys for both participants
+        const convKey = generateConversationKey(); // 64 hex chars
+        const encForSender = await encryptConversationKeyForAddress(
+          convKey,
+          address
+        );
+        const encForReceiver = await encryptConversationKeyForAddress(
+          convKey,
+          recipient
+        );
+        const txHash = await writeContractAsync({
           address: proxy,
           abi: messageAbi,
           functionName: "createConversation",
           args: [
             getAddress(recipient),
-            placeholderEncryptedKey,
-            placeholderEncryptedKey,
+            `0x${encForSender}`,
+            `0x${encForReceiver}`,
           ],
           chainId: sepolia.id,
         });
-        await publicClient!.waitForTransactionReceipt({
-          hash: createConversationTxHash,
-        });
-      }
-      // Ensure we have or create a local conversation key for encryption
-      let conversationKey = getStoredConvKey(conversationIdLocal!);
-      if (!conversationKey) {
-        conversationKey = generateConversationKey();
-        setStoredConvKey(conversationIdLocal!, conversationKey);
-        // record a short info line in messages so user can see the key generation event
-        setMessages((prev) => [
-          `Generated new local conversation key for ${conversationIdLocal!.toString()}`,
-          ...prev,
-        ]);
+        await publicClient!.waitForTransactionReceipt({ hash: txHash });
+        // Use the generated key immediately for the first message
+        localConvKey = convKey;
       }
 
-      // Encrypt message using mock scheme (prefix + base64)
-      const ciphertext = mockEncryptMessage(newMessage, conversationKey);
+      // Retrieve my encrypted conversation key from contract and decrypt it
+      if (!conversationKeyRef.current) {
+        try {
+          const encKey = (await publicClient!.readContract({
+            address: proxy,
+            abi: messageAbi,
+            functionName: "getMyEncryptedConversationKeys",
+            args: [conversationIdLocal!],
+          })) as string;
+          const encHex = encKey.startsWith("0x") ? encKey.slice(2) : encKey;
+          if (encHex) {
+            conversationKeyRef.current = await decryptConversationKeyForAddress(
+              encHex,
+              address
+            );
+          }
+        } catch {
+          // ignore (may revert if not participant yet)
+        }
+        // Fallback: read from conversations tuple and pick my slot
+        if (!conversationKeyRef.current) {
+          try {
+            const conv = (await publicClient!.readContract({
+              address: proxy,
+              abi: messageAbi,
+              functionName: "conversations",
+              args: [conversationIdLocal!],
+            })) as readonly [
+              `0x${string}`,
+              `0x${string}`,
+              `0x${string}`,
+              `0x${string}`,
+              bigint
+            ];
+            const [smaller, , encSmall, encLarge, cAt] = conv;
+            if (cAt && cAt !== BigInt(0)) {
+              const me = getAddress(address);
+              const isSmaller = me.toLowerCase() === smaller.toLowerCase();
+              const enc = isSmaller ? encSmall : encLarge;
+              const encHex2 = enc.startsWith("0x") ? enc.slice(2) : enc;
+              if (encHex2) {
+                conversationKeyRef.current =
+                  await decryptConversationKeyForAddress(encHex2, address);
+              }
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
 
-      const fee = (payAsYouGoFee as bigint | undefined) ?? BigInt(0);
-      const txHash = await writeContractAsync({
+      if (!conversationKeyRef.current && localConvKey) {
+        conversationKeyRef.current = localConvKey;
+      }
+      if (!conversationKeyRef.current) {
+        throw new Error("No conversation key available for this account");
+      }
+
+      // Encrypt and send message (pay-as-you-go)
+      const ciphertext = mockEncryptMessage(
+        newMessage,
+        conversationKeyRef.current
+      );
+      const sendTxHash = await writeContractAsync({
         address: proxy,
         abi: messageAbi,
         functionName: "sendMessage",
         args: [conversationIdLocal!, getAddress(recipient), ciphertext],
         chainId: sepolia.id,
-        value: fee,
+        value: (payAsYouGoFee as bigint | undefined) ?? BigInt(0),
       });
-      const receipt = await publicClient!.waitForTransactionReceipt({
-        hash: txHash,
-      });
-      setMessages((prev) => [
-        `sendMessage tx: ${txHash} (fee ${Number(fee) / 1e18} ETH, block ${
-          receipt.blockNumber
-        })`,
-        ...prev,
-      ]);
+      await publicClient!.waitForTransactionReceipt({ hash: sendTxHash });
+
+      // Optimistically append my message locally
+      setMessages((prev) => [...prev, `${getAddress(address)}: ${newMessage}`]);
       setNewMessage("");
+      setError(null);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error("sendPayAsYouGo error", msg);
@@ -302,7 +370,52 @@ export default function PayAsYouGoTestPage() {
 
       const events = json.messageSents ?? [];
       if (events.length > 0) {
-        const conversationKey = getStoredConvKey(conversationIdLocal!);
+        // Ensure decrypted conversation key available for current user (only if conversation exists and I'm a participant)
+        if (!conversationKeyRef.current && address) {
+          try {
+            const conv = (await publicClient!.readContract({
+              address: proxy,
+              abi: messageAbi,
+              functionName: "conversations",
+              args: [conversationIdLocal!],
+            })) as readonly [
+              `0x${string}`,
+              `0x${string}`,
+              `0x${string}`,
+              `0x${string}`,
+              bigint
+            ];
+            const [smaller, larger, , , cAt] = conv;
+            if (cAt && cAt !== BigInt(0)) {
+              const me = getAddress(address);
+              const isParticipant =
+                me.toLowerCase() === smaller.toLowerCase() ||
+                me.toLowerCase() === larger.toLowerCase();
+              if (isParticipant) {
+                try {
+                  const encKey = (await publicClient!.readContract({
+                    address: proxy,
+                    abi: messageAbi,
+                    functionName: "getMyEncryptedConversationKeys",
+                    args: [conversationIdLocal!],
+                  })) as string;
+                  const encHex = encKey.startsWith("0x")
+                    ? encKey.slice(2)
+                    : encKey;
+                  if (encHex) {
+                    conversationKeyRef.current =
+                      await decryptConversationKeyForAddress(encHex, address);
+                  }
+                } catch (e) {
+                  console.info("Key fetch/decrypt skipped", e);
+                }
+              }
+            }
+          } catch (e) {
+            // Conversation may not exist yet; ignore
+            console.info("Conversation read skipped", e);
+          }
+        }
         const newIds: string[] = [];
         // events come ascending (oldest -> newest). Collect unseen events into map
         events.forEach((e) => {
@@ -310,14 +423,17 @@ export default function PayAsYouGoTestPage() {
           if (messageMapRef.current.has(eventId)) return; // already recorded
           // build display lines
           let decText = "";
-          if (conversationKey) {
+          if (conversationKeyRef.current) {
             try {
-              decText = mockDecryptMessage(e.encryptedMessage, conversationKey);
+              decText = mockDecryptMessage(
+                e.encryptedMessage,
+                conversationKeyRef.current
+              );
             } catch {
               decText = `(failed to decrypt)`;
             }
           } else {
-            decText = `(no local key)`;
+            decText = `(no conv key)`;
           }
           messageMapRef.current.set(eventId, {
             blockNumber: e.blockNumber,
@@ -365,13 +481,14 @@ export default function PayAsYouGoTestPage() {
     } finally {
       isFetchingRef.current = false;
     }
-  }, [conversationId, address, recipient, proxy]);
+  }, [conversationId, address, recipient, proxy, publicClient]);
 
   useEffect(() => {
     if (!conversationId) return;
     // Reset message maps when conversation changes
     messageOrderRef.current = [];
     messageMapRef.current.clear();
+    conversationKeyRef.current = null;
     fetchMessages();
     const id = setInterval(() => {
       fetchMessages();
