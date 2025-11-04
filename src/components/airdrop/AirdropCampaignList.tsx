@@ -80,16 +80,31 @@ export default function AirdropCampaignList({
 
   // Fetch IPFS metadata and token info for each campaign
   useEffect(() => {
+    console.log("=== AirdropCampaignList: Fetching metadata ===");
+    console.log("Campaigns to fetch metadata for:", campaigns.length);
     campaigns.forEach(async (campaign) => {
       try {
         // Fetch IPFS metadata
         const ipfsHash = campaign.metadataURI.replace("ipfs://", "");
+        console.log(
+          `Fetching metadata for campaign ${campaign.id} from IPFS: ${ipfsHash}`
+        );
         const metadataResponse = await fetch(`${IPFS_GATEWAY}/${ipfsHash}`);
         if (!metadataResponse.ok) {
-          console.error(`Failed to fetch metadata for ${campaign.id}`);
+          console.error(
+            `Failed to fetch metadata for ${campaign.id}:`,
+            metadataResponse.status,
+            metadataResponse.statusText
+          );
           return;
         }
         const metadata: CampaignMetadata = await metadataResponse.json();
+        console.log(`Metadata fetched for campaign ${campaign.id}:`, {
+          name: metadata.metadata.name,
+          description: metadata.metadata.description,
+          token: metadata.metadata.token,
+          claimsCount: metadata.claims.length,
+        });
 
         // Fetch token decimals and symbol
         let tokenDecimals = 18; // Default

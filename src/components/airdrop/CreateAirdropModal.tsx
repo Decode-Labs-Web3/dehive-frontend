@@ -12,7 +12,6 @@ import {
   formatUnits,
   isAddress,
   getAddress,
-  decodeEventLog,
   type Address,
 } from "viem";
 import {
@@ -482,39 +481,21 @@ export default function CreateAirdropModal({
         chainId: SEPOLIA_CHAIN_ID,
       });
 
+      // Wait for transaction to be confirmed
       const receipt = await publicClient?.waitForTransactionReceipt({
         hash: createTx,
       });
 
-      // Extract campaign address from event
-      // The event AirdropCampaignCreated contains the campaign address as the first indexed parameter
-      let campaignCreatedEvent = null;
-      if (receipt?.logs) {
-        for (const log of receipt.logs) {
-          try {
-            const decoded = decodeEventLog({
-              abi: factoryAbi,
-              data: log.data,
-              topics: log.topics,
-            });
-            if (decoded?.eventName === "AirdropCampaignCreated") {
-              campaignCreatedEvent = decoded;
-              break;
-            }
-          } catch {
-            // Continue to next log
-          }
-        }
-      }
+      console.log("Transaction confirmed:", receipt?.transactionHash);
+      console.log(
+        "Campaign created successfully! The Graph will index it shortly."
+      );
 
-      if (campaignCreatedEvent) {
-        onSuccess();
-        onOpenChange(false);
-        // Reset form
-        resetForm();
-      } else {
-        throw new Error("Failed to find campaign address in transaction");
-      }
+      // Transaction succeeded - The Graph will index the new campaign
+      // Call onSuccess to trigger refetch of campaigns from The Graph
+      onSuccess();
+      onOpenChange(false);
+      resetForm();
     } catch (error) {
       console.error("Create campaign error:", error);
       setError(
