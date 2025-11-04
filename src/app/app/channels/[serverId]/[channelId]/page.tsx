@@ -13,6 +13,7 @@ import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
+import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -413,9 +414,12 @@ export default function ChannelMessagePage() {
           </div>
         </div>
         <ChannelSearchBar />
-        <span className="text-xs text-muted-foreground">
-          Page {currentPage}
-        </span>
+        <div className="flex items-center gap-3">
+          <AirdropDropdown serverId={serverId} />
+          <span className="text-xs text-muted-foreground">
+            Page {currentPage}
+          </span>
+        </div>
       </div>
 
       <ScrollArea
