@@ -333,9 +333,9 @@ export default function DirectMessagePage() {
       <ScrollArea
         ref={listRef}
         onScrollViewport={handleScroll}
-        className="flex-1 px-6 py-6 bg-background"
+        className="flex-1 bg-background"
       >
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 px-6 py-6">
           {loadingMore && (
             <>
               <Skeleton className="h-20 w-full bg-muted" />
