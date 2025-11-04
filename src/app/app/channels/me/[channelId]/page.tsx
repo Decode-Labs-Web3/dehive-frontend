@@ -366,7 +366,6 @@ export default function DirectMessagePage() {
             </div>
           </div>
         </div>
-        <DirectSearchBar setMessageSearchId={setMessageSearchId} />
         {isAllowPrivate && (
           <>
             {isConnected ? (

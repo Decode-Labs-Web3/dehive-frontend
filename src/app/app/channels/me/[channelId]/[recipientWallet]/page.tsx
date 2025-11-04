@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   useAccount,
@@ -10,7 +10,13 @@ import {
   useWriteContract,
 } from "wagmi";
 import { sepolia } from "wagmi/chains";
-import { isAddress, encodePacked, getAddress, keccak256 } from "viem";
+import {
+  isAddress,
+  encodePacked,
+  getAddress,
+  keccak256,
+  decodeFunctionData,
+} from "viem";
 import { messageAbi } from "@/abi/messageAbi";
 
 // UI components to mirror DirectMessagePage
@@ -132,7 +138,6 @@ async function decryptConversationKeyForAddress(
 }
 
 export default function SmartContractMessagePage() {
-  const router = useRouter();
   const { channelId, recipientWallet } = useParams<{
     channelId: string;
     recipientWallet: string;
@@ -188,6 +193,162 @@ export default function SmartContractMessagePage() {
     >
   >(new Map());
   const conversationKeyRef = useRef<string | null>(null);
+  const processedTxsRef = useRef<Set<string>>(new Set());
+  const sendSelectorRef = useRef<string>("0x");
+
+  // Derive function selector for sendMessage from ABI (robust to type changes)
+  useEffect(() => {
+    try {
+      // Find ABI item for sendMessage and build canonical signature
+      const fn = (
+        messageAbi as ReadonlyArray<{
+          type: string;
+          name?: string;
+          inputs?: ReadonlyArray<{ type: string }>;
+        }>
+      ).find((i) => i?.type === "function" && i?.name === "sendMessage");
+      if (fn && Array.isArray(fn.inputs)) {
+        const sig = `sendMessage(${Array.from(fn.inputs)
+          .map((x) => x.type)
+          .join(",")})`;
+        const bytes = new TextEncoder().encode(sig);
+        const hash = keccak256(bytes);
+        sendSelectorRef.current = `0x${hash.slice(2, 10)}`; // 4-byte selector
+      }
+    } catch {}
+  }, []);
+
+  // Realtime: watch new blocks via RPC and count sendMessage txs to proxy
+  useEffect(() => {
+    if (!publicClient || !proxy) return;
+    const unwatch = publicClient.watchBlocks({
+      includeTransactions: true,
+      onBlock: async (block) => {
+        try {
+          const selector = sendSelectorRef.current;
+          let count = 0;
+          type SimpleTx = {
+            to?: string | null;
+            input?: string;
+            data?: string;
+            hash?: string;
+            from?: string;
+          };
+          const txs: SimpleTx[] = Array.isArray(block.transactions)
+            ? (block.transactions as unknown as SimpleTx[])
+            : [];
+          for (const tx of txs) {
+            const to = (tx?.to ?? "").toLowerCase();
+            const input: string = (tx?.input ?? tx?.data ?? "0x").toString();
+            if (!to || to !== proxy!.toLowerCase()) continue;
+            if (!input || input === "0x") continue;
+            // match function selector
+            if (selector && input.startsWith(selector)) {
+              count += 1;
+              const hash: string = tx?.hash ?? "";
+              if (hash && !processedTxsRef.current.has(hash)) {
+                processedTxsRef.current.add(hash);
+                try {
+                  const decoded = decodeFunctionData({
+                    abi: messageAbi,
+                    data: input as `0x${string}`,
+                  });
+                  if (decoded.functionName === "sendMessage") {
+                    const [cid, toAddr, ciphertext] = decoded.args as [
+                      bigint,
+                      `0x${string}`,
+                      string
+                    ];
+
+                    // Check if this tx belongs to current chat by conversationId or participants
+                    const me = address ? getAddress(address) : undefined;
+                    const counterpart = isAddress(recipientWallet)
+                      ? getAddress(recipientWallet)
+                      : undefined;
+                    const txFrom = tx.from
+                      ? getAddress(tx.from as `0x${string}`)
+                      : undefined;
+                    const txTo = getAddress(toAddr);
+
+                    const participantsMatch =
+                      !!me &&
+                      !!counterpart &&
+                      ((txFrom === me && txTo === counterpart) ||
+                        (txFrom === counterpart && txTo === me));
+
+                    const cidMatch = conversationId
+                      ? cid === conversationId
+                      : false;
+
+                    if (participantsMatch || cidMatch) {
+                      let content = "(no conv key)";
+                      if (conversationKeyRef.current) {
+                        try {
+                          content = mockDecryptMessage(
+                            ciphertext,
+                            conversationKeyRef.current
+                          );
+                        } catch {
+                          content = "(failed to decrypt)";
+                        }
+                      }
+
+                      const isCounterpart =
+                        !!counterpart && txFrom === counterpart;
+                      const newMsg = {
+                        id: hash || `${Number(block.number)}:${Date.now()}`,
+                        blockNumber: String(Number(block.number)),
+                        from: (txFrom ||
+                          "0x0000000000000000000000000000000000000000") as `0x${string}`,
+                        to: txTo as `0x${string}`,
+                        content,
+                        createdAt: new Date().toISOString(),
+                        sender: isCounterpart
+                          ? {
+                              dehive_id: userChatWith.id || "counterpart",
+                              display_name:
+                                userChatWith.displayname || "Counterpart",
+                              avatar_ipfs_hash:
+                                userChatWith.avatar_ipfs_hash || "",
+                            }
+                          : {
+                              dehive_id: "me",
+                              display_name: "You",
+                              avatar_ipfs_hash: "",
+                            },
+                      };
+
+                      setMessages((prev) => {
+                        if (hash && prev.some((m) => m.id === hash))
+                          return prev;
+                        return [...prev, newMsg];
+                      });
+                    }
+                  }
+                } catch (e) {
+                  console.info("decode sendMessage failed", e);
+                }
+              }
+            }
+          }
+          // Log a simple statement for monitoring
+          console.log(
+            `[Realtime] Block ${Number(
+              block.number
+            )}: ${count} "Send Message" tx(s) to ${proxy}`
+          );
+        } catch (e) {
+          console.info("watchBlocks handler error", e);
+        }
+      },
+    });
+    return () => {
+      try {
+        unwatch?.();
+      } catch {}
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicClient, proxy]);
 
   // UI sibling data (chat partner info), mirroring DirectMessagePage
   interface WalletProps {
@@ -435,24 +596,7 @@ export default function SmartContractMessagePage() {
         value: (payAsYouGoFee as bigint | undefined) ?? BigInt(0),
       });
       await publicClient!.waitForTransactionReceipt({ hash: sendTxHash });
-
-      // Optimistically append my message locally (styled like DirectMessagePage)
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `${Date.now()}`,
-          blockNumber: "",
-          from: getAddress(address) as `0x${string}`,
-          to: getAddress(recipientWallet) as `0x${string}`,
-          content: newMessage,
-          createdAt: new Date().toISOString(),
-          sender: {
-            dehive_id: "me",
-            display_name: "You",
-            avatar_ipfs_hash: "",
-          },
-        },
-      ]);
+      // Do not optimistically append; RPC watcher will detect the tx and append exactly once.
       setNewMessage("");
       setError(null);
     } catch (e: unknown) {
@@ -516,7 +660,7 @@ export default function SmartContractMessagePage() {
         },
         body: JSON.stringify({
           conversationId: conversationIdLocal.toString(),
-          first: 50,
+          first: 20,
           skip: 0,
         }),
         cache: "no-store",
@@ -710,18 +854,16 @@ export default function SmartContractMessagePage() {
     userChatWith.avatar_ipfs_hash,
   ]);
 
+  // Fetch once when entering a conversation (per recipientWallet). Do not refetch afterward.
+  const initialFetchForRecipientRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!conversationId) return;
-    // Reset message maps when conversation changes
-    messageOrderRef.current = [];
-    messageMapRef.current.clear();
-    conversationKeyRef.current = null;
-    fetchMessages();
-    const id = setInterval(() => {
-      fetchMessages();
-    }, 15000);
-    return () => clearInterval(id);
-  }, [conversationId, fetchMessages]);
+    if (initialFetchForRecipientRef.current !== recipientWallet) {
+      initialFetchForRecipientRef.current = recipientWallet;
+      void fetchMessages();
+    }
+    // We intentionally only depend on recipientWallet so this runs once per route.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recipientWallet]);
 
   // Auto scroll to bottom when messages change (like Direct initial behavior)
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -739,7 +881,6 @@ export default function SmartContractMessagePage() {
       event.preventDefault();
       const msg = newMessage.trim();
       if (msg && !loading) {
-        // reuse sendPayAsYouGo
         void sendPayAsYouGo();
       }
     }
@@ -747,7 +888,6 @@ export default function SmartContractMessagePage() {
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
-      {/* Header: avatar, name, start call (no search, no private toggle here) */}
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
           <Avatar className="w-8 h-8">
@@ -764,19 +904,13 @@ export default function SmartContractMessagePage() {
             </div>
           </div>
         </div>
-        <Button
-          onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/80"
-        >
-          Start Call
-        </Button>
         <span className="text-xs text-muted-foreground">
           Network {chainId ?? "?"}{" "}
           {chainId !== sepolia.id && "(switch to Sepolia)"}
+          Proxy {proxy ? proxy : "N/A"}
         </span>
       </div>
 
-      {/* Messages list */}
       <ScrollArea ref={listRef} className="flex-1 bg-background">
         <div className="flex flex-col gap-4 px-6 py-6">
           {error ? (
@@ -824,7 +958,6 @@ export default function SmartContractMessagePage() {
         <ScrollBar orientation="vertical" />
       </ScrollArea>
 
-      {/* Composer */}
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
           <Button
