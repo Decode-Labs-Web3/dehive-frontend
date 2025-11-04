@@ -10,13 +10,7 @@ import {
   useWriteContract,
 } from "wagmi";
 import { sepolia } from "wagmi/chains";
-import {
-  isAddress,
-  encodePacked,
-  getAddress,
-  keccak256,
-  decodeFunctionData,
-} from "viem";
+import { isAddress, getAddress, decodeFunctionData } from "viem";
 import { messageAbi } from "@/abi/messageAbi";
 
 // UI components to mirror DirectMessagePage
@@ -30,112 +24,15 @@ const PROXY_ADDRESS = process.env.NEXT_PUBLIC_PROXY_ADDRESS as
   | `0x${string}`
   | undefined;
 
-function computeConversationId(a: string, b: string): bigint {
-  const A = getAddress(a);
-  const B = getAddress(b);
-  const [smaller, larger] = A.toLowerCase() < B.toLowerCase() ? [A, B] : [B, A];
-  const packed = encodePacked(["address", "address"], [smaller, larger]);
-  const hash = keccak256(packed);
-  return BigInt(hash);
-}
-
-// (randomBytesHex removed; not needed with contract-based key flow)
-
-// ===== Mock encryption (matches dehive-sc/test/helpers/mockEncryption.ts semantics) =====
-// NOTE: This is for POC/demo only. Not production-grade crypto.
-function base64EncodeUnicode(str: string): string {
-  // Encode Unicode safely for base64 (btoa expects Latin1)
-  return btoa(unescape(encodeURIComponent(str)));
-}
-function base64DecodeUnicode(b64: string): string {
-  return decodeURIComponent(escape(atob(b64)));
-}
-
-// Equivalent to mock encryptMessage: prefix + base64(message)
-function mockEncryptMessage(message: string, key: string): string {
-  const keyPrefix = base64EncodeUnicode(key.substring(0, 8)).substring(0, 8);
-  const encoded = base64EncodeUnicode(message);
-  return `${keyPrefix}${encoded}`;
-}
-
-function mockDecryptMessage(encryptedMessage: string, key: string): string {
-  const keyPrefix = base64EncodeUnicode(key.substring(0, 8)).substring(0, 8);
-  if (!encryptedMessage.startsWith(keyPrefix)) {
-    throw new Error("Invalid encryption key or corrupted message");
-  }
-  const encoded = encryptedMessage.substring(keyPrefix.length);
-  return base64DecodeUnicode(encoded);
-}
-
-// Simple conversation key generation (no persistent storage)
-function hexFromBytes(buf: Uint8Array): string {
-  return Array.from(buf)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function generateConversationKey(seed?: string): string {
-  if (seed) {
-    // Deterministic: use Web Crypto SHA-256 of seed
-    // But SubtleCrypto is async — for simplicity in this POC, use a quick hash fallback
-    // Warning: This is NOT cryptographically strong; for demo only.
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++)
-      hash = (hash * 31 + seed.charCodeAt(i)) | 0;
-    // Expand to 32 bytes pseudo-hex
-    const out: string[] = [];
-    for (let i = 0; i < 32; i++) {
-      hash = (hash * 1664525 + 1013904223) | 0;
-      out.push(((hash >>> 0) & 0xff).toString(16).padStart(2, "0"));
-    }
-    return out.join("");
-  }
-  const bytes = new Uint8Array(32);
-  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
-    crypto.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < 32; i++) bytes[i] = Math.floor(Math.random() * 256);
-  }
-  return hexFromBytes(bytes);
-}
-
-// Address-key encryption helpers (mock XOR with sha256(address) like test helpers)
-async function sha256Hex(input: string): Promise<string> {
-  const enc = new TextEncoder().encode(input);
-  const digest = await crypto.subtle.digest("SHA-256", enc);
-  const bytes = new Uint8Array(digest);
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function encryptConversationKeyForAddress(
-  conversationKey: string,
-  address: string
-): Promise<string> {
-  const hashHex = await sha256Hex(address.toLowerCase());
-  let out = "";
-  for (let i = 0; i < conversationKey.length; i++) {
-    const a = parseInt(conversationKey[i], 16);
-    const b = parseInt(hashHex[i % hashHex.length], 16);
-    out += ((a ^ b) & 0xf).toString(16);
-  }
-  return out;
-}
-
-async function decryptConversationKeyForAddress(
-  encryptedKeyHex: string,
-  address: string
-): Promise<string> {
-  const hashHex = await sha256Hex(address.toLowerCase());
-  let out = "";
-  for (let i = 0; i < encryptedKeyHex.length; i++) {
-    const a = parseInt(encryptedKeyHex[i], 16);
-    const b = parseInt(hashHex[i % hashHex.length], 16);
-    out += ((a ^ b) & 0xf).toString(16);
-  }
-  return out;
-}
+import {
+  computeConversationId,
+  mockEncryptMessage,
+  mockDecryptMessage,
+  generateConversationKey,
+  encryptConversationKeyForAddress,
+  deriveFunctionSelector,
+  getMyConversationKey,
+} from "@/lib/scMessage";
 
 export default function SmartContractMessagePage() {
   const { channelId, recipientWallet } = useParams<{
@@ -144,6 +41,7 @@ export default function SmartContractMessagePage() {
   }>();
   const [newMessage, setNewMessage] = useState<string>("");
   const [conversationId, setConversationId] = useState<bigint | null>(null);
+  const [first, setFirst] = useState(20);
   const [messages, setMessages] = useState<
     Array<{
       id: string;
@@ -199,22 +97,14 @@ export default function SmartContractMessagePage() {
   // Derive function selector for sendMessage from ABI (robust to type changes)
   useEffect(() => {
     try {
-      // Find ABI item for sendMessage and build canonical signature
-      const fn = (
+      sendSelectorRef.current = deriveFunctionSelector(
         messageAbi as ReadonlyArray<{
           type: string;
           name?: string;
           inputs?: ReadonlyArray<{ type: string }>;
-        }>
-      ).find((i) => i?.type === "function" && i?.name === "sendMessage");
-      if (fn && Array.isArray(fn.inputs)) {
-        const sig = `sendMessage(${Array.from(fn.inputs)
-          .map((x) => x.type)
-          .join(",")})`;
-        const bytes = new TextEncoder().encode(sig);
-        const hash = keccak256(bytes);
-        sendSelectorRef.current = `0x${hash.slice(2, 10)}`; // 4-byte selector
-      }
+        }>,
+        "sendMessage"
+      );
     } catch {}
   }, []);
 
@@ -321,6 +211,7 @@ export default function SmartContractMessagePage() {
                       setMessages((prev) => {
                         if (hash && prev.some((m) => m.id === hash))
                           return prev;
+                        setFirst((prev) => prev + 1);
                         return [...prev, newMsg];
                       });
                     }
@@ -449,35 +340,15 @@ export default function SmartContractMessagePage() {
         setConversationId(conversationIdLocal);
       }
 
-      // Early attempt: derive my conversation key from the conversations tuple (no msg.sender needed)
+      // Try to obtain existing conversation key (if conversation already exists)
       if (!conversationKeyRef.current && address) {
-        try {
-          const conv = (await publicClient!.readContract({
-            address: proxy,
-            abi: messageAbi,
-            functionName: "conversations",
-            args: [conversationIdLocal!],
-          })) as readonly [
-            `0x${string}`,
-            `0x${string}`,
-            `0x${string}`,
-            `0x${string}`,
-            bigint
-          ];
-          const [smaller, , encSmall, encLarge, cAt] = conv;
-          if (cAt && cAt !== BigInt(0)) {
-            const me = getAddress(address);
-            const isSmaller = me.toLowerCase() === smaller.toLowerCase();
-            const enc = isSmaller ? encSmall : encLarge;
-            const encHex2 = enc.startsWith("0x") ? enc.slice(2) : enc;
-            if (encHex2) {
-              conversationKeyRef.current =
-                await decryptConversationKeyForAddress(encHex2, address);
-            }
-          }
-        } catch {
-          // ignore — conversation may not exist yet
-        }
+        const key = await getMyConversationKey(
+          publicClient!,
+          proxy,
+          conversationIdLocal!,
+          address
+        );
+        if (key) conversationKeyRef.current = key;
       }
 
       // Check if conversation exists on-chain; if not, create it
@@ -524,55 +395,15 @@ export default function SmartContractMessagePage() {
         localConvKey = convKey;
       }
 
-      // Retrieve my encrypted conversation key from contract and decrypt it
+      // Retrieve my conversation key (post-creation or existing)
       if (!conversationKeyRef.current) {
-        try {
-          const encKey = (await publicClient!.readContract({
-            address: proxy,
-            abi: messageAbi,
-            functionName: "getMyEncryptedConversationKeys",
-            args: [conversationIdLocal!],
-          })) as string;
-          const encHex = encKey.startsWith("0x") ? encKey.slice(2) : encKey;
-          if (encHex) {
-            conversationKeyRef.current = await decryptConversationKeyForAddress(
-              encHex,
-              address
-            );
-          }
-        } catch {
-          // ignore (may revert if not participant yet)
-        }
-        // Fallback: read from conversations tuple and pick my slot
-        if (!conversationKeyRef.current) {
-          try {
-            const conv = (await publicClient!.readContract({
-              address: proxy,
-              abi: messageAbi,
-              functionName: "conversations",
-              args: [conversationIdLocal!],
-            })) as readonly [
-              `0x${string}`,
-              `0x${string}`,
-              `0x${string}`,
-              `0x${string}`,
-              bigint
-            ];
-            const [smaller, , encSmall, encLarge, cAt] = conv;
-            if (cAt && cAt !== BigInt(0)) {
-              const me = getAddress(address);
-              const isSmaller = me.toLowerCase() === smaller.toLowerCase();
-              const enc = isSmaller ? encSmall : encLarge;
-              const encHex2 = enc.startsWith("0x") ? enc.slice(2) : enc;
-              if (encHex2) {
-                conversationKeyRef.current =
-                  await decryptConversationKeyForAddress(encHex2, address);
-              }
-            }
-          } catch {
-            // ignore
-          }
-        }
+        const key = await getMyConversationKey(
+          publicClient!,
+          proxy,
+          conversationIdLocal!,
+          address
+        );
+        if (key) conversationKeyRef.current = key;
       }
 
       if (!conversationKeyRef.current && localConvKey) {
@@ -621,35 +452,15 @@ export default function SmartContractMessagePage() {
         setConversationId(conversationIdLocal);
       }
 
-      // Try to obtain conversation key early from tuple so decrypt works right after refresh
+      // Try to obtain conversation key early so decrypt works right after refresh
       if (!conversationKeyRef.current && address) {
-        try {
-          const conv = (await publicClient!.readContract({
-            address: proxy,
-            abi: messageAbi,
-            functionName: "conversations",
-            args: [conversationIdLocal!],
-          })) as readonly [
-            `0x${string}`,
-            `0x${string}`,
-            `0x${string}`,
-            `0x${string}`,
-            bigint
-          ];
-          const [smaller, , encSmall, encLarge, cAt] = conv;
-          if (cAt && cAt !== BigInt(0)) {
-            const me = getAddress(address);
-            const isSmaller = me.toLowerCase() === smaller.toLowerCase();
-            const enc = isSmaller ? encSmall : encLarge;
-            const encHex2 = enc.startsWith("0x") ? enc.slice(2) : enc;
-            if (encHex2) {
-              conversationKeyRef.current =
-                await decryptConversationKeyForAddress(encHex2, address);
-            }
-          }
-        } catch {
-          // ignore
-        }
+        const key = await getMyConversationKey(
+          publicClient!,
+          proxy,
+          conversationIdLocal!,
+          address
+        );
+        if (key) conversationKeyRef.current = key;
       }
 
       const res = await fetch("/api/sc-message", {
@@ -660,8 +471,8 @@ export default function SmartContractMessagePage() {
         },
         body: JSON.stringify({
           conversationId: conversationIdLocal.toString(),
-          first: 20,
-          skip: 0,
+          first: first,
+          skip: first - 20,
         }),
         cache: "no-store",
       });
@@ -699,51 +510,15 @@ export default function SmartContractMessagePage() {
             }
           } catch {}
         }
-        // Ensure decrypted conversation key available for current user (only if conversation exists and I'm a participant)
+        // Ensure decrypted conversation key available for current user
         if (!conversationKeyRef.current && address) {
-          try {
-            const conv = (await publicClient!.readContract({
-              address: proxy,
-              abi: messageAbi,
-              functionName: "conversations",
-              args: [conversationIdLocal!],
-            })) as readonly [
-              `0x${string}`,
-              `0x${string}`,
-              `0x${string}`,
-              `0x${string}`,
-              bigint
-            ];
-            const [smaller, larger, , , cAt] = conv;
-            if (cAt && cAt !== BigInt(0)) {
-              const me = getAddress(address);
-              const isParticipant =
-                me.toLowerCase() === smaller.toLowerCase() ||
-                me.toLowerCase() === larger.toLowerCase();
-              if (isParticipant) {
-                try {
-                  const encKey = (await publicClient!.readContract({
-                    address: proxy,
-                    abi: messageAbi,
-                    functionName: "getMyEncryptedConversationKeys",
-                    args: [conversationIdLocal!],
-                  })) as string;
-                  const encHex = encKey.startsWith("0x")
-                    ? encKey.slice(2)
-                    : encKey;
-                  if (encHex) {
-                    conversationKeyRef.current =
-                      await decryptConversationKeyForAddress(encHex, address);
-                  }
-                } catch (e) {
-                  console.info("Key fetch/decrypt skipped", e);
-                }
-              }
-            }
-          } catch (e) {
-            // Conversation may not exist yet; ignore
-            console.info("Conversation read skipped", e);
-          }
+          const key = await getMyConversationKey(
+            publicClient!,
+            proxy,
+            conversationIdLocal!,
+            address
+          );
+          if (key) conversationKeyRef.current = key;
         }
         const newIds: string[] = [];
         // events come ascending (oldest -> newest). Collect unseen events into map
@@ -827,7 +602,8 @@ export default function SmartContractMessagePage() {
                   },
             });
           }
-          setMessages(rebuilt);
+          setMessages((prev) => (prev ? [...rebuilt, ...prev] : rebuilt));
+          setFirst((prev) => prev + 20);
         }
         return;
       }
@@ -843,15 +619,14 @@ export default function SmartContractMessagePage() {
       isFetchingRef.current = false;
     }
   }, [
-    conversationId,
-    address,
-    recipientWallet,
+    first,
     proxy,
+    address,
     publicClient,
+    conversationId,
+    recipientWallet,
     counterpartPrimaryWallet,
-    userChatWith.id,
-    userChatWith.displayname,
-    userChatWith.avatar_ipfs_hash,
+    userChatWith,
   ]);
 
   // Fetch once when entering a conversation (per recipientWallet). Do not refetch afterward.
