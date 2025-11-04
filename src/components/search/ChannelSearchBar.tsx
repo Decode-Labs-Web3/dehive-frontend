@@ -31,18 +31,21 @@ interface SenderProps {
   avatar_ipfs_hash: string;
 }
 
-export default function DirectSearchBar() {
+interface ChannelSearchBarProps {
+  channelId: string;
+  setMessageSearchId: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export default function ChannelSearchBar({
+  channelId,
+  setMessageSearchId,
+}: ChannelSearchBarProps) {
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [countPage, setCountPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResult, setSerachResult] = useState<SearchResultProps[]>([]);
-  const { serverId, channelId } = useParams<{
-    serverId: string;
-    channelId: string;
-  }>();
-  const router = useRouter();
   const handleKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setKeyword(event.target.value);
     setCountPage(0);
@@ -143,7 +146,7 @@ export default function DirectSearchBar() {
                 <button
                   key={result._id}
                   onClick={() => {
-                    router.push(`/app/channels/${serverId}/${channelId}/${result._id}`);
+                    setMessageSearchId(result._id);
                     setOpen(false);
                   }}
                 >

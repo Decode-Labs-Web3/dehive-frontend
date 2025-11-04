@@ -7,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import { Card, CardContent } from "@/components/ui/card";
-import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
+import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
+import ChannelHistoryView from "@/components/search/ChannelHistoryView";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
@@ -80,6 +81,8 @@ export default function ChannelMessagePage() {
     channelId: string;
   }>();
   const { sound } = useSoundContext();
+  const [messageSearchId, setMessageSearchId] = useState<string | null>(null);
+
   const [channelInfo, setChannelInfo] = useState<ChannelInfoProps | null>(null);
   const [userInServer, setUserInServer] = useState<UserInServerProps[]>([]);
 
@@ -396,6 +399,17 @@ export default function ChannelMessagePage() {
     };
   }, [userInServer]);
 
+  if (messageSearchId) {
+    return (
+      <ChannelHistoryView
+        serverId={serverId}
+        channelId={channelId}
+        messageSearchId={messageSearchId}
+        setMessageSearchId={setMessageSearchId}
+      />
+    );
+  }
+
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
@@ -413,7 +427,10 @@ export default function ChannelMessagePage() {
             </div>
           </div>
         </div>
-        <ChannelSearchBar />
+        <ChannelSearchBar
+          channelId={channelId}
+          setMessageSearchId={setMessageSearchId}
+        />
         <div className="flex items-center gap-3">
           <AirdropDropdown serverId={serverId} />
           <span className="text-xs text-muted-foreground">

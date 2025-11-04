@@ -1,15 +1,16 @@
 "use client";
 
 // import { useMemo } from "react";
-import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
+import { getCookie } from "@/utils/cookie.utils";
+import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { Card, CardContent } from "@/components/ui/card";
-import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -41,6 +42,11 @@ import {
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
 
+interface NewMessageProps {
+  content: string;
+  uploadIds: string[];
+  replyTo: string | null;
+}
 interface MessageProps {
   _id: string;
   conversationId: string;
@@ -67,26 +73,34 @@ interface ReplyMessage {
   createdAt: string;
 }
 
-interface NewMessage {
-  content: string;
-  uploadIds: string[];
-  replyTo: string | null;
-}
-
-interface UserChatWith {
-  id: string;
+interface UserInServerProps {
+  user_id: string;
+  status: "online" | "offline";
+  conversationid: string;
   displayname: string;
   username: string;
   avatar_ipfs_hash: string;
-  status: string;
+  isCall: boolean;
+  last_seen: string;
 }
 
-export default function DirectHistory() {
+interface ChannelHistoryViewProps {
+  serverId: string;
+  channelId: string;
+  messageSearchId: string;
+  setMessageSearchId: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export default function ChannelHistoryView({
+  serverId,
+  channelId,
+  messageSearchId,
+  setMessageSearchId,
+}: ChannelHistoryViewProps) {
   const router = useRouter();
-  const { channelId, messageId } = useParams<{
-    channelId: string;
-    messageId: string;
-  }>();
+  const [deleteMessageModal, setDeleteMessageModal] = useState(false);
+  const [messageDelete, setMessageDelete] = useState<MessageProps | null>(null);
+  const [messages, setMessages] = useState<MessageProps[]>([]);
   const [isEndUp, setIsEndUp] = useState(false);
   const [pageUp, setPageUp] = useState<number>(0);
   const [isEndDown, setIsEndDown] = useState(false);
@@ -94,80 +108,28 @@ export default function DirectHistory() {
   const [loadingUp, setLoadingUp] = useState(false);
   const [loadingDown, setLoadingDown] = useState(false);
   const [fristLoad, setfirstLoad] = useState(0);
-  const [messages, setMessages] = useState<MessageProps[]>([]);
-  const [messageDelete, setMessageDelete] = useState<MessageProps | null>(null);
-  const [deleteMessageModal, setDeleteMessageModal] = useState(false);
-
-  const [messageReply, setMessageReply] = useState<MessageProps | null>(null);
-  const [newMessage, setNewMessage] = useState<NewMessage>({
-    content: "",
-    uploadIds: [],
-    replyTo: null,
-  });
-
-  const { send, edit, remove, sending, err } = useDirectMessage(channelId);
-  console.log("This is error", err);
-
-  const [editMessageField, setEditMessageField] = useState<
-    Record<string, boolean>
-  >({});
-
+  const [userInServer, setUserInServer] = useState<UserInServerProps[]>([]);
   const [editMessage, setEditMessage] = useState({
     id: "",
     messageEdit: "",
   });
-
-  const handleEditMessageChange = (
-    event: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setEditMessage((prev) => ({ ...prev, messageEdit: event.target.value }));
-  };
-
-  const handleEditMessageKeyDown = (
-    event: React.KeyboardEvent<HTMLTextAreaElement>,
-    originMessage: string
-  ) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      const content = editMessage.messageEdit.trim();
-      if (originMessage === content) return;
-      const messageId = editMessage.id;
-      if (content && !sending) {
-        setMessages((prev) =>
-          prev.map((message) =>
-            message._id === messageId
-              ? { ...message, content: content, isEdited: true }
-              : message
-          )
-        );
-        edit(messageId, content);
-        setEditMessage({
-          id: "",
-          messageEdit: "",
-        });
-      }
-    }
-
-    if (event.key === "Escape") {
-      event.preventDefault();
-      setEditMessageField(
-        Object.fromEntries(messages.map((message) => [message._id, false]))
-      );
-      setEditMessage({ id: "", messageEdit: "" });
-    }
-  };
-
-  const editMessageModal = useCallback(() => {
-    setEditMessageField(
-      Object.fromEntries(messages.map((message) => [message._id, false]))
-    );
-  }, [messages]);
-
+  const [userId, setUserId] = useState<string>("");
   useEffect(() => {
-    editMessageModal();
-  }, [editMessageModal]);
+    const currentUserId = getCookie("userId");
+    if (currentUserId) {
+      setUserId(currentUserId);
+    }
+  }, []);
 
   const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const { send, edit, remove, sending } = useChannelMessage(channelId);
+  const [messageReply, setMessageReply] = useState<MessageProps | null>(null);
+  const [newMessage, setNewMessage] = useState<NewMessageProps>({
+    content: "",
+    uploadIds: [],
+    replyTo: null,
+  });
 
   const handleMessageReply = (messageReply: MessageProps) => {
     setMessageReply(messageReply);
@@ -182,54 +144,34 @@ export default function DirectHistory() {
     newMessageRef.current?.focus();
   };
 
-  const handleNewMessageChange = (
-    event: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setNewMessage((prev) => ({
-      ...prev,
-      [event.target.name]: event.target.value,
-    }));
-  };
+  const [editMessageField, setEditMessageField] = useState<
+    Record<string, boolean>
+  >({});
 
-  const handleNewMessageKeyDown = (
-    event: React.KeyboardEvent<HTMLTextAreaElement>
-  ) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      const message = newMessage.content.trim();
-      if (message && !sending) {
-        // console.log("Send message  Quang Minh:", message);
-        send(message, newMessage.uploadIds, newMessage.replyTo);
-        setNewMessage({
-          content: "",
-          uploadIds: [],
-          replyTo: null,
-        });
-        setMessageReply(null);
-        // console.log("Push to me after send message");
-        router.push(`/app/channels/me/${channelId}`);
-        return;
-      }
-    }
-  };
+  useEffect(() => {
+    setMessages([]);
+    setPageUp(0);
+    setPageDown(0);
+    setIsEndUp(false);
+    setIsEndDown(false);
+    setfirstLoad(0);
+    setLoadingUp(false);
+    setLoadingDown(false);
+    setLastLoadDirection("init");
+    firstPinRef.current = false;
+    prevScrollHeightRef.current = 0;
+    if (listRef.current) listRef.current.scrollTop = 0;
+  }, [messageSearchId]);
 
-  const [userChatWith, setUserChatWith] = useState<UserChatWith>({
-    id: "",
-    displayname: "",
-    username: "",
-    avatar_ipfs_hash: "",
-    status: "offline",
-  });
-
-  const fetchUserChatWith = useCallback(async () => {
+  const fetchServerUsers = useCallback(async () => {
     try {
-      const apiResponse = await fetch("/api/user/chat-with", {
+      const apiResponse = await fetch("/api/servers/members/status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify({ conversationId: channelId }),
+        body: JSON.stringify({ serverId: serverId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -238,30 +180,35 @@ export default function DirectHistory() {
         return;
       }
       const response = await apiResponse.json();
-      if (response.statusCode === 200 && response.message === "OK") {
-        setUserChatWith(response.data);
+      if (
+        response.statusCode === 200 &&
+        response.message === "Successfully fetched all server members"
+      ) {
+        console.log("This is server users", response.data);
+        setUserInServer(response.data.users);
       }
     } catch (error) {
       console.error(error);
-      console.log("Server get user chat with error");
+      console.log("Server deleted channel fail");
     }
-  }, [channelId]);
+  }, [serverId]);
 
   useEffect(() => {
-    fetchUserChatWith();
-  }, [fetchUserChatWith]);
+    fetchServerUsers();
+  }, [fetchServerUsers]);
 
   const fetchMessageUp = useCallback(async () => {
     if (isEndUp) return;
     try {
-      const apiResponse = await fetch("/api/search/direct-up", {
+      const apiResponse = await fetch("/api/search/channel-up", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
-          messageId,
+          channelId,
+          messageId: messageSearchId,
           pageUp,
         }),
       });
@@ -283,7 +230,7 @@ export default function DirectHistory() {
       console.log("Server direct message up error");
       console.groupEnd();
     }
-  }, [messageId, pageUp, isEndUp]);
+  }, [channelId, messageSearchId, pageUp, isEndUp]);
 
   useEffect(() => {
     fetchMessageUp();
@@ -292,14 +239,15 @@ export default function DirectHistory() {
   const fetchMessageDown = useCallback(async () => {
     if (isEndDown) return;
     try {
-      const apiResponse = await fetch("/api/search/direct-down", {
+      const apiResponse = await fetch("/api/search/channel-down", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
-          messageId,
+          channelId,
+          messageId: messageSearchId,
           pageDown,
         }),
       });
@@ -321,11 +269,93 @@ export default function DirectHistory() {
       console.log("Server direct message up error");
       console.groupEnd();
     }
-  }, [messageId, pageDown, isEndDown]);
+  }, [channelId, messageSearchId, pageDown, isEndDown]);
 
   useEffect(() => {
     fetchMessageDown();
   }, [fetchMessageDown]);
+
+  const editMessageModal = useCallback(() => {
+    setEditMessageField(
+      Object.fromEntries(messages.map((message) => [message._id, false]))
+    );
+  }, [messages]);
+
+  useEffect(() => {
+    editMessageModal();
+  }, [editMessageModal]);
+
+  const handleEditMessageKeyDown = (
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+    originMessage: string
+  ) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      const content = editMessage.messageEdit.trim();
+      if (originMessage === content) return;
+      const messageId = editMessage.id;
+      if (content) {
+        edit(messageId, content);
+        setMessages((prev) =>
+          prev.map((message) =>
+            message._id === messageId
+              ? { ...message, content: content, isEdited: true }
+              : message
+          )
+        );
+        setEditMessage({
+          id: "",
+          messageEdit: "",
+        });
+      }
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setEditMessageField(
+        Object.fromEntries(messages.map((message) => [message._id, false]))
+      );
+      setEditMessage({ id: "", messageEdit: "" });
+    }
+  };
+
+  const handleEditMessageChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setEditMessage((prev) => ({ ...prev, messageEdit: event.target.value }));
+  };
+
+  const handleNewMessageChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setNewMessage((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleNewMessageKeyDown = (
+    event: React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      const message = newMessage.content.trim();
+      console.log("New message content Quang Minh:", message);
+      if (message && !sending) {
+        // console.log("Send message  Quang Minh:", message);
+        send(message, newMessage.uploadIds, newMessage.replyTo);
+        setNewMessage({
+          content: "",
+          uploadIds: [],
+          replyTo: null,
+        });
+        setMessageReply(null);
+        // console.log("Push to channel after send message");
+        setMessageSearchId(null);
+        return;
+      }
+    }
+  };
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const prevScrollHeightRef = useRef(0);
@@ -441,6 +471,10 @@ export default function DirectHistory() {
         >
           Start Call
         </Button>
+        <ChannelSearchBar
+          channelId={channelId}
+          setMessageSearchId={setMessageSearchId}
+        />
         <span className="text-xs text-muted-foreground">
           Page up: {pageUp} {isEndUp && "yes"} --- Page down: {pageDown}{" "}
           {isEndDown && "yes"}
@@ -472,9 +506,10 @@ export default function DirectHistory() {
                   ? {
                       displayName:
                         referencedMessage?.sender.display_name ??
-                        (message.replyTo?.senderId === userChatWith.id
-                          ? userChatWith.displayname
-                          : "You"),
+                        userInServer.find(
+                          (user) => user.user_id === message.replyTo?.senderId
+                        )?.displayname ??
+                        "Unknown user",
                       content:
                         referencedMessage?.content ??
                         message.replyTo?.content ??
@@ -485,7 +520,9 @@ export default function DirectHistory() {
                 return (
                   <div
                     key={message._id}
-                    ref={message._id === messageId ? targetMessageRef : null}
+                    ref={
+                      message._id === messageSearchId ? targetMessageRef : null
+                    }
                     className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
                   >
                     {replyInfo && (
@@ -501,7 +538,7 @@ export default function DirectHistory() {
 
                     <div
                       className={`flex w-full ${
-                        message._id === messageId ? "bg-red-500" : null
+                        message._id === messageSearchId ? "bg-red-500" : null
                       }`}
                     >
                       <Avatar className="w-8 h-8 shrink-0">
@@ -512,19 +549,14 @@ export default function DirectHistory() {
                           {message.sender.display_name} Avatar
                         </AvatarFallback>
                       </Avatar>
-                      {message.sender.dehive_id !== userChatWith.id && (
+                      {userInServer.find(
+                        (user) => user.user_id === message.sender.dehive_id
+                      )?.status === "online" && (
                         <FontAwesomeIcon
                           icon={faCircle}
                           className="h-2 w-2 text-emerald-500"
                         />
                       )}
-                      {message.sender.dehive_id === userChatWith.id &&
-                        userChatWith.status === "online" && (
-                          <FontAwesomeIcon
-                            icon={faCircle}
-                            className="h-2 w-2 text-emerald-500"
-                          />
-                        )}
                       <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
                         {!editMessageField[message._id] ? (
                           <div className="w-full">
@@ -555,7 +587,6 @@ export default function DirectHistory() {
                             }
                             placeholder="Edit message"
                             autoFocus
-                            disabled={sending}
                             className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border"
                           />
                         )}
@@ -580,7 +611,7 @@ export default function DirectHistory() {
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-                            {userChatWith.id !== message.sender.dehive_id && (
+                            {userId === message.sender.dehive_id && (
                               <>
                                 <TooltipProvider>
                                   <Tooltip>
@@ -617,6 +648,10 @@ export default function DirectHistory() {
                                       <Button
                                         className="h-8 w-8 p-0 text-destructive bg-secondary hover:bg-accent"
                                         onClick={() => {
+                                          console.log(
+                                            "Delete message",
+                                            message
+                                          );
                                           setDeleteMessageModal(true);
                                           setMessageDelete(message);
                                         }}
@@ -711,11 +746,9 @@ export default function DirectHistory() {
                   onClick={() => {
                     remove(messageDelete._id);
                     setMessages((prev) =>
-                      prev
-                        ? prev.filter(
-                            (message) => message._id !== messageDelete._id
-                          )
-                        : prev
+                      prev.filter(
+                        (message) => message._id !== messageDelete._id
+                      )
                     );
                     setDeleteMessageModal(false);
                     setMessageDelete(null);
