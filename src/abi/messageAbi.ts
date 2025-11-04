@@ -46,6 +46,13 @@ export const messageAbi = [
     inputs: [{ name: "user", type: "address" }],
     outputs: [{ name: "", type: "uint256" }],
   },
+  {
+    type: "function",
+    stateMutability: "view",
+    name: "getMyEncryptedConversationKeys",
+    inputs: [{ name: "conversationId", type: "uint256" }],
+    outputs: [{ name: "", type: "string" }],
+  },
   // writes
   {
     type: "function",
