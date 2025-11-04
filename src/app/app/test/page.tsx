@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
   useAccount,
@@ -10,14 +10,7 @@ import {
   useWriteContract,
 } from "wagmi";
 import { sepolia } from "wagmi/chains";
-import {
-  isAddress,
-  encodePacked,
-  getAddress,
-  keccak256,
-  parseAbiItem,
-  toHex,
-} from "viem";
+import { isAddress, encodePacked, getAddress, keccak256, toHex } from "viem";
 import { messageAbi } from "@/abi/messageAbi";
 
 const PROXY_ADDRESS = process.env.NEXT_PUBLIC_PROXY_ADDRESS as
@@ -145,6 +138,8 @@ export default function PayAsYouGoTestPage() {
 
   const { writeContractAsync } = useWriteContract();
 
+  const isFetchingRef = useRef(false);
+
   const ensureSepolia = async () => {
     if (chainId === sepolia.id) return;
     await switchChainAsync({ chainId: sepolia.id });
@@ -257,8 +252,10 @@ export default function PayAsYouGoTestPage() {
     }
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!proxy) return alert("Proxy address missing");
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     try {
       let conversationIdLocal = conversationId;
       if (!conversationIdLocal) {
@@ -268,7 +265,6 @@ export default function PayAsYouGoTestPage() {
         setConversationId(conversationIdLocal);
       }
 
-      // Fetch from our secure server API to avoid exposing subgraph token
       const res = await fetch("/api/sc-message", {
         method: "POST",
         headers: {
@@ -329,63 +325,27 @@ export default function PayAsYouGoTestPage() {
         return;
       }
 
-      // Fallback to RPC logs if subgraph returned none
-      try {
-        const event = parseAbiItem(
-          "event MessageSent(uint256 conversationId, address from, address to, string encryptedMessage)"
-        );
-        const rpcLogs = await publicClient!.getLogs({
-          address: proxy,
-          event,
-          args: { conversationId: conversationIdLocal },
-          fromBlock: BigInt(0),
-        });
-        const conversationKey = getStoredConvKey(conversationIdLocal!);
-        const lines: string[] = [
-          `RPC: ${
-            rpcLogs.length
-          } MessageSent events for ${conversationIdLocal!.toString()}`,
-        ];
-        rpcLogs.forEach((logEntry, i) => {
-          const anyLog = logEntry as unknown as {
-            args?: { from?: string; to?: string; encryptedMessage?: string };
-            blockNumber?: bigint;
-          };
-          const blockNumberStr = anyLog.blockNumber?.toString();
-          const from = anyLog.args?.from;
-          const to = anyLog.args?.to;
-          const encrypted = anyLog.args?.encryptedMessage ?? "";
-          const header = `#${
-            i + 1
-          } from ${from} -> ${to} [block ${blockNumberStr}]`;
-          const encLine = `#${i + 1} ciphertext: ${encrypted}`;
-          let decLine = `#${i + 1} decrypted: `;
-          if (conversationKey) {
-            try {
-              const decrypted = mockDecryptMessage(encrypted, conversationKey);
-              decLine += decrypted;
-            } catch {
-              decLine += `(failed to decrypt)`;
-            }
-          } else {
-            decLine += `(no local key)`;
-          }
-          lines.push(header, encLine, decLine);
-        });
-        setLogs((prevLogs) => [...lines, ...prevLogs]);
-      } catch (err) {
-        setLogs((prevLogs) => [
-          `RPC logs fallback failed: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-          ...prevLogs,
-        ]);
-      }
+      // Subgraph returned no events; RPC fallback removed — relying on subgraph only
+      setLogs((prevLogs) => [
+        `No on-chain MessageSent events found via subgraph for ${conversationIdLocal!.toString()}`,
+        ...prevLogs,
+      ]);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setLogs((prevLogs) => [`fetchMessages error: ${msg}`, ...prevLogs]);
+    } finally {
+      isFetchingRef.current = false;
     }
-  };
+  }, [conversationId, address, recipient, proxy]);
+
+  useEffect(() => {
+    if (!conversationId) return;
+    fetchMessages();
+    const id = setInterval(() => {
+      fetchMessages();
+    }, 15000);
+    return () => clearInterval(id);
+  }, [conversationId, fetchMessages]);
 
   return (
     <main className="px-6 py-6 max-w-3xl mx-auto">
@@ -410,18 +370,11 @@ export default function PayAsYouGoTestPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             title="Gửi tin nhắn kèm theo phí pay-as-you-go trực tiếp từ ví của bạn."
-            disabled={busy || !conversationId || !message.trim()}
+            disabled={busy || !message.trim()}
             onClick={sendPayAsYouGo}
             className="inline-flex items-center rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? "Sending..." : "Send (pay-as-you-go)"}
-          </button>
-          <button
-            title="Lấy lịch sử MessageSent cho conversationId hiện tại (ưu tiên từ The Graph)."
-            onClick={fetchMessages}
-            className="inline-flex items-center rounded-md bg-neutral-800 hover:bg-neutral-700 text-neutral-100 px-4 py-2 text-sm font-medium"
-          >
-            Fetch messages
           </button>
         </div>
 
