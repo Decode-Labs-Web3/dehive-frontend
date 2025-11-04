@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
@@ -352,6 +353,17 @@ export default function UserPannel({
                       Edit User Profile
                     </Button>
                   </CardHeader>
+                </Card>
+
+                <Card className="bg-secondary rounded-lg">
+                  <CardHeader className="p-4">
+                    <CardTitle className="text-xs uppercase text-muted-foreground">
+                      Wallet
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 flex justify-center">
+                    <ConnectButton />
+                  </CardContent>
                 </Card>
 
                 <Card className="bg-secondary rounded-lg">

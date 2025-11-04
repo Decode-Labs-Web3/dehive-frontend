@@ -4,20 +4,22 @@
 // import { useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
-import DirectSearchBar from "@/components/search/DirectSearchBar";
-import DirectHistoryView from "@/components/search/DirectHistoryView";
-import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
+import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
+import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
+import DirectHistoryView from "@/components/search/DirectHistoryView";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import {
   Dialog,
   DialogContent,
@@ -66,7 +68,7 @@ export default function DirectMessagePage() {
   const router = useRouter();
   const { sound } = useSoundContext();
   const { channelId } = useParams<{ channelId: string }>();
-  const [ messageSearchId, setMessageSearchId ] = useState<string | null>(null)
+  const [messageSearchId, setMessageSearchId] = useState<string | null>(null);
   const [messageReply, setMessageReply] = useState<Message | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
     content: "",
@@ -85,7 +87,7 @@ export default function DirectMessagePage() {
   const [editMessageField, setEditMessageField] = useState<
     Record<string, boolean>
   >({});
-
+  const [ walletMode, setWalletMode ] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [editMessage, setEditMessage] = useState({ id: "", messageEdit: "" });
 
@@ -295,8 +297,18 @@ export default function DirectMessagePage() {
     };
   }, [userChatWith.id]);
 
-  if(messageSearchId){
-    return <DirectHistoryView channelId={channelId} messageSearchId={messageSearchId} setMessageSearchId={setMessageSearchId}/>
+  if(walletMode){
+    router.push(`/app/me/${channelId}/`); /// tý đụng vào
+  }
+
+  if (messageSearchId) {
+    return (
+      <DirectHistoryView
+        channelId={channelId}
+        messageSearchId={messageSearchId}
+        setMessageSearchId={setMessageSearchId}
+      />
+    );
   }
 
   return (
@@ -324,7 +336,11 @@ export default function DirectMessagePage() {
         >
           Start Call
         </Button>
-        <DirectSearchBar setMessageSearchId={setMessageSearchId}/>
+        <DirectSearchBar setMessageSearchId={setMessageSearchId} />
+        <div className="flex items-center space-x-2">
+          <Switch id="wallet" checked={sound} onCheckedChange={setWalletMode} />
+          <Label htmlFor="wallet">{sound ? "Sound ON" : "Sound OFF"}</Label>
+        </div>
         <span className="text-xs text-muted-foreground">
           Page {currentPage}
         </span>
