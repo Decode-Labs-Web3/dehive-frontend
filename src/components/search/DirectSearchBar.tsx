@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
@@ -31,7 +31,11 @@ interface SenderProps {
   avatar_ipfs_hash: string;
 }
 
-export default function DirectSearchBar() {
+interface DirectSearchBarProps {
+  setMessageSearchId: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export default function DirectSearchBar({setMessageSearchId} : DirectSearchBarProps) {
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [countPage, setCountPage] = useState(0);
@@ -41,7 +45,6 @@ export default function DirectSearchBar() {
   const { channelId } = useParams<{
     channelId: string;
   }>();
-  const router = useRouter();
   const handleKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setKeyword(event.target.value);
     setCountPage(0);
@@ -142,7 +145,7 @@ export default function DirectSearchBar() {
                 <button
                   key={result._id}
                   onClick={() => {
-                    router.push(`/app/channels/me/${channelId}/${result._id}`);
+                    setMessageSearchId(result._id);
                     setOpen(false);
                   }}
                 >

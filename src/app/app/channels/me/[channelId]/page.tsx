@@ -2,7 +2,6 @@
 "use client";
 
 // import { useMemo } from "react";
-import { DirectHistoryView } from "@/components/search/DirectHistoryView";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
+import DirectHistoryView from "@/components/search/DirectHistoryView";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSoundContext } from "@/contexts/SoundContext";
@@ -66,7 +66,7 @@ export default function DirectMessagePage() {
   const router = useRouter();
   const { sound } = useSoundContext();
   const { channelId } = useParams<{ channelId: string }>();
-
+  const [ messageSearchId, setMessageSearchId ] = useState<string | null>(null)
   const [messageReply, setMessageReply] = useState<Message | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
     content: "",
@@ -295,8 +295,8 @@ export default function DirectMessagePage() {
     };
   }, [userChatWith.id]);
 
-  if(messageId){
-    return <DirectHistoryView channelId={channelId} messageId={messageId} onClose={onClose}/>
+  if(messageSearchId){
+    return <DirectHistoryView channelId={channelId} messageSearchId={messageSearchId} setMessageSearchId={setMessageSearchId}/>
   }
 
   return (
@@ -324,7 +324,7 @@ export default function DirectMessagePage() {
         >
           Start Call
         </Button>
-        <DirectSearchBar />
+        <DirectSearchBar setMessageSearchId={setMessageSearchId}/>
         <span className="text-xs text-muted-foreground">
           Page {currentPage}
         </span>

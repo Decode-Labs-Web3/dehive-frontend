@@ -1,7 +1,6 @@
 "use client";
 
 // import { useMemo } from "react";
-import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +9,7 @@ import AutoLink from "@/components/common/AutoLink";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -83,11 +83,15 @@ interface UserChatWith {
 
 interface DirectHistoryViewProps {
   channelId: string;
-  messageId: string;
-  onClose?: () => void;
+  messageSearchId: string;
+  setMessageSearchId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-export default function DirectHistoryView({ channelId, messageId, onClose }: DirectHistoryViewProps) {
+export default function DirectHistoryView({
+  channelId,
+  messageSearchId,
+  setMessageSearchId,
+}: DirectHistoryViewProps) {
   const router = useRouter();
   const [isEndUp, setIsEndUp] = useState(false);
   const [pageUp, setPageUp] = useState<number>(0);
@@ -209,7 +213,7 @@ export default function DirectHistoryView({ channelId, messageId, onClose }: Dir
         });
         setMessageReply(null);
         // console.log("Push to me after send message");
-        onClose?.();
+        setMessageSearchId(null);
         return;
       }
     }
@@ -222,6 +226,21 @@ export default function DirectHistoryView({ channelId, messageId, onClose }: Dir
     avatar_ipfs_hash: "",
     status: "offline",
   });
+
+    useEffect(() => {
+    setMessages([]);
+    setPageUp(0);
+    setPageDown(0);
+    setIsEndUp(false);
+    setIsEndDown(false);
+    setfirstLoad(0);
+    setLoadingUp(false);
+    setLoadingDown(false);
+    setLastLoadDirection("init");
+    firstPinRef.current = false;
+    prevScrollHeightRef.current = 0;
+    if (listRef.current) listRef.current.scrollTop = 0;
+  }, [messageSearchId]);
 
   const fetchUserChatWith = useCallback(async () => {
     try {
@@ -263,7 +282,7 @@ export default function DirectHistoryView({ channelId, messageId, onClose }: Dir
           "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
-          messageId,
+          messageId: messageSearchId,
           pageUp,
         }),
       });
@@ -285,7 +304,7 @@ export default function DirectHistoryView({ channelId, messageId, onClose }: Dir
       console.log("Server direct message up error");
       console.groupEnd();
     }
-  }, [messageId, pageUp, isEndUp]);
+  }, [messageSearchId, pageUp, isEndUp]);
 
   useEffect(() => {
     fetchMessageUp();
@@ -301,7 +320,7 @@ export default function DirectHistoryView({ channelId, messageId, onClose }: Dir
           "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
-          messageId,
+          messageId: messageSearchId,
           pageDown,
         }),
       });
@@ -323,7 +342,7 @@ export default function DirectHistoryView({ channelId, messageId, onClose }: Dir
       console.log("Server direct message up error");
       console.groupEnd();
     }
-  }, [messageId, pageDown, isEndDown]);
+  }, [messageSearchId, pageDown, isEndDown]);
 
   useEffect(() => {
     fetchMessageDown();
@@ -443,6 +462,7 @@ export default function DirectHistoryView({ channelId, messageId, onClose }: Dir
         >
           Start Call
         </Button>
+        <DirectSearchBar setMessageSearchId={setMessageSearchId} />
         <span className="text-xs text-muted-foreground">
           Page up: {pageUp} {isEndUp && "yes"} --- Page down: {pageDown}{" "}
           {isEndDown && "yes"}
@@ -487,7 +507,9 @@ export default function DirectHistoryView({ channelId, messageId, onClose }: Dir
                 return (
                   <div
                     key={message._id}
-                    ref={message._id === messageId ? targetMessageRef : null}
+                    ref={
+                      message._id === messageSearchId ? targetMessageRef : null
+                    }
                     className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
                   >
                     {replyInfo && (
@@ -503,7 +525,7 @@ export default function DirectHistoryView({ channelId, messageId, onClose }: Dir
 
                     <div
                       className={`flex w-full ${
-                        message._id === messageId ? "bg-red-500" : null
+                        message._id === messageSearchId ? "bg-red-500" : null
                       }`}
                     >
                       <Avatar className="w-8 h-8 shrink-0">
