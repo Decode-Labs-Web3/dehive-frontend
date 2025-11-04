@@ -74,42 +74,43 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-        <Web3Providers>
-    <SocketStatusProvider userId={userId} fingerprintHash={fingerprintHash}>
-      <SoundContext.Provider value={soundValue}>
-        <ServerRefreshContext.Provider value={{ triggerRefeshServer }}>
-          <div className="relative flex h-screen overflow-hidden">
-            <div className="flex w-15 relative ">
-              <App.GuildBar refreshVersion={refreshVersion} />
+    <Web3Providers>
+      <SocketStatusProvider userId={userId} fingerprintHash={fingerprintHash}>
+        <SoundContext.Provider value={soundValue}>
+          <ServerRefreshContext.Provider value={{ triggerRefeshServer }}>
+            <div className="relative flex h-screen overflow-hidden">
+              <div className="flex w-15 relative ">
+                <App.GuildBar refreshVersion={refreshVersion} />
+              </div>
+
+              {isCalling && (
+                <div
+                  ref={greenAreaRef}
+                  className={`bg-green-500 fixed top-0 bottom-0 md:left-75 left-15 right-0 ${
+                    isFocus ? "z-[500]" : "z-[-1]"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFocus(true);
+                  }}
+                ></div>
+              )}
+
+              {userId && (
+                <DirectCallProvider userId={userId}>
+                  <div className="flex-1 min-h-0 overflow-hidden">
+                    {children}
+                  </div>
+                </DirectCallProvider>
+              )}
+
+              <div className="absolute bottom-5 left-5 w-60 h-30 z-10 overflow-visible">
+                <App.UserBar />
+              </div>
             </div>
-
-            {isCalling && (
-              <div
-                ref={greenAreaRef}
-                className={`bg-green-500 fixed top-0 bottom-0 md:left-75 left-15 right-0 ${
-                  isFocus ? "z-[500]" : "z-[-1]"
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsFocus(true);
-                }}
-              ></div>
-            )}
-
-            {userId && (
-              <DirectCallProvider userId={userId}>
-                <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
-              </DirectCallProvider>
-            )}
-
-            <div className="absolute bottom-5 left-5 w-60 h-30 z-10 overflow-visible">
-              <App.UserBar />
-            </div>
-          </div>
-        </ServerRefreshContext.Provider>
-      </SoundContext.Provider>
-    </SocketStatusProvider>
-        </Web3Providers>
-
+          </ServerRefreshContext.Provider>
+        </SoundContext.Provider>
+      </SocketStatusProvider>
+    </Web3Providers>
   );
 }

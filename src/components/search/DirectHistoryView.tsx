@@ -78,7 +78,19 @@ interface UserChatWith {
   displayname: string;
   username: string;
   avatar_ipfs_hash: string;
+  wallets: WalletProps[];
   status: string;
+}
+
+interface WalletProps {
+  _id: string;
+  address: string;
+  user_id: string;
+  name_service: null;
+  is_primary: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 interface DirectHistoryViewProps {
@@ -224,6 +236,7 @@ export default function DirectHistoryView({
     displayname: "",
     username: "",
     avatar_ipfs_hash: "",
+    wallets: [],
     status: "offline",
   });
 

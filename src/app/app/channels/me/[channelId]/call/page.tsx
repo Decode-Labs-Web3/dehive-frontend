@@ -13,7 +13,19 @@ interface UserChatWith {
   id: string;
   displayname: string;
   username: string;
+  wallets: WalletProps[];
   avatar_ipfs_hash: string;
+}
+
+interface WalletProps {
+  _id: string;
+  address: string;
+  user_id: string;
+  name_service: null;
+  is_primary: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export default function DirectCallPage() {
@@ -23,6 +35,7 @@ export default function DirectCallPage() {
     id: "",
     displayname: "",
     username: "",
+    wallets: [],
     avatar_ipfs_hash: "",
   });
 

@@ -61,7 +61,19 @@ interface UserChatWith {
   displayname: string;
   username: string;
   avatar_ipfs_hash: string;
+  wallets: WalletProps[];
   status: string;
+}
+
+interface WalletProps {
+  _id: string;
+  address: string;
+  user_id: string;
+  name_service: null;
+  is_primary: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export default function DirectMessagePage() {
@@ -80,6 +92,7 @@ export default function DirectMessagePage() {
     displayname: "",
     username: "",
     avatar_ipfs_hash: "",
+    wallets: [],
     status: "offline",
   });
   const [messageDelete, setMessageDelete] = useState<Message | null>(null);
@@ -87,7 +100,7 @@ export default function DirectMessagePage() {
   const [editMessageField, setEditMessageField] = useState<
     Record<string, boolean>
   >({});
-  const [ walletMode, setWalletMode ] = useState(false);
+  const [privateMode, setPrivateMode] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [editMessage, setEditMessage] = useState({ id: "", messageEdit: "" });
 
@@ -297,9 +310,18 @@ export default function DirectMessagePage() {
     };
   }, [userChatWith.id]);
 
-  if(walletMode){
+  if (privateMode) {
     router.push(`/app/me/${channelId}/`); /// tý đụng vào
   }
+
+  const [isAllowPrivate, setIsAllowPrivate] = useState(false);
+
+  useEffect(() => {
+    const isAllow = userChatWith.wallets.find(wallet => wallet.is_primary === true);
+    if(isAllow !== undefined){
+      setIsAllowPrivate(true);
+    }
+  },[userChatWith.wallets]);
 
   if (messageSearchId) {
     return (
@@ -337,10 +359,16 @@ export default function DirectMessagePage() {
           Start Call
         </Button>
         <DirectSearchBar setMessageSearchId={setMessageSearchId} />
-        <div className="flex items-center space-x-2">
-          <Switch id="wallet" checked={sound} onCheckedChange={setWalletMode} />
-          <Label htmlFor="wallet">{sound ? "Sound ON" : "Sound OFF"}</Label>
-        </div>
+        {isAllowPrivate && (
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="private"
+              checked={privateMode}
+              onCheckedChange={setPrivateMode}
+            />
+            <Label htmlFor="private">{privateMode ? "Private ON" : "Private OFF"}</Label>
+          </div>
+        )}
         <span className="text-xs text-muted-foreground">
           Page {currentPage}
         </span>
