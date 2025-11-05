@@ -10,7 +10,7 @@ import {
   useWriteContract,
 } from "wagmi";
 import { sepolia } from "wagmi/chains";
-import { isAddress, getAddress, decodeFunctionData } from "viem";
+import { isAddress, getAddress, decodeFunctionData, parseEther } from "viem";
 import { messageAbi } from "@/abi/messageAbi";
 
 // UI components to mirror DirectMessagePage
@@ -65,7 +65,7 @@ export default function SmartContractMessagePage() {
   const { address, chainId, isConnected } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const publicClient = usePublicClient();
-  const [ isRelayerMode, setIsRelayerMode ] = useState(false);
+  const [isRelayerMode, setIsRelayerMode] = useState(false);
 
   const proxy = PROXY_ADDRESS;
 
@@ -75,6 +75,23 @@ export default function SmartContractMessagePage() {
     functionName: "payAsYouGoFee",
     chainId: sepolia.id,
     query: { enabled: Boolean(proxy) },
+  });
+
+  const { data: relayerFee } = useReadContract({
+    address: proxy,
+    abi: messageAbi,
+    functionName: "relayerFee",
+    chainId: sepolia.id,
+    query: { enabled: Boolean(proxy) },
+  });
+
+  const { data: myFunds } = useReadContract({
+    address: proxy,
+    abi: messageAbi,
+    functionName: "funds",
+    args: address ? [getAddress(address)] : undefined,
+    chainId: sepolia.id,
+    query: { enabled: Boolean(proxy && address) },
   });
 
   const { writeContractAsync } = useWriteContract();
@@ -445,6 +462,159 @@ export default function SmartContractMessagePage() {
     }
   };
 
+  const depositForRelayer = async () => {
+    if (!proxy) return alert("Proxy address missing");
+    if (!isConnected) return alert("Please connect wallet");
+    try {
+      const input = prompt(
+        "Enter deposit amount in ETH (recommend 0.01):",
+        "0.01"
+      );
+      if (!input) return;
+      const value = parseEther(input as `${number}`);
+      setLoading(true);
+      await ensureSepolia();
+      const txHash = await writeContractAsync({
+        address: proxy,
+        abi: messageAbi,
+        functionName: "depositFunds",
+        args: [],
+        value,
+        chainId: sepolia.id,
+      });
+      await publicClient!.waitForTransactionReceipt({ hash: txHash });
+      setError(null);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("depositForRelayer error", msg);
+      setError(`deposit error: ${msg}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendViaRelayer = async () => {
+    if (!proxy) return alert("Proxy address missing");
+    if (!isConnected) return alert("Please connect wallet");
+    if (!address) return alert("No account");
+    if (!newMessage.trim()) return alert("Message empty");
+    try {
+      setLoading(true);
+      await ensureSepolia();
+
+      // Ensure we have a conversationId
+      let conversationIdLocal = conversationId;
+      if (!conversationIdLocal) {
+        if (!isAddress(recipientWallet)) throw new Error("Invalid recipient");
+        conversationIdLocal = computeConversationId(address, recipientWallet);
+        setConversationId(conversationIdLocal);
+      }
+
+      // Ensure conversation exists; create if needed
+      type ConversationTuple = readonly [
+        `0x${string}`,
+        `0x${string}`,
+        `0x${string}`,
+        `0x${string}`,
+        bigint
+      ];
+      const convData = (await publicClient!.readContract({
+        address: proxy,
+        abi: messageAbi,
+        functionName: "conversations",
+        args: [conversationIdLocal!],
+      })) as ConversationTuple;
+      const [, , , , createdAt] = convData;
+
+      let localConvKey: string | null = null;
+      if (!createdAt || createdAt === BigInt(0)) {
+        const convKey = generateConversationKey();
+        const encForSender = await encryptConversationKeyForAddress(
+          convKey,
+          address
+        );
+        const encForReceiver = await encryptConversationKeyForAddress(
+          convKey,
+          recipientWallet
+        );
+        const txHash = await writeContractAsync({
+          address: proxy,
+          abi: messageAbi,
+          functionName: "createConversation",
+          args: [
+            getAddress(recipientWallet),
+            `0x${encForSender}`,
+            `0x${encForReceiver}`,
+          ],
+          chainId: sepolia.id,
+        });
+        await publicClient!.waitForTransactionReceipt({ hash: txHash });
+        localConvKey = convKey;
+      }
+
+      // Ensure conversation key available
+      if (!conversationKeyRef.current) {
+        const key = await getMyConversationKey(
+          publicClient!,
+          proxy,
+          conversationIdLocal!,
+          address
+        );
+        if (key) conversationKeyRef.current = key;
+      }
+      if (!conversationKeyRef.current && localConvKey) {
+        conversationKeyRef.current = localConvKey;
+      }
+      if (!conversationKeyRef.current) {
+        throw new Error("No conversation key available for this account");
+      }
+
+      // Check deposited funds >= relayer fee
+      const fee = (relayerFee as bigint | undefined) ?? BigInt(0);
+      const fundsBal = (myFunds as bigint | undefined) ?? BigInt(0);
+      if (fundsBal < fee) {
+        alert(
+          `Insufficient deposited funds. Required ${
+            Number(fee) / 1e18
+          } ETH. Click Deposit to add funds.`
+        );
+        return;
+      }
+
+      // Encrypt and send via backend relayer
+      const ciphertext = mockEncryptMessage(
+        newMessage,
+        conversationKeyRef.current
+      );
+      const res = await fetch("/api/sc-message/relayer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({
+          conversationId: conversationIdLocal!.toString(),
+          from: getAddress(address),
+          to: getAddress(recipientWallet),
+          encryptedMessage: ciphertext,
+        }),
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(`Relayer HTTP ${res.status} ${res.statusText} ${txt}`);
+      }
+      // Do not optimistically append; events watcher will bring it in.
+      setNewMessage("");
+      setError(null);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("sendViaRelayer error", msg);
+      setError(`sendViaRelayer error: ${msg}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchMessages = useCallback(async () => {
     if (!proxy) return alert("Proxy address missing");
     if (isFetchingRef.current) return;
@@ -474,7 +644,7 @@ export default function SmartContractMessagePage() {
       const firstForQuery = first + rpcNew;
       const skipForQuery = firstForQuery - 20;
 
-      const res = await fetch("/api/sc-message", {
+      const res = await fetch("/api/sc-message/message", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -629,7 +799,11 @@ export default function SmartContractMessagePage() {
       event.preventDefault();
       const msg = newMessage.trim();
       if (msg && !loading) {
-        sendPayAsYouGo();
+        if (isRelayerMode) {
+          void sendViaRelayer();
+        } else {
+          void sendPayAsYouGo();
+        }
       }
     }
   };
@@ -759,7 +933,11 @@ export default function SmartContractMessagePage() {
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
-          <SmartContractOption isRelayerMode={isRelayerMode} setIsRelayerMode={setIsRelayerMode}/>
+          <SmartContractOption
+            isRelayerMode={isRelayerMode}
+            setIsRelayerMode={setIsRelayerMode}
+            onDeposit={depositForRelayer}
+          />
           <div className="flex-1">
             <Textarea
               name="content"

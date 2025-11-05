@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.info("user-following success response", response);
+    // console.info("user-following success response", response.data);
 
     return NextResponse.json(
       {

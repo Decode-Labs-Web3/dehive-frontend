@@ -48,6 +48,13 @@ export const messageAbi = [
   },
   {
     type: "function",
+    stateMutability: "payable",
+    name: "depositFunds",
+    inputs: [],
+    outputs: [],
+  },
+  {
+    type: "function",
     stateMutability: "view",
     name: "getMyEncryptedConversationKeys",
     inputs: [{ name: "conversationId", type: "uint256" }],
