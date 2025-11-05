@@ -37,7 +37,6 @@ import {
 import {
   faX,
   faPen,
-  faPlus,
   faTrash,
   faCircle,
   faArrowTurnUp,

@@ -46,7 +46,6 @@ import {
 import {
   faX,
   faPen,
-  faPlus,
   faPhone,
   faTrash,
   faCircle,
