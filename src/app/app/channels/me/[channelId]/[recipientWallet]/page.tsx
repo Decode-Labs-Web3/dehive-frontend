@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 
 const PROXY_ADDRESS = process.env.NEXT_PUBLIC_PROXY_ADDRESS as
@@ -467,6 +468,11 @@ export default function SmartContractMessagePage() {
         if (key) conversationKeyRef.current = key;
       }
 
+      // Adjust paging to account for new messages appended via RPC so server-side offsets stay aligned
+      const rpcNew = rpcNewCountRef.current;
+      const firstForQuery = first + rpcNew;
+      const skipForQuery = firstForQuery - 20;
+
       const res = await fetch("/api/sc-message", {
         method: "POST",
         headers: {
@@ -475,9 +481,9 @@ export default function SmartContractMessagePage() {
         },
         body: JSON.stringify({
           conversationId: conversationIdLocal.toString(),
-          first: first,
-          skip: first - 20,
-          newCount: rpcNewCountRef.current,
+          first: firstForQuery,
+          skip: skipForQuery,
+          newCount: rpcNew,
         }),
         cache: "no-store",
       });
@@ -499,22 +505,6 @@ export default function SmartContractMessagePage() {
 
       const events = json.messageSents ?? [];
       if (events.length > 0) {
-        // If we obtained a key and have cached entries from a previous run, re-decrypt them now
-        if (conversationKeyRef.current && messageMapRef.current.size > 0) {
-          try {
-            for (const [id, data] of messageMapRef.current.entries()) {
-              try {
-                const dec = mockDecryptMessage(
-                  data.encryptedMessage,
-                  conversationKeyRef.current
-                );
-                messageMapRef.current.set(id, { ...data, dec });
-              } catch {
-                // leave as is
-              }
-            }
-          } catch {}
-        }
         // Ensure decrypted conversation key available for current user
         if (!conversationKeyRef.current && address) {
           const key = await getMyConversationKey(
@@ -525,74 +515,34 @@ export default function SmartContractMessagePage() {
           );
           if (key) conversationKeyRef.current = key;
         }
-        const newIds: string[] = [];
-        // events come ascending (oldest -> newest). Collect unseen events into map
-        events.forEach((e) => {
-          const eventId = `${e.blockNumber}:${e.from}:${e.to}:${e.encryptedMessage}`;
-          if (messageMapRef.current.has(eventId)) return; // already recorded
-          // build display lines
-          let decText = "";
-          if (conversationKeyRef.current) {
-            try {
-              decText = mockDecryptMessage(
-                e.encryptedMessage,
-                conversationKeyRef.current
-              );
-            } catch {
-              decText = `(failed to decrypt)`;
+        // Build only the current fetched page as a batch and prepend to existing messages
+        // API is orderDirection: desc (newest -> oldest). For ascending UI, reverse to (oldest -> newest)
+        const batchAsc = events
+          .map((e) => {
+            const eventId = `${e.blockNumber}:${e.from}:${e.to}:${e.encryptedMessage}`;
+            // decrypt per item using current key if available
+            let decText = "";
+            if (conversationKeyRef.current) {
+              try {
+                decText = mockDecryptMessage(
+                  e.encryptedMessage,
+                  conversationKeyRef.current
+                );
+              } catch {
+                decText = `(failed to decrypt)`;
+              }
+            } else {
+              decText = `(no conv key)`;
             }
-          } else {
-            decText = `(no conv key)`;
-          }
-          messageMapRef.current.set(eventId, {
-            blockNumber: e.blockNumber,
-            from: e.from,
-            to: e.to,
-            encryptedMessage: e.encryptedMessage,
-            dec: decText,
-          });
-          newIds.push(eventId);
-        });
-        if (newIds.length > 0) {
-          // Add new ids to the map then rebuild ordered list by blockNumber ascending
-          for (const id of newIds) {
-            messageOrderRef.current.push(id);
-          }
-          // Rebuild order from map values sorted by blockNumber asc
-          const ordered = Array.from(messageMapRef.current.keys()).sort(
-            (a, b) => {
-              const aa = Number(messageMapRef.current.get(a)!.blockNumber);
-              const bb = Number(messageMapRef.current.get(b)!.blockNumber);
-              return aa - bb;
-            }
-          );
-          messageOrderRef.current = ordered;
-          // Rebuild styled messages list like DirectMessagePage
-          const rebuilt: Array<{
-            id: string;
-            blockNumber: string;
-            from: `0x${string}`;
-            to: `0x${string}`;
-            content: string;
-            createdAt: string;
-            sender: {
-              dehive_id: string;
-              display_name: string;
-              avatar_ipfs_hash: string;
-            };
-          }> = [];
-          for (let idx = 0; idx < ordered.length; idx++) {
-            const id = ordered[idx];
-            const data = messageMapRef.current.get(id)!;
             const isCounterpart =
-              getAddress(data.from as `0x${string}`) ===
+              getAddress(e.from as `0x${string}`) ===
               getAddress(counterpartPrimaryWallet as `0x${string}`);
-            rebuilt.push({
-              id,
-              blockNumber: data.blockNumber,
-              from: getAddress(data.from as `0x${string}`) as `0x${string}`,
-              to: getAddress(data.to as `0x${string}`) as `0x${string}`,
-              content: data.dec,
+            return {
+              id: eventId,
+              blockNumber: e.blockNumber,
+              from: getAddress(e.from as `0x${string}`) as `0x${string}`,
+              to: getAddress(e.to as `0x${string}`) as `0x${string}`,
+              content: decText,
               createdAt: new Date().toISOString(),
               sender: isCounterpart
                 ? {
@@ -605,13 +555,20 @@ export default function SmartContractMessagePage() {
                     display_name: "You",
                     avatar_ipfs_hash: "",
                   },
-            });
-          }
-          // Rebuilt already contains ALL known messages in correct order; avoid prepending prev to prevent duplicates.
-          setMessages(rebuilt);
-          // If page returned fewer than a full batch, we've reached the beginning
-          if (events.length < 20) setIsLastPage(true);
-        }
+            };
+          })
+          .reverse();
+
+        // Prepend batch to current list while avoiding duplicates
+        setMessages((prev) => {
+          if (prev.length === 0) return batchAsc;
+          const existing = new Set(prev.map((m) => m.id));
+          const dedupBatch = batchAsc.filter((m) => !existing.has(m.id));
+          return dedupBatch.length ? [...dedupBatch, ...prev] : prev;
+        });
+
+        // If page returned fewer than a full batch, we've reached the beginning
+        if (events.length < 20) setIsLastPage(true);
         return;
       }
 
@@ -625,6 +582,8 @@ export default function SmartContractMessagePage() {
       setError(`fetchMessages error: ${msg}`);
     } finally {
       isFetchingRef.current = false;
+      // Ensure loading-more UI is cleared even if no new messages were added
+      setLoadingMore(false);
     }
   }, [
     first,
@@ -654,6 +613,13 @@ export default function SmartContractMessagePage() {
     // We intentionally only depend on recipientWallet so this runs once per route.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipientWallet]);
+
+  // When user scrolls to top and `first` increases, fetch the next (older) page
+  useEffect(() => {
+    if (first > 20 && !isLastPage) {
+      void fetchMessages();
+    }
+  }, [first, isLastPage, fetchMessages]);
 
   const handleComposerKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -703,6 +669,7 @@ export default function SmartContractMessagePage() {
       const newScrollHeight = element.scrollHeight;
       element.scrollTop = newScrollHeight - prevScrollHeightRef.current;
       prevScrollHeightRef.current = newScrollHeight;
+      console.log("end loading more messages");
     }
   }, [messages]);
 
@@ -737,6 +704,13 @@ export default function SmartContractMessagePage() {
         className="flex-1 bg-background"
       >
         <div className="flex flex-col gap-4 px-6 py-6">
+          {loadingMore && (
+            <>
+              <Skeleton className="h-20 w-full bg-muted" />
+              <Skeleton className="h-20 w-full bg-muted" />
+              <Skeleton className="h-20 w-full bg-muted" />
+            </>
+          )}
           {error ? (
             <span className="px-3 text-xs text-red-400">{error}</span>
           ) : null}
