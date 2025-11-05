@@ -1,16 +1,22 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
-import { useCallback, useRef, useState, useEffect } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+  type ChangeEvent,
+} from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUpload,
   faCamera,
   faPlus,
   faRepeat,
-  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   Popover,
@@ -26,13 +32,18 @@ import {
 } from "@/components/ui/dialog";
 
 export default function MessageOption() {
+  const { channelId } = useParams<{ channelId: string }>();
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [uploadId, setUploadId] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  console.log("Upload IDs:", uploadId);
 
   const webcamRef = useRef<Webcam | null>(null);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [hasCamError, setHasCamError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [, setCapturedFile] = useState<File | null>(null);
 
   const handleUserMedia = useCallback(() => {
     setHasCamError(null);
@@ -40,7 +51,10 @@ export default function MessageOption() {
   }, []);
 
   useEffect(() => {
-    if (dialogOpen) setImgSrc(null);
+    if (dialogOpen) {
+      setImgSrc(null);
+      setCapturedFile(null);
+    }
   }, [dialogOpen]);
 
   const capture = useCallback(() => {
@@ -59,18 +73,69 @@ export default function MessageOption() {
     return new File([u8arr], filename, { type: mime });
   };
 
-  const handleUsePhoto = () => {
+  const handleUploadPhoto = async () => {
     if (!imgSrc) return;
     const file = dataURLtoFile(imgSrc, `snapshot_${Date.now()}.jpg`);
+    setCapturedFile(file);
     setDialogOpen(false);
+    await uploadFile(file);
   };
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const handleUploadClick = () => fileInputRef.current?.click();
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    setOpen(false);
-  };
+  const uploadFile = useCallback(
+    async (file: File) => {
+      setLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("conversationId", channelId);
+
+        const apiResponse = await fetch("/api/me/conversation/file-upload", {
+          method: "POST",
+          headers: {
+            "X-Frontend-Internal-Request": "true",
+          },
+          body: formData,
+          cache: "no-store",
+          signal: AbortSignal.timeout(30000),
+        });
+        const response = await apiResponse.json();
+        if (!apiResponse.ok) {
+          throw new Error(response.message || "Upload failed");
+        }
+        if (
+          response.statusCode === 201 &&
+          response.message === "File uploaded successfully"
+        ) {
+          setUploadId((prev) => [...prev, response.data.uploadId]);
+        }
+      } catch (error) {
+        console.error("Error during file upload:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [channelId]
+  );
+
+  const handleUploadClick = useCallback(() => {
+    if (loading) return;
+    fileInputRef.current?.click();
+  }, [loading]);
+
+  const handleFileChange = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>) => {
+      try {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setOpen(false);
+        await uploadFile(file);
+      } finally {
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    },
+    [uploadFile]
+  );
 
   return (
     <>
@@ -90,7 +155,7 @@ export default function MessageOption() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,video/*,audio/*,*/*"
               className="hidden"
               onChange={handleFileChange}
             />
@@ -130,6 +195,10 @@ export default function MessageOption() {
                   audio={false}
                   screenshotFormat="image/jpeg"
                   onUserMedia={handleUserMedia}
+                  onUserMediaError={(err) => {
+                    const msg = typeof err === "string" ? err : err?.message;
+                    setHasCamError(msg || "Cannot access camera");
+                  }}
                   className="w-full h-[360px] object-cover"
                 />
               </div>
@@ -138,6 +207,9 @@ export default function MessageOption() {
                 <Image
                   src={imgSrc}
                   alt="Captured"
+                  width={640}
+                  height={360}
+                  unoptimized
                   className="w-full h-[360px] object-contain bg-black"
                 />
               </div>
@@ -151,13 +223,19 @@ export default function MessageOption() {
                 </Button>
               ) : (
                 <>
-                  <Button variant="secondary" onClick={() => setImgSrc(null)}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setImgSrc(null);
+                      setCapturedFile(null);
+                    }}
+                  >
                     <FontAwesomeIcon icon={faRepeat} className="mr-2" />
-                    Retake
+                    Retake picture
                   </Button>
-                  <Button onClick={handleUsePhoto}>
-                    <FontAwesomeIcon icon={faCheck} className="mr-2" />
-                    Use photo
+                  <Button onClick={handleUploadPhoto}>
+                    <FontAwesomeIcon icon={faUpload} className="mr-2" />
+                    Upload this picture
                   </Button>
                 </>
               )}

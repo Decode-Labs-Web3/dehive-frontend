@@ -24,12 +24,12 @@ export default function Login() {
     try {
       setLoading(true);
       const apiResponse = await fetch("/api/auth/create-sso", {
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
         headers: {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
       });
       const response = await apiResponse.json();
 

@@ -7,7 +7,7 @@ import {
   guardInternal,
 } from "@/utils/index.utils";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
   const denied = guardInternal(req);
@@ -40,14 +40,37 @@ export async function GET(req: Request) {
       );
     }
 
+    // Expect multipart/form-data with fields: file (binary) and conversationId (string)
+    const form = await req.formData();
+    const file = form.get("file") as File | null;
+    const conversationId = form.get("conversationId")?.toString();
+
+    if (!file || !conversationId) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: httpStatus.BAD_REQUEST,
+          message: "Missing file or conversationId",
+        },
+        { status: httpStatus.BAD_REQUEST }
+      );
+    }
+
+    // Rebuild FormData to forward to backend
+    const forwardForm = new FormData();
+    forwardForm.append("file", file);
+    forwardForm.append("conversationId", conversationId);
+
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/following?page=0&limit=10`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/files/upload`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
           "x-session-id": sessionId,
           "x-fingerprint-hashed": fingerprint,
         },
+        // Let fetch set the correct multipart boundary automatically
+        body: forwardForm,
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
@@ -62,7 +85,7 @@ export async function GET(req: Request) {
         {
           success: false,
           statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
-          message: error?.message || "Create server failed",
+          message: error?.message || "Upload file failed",
         },
         { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
@@ -75,10 +98,10 @@ export async function GET(req: Request) {
       {
         success: true,
         statusCode: response.statusCode || httpStatus.OK,
-        message: response.message || "Following users fetched successfully",
+        message: response.message || "File uploaded successfully",
         data: response.data,
       },
-      { status: httpStatus.OK }
+      { status: response.statusCode || httpStatus.OK }
     );
   } catch (error) {
     console.error(`${pathname}`, error);
@@ -86,7 +109,7 @@ export async function GET(req: Request) {
       {
         success: false,
         statusCode: httpStatus.INTERNAL_SERVER_ERROR,
-        message: "Server error while get server",
+        message: "Server error while uploading file",
       },
       { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
