@@ -125,8 +125,7 @@ export default function DirectHistoryView({
     replyTo: null,
   });
 
-  const { send, edit, remove, sending, err } = useDirectMessage(channelId);
-  console.log("This is error", err);
+  const { send, edit, remove, sending } = useDirectMessage(channelId);
 
   const [editMessageField, setEditMessageField] = useState<
     Record<string, boolean>

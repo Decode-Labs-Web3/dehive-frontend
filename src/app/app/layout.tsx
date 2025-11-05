@@ -15,8 +15,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sound, setSound] = useState(true);
   const [userId, setUserId] = useState<string>("");
   const [fingerprintHash, setFingerprintHash] = useState<string>("");
-  console.log("fingerprintHash nha", fingerprintHash);
-  console.log("isFocus nha", isFocus);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const triggerRefeshServer = useCallback(() => {
     setRefreshVersion((prev) => prev + 1);

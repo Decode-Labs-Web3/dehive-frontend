@@ -59,7 +59,8 @@ export default function SmartContractMessagePage() {
   >([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [isLastPage, setIsLastPage] = useState(false);
   const { address, chainId, isConnected } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const publicClient = usePublicClient();
@@ -93,6 +94,8 @@ export default function SmartContractMessagePage() {
   const conversationKeyRef = useRef<string | null>(null);
   const processedTxsRef = useRef<Set<string>>(new Set());
   const sendSelectorRef = useRef<string>("0x");
+  // Count of new messages appended via RPC watcher (for backend or fetch tuning)
+  const rpcNewCountRef = useRef<number>(0);
 
   // Derive function selector for sendMessage from ABI (robust to type changes)
   useEffect(() => {
@@ -211,9 +214,10 @@ export default function SmartContractMessagePage() {
                       setMessages((prev) => {
                         if (hash && prev.some((m) => m.id === hash))
                           return prev;
-                        setFirst((prev) => prev + 1);
                         return [...prev, newMsg];
                       });
+                      // track newly appended messages via RPC
+                      rpcNewCountRef.current += 1;
                     }
                   }
                 } catch (e) {
@@ -473,6 +477,7 @@ export default function SmartContractMessagePage() {
           conversationId: conversationIdLocal.toString(),
           first: first,
           skip: first - 20,
+          newCount: rpcNewCountRef.current,
         }),
         cache: "no-store",
       });
@@ -602,8 +607,10 @@ export default function SmartContractMessagePage() {
                   },
             });
           }
-          setMessages((prev) => (prev ? [...rebuilt, ...prev] : rebuilt));
-          setFirst((prev) => prev + 20);
+          // Rebuilt already contains ALL known messages in correct order; avoid prepending prev to prevent duplicates.
+          setMessages(rebuilt);
+          // If page returned fewer than a full batch, we've reached the beginning
+          if (events.length < 20) setIsLastPage(true);
         }
         return;
       }
@@ -611,6 +618,7 @@ export default function SmartContractMessagePage() {
       // No events found for this conversation: do not treat as an error.
       // Keep messages array empty so UI can render the "No messages yet" state.
       setError(null);
+      setIsLastPage(true);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error("fetchMessages error", msg);
@@ -634,20 +642,18 @@ export default function SmartContractMessagePage() {
   useEffect(() => {
     if (initialFetchForRecipientRef.current !== recipientWallet) {
       initialFetchForRecipientRef.current = recipientWallet;
+      // Reset paging & caches when switching conversation
+      setIsLastPage(false);
+      setFirst(20);
+      rpcNewCountRef.current = 0;
+      messageOrderRef.current = [];
+      messageMapRef.current.clear();
+      setMessages([]);
       void fetchMessages();
     }
     // We intentionally only depend on recipientWallet so this runs once per route.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipientWallet]);
-
-  // Auto scroll to bottom when messages change (like Direct initial behavior)
-  const listRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const el = listRef.current;
-    if (el) {
-      el.scrollTop = el.scrollHeight - el.clientHeight;
-    }
-  }, [messages.length]);
 
   const handleComposerKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -656,10 +662,49 @@ export default function SmartContractMessagePage() {
       event.preventDefault();
       const msg = newMessage.trim();
       if (msg && !loading) {
-        void sendPayAsYouGo();
+        sendPayAsYouGo();
       }
     }
   };
+
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const prevScrollHeightRef = useRef<number>(0);
+
+  useEffect(() => {
+    const element = listRef.current;
+    // Only auto-scroll on initial page load
+    if (element && first === 20 && !loadingMore && messages.length > 0) {
+      element.scrollTop = element.scrollHeight - element.clientHeight;
+    }
+  }, [messages.length, first, loadingMore]);
+
+  const handleScroll = () => {
+    const element = listRef.current;
+    if (
+      !element ||
+      loading ||
+      loadingMore ||
+      isFetchingRef.current ||
+      isLastPage
+    )
+      return;
+    if (element.scrollTop === 0) {
+      prevScrollHeightRef.current = element.scrollHeight;
+      setLoadingMore(true);
+      setFirst((prev) => prev + 20);
+      console.log("Loading more messages...");
+    }
+  };
+
+  useEffect(() => {
+    setLoadingMore(false);
+    const element = listRef.current;
+    if (element) {
+      const newScrollHeight = element.scrollHeight;
+      element.scrollTop = newScrollHeight - prevScrollHeightRef.current;
+      prevScrollHeightRef.current = newScrollHeight;
+    }
+  }, [messages]);
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
@@ -686,7 +731,11 @@ export default function SmartContractMessagePage() {
         </span>
       </div>
 
-      <ScrollArea ref={listRef} className="flex-1 bg-background">
+      <ScrollArea
+        ref={listRef}
+        onScrollViewport={handleScroll}
+        className="flex-1 bg-background"
+      >
         <div className="flex flex-col gap-4 px-6 py-6">
           {error ? (
             <span className="px-3 text-xs text-red-400">{error}</span>

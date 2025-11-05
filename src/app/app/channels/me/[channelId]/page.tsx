@@ -395,8 +395,8 @@ export default function DirectMessagePage() {
           </Button>
           <DirectSearchBar setMessageSearchId={setMessageSearchId} />
           {/* <span className="text-xs text-muted-foreground">
-                      Page {currentPage}
-                    </span> */}
+            Page {currentPage}
+          </span> */}
         </div>
       </div>
 
