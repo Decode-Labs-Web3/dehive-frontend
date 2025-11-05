@@ -10,7 +10,7 @@ import {
   useWriteContract,
 } from "wagmi";
 import { sepolia } from "wagmi/chains";
-import { isAddress, getAddress, decodeFunctionData, parseEther } from "viem";
+import { isAddress, getAddress, parseEther, type Abi } from "viem";
 import { messageAbi } from "@/abi/messageAbi";
 
 // UI components to mirror DirectMessagePage
@@ -94,6 +94,24 @@ export default function SmartContractMessagePage() {
     query: { enabled: Boolean(proxy && address) },
   });
 
+  // On-chain relayer address cache (fetched once)
+  const relayerRef = useRef<`0x${string}` | null>(null);
+  useEffect(() => {
+    const fetchRelayer = async () => {
+      if (!publicClient || !proxy) return;
+      try {
+        const addr = (await publicClient.readContract({
+          address: proxy,
+          abi: messageAbi as unknown as Abi,
+          functionName: "relayer" as never,
+          args: [] as const,
+        })) as unknown as `0x${string}`;
+        relayerRef.current = getAddress(addr);
+      } catch {}
+    };
+    void fetchRelayer();
+  }, [publicClient, proxy]);
+
   const { writeContractAsync } = useWriteContract();
 
   const isFetchingRef = useRef(false);
@@ -113,10 +131,11 @@ export default function SmartContractMessagePage() {
   const conversationKeyRef = useRef<string | null>(null);
   const processedTxsRef = useRef<Set<string>>(new Set());
   const sendSelectorRef = useRef<string>("0x");
+  const sendViaRelayerSelectorRef = useRef<string>("0x");
   // Count of new messages appended via RPC watcher (for backend or fetch tuning)
   const rpcNewCountRef = useRef<number>(0);
 
-  // Derive function selector for sendMessage from ABI (robust to type changes)
+  // Derive function selectors for sendMessage and sendMessageViaRelayer from ABI (robust to type changes)
   useEffect(() => {
     try {
       sendSelectorRef.current = deriveFunctionSelector(
@@ -127,92 +146,140 @@ export default function SmartContractMessagePage() {
         }>,
         "sendMessage"
       );
+      sendViaRelayerSelectorRef.current = deriveFunctionSelector(
+        messageAbi as ReadonlyArray<{
+          type: string;
+          name?: string;
+          inputs?: ReadonlyArray<{ type: string }>;
+        }>,
+        "sendMessageViaRelayer"
+      );
     } catch {}
   }, []);
 
-  // Realtime: watch new blocks via RPC and count sendMessage txs to proxy
+  // Realtime: simple, receipt-based watcher so relayer txs are never missed
   useEffect(() => {
     if (!publicClient || !proxy) return;
     const unwatch = publicClient.watchBlocks({
       includeTransactions: true,
       onBlock: async (block) => {
         try {
-          const selector = sendSelectorRef.current;
-          let count = 0;
-          type SimpleTx = {
-            to?: string | null;
-            input?: string;
-            data?: string;
-            hash?: string;
-            from?: string;
-          };
-          const txs: SimpleTx[] = Array.isArray(block.transactions)
-            ? (block.transactions as unknown as SimpleTx[])
+          let appended = 0;
+          const txs = Array.isArray(block.transactions)
+            ? (block.transactions as readonly (
+                | string
+                | {
+                    hash?: `0x${string}`;
+                  }
+              )[])
             : [];
-          for (const tx of txs) {
-            const to = (tx?.to ?? "").toLowerCase();
-            const input: string = (tx?.input ?? tx?.data ?? "0x").toString();
-            if (!to || to !== proxy!.toLowerCase()) continue;
-            if (!input || input === "0x") continue;
-            // match function selector
-            if (selector && input.startsWith(selector)) {
-              count += 1;
-              const hash: string = tx?.hash ?? "";
-              if (hash && !processedTxsRef.current.has(hash)) {
-                processedTxsRef.current.add(hash);
-                try {
-                  const decoded = decodeFunctionData({
-                    abi: messageAbi,
-                    data: input as `0x${string}`,
-                  });
-                  if (decoded.functionName === "sendMessage") {
-                    const [cid, toAddr, ciphertext] = decoded.args as [
-                      bigint,
-                      `0x${string}`,
-                      string
-                    ];
+          for (const t of txs) {
+            const hash: `0x${string}` | undefined =
+              (typeof t === "string"
+                ? (t as `0x${string}`)
+                : (t?.hash as `0x${string}` | undefined)) ?? undefined;
+            if (!hash) continue;
+            if (processedTxsRef.current.has(hash)) continue;
+            try {
+              // Try to classify the method name for logging (Send Message vs Send Message Via Relayer)
+              let methodName:
+                | "Send Message"
+                | "Send Message Via Relayer"
+                | "Unknown" = "Unknown";
+              try {
+                type MaybeInputTx = {
+                  input?: `0x${string}`;
+                  data?: `0x${string}`;
+                };
+                const txObj = await publicClient.getTransaction({ hash });
+                const txObjInput =
+                  (txObj as unknown as MaybeInputTx)?.input ??
+                  (txObj as unknown as MaybeInputTx)?.data;
+                let blockTxInput: `0x${string}` | undefined = undefined;
+                if (typeof t !== "string") {
+                  const tt = t as {
+                    input?: `0x${string}`;
+                    data?: `0x${string}`;
+                  };
+                  blockTxInput = tt.input ?? tt.data;
+                }
+                const inp = txObjInput ?? blockTxInput;
+                if (typeof inp === "string" && inp.length >= 10) {
+                  const sel = inp.slice(0, 10).toLowerCase();
+                  const s1 = (sendSelectorRef.current || "0x").toLowerCase();
+                  const s2 = (
+                    sendViaRelayerSelectorRef.current || "0x"
+                  ).toLowerCase();
+                  if (sel === s1) methodName = "Send Message";
+                  else if (sel === s2) methodName = "Send Message Via Relayer";
+                }
+              } catch {}
 
-                    // Check if this tx belongs to current chat by conversationId or participants
+              const receipt = await publicClient.getTransactionReceipt({
+                hash,
+              });
+              let relevant = false;
+              for (const log of receipt.logs) {
+                if ((log.address ?? "").toLowerCase() !== proxy.toLowerCase())
+                  continue;
+                try {
+                  const decoded = (await import("viem")).decodeEventLog({
+                    abi: messageAbi,
+                    data: log.data as `0x${string}`,
+                    topics: log.topics as unknown as [
+                      `0x${string}`,
+                      ...`0x${string}`[]
+                    ],
+                  });
+                  if (
+                    (decoded.eventName as string) === "MessageSent" ||
+                    /MessageSent/i.test(decoded.eventName as string)
+                  ) {
+                    const {
+                      conversationId: cid,
+                      from,
+                      to,
+                      encryptedMessage,
+                    } = decoded.args as unknown as {
+                      conversationId: bigint;
+                      from: `0x${string}`;
+                      to: `0x${string}`;
+                      encryptedMessage: string;
+                    };
+                    const cidMatch = conversationId
+                      ? cid === conversationId
+                      : false;
                     const me = address ? getAddress(address) : undefined;
                     const counterpart = isAddress(recipientWallet)
                       ? getAddress(recipientWallet)
                       : undefined;
-                    const txFrom = tx.from
-                      ? getAddress(tx.from as `0x${string}`)
-                      : undefined;
-                    const txTo = getAddress(toAddr);
-
                     const participantsMatch =
                       !!me &&
                       !!counterpart &&
-                      ((txFrom === me && txTo === counterpart) ||
-                        (txFrom === counterpart && txTo === me));
-
-                    const cidMatch = conversationId
-                      ? cid === conversationId
-                      : false;
-
+                      ((getAddress(from) === me &&
+                        getAddress(to) === counterpart) ||
+                        (getAddress(from) === counterpart &&
+                          getAddress(to) === me));
                     if (participantsMatch || cidMatch) {
+                      relevant = true;
                       let content = "(no conv key)";
                       if (conversationKeyRef.current) {
                         try {
                           content = mockDecryptMessage(
-                            ciphertext,
+                            encryptedMessage,
                             conversationKeyRef.current
                           );
                         } catch {
                           content = "(failed to decrypt)";
                         }
                       }
-
                       const isCounterpart =
-                        !!counterpart && txFrom === counterpart;
+                        !!counterpart && getAddress(from) === counterpart;
                       const newMsg = {
-                        id: hash || `${Number(block.number)}:${Date.now()}`,
+                        id: hash,
                         blockNumber: String(Number(block.number)),
-                        from: (txFrom ||
-                          "0x0000000000000000000000000000000000000000") as `0x${string}`,
-                        to: txTo as `0x${string}`,
+                        from: getAddress(from) as `0x${string}`,
+                        to: getAddress(to) as `0x${string}`,
                         content,
                         createdAt: new Date().toISOString(),
                         sender: isCounterpart
@@ -229,27 +296,31 @@ export default function SmartContractMessagePage() {
                               avatar_ipfs_hash: "",
                             },
                       };
-
                       setMessages((prev) => {
-                        if (hash && prev.some((m) => m.id === hash))
-                          return prev;
+                        if (prev.some((m) => m.id === hash)) return prev;
                         return [...prev, newMsg];
                       });
-                      // track newly appended messages via RPC
                       rpcNewCountRef.current += 1;
+                      // Explicit logging of method classification for real-time visibility
+                      console.log(
+                        `[Realtime] ${methodName}: tx ${hash} block ${Number(
+                          block.number
+                        )} cid=${cid.toString()}`
+                      );
                     }
                   }
-                } catch (e) {
-                  console.info("decode sendMessage failed", e);
-                }
+                } catch {}
               }
-            }
+              if (relevant) {
+                processedTxsRef.current.add(hash);
+                appended += 1;
+              }
+            } catch {}
           }
-          // Log a simple statement for monitoring
           console.log(
             `[Realtime] Block ${Number(
               block.number
-            )}: ${count} "Send Message" tx(s) to ${proxy}`
+            )}: appended=${appended} to ${proxy}`
           );
         } catch (e) {
           console.info("watchBlocks handler error", e);
