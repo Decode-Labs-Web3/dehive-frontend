@@ -14,12 +14,12 @@ import { isAddress, getAddress, decodeFunctionData } from "viem";
 import { messageAbi } from "@/abi/messageAbi";
 
 // UI components to mirror DirectMessagePage
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import SmartContractOption from "@/components/common/SmartContractOption";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const PROXY_ADDRESS = process.env.NEXT_PUBLIC_PROXY_ADDRESS as
   | `0x${string}`
@@ -65,6 +65,7 @@ export default function SmartContractMessagePage() {
   const { address, chainId, isConnected } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const publicClient = usePublicClient();
+  const [ isRelayerMode, setIsRelayerMode ] = useState(false);
 
   const proxy = PROXY_ADDRESS;
 
@@ -758,13 +759,7 @@ export default function SmartContractMessagePage() {
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
-          <Button
-            className="h-11 w-11 shrink-0 rounded-full bg-muted text-lg text-muted-foreground hover:bg-accent"
-            disabled
-            title="Attachments are disabled in this view"
-          >
-            +
-          </Button>
+          <SmartContractOption isRelayerMode={isRelayerMode} setIsRelayerMode={setIsRelayerMode}/>
           <div className="flex-1">
             <Textarea
               name="content"
