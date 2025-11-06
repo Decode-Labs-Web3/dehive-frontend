@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { type, channelId } = body;
+    const { type, channelId, page } = body;
 
     if (!channelId || !type) {
       return NextResponse.json(
@@ -55,9 +55,9 @@ export async function POST(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/files/list`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/files/list?conversationId=${channelId}&type=${type}&page=${page}&limit=10`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
           "x-session-id": sessionId,
           "x-fingerprint-hashed": fingerprint,
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
         {
           success: false,
           statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
-          message: error?.message || "Create server failed",
+          message: error?.message || "Fetch file failed",
         },
         { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
       {
         success: true,
         statusCode: response.statusCode || httpStatus.OK,
-        message: response.message || "Following users fetched successfully",
+        message: response.message || "OK",
         data: response.data,
       },
       { status: response.statusCode || httpStatus.OK }

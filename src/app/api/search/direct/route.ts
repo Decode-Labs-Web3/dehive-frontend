@@ -28,11 +28,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { channelId, keyword, countPage } = body;
-
-    console.log("eduhwdilhewodhlwiedukhwedu", channelId);
-    console.log("eduhwdilhewodhlwiedukhwedu", keyword);
-    console.log("eduhwdilhewodhlwiedukhwedu", countPage);
+    const { channelId, keyword, page } = body;
 
     if (!channelId || !keyword ) {
       return NextResponse.json(
@@ -59,7 +55,7 @@ export async function POST(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/conversations/${channelId}/search?search=${keyword}&page=${countPage}&limit=20`,
+      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/conversations/${channelId}/search?search=${keyword}&page=${page}&limit=10`,
       {
         method: "GET",
         headers: {
