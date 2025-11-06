@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import DirectFileList from "@/components/messages/DirectFileList";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import DirectMessageOption from "@/components/messages/DirectMessageOption";
@@ -499,6 +500,7 @@ export default function DirectHistoryView({
             <FontAwesomeIcon icon={faPhone} className="w-4 h-4" />
           </Button>
           <DirectSearchBar setMessageSearchId={setMessageSearchId} />
+          <DirectFileList channelId={channelId} />
           {/* <span className="text-xs text-muted-foreground">
             Page up: {pageUp} {isEndUp && "yes"} --- Page down: {pageDown}{" "}
             {isEndDown && "yes"}

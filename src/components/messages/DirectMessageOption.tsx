@@ -55,7 +55,7 @@ export default function DirectMessageOption({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const webcamRef = useRef<Webcam | null>(null);
+  const webcamRef = useRef<Webcam>(null);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [hasCamError, setHasCamError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -194,8 +194,8 @@ export default function DirectMessageOption({
           <DialogHeader>
             <DialogTitle>Take a photo</DialogTitle>
             <DialogDescription>
-              Chụp ảnh bằng camera của thiết bị. Hãy cấp quyền truy cập camera
-              khi được hỏi.
+              Take a photo using your device camera. Please grant camera access
+              when prompted.
             </DialogDescription>
           </DialogHeader>
 

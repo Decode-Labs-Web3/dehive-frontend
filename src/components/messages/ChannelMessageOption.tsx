@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import Image from "next/image";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
@@ -49,12 +48,16 @@ interface ChannelMessageOptionProps {
   setListUploadFile: React.Dispatch<React.SetStateAction<FileUploadProps[]>>;
 }
 
-export default function ChannelMessageOption({serverId, channelId, setListUploadFile}: ChannelMessageOptionProps) {
+export default function ChannelMessageOption({
+  serverId,
+  channelId,
+  setListUploadFile,
+}: ChannelMessageOptionProps) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const webcamRef = useRef<Webcam | null>(null);
+  const webcamRef = useRef<Webcam>(null);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [hasCamError, setHasCamError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -134,7 +137,7 @@ export default function ChannelMessageOption({serverId, channelId, setListUpload
         setLoading(false);
       }
     },
-    [channelId, serverId]
+    [channelId, serverId, setListUploadFile]
   );
 
   const handleUploadClick = useCallback(() => {
@@ -197,8 +200,8 @@ export default function ChannelMessageOption({serverId, channelId, setListUpload
           <DialogHeader>
             <DialogTitle>Take a photo</DialogTitle>
             <DialogDescription>
-              Chụp ảnh bằng camera của thiết bị. Hãy cấp quyền truy cập camera
-              khi được hỏi.
+              Take a photo using your device camera. Please grant camera access
+              when prompted.
             </DialogDescription>
           </DialogHeader>
 

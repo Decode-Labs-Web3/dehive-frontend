@@ -15,6 +15,7 @@ import FilePreview from "@/components/common/FilePreview";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import DirectFileList from "@/components/messages/DirectFileList";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -409,6 +410,7 @@ export default function DirectMessagePage() {
             <FontAwesomeIcon icon={faPhone} className="w-4 h-4" />
           </Button>
           <DirectSearchBar setMessageSearchId={setMessageSearchId} />
+          <DirectFileList channelId={channelId} />
           {/* <span className="text-xs text-muted-foreground">
             Page {currentPage}
           </span> */}

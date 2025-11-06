@@ -6,7 +6,7 @@ import {
   faX,
   faFile,
   faImage,
-  faVideo,
+  faClapperboard,
   faFileAudio,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -49,7 +49,7 @@ export default function FilePreview({
                 {file.type === "video" && (
                   <div className="w-6 h-6 bg-destructive/10 rounded-full flex items-center justify-center">
                     <FontAwesomeIcon
-                      icon={faVideo}
+                      icon={faClapperboard}
                       className="text-destructive"
                     />
                   </div>

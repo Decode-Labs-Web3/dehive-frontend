@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/files/list`,
+      `${process.env.DEHIVE_CHANNEL_MESSAGING}/api/messages/files/list`,
       {
         method: "POST",
         headers: {
