@@ -8,6 +8,7 @@ import AutoLink from "@/components/common/AutoLink";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
+import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DirectFileList from "@/components/messages/DirectFileList";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
@@ -607,6 +608,7 @@ export default function DirectHistoryView({
                                 </span>
                               )}
                             </div>
+                            <AttachmentList attachments={message.attachments} />
                           </div>
                         ) : (
                           <Textarea

@@ -40,18 +40,18 @@ export default function DirectFileList({ channelId }: DirectFileListProps) {
         "Content-Type": "application/json",
         "X-Frontend-Internal-Request": "true",
       },
-      body: JSON.stringify({ channelId }),
+      body: JSON.stringify({ type, channelId }),
       cache: "no-cache",
       signal: AbortSignal.timeout(10000),
     });
-    if (apiResponse.ok) {
+    if (!apiResponse.ok) {
       const data = await apiResponse.json();
       console.log("Fetched file list:", data);
       // Handle the fetched file list data as needed
     } else {
       console.error("Failed to fetch file list");
     }
-  }, [channelId]);
+  }, [channelId, type]);
 
   useEffect(() => {
     if (open) {

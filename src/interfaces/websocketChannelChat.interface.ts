@@ -14,13 +14,21 @@ export interface MessageChannel {
   channelId: string;
   sender: Sender;
   content: string;
-  attachments: unknown[];
+  attachments: Attachment[];
   isEdited: boolean;
   isDeleted: boolean;
   replyTo: ReplyMessage | null;
   createdAt: string | Date;
   updatedAt: string | Date;
   __v?: number | 0;
+}
+
+interface Attachment {
+  type: string;
+  ipfsHash: string;
+  name: string;
+  size: number;
+  mimeType: string;
 }
 
 interface Sender {
@@ -56,9 +64,6 @@ export interface ServerToClientChannelChat {
   pong: (p: Pong) => void;
   error: (e: WsErrorPayloadChannel) => void;
 }
-
-
-
 
 // ===== Client -> Server =====
 export interface CreateMessageChannelDto {

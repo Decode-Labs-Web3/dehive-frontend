@@ -41,14 +41,14 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { channelId } = body;
+    const { type, channelId } = body;
 
-    if (!channelId || typeof channelId !== "string") {
+    if (!channelId || !type) {
       return NextResponse.json(
         {
           success: false,
           statusCode: httpStatus.BAD_REQUEST,
-          message: "Invalid channelId",
+          message: "Invalid channelId and type",
         },
         { status: httpStatus.BAD_REQUEST }
       );

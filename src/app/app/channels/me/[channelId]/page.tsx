@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
+import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DirectFileList from "@/components/messages/DirectFileList";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
@@ -104,6 +105,7 @@ export default function DirectMessagePage() {
     uploadIds: [],
     replyTo: null,
   });
+  const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
   const [userChatWith, setUserChatWith] = useState<UserChatWith>({
     id: "",
     displayname: "",
@@ -184,11 +186,17 @@ export default function DirectMessagePage() {
       if (message && !sending) {
         send(message, newMessage.uploadIds, newMessage.replyTo);
         setNewMessage({ content: "", uploadIds: [], replyTo: null });
+        setListUploadFile([]);
         setMessageReply(null);
         return;
       }
     }
   };
+
+  useEffect(() => {
+    const uploadIds = listUploadFile.map((file) => file.uploadId);
+    setNewMessage((prev) => ({ ...prev, uploadIds: uploadIds }));
+  }, [listUploadFile]);
 
   const handleEditMessageChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>
@@ -351,8 +359,6 @@ export default function DirectMessagePage() {
     }
   }, [userChatWith.wallets]);
 
-  const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
-
   if (messageSearchId) {
     return (
       <DirectHistoryView
@@ -507,6 +513,7 @@ export default function DirectMessagePage() {
                               </span>
                             )}
                           </div>
+                          <AttachmentList attachments={message.attachments} />
                         </div>
                       ) : (
                         <Textarea

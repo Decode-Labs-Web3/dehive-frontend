@@ -8,13 +8,21 @@ export interface Message {
   conversationId: string;
   sender: Sender;
   content: string;
-  attachments: [];
+  attachments: Attachment[];
   isEdited: boolean;
   isDeleted: boolean;
   replyTo: ReplyMessage | null;
   createdAt: string;
   updatedAt: string;
   __v?: number | 0;
+}
+
+interface Attachment {
+  type: "image" | "video" | "audio" | "file";
+  ipfsHash: string;
+  name: string;
+  size: number;
+  mimeType: string;
 }
 
 interface Sender {
