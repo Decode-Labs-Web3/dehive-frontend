@@ -20,7 +20,7 @@ import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
 import DirectHistoryView from "@/components/search/DirectHistoryView";
-import DirectMessageOption from "@/components/common/DirectMessageOption";
+import DirectMessageOption from "@/components/messages/DirectMessageOption";
 import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import {
   Dialog,

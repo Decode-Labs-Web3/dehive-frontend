@@ -33,6 +33,7 @@
     "@stream-io/node-sdk": "^0.7.12",
     "@stream-io/video-client": "^1.34.1",
     "@stream-io/video-react-sdk": "^1.24.1",
+    "@tanstack/react-query": "^5.90.7",
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

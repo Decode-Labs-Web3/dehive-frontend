@@ -16,7 +16,7 @@ import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelHistoryView from "@/components/search/ChannelHistoryView";
-import ChannelMessageOption from "@/components/common/ChannelMessageOption";
+import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {

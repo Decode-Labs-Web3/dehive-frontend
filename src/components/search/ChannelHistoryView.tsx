@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import ChannelMessageOption from "@/components/common/ChannelMessageOption";
+import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
 import {
   Dialog,
   DialogContent,

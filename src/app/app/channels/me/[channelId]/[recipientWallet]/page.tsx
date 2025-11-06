@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import SmartContractOption from "@/components/common/SmartContractOption";
+import SmartContractOption from "@/components/messages/SmartContractOption";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const PROXY_ADDRESS = process.env.NEXT_PUBLIC_PROXY_ADDRESS as

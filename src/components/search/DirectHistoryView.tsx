@@ -11,7 +11,7 @@ import { useDirectMessage } from "@/hooks/useDirectMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import DirectMessageOption from "@/components/common/DirectMessageOption";
+import DirectMessageOption from "@/components/messages/DirectMessageOption";
 import {
   Dialog,
   DialogContent,
