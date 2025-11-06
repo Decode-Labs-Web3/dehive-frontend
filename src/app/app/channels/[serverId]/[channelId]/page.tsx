@@ -10,12 +10,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
+import AttachmentList from "@/components/common/AttachmentList";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelHistoryView from "@/components/search/ChannelHistoryView";
+import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -48,7 +50,6 @@ import {
   faHashtag,
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
-import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 
 interface FileUploadProps {
   uploadId: string;
@@ -243,6 +244,8 @@ export default function ChannelMessagePage() {
   };
   const listRef = useRef<HTMLDivElement | null>(null);
 
+  const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
+
   const handleNewMessageKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
   ) => {
@@ -261,6 +264,11 @@ export default function ChannelMessagePage() {
       }
     }
   };
+
+  useEffect(() => {
+    const uploadIds = listUploadFile.map((file) => file.uploadId);
+    setNewMessage((prev) => ({ ...prev, uploadIds: uploadIds }));
+  }, [listUploadFile]);
 
   const handleEditMessageChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>
@@ -413,8 +421,6 @@ export default function ChannelMessagePage() {
     };
   }, [userInServer]);
 
-  const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
-
   if (messageSearchId) {
     return (
       <ChannelHistoryView
@@ -539,6 +545,7 @@ export default function ChannelMessagePage() {
                               </span>
                             )}
                           </div>
+                          <AttachmentList attachments={message.attachments} />
                         </div>
                       ) : (
                         <Textarea

@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DirectFileList from "@/components/messages/DirectFileList";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Message } from "@/interfaces/websocketDirectChat.interface";
 import DirectMessageOption from "@/components/messages/DirectMessageOption";
 import {
   Dialog,
@@ -55,31 +56,6 @@ interface FileUploadProps {
   width: number;
   height: number;
   durationMs: number;
-}
-interface MessageProps {
-  _id: string;
-  conversationId: string;
-  sender: {
-    dehive_id: string;
-    username: string;
-    display_name: string;
-    avatar_ipfs_hash: string;
-  };
-  content: string;
-  attachments: [];
-  isEdited: boolean;
-  isDeleted: boolean;
-  replyTo: null | ReplyMessage;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
-interface ReplyMessage {
-  _id: string;
-  senderId: string;
-  content: string;
-  createdAt: string;
 }
 
 interface NewMessage {
@@ -127,11 +103,11 @@ export default function DirectHistoryView({
   const [loadingUp, setLoadingUp] = useState(false);
   const [loadingDown, setLoadingDown] = useState(false);
   const [fristLoad, setfirstLoad] = useState(0);
-  const [messages, setMessages] = useState<MessageProps[]>([]);
-  const [messageDelete, setMessageDelete] = useState<MessageProps | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [messageDelete, setMessageDelete] = useState<Message | null>(null);
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
 
-  const [messageReply, setMessageReply] = useState<MessageProps | null>(null);
+  const [messageReply, setMessageReply] = useState<Message | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
     content: "",
     uploadIds: [],
@@ -201,7 +177,7 @@ export default function DirectHistoryView({
 
   const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const handleMessageReply = (messageReply: MessageProps) => {
+  const handleMessageReply = (messageReply: Message) => {
     setMessageReply(messageReply);
     setNewMessage((prev) => ({
       ...prev,
@@ -222,6 +198,8 @@ export default function DirectHistoryView({
       [event.target.name]: event.target.value,
     }));
   };
+
+  const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
 
   const handleNewMessageKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -244,6 +222,11 @@ export default function DirectHistoryView({
       }
     }
   };
+
+  useEffect(() => {
+    const uploadIds = listUploadFile.map((file) => file.uploadId);
+    setNewMessage((prev) => ({ ...prev, uploadIds: uploadIds }));
+  }, [listUploadFile]);
 
   const [userChatWith, setUserChatWith] = useState<UserChatWith>({
     id: "",
@@ -470,8 +453,6 @@ export default function DirectHistoryView({
 
     firstPinRef.current = true;
   }, [fristLoad, messages]);
-
-  const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">

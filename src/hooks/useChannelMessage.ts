@@ -1,7 +1,7 @@
 "use client";
 
-import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 
 export function useChannelMessage(channelId: string) {

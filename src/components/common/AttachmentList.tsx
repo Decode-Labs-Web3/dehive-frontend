@@ -27,7 +27,7 @@ export default function AttachmentList({
   if (!attachments || attachments.length === 0) return null;
 
   return (
-    <div className="mt-1 columns-2 md:columns-3 gap-2 [column-fill:_balance]">
+    <div className="mt-1 flex flex-col w-40">
       {attachments?.map((att, i) => (
         <div key={i} className="mb-2 break-inside-avoid">
           <AttachmentItem att={att} />

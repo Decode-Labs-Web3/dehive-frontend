@@ -8,10 +8,12 @@ import AutoLink from "@/components/common/AutoLink";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
+import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
 import {
   Dialog,
@@ -47,31 +49,6 @@ interface NewMessageProps {
   content: string;
   uploadIds: string[];
   replyTo: string | null;
-}
-interface MessageProps {
-  _id: string;
-  conversationId: string;
-  sender: {
-    dehive_id: string;
-    username: string;
-    display_name: string;
-    avatar_ipfs_hash: string;
-  };
-  content: string;
-  attachments: [];
-  isEdited: boolean;
-  isDeleted: boolean;
-  replyTo: null | ReplyMessage;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
-interface ReplyMessage {
-  _id: string;
-  senderId: string;
-  content: string;
-  createdAt: string;
 }
 
 interface UserInServerProps {
@@ -111,8 +88,10 @@ export default function ChannelHistoryView({
   setMessageSearchId,
 }: ChannelHistoryViewProps) {
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
-  const [messageDelete, setMessageDelete] = useState<MessageProps | null>(null);
-  const [messages, setMessages] = useState<MessageProps[]>([]);
+  const [messageDelete, setMessageDelete] = useState<MessageChannel | null>(
+    null
+  );
+  const [messages, setMessages] = useState<MessageChannel[]>([]);
   const [isEndUp, setIsEndUp] = useState(false);
   const [pageUp, setPageUp] = useState<number>(0);
   const [isEndDown, setIsEndDown] = useState(false);
@@ -136,14 +115,14 @@ export default function ChannelHistoryView({
   const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
 
   const { send, edit, remove, sending } = useChannelMessage(channelId);
-  const [messageReply, setMessageReply] = useState<MessageProps | null>(null);
+  const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessageProps>({
     content: "",
     uploadIds: [],
     replyTo: null,
   });
 
-  const handleMessageReply = (messageReply: MessageProps) => {
+  const handleMessageReply = (messageReply: MessageChannel) => {
     setMessageReply(messageReply);
     setNewMessage((prev) => ({
       ...prev,
@@ -352,6 +331,8 @@ export default function ChannelHistoryView({
     }));
   };
 
+  const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
+
   const handleNewMessageKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
   ) => {
@@ -374,6 +355,11 @@ export default function ChannelHistoryView({
       }
     }
   };
+
+  useEffect(() => {
+    const uploadIds = listUploadFile.map((file) => file.uploadId);
+    setNewMessage((prev) => ({ ...prev, uploadIds: uploadIds }));
+  }, [listUploadFile]);
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const prevScrollHeightRef = useRef(0);
@@ -464,8 +450,6 @@ export default function ChannelHistoryView({
 
     firstPinRef.current = true;
   }, [fristLoad, messages]);
-
-  const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
@@ -597,6 +581,7 @@ export default function ChannelHistoryView({
                                 </span>
                               )}
                             </div>
+                            <AttachmentList attachments={message.attachments} />
                           </div>
                         ) : (
                           <Textarea

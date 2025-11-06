@@ -1,7 +1,7 @@
 "use client";
 
-import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 
 export function useDirectMessage(conversationId: string) {

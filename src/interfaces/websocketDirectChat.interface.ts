@@ -30,6 +30,18 @@ interface Sender {
   username: string;
   display_name: string;
   avatar_ipfs_hash: string | null;
+  wallets: Wallet[];
+}
+
+interface Wallet {
+  _id: string;
+  address: string;
+  user_id: string;
+  name_service: null;
+  is_primary: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
 }
 
 interface ReplyMessage {
