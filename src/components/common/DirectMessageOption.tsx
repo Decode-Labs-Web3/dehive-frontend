@@ -31,13 +31,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-export default function MessageOption() {
+export default function DirectMessageOption() {
   const { channelId } = useParams<{ channelId: string }>();
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [uploadId, setUploadId] = useState<string[]>([]);
+  const [listUploadFile, setListUploadFile] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  console.log("Upload IDs:", uploadId);
 
   const webcamRef = useRef<Webcam | null>(null);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
@@ -107,7 +106,7 @@ export default function MessageOption() {
           response.statusCode === 201 &&
           response.message === "File uploaded successfully"
         ) {
-          setUploadId((prev) => [...prev, response.data.uploadId]);
+          setListUploadFile((prev) => [...prev, response.data]);
         }
       } catch (error) {
         console.error("Error during file upload:", error);

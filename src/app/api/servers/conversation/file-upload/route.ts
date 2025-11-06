@@ -42,9 +42,10 @@ export async function POST(req: Request) {
 
     const form = await req.formData();
     const file = form.get("file") as File | null;
-    const conversationId = form.get("conversationId")?.toString();
+    const serverId = form.get("serverId")?.toString();
+    const channelId = form.get("channelId")?.toString();
 
-    if (!file || !conversationId) {
+    if (!file || !channelId || !serverId) {
       return NextResponse.json(
         {
           success: false,
@@ -57,10 +58,11 @@ export async function POST(req: Request) {
 
     const forwardForm = new FormData();
     forwardForm.append("file", file);
-    forwardForm.append("conversationId", conversationId);
+    forwardForm.append("serverId", serverId);
+    forwardForm.append("channelId", channelId);
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/files/upload`,
+      `${process.env.DEHIVE_CHANNEL_MESSAGING}/api/messages/files/upload`,
       {
         method: "POST",
         headers: {

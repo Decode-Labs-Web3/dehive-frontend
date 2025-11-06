@@ -13,13 +13,13 @@ import AutoLink from "@/components/common/AutoLink";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
-import MessageOption from "@/components/common/MessageOption";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
 import DirectHistoryView from "@/components/search/DirectHistoryView";
+import DirectMessageOption from "@/components/common/DirectMessageOption";
 import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import {
   Dialog,
@@ -668,7 +668,7 @@ export default function DirectMessagePage() {
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
-          <MessageOption />
+          <DirectMessageOption />
           <div className="flex-1">
             {messageReply && (
               <div className="flex justify-between items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent">
