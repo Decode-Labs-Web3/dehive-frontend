@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import Image from "next/image";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
@@ -31,11 +30,29 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-export default function DirectMessageOption() {
-  const { channelId } = useParams<{ channelId: string }>();
+interface FileUploadProps {
+  uploadId: string;
+  type: "image" | "video" | "audio" | "file";
+  ipfsHash: string;
+  name: string;
+  size: number;
+  mimeType: string;
+  width: number;
+  height: number;
+  durationMs: number;
+}
+
+interface DirectMessageOptionProps {
+  channelId: string;
+  setListUploadFile: React.Dispatch<React.SetStateAction<FileUploadProps[]>>;
+}
+
+export default function DirectMessageOption({
+  channelId,
+  setListUploadFile,
+}: DirectMessageOptionProps) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [listUploadFile, setListUploadFile] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   const webcamRef = useRef<Webcam | null>(null);
@@ -114,7 +131,7 @@ export default function DirectMessageOption() {
         setLoading(false);
       }
     },
-    [channelId]
+    [channelId, setListUploadFile]
   );
 
   const handleUploadClick = useCallback(() => {
@@ -154,7 +171,7 @@ export default function DirectMessageOption() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,video/*,audio/*,*/*"
+              accept="image/*,video/*,audio/*,application/*"
               className="hidden"
               onChange={handleFileChange}
             />

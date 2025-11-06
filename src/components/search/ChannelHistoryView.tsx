@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import { Card, CardContent } from "@/components/ui/card";
+import FilePreview from "@/components/common/FilePreview";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
@@ -82,6 +83,18 @@ interface UserInServerProps {
   avatar_ipfs_hash: string;
   isCall: boolean;
   last_seen: string;
+}
+
+interface FileUploadProps {
+  uploadId: string;
+  type: "image" | "video" | "audio" | "file";
+  ipfsHash: string;
+  name: string;
+  size: number;
+  mimeType: string;
+  width: number;
+  height: number;
+  durationMs: number;
 }
 
 interface ChannelHistoryViewProps {
@@ -452,6 +465,8 @@ export default function ChannelHistoryView({
     firstPinRef.current = true;
   }, [fristLoad, messages]);
 
+  const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
+
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
@@ -771,8 +786,16 @@ export default function ChannelHistoryView({
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
-          <ChannelMessageOption />
+          <ChannelMessageOption
+            serverId={serverId}
+            channelId={channelId}
+            setListUploadFile={setListUploadFile}
+          />
           <div className="flex-1">
+            <FilePreview
+              listUploadFile={listUploadFile}
+              setListUploadFile={setListUploadFile}
+            />
             {messageReply && (
               <div className="flex justify-between items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent">
                 <div>

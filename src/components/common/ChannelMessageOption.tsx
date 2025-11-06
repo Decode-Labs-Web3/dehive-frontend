@@ -31,14 +31,27 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-export default function ChannelMessageOption() {
-  const { serverId, channelId } = useParams<{
-    serverId: string;
-    channelId: string;
-  }>();
+interface FileUploadProps {
+  uploadId: string;
+  type: "image" | "video" | "audio" | "file";
+  ipfsHash: string;
+  name: string;
+  size: number;
+  mimeType: string;
+  width: number;
+  height: number;
+  durationMs: number;
+}
+
+interface ChannelMessageOptionProps {
+  serverId: string;
+  channelId: string;
+  setListUploadFile: React.Dispatch<React.SetStateAction<FileUploadProps[]>>;
+}
+
+export default function ChannelMessageOption({serverId, channelId, setListUploadFile}: ChannelMessageOptionProps) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [listUploadFile, setListUploadFile] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   const webcamRef = useRef<Webcam | null>(null);
@@ -93,15 +106,18 @@ export default function ChannelMessageOption() {
         formData.append("serverId", serverId);
         formData.append("channelId", channelId);
 
-        const apiResponse = await fetch("/api/servers/conversation/file-upload", {
-          method: "POST",
-          headers: {
-            "X-Frontend-Internal-Request": "true",
-          },
-          body: formData,
-          cache: "no-store",
-          signal: AbortSignal.timeout(30000),
-        });
+        const apiResponse = await fetch(
+          "/api/servers/conversation/file-upload",
+          {
+            method: "POST",
+            headers: {
+              "X-Frontend-Internal-Request": "true",
+            },
+            body: formData,
+            cache: "no-store",
+            signal: AbortSignal.timeout(30000),
+          }
+        );
         const response = await apiResponse.json();
         if (!apiResponse.ok) {
           throw new Error(response.message || "Upload failed");
@@ -158,7 +174,7 @@ export default function ChannelMessageOption() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,video/*,audio/*,*/*"
+              accept="image/*,video/*,audio/*,application/*"
               className="hidden"
               onChange={handleFileChange}
             />
