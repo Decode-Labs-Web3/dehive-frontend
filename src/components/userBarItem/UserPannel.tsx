@@ -241,54 +241,63 @@ export default function UserPannel({
         <Tabs
           value={userPannelSetting}
           onValueChange={setUserPannelSetting}
+          orientation="vertical"
           className="flex h-full w-full"
         >
-          <aside className="w-64 border-r border-border">
-            <div className="px-6 pb-5 pt-7">
-              <div className="mt-4 flex items-center gap-3">
+          <aside className="flex h-full w-64 flex-col border-r border-border">
+            <div className="px-6 pb-4 pt-6 shrink-0 border-b border-border bg-background">
+              <div className="mt-2 flex items-center gap-3">
                 <div className="min-w-0">
                   <h1 className="text-lg font-semibold text-foreground">
-                    {" "}
-                    User Pannel Settings{" "}
+                    User Panel Settings
                   </h1>
                 </div>
               </div>
             </div>
 
-            <TabsList className="flex flex-col w-full bg-transparent gap-0 p-0">
-              <TabsTrigger
-                value="account"
-                className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+            <div className="flex-1 overflow-y-auto pt-4">
+              <TabsList
+                className="flex flex-col w-full bg-transparent gap-0 p-0"
+                vertical
               >
-                My Account
-              </TabsTrigger>
-              <TabsTrigger
-                value="profile"
-                className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
-              >
-                Profiles
-              </TabsTrigger>
-              <TabsTrigger
-                value="theme"
-                className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
-              >
-                Theme
-              </TabsTrigger>
-            </TabsList>
+                <TabsTrigger
+                  value="account"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  My Account
+                </TabsTrigger>
+                <TabsTrigger
+                  value="profile"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  Profiles
+                </TabsTrigger>
+                <TabsTrigger
+                  value="theme"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  Theme
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-            <div className="mx-3 my-4 w-auto h-px bg-border" />
-
-            <Button
-              variant="destructive"
-              className="w-full flex items-center justify-between px-3"
-              onClick={handleLogout}
-            >
-              <span>Logout</span>
-              <FontAwesomeIcon icon={faRightFromBracket} />
-            </Button>
+            <div className="mt-2 shrink-0 px-3 pb-4">
+              <div className="mb-4 h-px w-full bg-border" />
+              <Button
+                variant="destructive"
+                className="w-full flex items-center justify-between px-3"
+                onClick={handleLogout}
+              >
+                <span>Logout</span>
+                <FontAwesomeIcon icon={faRightFromBracket} />
+              </Button>
+            </div>
           </aside>
 
-          <section className="flex-1 overflow-y-auto">
+          <section className="relative flex flex-1 flex-col bg-background">
             <header className="flex items-center justify-between border-b border-border px-10 py-7">
               <div>
                 <div className="flex flex-col space-y-1.5 text-center sm:text-left">

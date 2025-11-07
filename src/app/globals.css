@@ -100,3 +100,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom vertical tabs styling for sidebar */
+[data-radix-tabs-list] {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  background-color: transparent !important;
+  gap: 0 !important;
+  margin: 0 !important; /* Avoid pushing content under/overlapping header/footer */
+  padding: 0 !important;
+}
+
+/* Enhanced active tab styling for better visibility */
+[data-radix-tabs-trigger][data-state="active"] {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+  font-weight: 600 !important;
+  border-left: 3px solid hsl(var(--primary)) !important;
+}

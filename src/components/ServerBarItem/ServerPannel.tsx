@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { serverTag } from "@/constants/index.constants";
@@ -11,6 +11,7 @@ import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -52,7 +53,7 @@ interface ServerProps {
   _v: boolean;
 }
 
-interface ServerPannel {
+interface ServerPannelProps {
   server: ServerProps;
   fetchServerInfo: () => void;
   setServerPannel: React.Dispatch<React.SetStateAction<boolean>>;
@@ -64,24 +65,21 @@ export default function ServerPannel({
   fetchServerInfo,
   setServerPannel,
   setServerSettingModal,
-}: ServerPannel) {
+}: ServerPannelProps) {
   const router = useRouter();
   const { triggerRefeshServer } = useServerRefresh();
 
-  const allFalse = {
-    profile: false,
-    tag: false,
-    members: false,
-    invites: false,
-    role: false,
-    bans: false,
-    delete: false,
-  };
+  // Ensure the tabs list isn't scrolled past the first items on mount
+  const tabsListContainerRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = tabsListContainerRef.current;
+    if (el) {
+      el.scrollTop = 0;
+    }
+  }, []);
 
-  const [serverPannelSetting, setServerPannelSetting] = useState({
-    ...allFalse,
-    profile: true,
-  });
+  const [serverPannelSetting, setServerPannelSetting] =
+    useState<string>("profile");
 
   const [editServerForm, setEditServerForm] = useState({
     name: server.name,
@@ -210,131 +208,130 @@ export default function ServerPannel({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="relative z-[101] flex h-full w-full border border-border bg-background text-foreground">
-        <aside className="flex w-64 flex-col border-r border-border bg-secondary">
-          <div className="px-6 pb-5 pt-7">
-            <div className="mt-4 flex items-center gap-3">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {editServerForm.name}
-              </p>
-            </div>
-          </div>
-
-          <nav className="mt-2 flex-1 space-y-1 px-3">
-            <Button
-              className="w-full justify-start bg-background text-foreground hover:bg-accent"
-              onClick={() =>
-                setServerPannelSetting({ ...allFalse, profile: true })
-              }
-            >
-              Server Profile
-            </Button>
-
-            <Button
-              className="w-full justify-start bg-background text-foreground hover:bg-accent"
-              onClick={() => setServerPannelSetting({ ...allFalse, tag: true })}
-            >
-              Server Tag
-            </Button>
-
-            <Button
-              className="w-full justify-start bg-background text-foreground hover:bg-accent"
-              onClick={() =>
-                setServerPannelSetting({ ...allFalse, members: true })
-              }
-            >
-              Members
-            </Button>
-
-            <Button
-              className="w-full justify-start bg-background text-foreground hover:bg-accent"
-              onClick={() =>
-                setServerPannelSetting({ ...allFalse, invites: true })
-              }
-            >
-              Invites
-            </Button>
-
-            <Button
-              className="w-full justify-start bg-background text-foreground hover:bg-accent"
-              onClick={() => {
-                setServerPannelSetting({ ...allFalse, role: true });
-              }}
-            >
-              Role
-            </Button>
-
-            <Button
-              className="w-full justify-start bg-background text-foreground hover:bg-accent"
-              onClick={() => {
-                setServerPannelSetting({ ...allFalse, bans: true });
-              }}
-            >
-              Bans
-            </Button>
-
-            <div className="my-4 border border-foreground" />
-
-            <Button
-              className="w-full justify-between bg-destructive text-destructive-foreground shadow hover:bg-destructive/90"
-              onClick={() => {
-                setServerPannelSetting({ ...allFalse, delete: true });
-              }}
-            >
-              Delete Server
-              <FontAwesomeIcon icon={faTrashCan} />
-            </Button>
-          </nav>
-        </aside>
-
-        <section className="relative flex flex-1 flex-col bg-background">
-          <header className="flex items-center justify-between border-b border-border px-10 py-7">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {true ? "Overview" : "Permissions"}
-              </p>
-              <h2 className="text-2xl font-semibold text-foreground">
-                {true
-                  ? "Customize your channel"
-                  : "Control who can access these channels"}
-              </h2>
+        <Tabs
+          value={serverPannelSetting}
+          onValueChange={setServerPannelSetting}
+          orientation="vertical"
+          className="flex h-full w-full"
+        >
+          <aside className="flex h-full w-64 flex-col border-r border-border">
+            <div className="px-6 pb-4 pt-6 shrink-0 border-b border-border bg-background">
+              <div className="mt-4 flex items-center gap-3">
+                <div className="min-w-0">
+                  <h1 className="text-lg font-semibold text-foreground">
+                    Server Settings
+                  </h1>
+                </div>
+              </div>
             </div>
 
-            <Button
-              size="sm"
-              disabled={serverInfoChange}
-              onClick={() => {
-                if (serverInfoChange) return;
-                setServerPannel(false);
-                setServerSettingModal(false);
-              }}
-              className="flex flex-col items-center gap-1 text-xs uppercase bg-background text-foreground hover:bg-accent"
-            >
-              <span className="rounded-full border border-border p-2 ">
-                <FontAwesomeIcon icon={faX} />
-              </span>
-              Esc
-            </Button>
-          </header>
+            <div className="flex-1 overflow-y-auto pt-4">
+              <TabsList
+                className="flex flex-col w-full bg-transparent gap-0 p-0"
+                vertical
+              >
+                <TabsTrigger
+                  value="profile"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  Server Profile
+                </TabsTrigger>
+                <TabsTrigger
+                  value="tag"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  Server Tag
+                </TabsTrigger>
+                <TabsTrigger
+                  value="members"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  Members
+                </TabsTrigger>
+                <TabsTrigger
+                  value="invites"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  Invites
+                </TabsTrigger>
+                <TabsTrigger
+                  value="role"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  Role
+                </TabsTrigger>
+                <TabsTrigger
+                  value="bans"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  Bans
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-          <div className="flex-1 overflow-y-auto px-10 py-8">
-            {serverPannelSetting.members && (
-              <>
+            <div className="mt-2 shrink-0 px-3 pb-4">
+              <div className="mb-4 h-px w-full bg-border" />
+              <Button
+                variant="destructive"
+                className="w-full flex items-center justify-between px-3"
+                onClick={() => setServerPannelSetting("delete")}
+              >
+                <span>Delete Server</span>
+                <FontAwesomeIcon icon={faTrashCan} />
+              </Button>
+            </div>
+          </aside>
+
+          <section className="relative flex flex-1 flex-col bg-background">
+            <header className="flex items-center justify-between border-b border-border px-10 py-7">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {true ? "Overview" : "Permissions"}
+                </p>
+                <h2 className="text-2xl font-semibold text-foreground">
+                  {true
+                    ? "Customize your channel"
+                    : "Control who can access these channels"}
+                </h2>
+              </div>
+
+              <Button
+                size="sm"
+                disabled={serverInfoChange}
+                onClick={() => {
+                  if (serverInfoChange) return;
+                  setServerPannel(false);
+                  setServerSettingModal(false);
+                }}
+                className="flex flex-col items-center gap-1 text-xs uppercase bg-background text-foreground hover:bg-accent"
+              >
+                <span className="rounded-full border border-border p-2 ">
+                  <FontAwesomeIcon icon={faX} />
+                </span>
+                Esc
+              </Button>
+            </header>
+
+            <div className="flex-1 overflow-y-auto px-10 py-8">
+              <TabsContent value="members" className="mt-0">
                 <ServerBarItems.ServerMembers
                   server={server}
                   fetchServerInfo={fetchServerInfo}
                   setServerPannel={setServerPannel}
                 />
-              </>
-            )}
+              </TabsContent>
 
-            {serverPannelSetting.bans && (
-              <>
+              <TabsContent value="bans" className="mt-0">
                 <ServerBarItems.ServerBans server={server} />
-              </>
-            )}
+              </TabsContent>
 
-            {serverPannelSetting.profile && (
-              <>
+              <TabsContent value="profile" className="mt-0">
                 <div className="max-w-xl mt-4 space-y-6">
                   <div className="space-y-2">
                     <Label
@@ -369,98 +366,94 @@ export default function ServerPannel({
                     />
                   </div>
                 </div>
-              </>
-            )}
+              </TabsContent>
 
-            {serverPannelSetting.tag && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Server Tags</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
-                    {serverTag.map((tag) => (
-                      <Button
-                        key={tag}
-                        onClick={() => toggleTag(tag)}
-                        className={`justify-start ${
-                          selectedTags.includes(tag)
-                            ? "bg-background text-primary-foreground"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                            <FontAwesomeIcon icon={tagIcon[tag]} />
+              <TabsContent value="tag" className="mt-0">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Server Tags</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-3">
+                      {serverTag.map((tag) => (
+                        <Button
+                          key={tag}
+                          onClick={() => toggleTag(tag)}
+                          className={`justify-start ${
+                            selectedTags.includes(tag)
+                              ? "bg-background text-primary-foreground"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          <span className="flex items-center gap-3">
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                              <FontAwesomeIcon icon={tagIcon[tag]} />
+                            </span>
+                            <span>{tag}</span>
                           </span>
-                          <span>{tag}</span>
-                        </span>
+                        </Button>
+                      ))}
+                    </div>
+                    <Button
+                      onClick={() => setSelectedTags([])}
+                      className={`mt-3 justify-start ${
+                        selectedTags.length === 0
+                          ? "bg-background text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      No tag
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </div>
+
+            {serverInfoChange && (
+              <Card className="pointer-events-auto absolute inset-x-8 bottom-6 border-success/30 bg-success/10">
+                <CardContent className="px-6 py-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold">
+                        Careful — you have unsaved changes!
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Save or reset your edits before closing this panel.
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 gap-3">
+                      <Button
+                        size="sm"
+                        className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => {
+                          setEditServerForm({
+                            name: server.name,
+                            description: server.description,
+                          });
+                        }}
+                      >
+                        Reset
                       </Button>
-                    ))}
+                      <Button
+                        size="sm"
+                        className="bg-success text-success-foreground hover:opacity-90"
+                        onClick={handleEditServer}
+                      >
+                        Save Changes
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    onClick={() => setSelectedTags([])}
-                    className={`mt-3 justify-start ${
-                      selectedTags.length === 0
-                        ? "bg-background text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    No tag
-                  </Button>
                 </CardContent>
               </Card>
             )}
-          </div>
-
-          {serverInfoChange && (
-            <Card className="pointer-events-auto absolute inset-x-8 bottom-6 border-success/30 bg-success/10">
-              <CardContent className="px-6 py-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold">
-                      Careful — you have unsaved changes!
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Save or reset your edits before closing this panel.
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 gap-3">
-                    <Button
-                      size="sm"
-                      className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
-                      onClick={() => {
-                        setEditServerForm({
-                          name: server.name,
-                          description: server.description,
-                        });
-                      }}
-                    >
-                      Reset
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="bg-success text-success-foreground hover:opacity-90"
-                      onClick={handleEditServer}
-                    >
-                      Save Changes
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </section>
+          </section>
+        </Tabs>
       </div>
 
       <Dialog
-        open={serverPannelSetting.delete}
+        open={serverPannelSetting === "delete"}
         onOpenChange={(open) =>
-          setServerPannelSetting((prev) => ({
-            ...prev,
-            delete: open,
-            profile: open ? false : true,
-          }))
+          setServerPannelSetting(open ? "delete" : "profile")
         }
       >
         <DialogContent>
@@ -479,13 +472,7 @@ export default function ServerPannel({
           <DialogFooter>
             <Button
               className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
-              onClick={() =>
-                setServerPannelSetting((prev) => ({
-                  ...prev,
-                  delete: false,
-                  profile: true,
-                }))
-              }
+              onClick={() => setServerPannelSetting("profile")}
             >
               Cancel
             </Button>
