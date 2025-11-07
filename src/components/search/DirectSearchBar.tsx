@@ -4,15 +4,15 @@ import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useState, useRef, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 interface SearchResultProps {
   _id: string;
@@ -52,17 +52,11 @@ export default function DirectSearchBar({
   const prevScrollHeightRef = useRef(0);
 
   const handleKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPage(0);
-    setSerachResult([]);
-    setIsLastPage(false);
     setKeyword(event.target.value);
-    prevScrollHeightRef.current = 0;
-    if (event.target.value.trim().length > 0) {
-      fetchSearchList(event.target.value);
-    }
   };
 
-  const fetchSearchList = async (keywordSearch: string) => {
+  const fetchSearchList = useCallback(async () => {
+if (!keyword.trim()) return;
     if (isLastPage) return;
     try {
       const apiResponse = await fetch("/api/search/direct", {
@@ -73,7 +67,7 @@ export default function DirectSearchBar({
         },
         body: JSON.stringify({
           channelId,
-          keyword: keywordSearch,
+          keyword,
           page,
         }),
         cache: "no-cache",
@@ -104,7 +98,26 @@ export default function DirectSearchBar({
       console.log("server search message error");
       console.groupEnd();
     }
-  };
+  }, [channelId, keyword, page, isLastPage]);
+
+  useEffect(() => {
+    setPage(0);
+    setIsLastPage(false);
+    setSerachResult([]);
+
+    if (!keyword.trim()) return;
+    const id = setTimeout(() => {
+      fetchSearchList();
+    }, 1000);
+
+    return () => clearTimeout(id);
+  }, [keyword]);
+
+  useEffect(() => {
+    if (!keyword.trim()) return;
+    if (page === 0) return;
+    fetchSearchList();
+  }, [page, keyword, fetchSearchList]);
 
   const searchRef = useRef<HTMLDivElement | null>(null);
   const handleScroll = () => {
@@ -176,9 +189,9 @@ export default function DirectSearchBar({
                 </div>
               ) : (
                 <div className="flex flex-col">
-                  {searchResult.map((result, index) => (
+                  {searchResult.map((result) => (
                     <button
-                      key={result._id + index}
+                      key={result._id}
                       className="text-left px-4 py-3 hover:bg-muted border-b border-border"
                       onClick={() => {
                         setMessageSearchId(result._id);
