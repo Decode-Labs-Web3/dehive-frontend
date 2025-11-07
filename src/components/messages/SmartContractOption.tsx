@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { faPlus, faMoneyCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faMoneyCheck } from "@fortawesome/free-solid-svg-icons";
 import {
   Popover,
   PopoverContent,

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   useCallback,
   useRef,
@@ -10,7 +11,6 @@ import {
   useEffect,
   type ChangeEvent,
 } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUpload,
   faCamera,

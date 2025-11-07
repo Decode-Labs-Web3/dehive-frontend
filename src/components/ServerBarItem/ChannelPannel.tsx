@@ -146,11 +146,6 @@ export default function ChannelPannel({
               }`}
             >
               Overview
-              {tabOption.overview && (
-                <span className="rounded-full bg-[hsl(var(--success))] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[hsl(var(--success-foreground))]">
-                  Active
-                </span>
-              )}
             </button>
 
             <button
@@ -167,11 +162,6 @@ export default function ChannelPannel({
               }`}
             >
               Permissions
-              {tabOption.permissions && (
-                <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] uppercase tracking-wide text-accent-foreground">
-                  Beta
-                </span>
-              )}
             </button>
 
             <button
@@ -188,11 +178,6 @@ export default function ChannelPannel({
               }`}
             >
               Invites
-              {tabOption.invites && (
-                <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] uppercase tracking-wide text-accent-foreground">
-                  Beta
-                </span>
-              )}
             </button>
 
             <button
@@ -209,11 +194,6 @@ export default function ChannelPannel({
               }`}
             >
               Integrations
-              {tabOption.integrations && (
-                <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] uppercase tracking-wide text-accent-foreground">
-                  Beta
-                </span>
-              )}
             </button>
 
             <div className="my-4 border border-foreground" />

@@ -18,10 +18,10 @@ import ChannelFileList from "@/components/messages/ChannelFileList";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelHistoryView from "@/components/search/ChannelHistoryView";
-import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
-import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
+import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
 import {
   Dialog,
   DialogContent,
@@ -729,7 +729,6 @@ export default function ChannelMessagePage() {
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
           <ChannelMessageOption
             serverId={serverId}
-            channelId={channelId}
             setListUploadFile={setListUploadFile}
           />
           <div className="flex-1">

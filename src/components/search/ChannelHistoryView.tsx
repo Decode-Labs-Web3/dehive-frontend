@@ -774,7 +774,6 @@ export default function ChannelHistoryView({
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
           <ChannelMessageOption
             serverId={serverId}
-            channelId={channelId}
             setListUploadFile={setListUploadFile}
           />
           <div className="flex-1">

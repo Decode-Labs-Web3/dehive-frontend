@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { getCookie } from "@/utils/cookie.utils";
 import ServerBarItems from "@/components/ServerBarItem";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useState, useCallback, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,7 +12,6 @@ import {
   faPlus,
   faCopy,
 } from "@fortawesome/free-solid-svg-icons";
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
 
 interface CategoryProps {
   _id: string;

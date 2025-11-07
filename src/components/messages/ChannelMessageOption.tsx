@@ -3,14 +3,13 @@
 import Image from "next/image";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   useCallback,
   useRef,
   useState,
   useEffect,
-  type ChangeEvent,
 } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUpload,
   faCamera,
@@ -44,13 +43,11 @@ interface FileUploadProps {
 
 interface ChannelMessageOptionProps {
   serverId: string;
-  channelId: string;
   setListUploadFile: React.Dispatch<React.SetStateAction<FileUploadProps[]>>;
 }
 
 export default function ChannelMessageOption({
   serverId,
-  channelId,
   setListUploadFile,
 }: ChannelMessageOptionProps) {
   const [open, setOpen] = useState(false);
@@ -145,7 +142,7 @@ export default function ChannelMessageOption({
   }, [loading]);
 
   const handleFileChange = useCallback(
-    async (e: ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       try {
         const file = e.target.files?.[0];
         if (!file) return;
