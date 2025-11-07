@@ -260,6 +260,7 @@ export default function ChannelMessagePage() {
           uploadIds: [],
           replyTo: null,
         });
+        setListUploadFile([]);
         setMessageReply(null);
         return;
       }
@@ -456,7 +457,7 @@ export default function ChannelMessagePage() {
             setMessageSearchId={setMessageSearchId}
           />
           <AirdropDropdown serverId={serverId} />
-          <ChannelFileList serverId={serverId}/>
+          <ChannelFileList serverId={serverId} />
           {/* <span className="text-xs text-muted-foreground">
             Page {currentPage}
           </span> */}

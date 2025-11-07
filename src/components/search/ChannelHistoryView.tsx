@@ -348,6 +348,7 @@ export default function ChannelHistoryView({
           uploadIds: [],
           replyTo: null,
         });
+        setListUploadFile([]);
         setMessageReply(null);
         // console.log("Push to channel after send message");
         setMessageSearchId(null);

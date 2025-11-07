@@ -1,18 +1,15 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import { toastError } from "@/utils/toast.utils";
-import { useSearchParams, useRouter } from "next/navigation";
-import {
-  faRobot,
-  faFaceSmile,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { toastError } from "@/utils/toast.utils";
+import { Spinner } from "@/components/ui/spinner";
+import { useSearchParams, useRouter } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRobot, faFaceSmile } from "@fortawesome/free-solid-svg-icons";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function Authorize() {
+export default function AuthorizePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const ssoToken = searchParams.get("sso_token");
@@ -72,20 +69,20 @@ export default function Authorize() {
   }, [handleAuthorize]);
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
-      <Card className="w-full max-w-xl bg-neutral-900 border-gray-800 shadow-xl">
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+      <Card className="w-full max-w-xl bg-card border-border shadow-xl">
         <CardHeader>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-200 text-lg">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-lg">
               <FontAwesomeIcon
                 icon={faRobot}
-                className="w-6 h-6 text-gray-200"
+                className="w-6 h-6 text-muted-foreground"
                 aria-hidden
               />
             </div>
             <div>
               <CardTitle className="text-lg">Authorizing</CardTitle>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Finishing SSO flow — please wait
               </p>
             </div>
@@ -94,25 +91,18 @@ export default function Authorize() {
 
         <CardContent>
           <div className="flex items-center gap-3">
-            <FontAwesomeIcon
-              icon={faSpinner}
-              spin
-              className="text-gray-400 w-5 h-5"
-            />
-            <div className="text-sm text-gray-300 flex items-center gap-2">
+            <Spinner className="text-muted-foreground w-5 h-5" />
+            <div className="text-sm text-card-foreground flex items-center gap-2">
               <span>Waiting for authorization from the SSO server...</span>
               <FontAwesomeIcon
                 icon={faFaceSmile}
-                className="text-gray-400 w-4 h-4"
+                className="text-muted-foreground w-4 h-4"
               />
             </div>
           </div>
 
           <div className="mt-6 flex justify-end gap-3">
-            <Button
-              onClick={handleAuthorize}
-              className="bg-gray-800 border border-gray-700 text-gray-200 hover:bg-gray-700"
-            >
+            <Button onClick={handleAuthorize} variant="outline">
               Retry
             </Button>
           </div>

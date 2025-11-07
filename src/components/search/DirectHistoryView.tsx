@@ -215,6 +215,7 @@ export default function DirectHistoryView({
           uploadIds: [],
           replyTo: null,
         });
+        setListUploadFile([]);
         setMessageReply(null);
         // console.log("Push to me after send message");
         setMessageSearchId(null);

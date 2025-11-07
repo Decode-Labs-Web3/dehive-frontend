@@ -12,7 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -20,7 +22,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-// Dialog removed from this component to avoid nested portal/portal recursion
 
 interface UserDataProps {
   _id: string;
@@ -72,10 +73,7 @@ export default function UserPannel({
     }
   };
 
-  const allFalse = { account: false, profile: false, theme: false };
-  const [userPannelSetting, setUserPannelSetting] = useState<
-    Record<string, boolean>
-  >({ ...allFalse, account: true });
+  const [userPannelSetting, setUserPannelSetting] = useState<string>("account");
   const [loadingAvatar, setLoadingAvartar] = useState({
     loading: false,
     new: false,
@@ -240,388 +238,379 @@ export default function UserPannel({
   const content = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       <div className="relative z-[101] flex h-full w-full border border-border bg-background text-foreground">
-        <aside className="flex w-64 flex-col border-r border-border bg-secondary">
-          <div className="px-6 pb-5 pt-7">
-            <div className="mt-4 flex items-center gap-3">
-              <div className="min-w-0">
-                <h1> User Pannel Settings </h1>
+        <Tabs
+          value={userPannelSetting}
+          onValueChange={setUserPannelSetting}
+          className="flex h-full w-full"
+        >
+          <aside className="w-64 border-r border-border">
+            <div className="px-6 pb-5 pt-7">
+              <div className="mt-4 flex items-center gap-3">
+                <div className="min-w-0">
+                  <h1 className="text-lg font-semibold text-foreground">
+                    {" "}
+                    User Pannel Settings{" "}
+                  </h1>
+                </div>
               </div>
             </div>
-          </div>
 
-          <nav className="mt-2 flex-1 flex flex-col gap-2 justify-start items-start space-y-1 px-3">
-            <Button
-              variant="ghost"
-              className="w-full text-left"
-              onClick={() =>
-                setUserPannelSetting({ ...allFalse, account: true })
-              }
-            >
-              My Account
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full text-left"
-              onClick={() =>
-                setUserPannelSetting({ ...allFalse, profile: true })
-              }
-            >
-              Profiles
-            </Button>
+            <TabsList className="flex flex-col w-full bg-transparent gap-0 p-0">
+              <TabsTrigger
+                value="account"
+                className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+              >
+                My Account
+              </TabsTrigger>
+              <TabsTrigger
+                value="profile"
+                className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+              >
+                Profiles
+              </TabsTrigger>
+              <TabsTrigger
+                value="theme"
+                className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+              >
+                Theme
+              </TabsTrigger>
+            </TabsList>
 
-            <Button
-              variant="ghost"
-              className="w-full text-left"
-              onClick={() => setUserPannelSetting({ ...allFalse, theme: true })}
-            >
-              Theme
-            </Button>
-
-            <div className="my-4 w-full border border-foreground" />
+            <div className="mx-3 my-4 w-auto h-px bg-border" />
 
             <Button
               variant="destructive"
-              className="w-full flex items-center justify-between"
+              className="w-full flex items-center justify-between px-3"
               onClick={handleLogout}
             >
               <span>Logout</span>
               <FontAwesomeIcon icon={faRightFromBracket} />
             </Button>
-          </nav>
-        </aside>
+          </aside>
 
-        <section className="relative flex flex-1 flex-col bg-background">
-          <header className="flex items-center justify-between border-b border-border px-10 py-7">
-            <div>
-              <div className="flex flex-col space-y-1.5 text-center sm:text-left">
-                <h2 className="text-2xl font-semibold text-foreground">
-                  User Panel
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Manage your account and profile settings.
-                </p>
+          <section className="flex-1 overflow-y-auto">
+            <header className="flex items-center justify-between border-b border-border px-10 py-7">
+              <div>
+                <div className="flex flex-col space-y-1.5 text-center sm:text-left">
+                  <h2 className="text-2xl font-semibold text-foreground">
+                    User Panel
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Manage your account and profile settings.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <Button
-              onClick={() => setUserPannel(false)}
-              variant="ghost"
-              className="flex flex-col items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground"
-            >
-              <span className="rounded-full border border-border p-2">
-                <FontAwesomeIcon icon={faX} />
-              </span>
-              Esc
-            </Button>
-          </header>
+              <Button
+                onClick={() => setUserPannel(false)}
+                variant="ghost"
+                className="flex flex-col items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground"
+              >
+                <span className="rounded-full border border-border p-2">
+                  <FontAwesomeIcon icon={faX} />
+                </span>
+                Esc
+              </Button>
+            </header>
 
-          <div className="flex-1 overflow-y-auto px-10 py-8">
-            {userPannelSetting.account && (
-              <div className="max-w-2xl space-y-5">
-                <h2 className="text-xl font-semibold text-foreground mb-5">
-                  My Account
-                </h2>
+            <div className="px-10 py-8">
+              <TabsContent value="account">
+                <div className="max-w-2xl space-y-5">
+                  <h2 className="text-xl font-semibold text-foreground mb-5">
+                    My Account
+                  </h2>
 
-                <Card className="bg-secondary rounded-lg">
-                  <CardHeader className="flex items-center gap-4 p-4">
-                    <div className="relative">
-                      <Avatar>
-                        <AvatarImage
-                          src={`https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`}
-                        />
-                        <AvatarFallback>
-                          {userData?.display_name} Avatar
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="absolute bottom-0 right-0 w-6 h-6 bg-[hsl(var(--success))] rounded-full border-4 border-secondary"></div>
-                    </div>
-                    <div className="flex-1">
-                      <CardTitle className="text-xl">
-                        {userData.display_name}
-                      </CardTitle>
-                      <CardDescription className="text-sm text-muted-foreground">
-                        @{userData.username}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      onClick={() =>
-                        setUserPannelSetting({ ...allFalse, profile: true })
-                      }
-                      size="sm"
-                      className="px-3"
-                    >
-                      Edit User Profile
-                    </Button>
-                  </CardHeader>
-                </Card>
-
-                <Card className="bg-secondary rounded-lg">
-                  <CardHeader className="p-4">
-                    <CardTitle className="text-xs uppercase text-muted-foreground">
-                      Wallet
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 flex justify-center">
-                    <Wallet />
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-secondary rounded-lg">
-                  <CardHeader className="p-4">
-                    <CardTitle className="text-xs uppercase text-muted-foreground">
-                      Display Name
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between mb-2">
+                  <Card className="bg-secondary rounded-lg">
+                    <CardHeader className="flex items-center gap-4 p-4">
+                      <div className="relative">
+                        <Avatar>
+                          <AvatarImage
+                            src={`https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`}
+                          />
+                          <AvatarFallback>
+                            {userData?.display_name} Avatar
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute bottom-0 right-0 w-6 h-6 bg-[hsl(var(--success))] rounded-full border-4 border-secondary"></div>
+                      </div>
                       <div className="flex-1">
-                        <p className="text-sm text-foreground">
+                        <CardTitle className="text-xl">
                           {userData.display_name}
-                        </p>
+                        </CardTitle>
+                        <CardDescription className="text-sm text-muted-foreground">
+                          @{userData.username}
+                        </CardDescription>
                       </div>
                       <Button
-                        onClick={() =>
-                          setUserPannelSetting({ ...allFalse, profile: true })
-                        }
-                        variant="secondary"
+                        onClick={() => setUserPannelSetting("profile")}
                         size="sm"
+                        className="px-3"
                       >
-                        Edit
+                        Edit User Profile
                       </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardHeader>
+                  </Card>
 
-                <Card className="bg-secondary rounded-lg">
-                  <CardHeader className="p-4">
-                    <CardTitle className="text-xs uppercase text-muted-foreground">
+                  <Card className="bg-secondary rounded-lg">
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-xs uppercase text-muted-foreground">
+                        Wallet
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 flex justify-center">
+                      <Wallet />
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-secondary rounded-lg">
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-xs uppercase text-muted-foreground">
+                        Display Name
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex-1">
+                          <p className="text-sm text-foreground">
+                            {userData.display_name}
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => setUserPannelSetting("profile")}
+                          variant="secondary"
+                          size="sm"
+                        >
+                          Edit
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-secondary rounded-lg">
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-xs uppercase text-muted-foreground">
+                        Bio
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <p className="text-sm text-foreground">
+                            {userData.bio || "No bio yet"}
+                          </p>
+                        </div>
+                        <Button variant="secondary" size="sm">
+                          Edit
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-secondary rounded-lg">
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-sm font-semibold uppercase text-muted-foreground">
+                        Stats
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Servers
+                          </p>
+                          <p className="text-lg font-semibold text-foreground">
+                            {userData.server_count}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Role
+                          </p>
+                          <p className="text-lg font-semibold text-foreground">
+                            {userData.dehive_role}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Following
+                          </p>
+                          <p className="text-lg font-semibold text-foreground">
+                            {userData.following_number}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Followers
+                          </p>
+                          <p className="text-lg font-semibold text-foreground">
+                            {userData.followers_number}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="profile">
+                <div className="max-w-2xl space-y-5">
+                  <h2 className="text-xl font-semibold text-foreground mb-5">
+                    My Profile
+                  </h2>
+
+                  <div className="bg-secondary rounded-lg p-4 mb-4">
+                    <Label className="block text-xs uppercase text-muted-foreground mb-3">
+                      Avatar
+                    </Label>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={openFilePicker}
+                      className="w-32 h-32 rounded-xl border-2 border-border overflow-hidden relative cursor-pointer group flex items-center justify-center"
+                      aria-label="Change avatar"
+                      title="Click to change avatar"
+                    >
+                      {loadingAvatar.loading ? (
+                        <div className="text-sm text-muted-foreground">
+                          Loading...
+                        </div>
+                      ) : (
+                        <Avatar>
+                          <AvatarImage
+                            src={`https://ipfs.de-id.xyz/ipfs/${updateUserInfo.avatar_ipfs_hash}`}
+                          />
+                          <AvatarFallback>
+                            {userData?.display_name} Avatar
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors grid place-items-center text-white text-sm font-medium">
+                        <span className="opacity-0 group-hover:opacity-100 transition-opacity text-center">
+                          Click to upload
+                        </span>
+                      </div>
+
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvartarUpload}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-secondary rounded-lg p-4 mb-4">
+                    <Label
+                      htmlFor="display_name"
+                      className="block text-xs uppercase text-muted-foreground mb-2"
+                    >
+                      Display Name
+                    </Label>
+                    <Input
+                      id="display_name"
+                      name="display_name"
+                      value={updateUserInfo.display_name}
+                      onChange={handleUserInfoChange}
+                      placeholder="Enter display name"
+                    />
+                  </div>
+
+                  <div className="bg-secondary rounded-lg p-4 mb-4">
+                    <Label
+                      htmlFor="bio"
+                      className="block text-xs uppercase text-muted-foreground mb-2"
+                    >
                       Bio
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <p className="text-sm text-foreground">
-                          {userData.bio || "No bio yet"}
-                        </p>
-                      </div>
-                      <Button variant="secondary" size="sm">
-                        Edit
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-secondary rounded-lg">
-                  <CardHeader className="p-4">
-                    <CardTitle className="text-sm font-semibold uppercase text-muted-foreground">
-                      Stats
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          Servers
-                        </p>
-                        <p className="text-lg font-semibold text-foreground">
-                          {userData.server_count}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          Role
-                        </p>
-                        <p className="text-lg font-semibold text-foreground">
-                          {userData.dehive_role}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          Following
-                        </p>
-                        <p className="text-lg font-semibold text-foreground">
-                          {userData.following_number}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          Followers
-                        </p>
-                        <p className="text-lg font-semibold text-foreground">
-                          {userData.followers_number}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {userPannelSetting.profile && (
-              <div className="max-w-2xl space-y-5">
-                <h2 className="text-xl font-semibold text-foreground mb-5">
-                  My Profile
-                </h2>
-
-                <div className="bg-secondary rounded-lg p-4 mb-4">
-                  <Label className="block text-xs uppercase text-muted-foreground mb-3">
-                    Avatar
-                  </Label>
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={openFilePicker}
-                    className="w-32 h-32 rounded-xl border-2 border-border overflow-hidden relative cursor-pointer group flex items-center justify-center"
-                    aria-label="Change avatar"
-                    title="Click to change avatar"
-                  >
-                    {loadingAvatar.loading ? (
-                      <div className="text-sm text-muted-foreground">
-                        Loading...
-                      </div>
-                    ) : (
-                      <Avatar>
-                        <AvatarImage
-                          src={`https://ipfs.de-id.xyz/ipfs/${updateUserInfo.avatar_ipfs_hash}`}
-                        />
-                        <AvatarFallback>
-                          {userData?.display_name} Avatar
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors grid place-items-center text-white text-sm font-medium">
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-center">
-                        Click to upload
-                      </span>
-                    </div>
-
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleAvartarUpload}
+                    </Label>
+                    <Textarea
+                      id="bio"
+                      name="bio"
+                      value={updateUserInfo.bio}
+                      onChange={handleUserInfoChange}
+                      placeholder="Tell us about yourself"
+                      rows={3}
                     />
                   </div>
                 </div>
+              </TabsContent>
 
-                <div className="bg-secondary rounded-lg p-4 mb-4">
-                  <Label
-                    htmlFor="display_name"
-                    className="block text-xs uppercase text-muted-foreground mb-2"
+              <TabsContent value="theme">
+                <div className="max-w-2xl space-y-5">
+                  <h2 className="text-xl font-semibold text-foreground m-4">
+                    Theme
+                  </h2>
+                  <ToggleGroup
+                    type="single"
+                    value={theme}
+                    onValueChange={handleTheme}
                   >
-                    Display Name
-                  </Label>
-                  <Input
-                    id="display_name"
-                    name="display_name"
-                    value={updateUserInfo.display_name}
-                    onChange={handleUserInfoChange}
-                    placeholder="Enter display name"
-                  />
+                    <ToggleGroupItem value="light" className="bg-white m-2">
+                      Light
+                    </ToggleGroupItem>
+                    <ToggleGroupItem
+                      value="dark"
+                      className="bg-black m-2 text-white"
+                    >
+                      Dark
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="alt" className="bg-violet-500 m-2">
+                      Alt
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="sound"
+                      checked={sound}
+                      onCheckedChange={setSound}
+                    />
+                    <Label htmlFor="sound">
+                      {sound ? "Sound ON" : "Sound OFF"}
+                    </Label>
+                  </div>
                 </div>
-
-                <div className="bg-secondary rounded-lg p-4 mb-4">
-                  <Label
-                    htmlFor="bio"
-                    className="block text-xs uppercase text-muted-foreground mb-2"
-                  >
-                    Bio
-                  </Label>
-                  <Textarea
-                    id="bio"
-                    name="bio"
-                    value={updateUserInfo.bio}
-                    onChange={handleUserInfoChange}
-                    placeholder="Tell us about yourself"
-                    rows={3}
-                  />
-                </div>
-              </div>
-            )}
-
-            {userPannelSetting.theme && (
-              <div className="max-w-2xl space-y-5">
-                <h2 className="text-xl font-semibold text-foreground m-4">
-                  Theme
-                </h2>
-                <Button
-                  className={`bg-white m-2 ${
-                    theme === "light" ? "ring-4 ring-blue-500" : ""
-                  }`}
-                  onClick={() => handleTheme("light")}
-                >
-                  Light
-                </Button>
-                <Button
-                  className={`bg-black m-2 text-white ${
-                    theme === "dark" ? "ring-4 ring-blue-500" : ""
-                  }`}
-                  onClick={() => handleTheme("dark")}
-                >
-                  Dark
-                </Button>
-                <Button
-                  className={`bg-violet-500 m-2 ${
-                    theme === "alt" ? "ring-4 ring-blue-500" : ""
-                  }`}
-                  onClick={() => handleTheme("alt")}
-                >
-                  Alt
-                </Button>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="sound"
-                    checked={sound}
-                    onCheckedChange={setSound}
-                  />
-                  <Label htmlFor="sound">
-                    {sound ? "Sound ON" : "Sound OFF"}
-                  </Label>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {isProfileChange && (
-            <div className="pointer-events-auto absolute inset-x-8 bottom-6 rounded-2xl border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 px-6 py-4 text-sm text-foreground">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    Careful — you have unsaved changes!
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Save or reset your edits before closing this panel.
-                  </p>
-                </div>
-                <div className="flex shrink-0 gap-3">
-                  <Button
-                    onClick={() => {
-                      setUpdateUserInfo({
-                        avatar_ipfs_hash: userData?.avatar_ipfs_hash,
-                        display_name: userData?.display_name,
-                        bio: userData?.bio,
-                      });
-                    }}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    onClick={handleUpdateProfile}
-                    variant="default"
-                    size="sm"
-                  >
-                    Save Changes
-                  </Button>
-                </div>
-              </div>
+              </TabsContent>
             </div>
-          )}
-        </section>
+
+            {isProfileChange && (
+              <div className="pointer-events-auto absolute inset-x-8 bottom-6 rounded-2xl border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 px-6 py-4 text-sm text-foreground">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      Careful — you have unsaved changes!
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Save or reset your edits before closing this panel.
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-3">
+                    <Button
+                      onClick={() => {
+                        setUpdateUserInfo({
+                          avatar_ipfs_hash: userData?.avatar_ipfs_hash,
+                          display_name: userData?.display_name,
+                          bio: userData?.bio,
+                        });
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      onClick={handleUpdateProfile}
+                      variant="default"
+                      size="sm"
+                    >
+                      Save Changes
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        </Tabs>
       </div>
     </div>
   );
