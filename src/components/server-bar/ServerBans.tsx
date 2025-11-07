@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerProps {
@@ -171,8 +172,22 @@ export default function ServerBans({ server }: ServerBansProps) {
 
   if (loading) {
     return (
-      <div className="rounded-md border border-border bg-muted/50 p-6 text-center text-sm text-muted-foreground">
-        Loading...
+      <div className="space-y-4">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div
+            key={index}
+            className="relative grid grid-cols-5 items-center gap-4 rounded-xl border border-border bg-background px-4 py-4 shadow-sm"
+          >
+            <Skeleton className="w-10 h-10 rounded-full" />
+            <div className="flex flex-col gap-1">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="w-10 h-10 rounded-full" />
+          </div>
+        ))}
       </div>
     );
   }

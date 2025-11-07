@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserDataProps {
   _id: string;
@@ -44,7 +45,7 @@ export default function Wallet() {
     }
   }, []);
   if (!userData) {
-    return <h1>Loading...</h1>;
+    return <Skeleton className="h-10 w-40 rounded-md" />;
   }
   return (
     <>

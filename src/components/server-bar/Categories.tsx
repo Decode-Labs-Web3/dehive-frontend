@@ -2,7 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { getCookie } from "@/utils/cookie.utils";
-import ServerBarItems from "@/components/ServerBarItem";
+import { Skeleton } from "@/components/ui/skeleton";
+import ServerBarItems from "@/components/server-bar";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useState, useCallback, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -289,10 +290,6 @@ export default function Categories({ server }: CategoriesProps) {
     }
   };
 
-  if (loading) {
-    return <h1>Loading ...</h1>;
-  }
-
   const handleDeleteCategory = async (categoryId: string) => {
     // console.log("this is categories id", categoryId);
     try {
@@ -415,6 +412,39 @@ export default function Categories({ server }: CategoriesProps) {
       fetchCategoryInfo();
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 5 }).map((_, categoryIndex) => (
+          <div key={categoryIndex} className="space-y-1">
+            {/* Category Header */}
+            <div className="relative group flex items-center justify-between px-3 py-1 rounded-md">
+              <div className="flex h-10 justify-between w-full items-center gap-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="w-4 h-4" />
+              </div>
+              <Skeleton className="w-8 h-8 rounded" />
+            </div>
+
+            <div className="ml-4 space-y-1">
+              {Array.from({ length: 4 }).map((_, channelIndex) => (
+                <div
+                  key={channelIndex}
+                  className="group flex items-center w-full px-3 py-2 rounded-md"
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    <Skeleton className="w-6 h-6 rounded" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <DndContext onDragEnd={OnDragEnd}>
@@ -595,7 +625,7 @@ export default function Categories({ server }: CategoriesProps) {
               )}
             </div>
 
-            {/* edit category show category pannel*/}
+            {/* edit category show category panel*/}
             {editCategoryModal[category._id] && (
               <ServerBarItems.CategoryPanel
                 category={category}
@@ -681,7 +711,7 @@ export default function Categories({ server }: CategoriesProps) {
                     //   <ServerBarItems.Channels
                     //     channel={channel}
                     //     channelPanel={channelPanel}
-                    //     setChannelPannel={setChannelPanel}
+                    //     setChannelPanel={setChannelPanel}
                     //     fetchCategoryInfo={fetchCategoryInfo}
                     //     isPrivileged={isPrivileged}
                     //   />
@@ -691,7 +721,7 @@ export default function Categories({ server }: CategoriesProps) {
                       categoryId={category._id}
                       channel={channel}
                       channelPanel={channelPanel}
-                      setChannelPannel={setChannelPanel}
+                      setChannelPanel={setChannelPanel}
                       fetchCategoryInfo={fetchCategoryInfo}
                       isPrivileged={isPrivileged}
                     />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRobot, faFaceSmile } from "@fortawesome/free-solid-svg-icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function AuthorizePage() {
+function AuthorizePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const ssoToken = searchParams.get("sso_token");
@@ -105,5 +105,45 @@ export default function AuthorizePage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AuthorizePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+          <Card className="w-full max-w-xl bg-card border-border shadow-xl">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-lg">
+                  <FontAwesomeIcon
+                    icon={faRobot}
+                    className="w-6 h-6 text-muted-foreground"
+                    aria-hidden
+                  />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Loading...</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Preparing SSO authorization
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <Spinner className="text-muted-foreground w-5 h-5" />
+                <div className="text-sm text-card-foreground">
+                  <span>Loading authorization page...</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <AuthorizePageContent />
+    </Suspense>
   );
 }

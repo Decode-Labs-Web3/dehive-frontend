@@ -7,12 +7,10 @@ import SkeletonApp from "@/components/common/SkeletonApp";
 import { Web3Providers } from "@/components/message-onchain/wallet";
 import SocketStatusProvider from "@/providers/socketStatusProvider";
 import DirectCallProvider from "@/providers/socketDirectCallProvider";
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { ServerRefreshContext } from "@/contexts/ServerRefreshContext.contexts";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [isFocus, setIsFocus] = useState(false);
-  const [isCalling, setIsCalling] = useState(false);
   const [sound, setSound] = useState(true);
   const [userId, setUserId] = useState<string>("");
   const [fingerprintHash, setFingerprintHash] = useState<string>("");
@@ -46,25 +44,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const greenAreaRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      const greenArea = greenAreaRef.current;
-      if (greenArea && !greenArea.contains(target)) {
-        setIsFocus(false);
-      }
-    };
-
-    if (isCalling) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isCalling]);
 
   const soundValue = useMemo(() => ({ sound, setSound }), [sound]);
 
@@ -81,19 +60,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <div className="flex w-15 relative ">
                 <App.GuildBar refreshVersion={refreshVersion} />
               </div>
-
-              {isCalling && (
-                <div
-                  ref={greenAreaRef}
-                  className={`bg-green-500 fixed top-0 bottom-0 md:left-75 left-15 right-0 ${
-                    isFocus ? "z-[500]" : "z-[-1]"
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsFocus(true);
-                  }}
-                ></div>
-              )}
 
               {userId && (
                 <DirectCallProvider userId={userId}>

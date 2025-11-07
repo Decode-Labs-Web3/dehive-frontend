@@ -3,8 +3,8 @@
 import dynamic from "next/dynamic";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import UserPannel from "../userBarItem/UserPannel";
 import { Skeleton } from "@/components/ui/skeleton";
+import UserPanel from "@/components/user-bar/UserPanel";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -67,7 +67,7 @@ export default function UserBar() {
   const [sound, setSound] = useState(false);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState<string>("light");
-  const [userPannel, setUserPannel] = useState(false);
+  const [userPanel, setUserPanel] = useState(false);
   const [microphone, setMicrophone] = useState(false);
   const [userData, setUserData] = useState<UserDataProps | null>(null);
 
@@ -266,7 +266,7 @@ export default function UserBar() {
                 <TooltipTrigger asChild>
                   <Button
                     size="sm"
-                    onClick={() => setUserPannel(true)}
+                    onClick={() => setUserPanel(true)}
                     className="h-10 w-full bg-background text-foreground hover:bg-accent rounded-lg"
                   >
                     <FontAwesomeIcon
@@ -283,12 +283,12 @@ export default function UserBar() {
           </div>
         </Card>
       </TooltipProvider>
-      {userPannel && userData && (
-        <UserPannel
+      {userPanel && userData && (
+        <UserPanel
           theme={theme}
           setTheme={setTheme}
           userData={userData}
-          setUserPannel={setUserPannel}
+          setUserPanel={setUserPanel}
           handleUserData={handleUserData}
         />
       )}

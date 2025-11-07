@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import ServerBarItems from "@/components/serverBarItem";
+import ServerBarItems from "@/components/server-bar";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
@@ -23,7 +23,7 @@ interface ServerProps {
 export default function ServerBar() {
   const { serverId } = useParams();
   const [loading, setLoading] = useState(false);
-  const [serverPannel, setServerPannel] = useState(false);
+  const [serverPanel, setServerPanel] = useState(false);
   const [server, setServer] = useState<ServerProps | null>(null);
   const [serverSettingModal, setServerSettingModal] = useState(false);
 
@@ -108,7 +108,7 @@ export default function ServerBar() {
                 <ServerBarItems.EditModal
                   server={server}
                   fetchServerInfo={fetchServerInfo}
-                  setServerPannel={setServerPannel}
+                  setServerPanel={setServerPanel}
                   setServerSettingModal={setServerSettingModal}
                 />
               )}
@@ -119,11 +119,11 @@ export default function ServerBar() {
 
       {server && <ServerBarItems.Categories server={server} />}
 
-      {serverPannel && server && (
-        <ServerBarItems.ServerPannel
+      {serverPanel && server && (
+        <ServerBarItems.ServerPanel
           server={server}
           fetchServerInfo={fetchServerInfo}
-          setServerPannel={setServerPannel}
+          setServerPanel={setServerPanel}
           setServerSettingModal={setServerSettingModal}
         />
       )}

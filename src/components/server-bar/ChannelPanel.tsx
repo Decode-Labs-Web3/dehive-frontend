@@ -32,25 +32,25 @@ interface ChannelProps {
   __v: number;
 }
 
-interface ChannelPannelProps {
+interface ChannelPanelProps {
   channel: ChannelProps;
   fetchCategoryInfo: () => void;
   handleDeleteChannel: (channelId: string) => void;
-  setChannelPannel: React.Dispatch<
+  setChannelPanel: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
   >;
 }
 
-export default function ChannelPannel({
+export default function ChannelPanel({
   channel,
-  setChannelPannel,
+  setChannelPanel,
   fetchCategoryInfo,
   handleDeleteChannel,
-}: ChannelPannelProps) {
+}: ChannelPanelProps) {
   const [editChannelForm, setEditChannelForm] = useState({
     name: channel.name,
   });
-  const [channelPannelSetting, setChannelPannelSetting] =
+  const [channelPanelSetting, setChannelPanelSetting] =
     useState<string>("overview");
 
   const handleEditChannelChange = (
@@ -88,7 +88,7 @@ export default function ChannelPannel({
         response.message === "Operation successful"
       ) {
         fetchCategoryInfo?.();
-        setChannelPannel((prev) => ({
+        setChannelPanel((prev) => ({
           ...prev,
           [channel._id]: true,
         }));
@@ -103,8 +103,8 @@ export default function ChannelPannel({
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="relative z-[101] flex h-full w-full border border-border bg-background text-foreground">
         <Tabs
-          value={channelPannelSetting}
-          onValueChange={setChannelPannelSetting}
+          value={channelPanelSetting}
+          onValueChange={setChannelPanelSetting}
           orientation="vertical"
           className="flex h-full w-full"
         >
@@ -165,7 +165,7 @@ export default function ChannelPannel({
               <Button
                 variant="destructive"
                 className="w-full flex items-center justify-between px-3"
-                onClick={() => setChannelPannelSetting("delete")}
+                onClick={() => setChannelPanelSetting("delete")}
               >
                 <span>Delete Channel</span>
                 <FontAwesomeIcon icon={faTrashCan} />
@@ -191,7 +191,7 @@ export default function ChannelPannel({
                 disabled={channelNameChange}
                 onClick={() => {
                   if (channelNameChange) return;
-                  setChannelPannel((prev) => ({
+                  setChannelPanel((prev) => ({
                     ...prev,
                     [channel._id]: false,
                   }));
@@ -282,9 +282,9 @@ export default function ChannelPannel({
       </div>
 
       <Dialog
-        open={channelPannelSetting === "delete"}
+        open={channelPanelSetting === "delete"}
         onOpenChange={(open) =>
-          setChannelPannelSetting(open ? "delete" : "overview")
+          setChannelPanelSetting(open ? "delete" : "overview")
         }
       >
         <DialogContent>
@@ -298,7 +298,7 @@ export default function ChannelPannel({
           <DialogFooter>
             <Button
               className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
-              onClick={() => setChannelPannelSetting("overview")}
+              onClick={() => setChannelPanelSetting("overview")}
             >
               Cancel
             </Button>

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import ServerBarItems from "@/components/server-bar";
 import { useParams, useRouter } from "next/navigation";
-import ServerBarItems from "@/components/ServerBarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getChannelCallSocketIO } from "@/lib/socketioChannelCallSingleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,7 +52,7 @@ interface ChannelPageProps {
   fetchCategoryInfo: () => void;
   isPrivileged: boolean;
   channelPanel: Record<string, boolean>;
-  setChannelPannel: React.Dispatch<
+  setChannelPanel: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
   >;
 }
@@ -72,7 +72,7 @@ export default function Channels({
   channel,
   channelPanel,
   isPrivileged,
-  setChannelPannel,
+  setChannelPanel,
   fetchCategoryInfo,
 }: ChannelPageProps) {
   const { serverId } = useParams();
@@ -111,7 +111,7 @@ export default function Channels({
         response.message === "Operation successful"
       ) {
         setDeleteChannelModal(false);
-        setChannelPannel((prev) => ({
+        setChannelPanel((prev) => ({
           ...prev,
           [channel._id]: false,
         }));
@@ -302,8 +302,8 @@ export default function Channels({
             <>
               <ContextMenuItem
                 onClick={() => {
-                  console.log("edit channel click trigger channel pannel");
-                  setChannelPannel((prev) => ({
+                  console.log("edit channel click trigger channel panel");
+                  setChannelPanel((prev) => ({
                     ...prev,
                     [channel._id]: true,
                   }));
@@ -379,9 +379,9 @@ export default function Channels({
 
       {channelPanel[channel._id] && (
         <>
-          <ServerBarItems.ChannelPannel
+          <ServerBarItems.ChannelPanel
             channel={channel}
-            setChannelPannel={setChannelPannel}
+            setChannelPanel={setChannelPanel}
             fetchCategoryInfo={fetchCategoryInfo}
             handleDeleteChannel={handleDeleteChannel}
           />

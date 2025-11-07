@@ -1,4 +1,4 @@
-import { keccak256, stringToBytes, getAddress, isAddress } from "viem";
+import { keccak256, getAddress, isAddress } from "viem";
 import { MerkleTree } from "merkletreejs";
 
 export interface Claim {

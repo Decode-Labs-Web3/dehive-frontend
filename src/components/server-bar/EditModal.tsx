@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/utils/cookie.utils";
-import ServerBarItems from "@/components/ServerBarItem";
+import ServerBarItems from "@/components/server-bar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import {
@@ -32,14 +32,14 @@ interface ServerProps {
 interface EditModalProps {
   server: ServerProps;
   fetchServerInfo: () => void;
-  setServerPannel: React.Dispatch<React.SetStateAction<boolean>>;
+  setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
   setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function EditModal({
   server,
   fetchServerInfo,
-  setServerPannel,
+  setServerPanel,
   setServerSettingModal,
 }: EditModalProps) {
   // const [server, setServer] = useState<ServerProps>(server)
@@ -334,7 +334,7 @@ export default function EditModal({
 
             <button
               onClick={() => {
-                setServerPannel(true);
+                setServerPanel(true);
                 setModal({
                   invite: false,
                   edit: false,

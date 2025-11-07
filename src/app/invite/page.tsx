@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { Suspense, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function InvitePage() {
+function InvitePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
@@ -88,5 +88,43 @@ export default function InvitePage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function InvitePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full text-center shadow-xl bg-gray-800 border-gray-700">
+            <CardHeader>
+              <div className="mb-6">
+                <FontAwesomeIcon
+                  icon={faEnvelope}
+                  className="text-indigo-400 text-6xl mb-4"
+                />
+              </div>
+
+              <CardTitle className="text-3xl font-bold text-gray-200 mb-4">
+                Loading...
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <div className="mb-6">
+                <FontAwesomeIcon
+                  icon={faSpinner}
+                  className="text-indigo-400 text-4xl animate-spin"
+                />
+              </div>
+
+              <p className="text-gray-400 mb-2">Preparing invite page...</p>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <InvitePageContent />
+    </Suspense>
   );
 }

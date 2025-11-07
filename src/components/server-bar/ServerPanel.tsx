@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
+import ServerBarItems from "@/components/server-bar";
 import { serverTag } from "@/constants/index.constants";
-import ServerBarItems from "@/components/ServerBarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
@@ -53,19 +53,19 @@ interface ServerProps {
   _v: boolean;
 }
 
-interface ServerPannelProps {
+interface ServerPanelProps {
   server: ServerProps;
   fetchServerInfo: () => void;
-  setServerPannel: React.Dispatch<React.SetStateAction<boolean>>;
+  setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
   setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function ServerPannel({
+export default function ServerPanel({
   server,
   fetchServerInfo,
-  setServerPannel,
+  setServerPanel,
   setServerSettingModal,
-}: ServerPannelProps) {
+}: ServerPanelProps) {
   const router = useRouter();
   const { triggerRefeshServer } = useServerRefresh();
 
@@ -78,7 +78,7 @@ export default function ServerPannel({
     }
   }, []);
 
-  const [serverPannelSetting, setServerPannelSetting] =
+  const [serverPanelSetting, setServerPanelSetting] =
     useState<string>("profile");
 
   const [editServerForm, setEditServerForm] = useState({
@@ -160,7 +160,7 @@ export default function ServerPannel({
         response.message === "Operation successful"
       ) {
         fetchServerInfo?.();
-        setServerPannel(true);
+        setServerPanel(true);
       }
     } catch (error) {
       console.error(error);
@@ -209,8 +209,8 @@ export default function ServerPannel({
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="relative z-[101] flex h-full w-full border border-border bg-background text-foreground">
         <Tabs
-          value={serverPannelSetting}
-          onValueChange={setServerPannelSetting}
+          value={serverPanelSetting}
+          onValueChange={setServerPanelSetting}
           orientation="vertical"
           className="flex h-full w-full"
         >
@@ -280,7 +280,7 @@ export default function ServerPannel({
               <Button
                 variant="destructive"
                 className="w-full flex items-center justify-between px-3"
-                onClick={() => setServerPannelSetting("delete")}
+                onClick={() => setServerPanelSetting("delete")}
               >
                 <span>Delete Server</span>
                 <FontAwesomeIcon icon={faTrashCan} />
@@ -306,7 +306,7 @@ export default function ServerPannel({
                 disabled={serverInfoChange}
                 onClick={() => {
                   if (serverInfoChange) return;
-                  setServerPannel(false);
+                  setServerPanel(false);
                   setServerSettingModal(false);
                 }}
                 className="flex flex-col items-center gap-1 text-xs uppercase bg-background text-foreground hover:bg-accent"
@@ -323,7 +323,7 @@ export default function ServerPannel({
                 <ServerBarItems.ServerMembers
                   server={server}
                   fetchServerInfo={fetchServerInfo}
-                  setServerPannel={setServerPannel}
+                  setServerPanel={setServerPanel}
                 />
               </TabsContent>
 
@@ -451,9 +451,9 @@ export default function ServerPannel({
       </div>
 
       <Dialog
-        open={serverPannelSetting === "delete"}
+        open={serverPanelSetting === "delete"}
         onOpenChange={(open) =>
-          setServerPannelSetting(open ? "delete" : "profile")
+          setServerPanelSetting(open ? "delete" : "profile")
         }
       >
         <DialogContent>
@@ -472,7 +472,7 @@ export default function ServerPannel({
           <DialogFooter>
             <Button
               className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
-              onClick={() => setServerPannelSetting("profile")}
+              onClick={() => setServerPanelSetting("profile")}
             >
               Cancel
             </Button>

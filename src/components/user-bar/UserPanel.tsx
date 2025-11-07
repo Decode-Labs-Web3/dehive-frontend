@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Card,
@@ -37,21 +38,21 @@ interface UserDataProps {
   followers_number: number;
   is_active: boolean;
 }
-interface UserPannelProps {
+interface UserPanelProps {
   theme: string;
   setTheme: React.Dispatch<React.SetStateAction<string>>;
   userData: UserDataProps;
   handleUserData: () => void;
-  setUserPannel: React.Dispatch<React.SetStateAction<boolean>>;
+  setUserPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function UserPannel({
+export default function UserPanel({
   theme,
   userData,
   setTheme,
-  setUserPannel,
+  setUserPanel,
   handleUserData,
-}: UserPannelProps) {
+}: UserPanelProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
@@ -73,7 +74,7 @@ export default function UserPannel({
     }
   };
 
-  const [userPannelSetting, setUserPannelSetting] = useState<string>("account");
+  const [userPanelSetting, setUserPanelSetting] = useState<string>("account");
   const [loadingAvatar, setLoadingAvartar] = useState({
     loading: false,
     new: false,
@@ -239,8 +240,8 @@ export default function UserPannel({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       <div className="relative z-[101] flex h-full w-full border border-border bg-background text-foreground">
         <Tabs
-          value={userPannelSetting}
-          onValueChange={setUserPannelSetting}
+          value={userPanelSetting}
+          onValueChange={setUserPanelSetting}
           orientation="vertical"
           className="flex h-full w-full"
         >
@@ -311,7 +312,7 @@ export default function UserPannel({
               </div>
 
               <Button
-                onClick={() => setUserPannel(false)}
+                onClick={() => setUserPanel(false)}
                 variant="ghost"
                 className="flex flex-col items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground"
               >
@@ -351,7 +352,7 @@ export default function UserPannel({
                         </CardDescription>
                       </div>
                       <Button
-                        onClick={() => setUserPannelSetting("profile")}
+                        onClick={() => setUserPanelSetting("profile")}
                         size="sm"
                         className="px-3"
                       >
@@ -385,7 +386,7 @@ export default function UserPannel({
                           </p>
                         </div>
                         <Button
-                          onClick={() => setUserPannelSetting("profile")}
+                          onClick={() => setUserPanelSetting("profile")}
                           variant="secondary"
                           size="sm"
                         >
@@ -480,9 +481,7 @@ export default function UserPannel({
                       title="Click to change avatar"
                     >
                       {loadingAvatar.loading ? (
-                        <div className="text-sm text-muted-foreground">
-                          Loading...
-                        </div>
+                        <Skeleton className="w-32 h-32 rounded-xl" />
                       ) : (
                         <Avatar>
                           <AvatarImage

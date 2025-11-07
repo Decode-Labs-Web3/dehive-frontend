@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { getCookie } from "@/utils/cookie.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import GuideBarItems from "@/components/guildeBaritem";
+import GuideBarItems from "@/components/guilde-bar";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

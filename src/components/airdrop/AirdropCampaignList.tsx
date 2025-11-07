@@ -60,7 +60,6 @@ interface CampaignWithData extends Campaign {
 
 export default function AirdropCampaignList({
   campaigns,
-  serverId,
   eligibleOnly,
 }: {
   campaigns: Campaign[];

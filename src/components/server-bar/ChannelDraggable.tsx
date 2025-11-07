@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useDraggable } from "@dnd-kit/core";
-import ServerBarItems from "@/components/ServerBarItem";
+import ServerBarItems from "@/components/server-bar";
 
 interface ChannelProps {
   _id: string;
@@ -20,7 +20,7 @@ interface ChannelDraggableProps {
   fetchCategoryInfo: () => void;
   isPrivileged: boolean;
   channelPanel: Record<string, boolean>;
-  setChannelPannel: React.Dispatch<
+  setChannelPanel: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
   >;
 }
@@ -31,7 +31,7 @@ export default function ChannelDraggable({
   fetchCategoryInfo,
   isPrivileged,
   channelPanel,
-  setChannelPannel,
+  setChannelPanel,
 }: ChannelDraggableProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: channel._id,
@@ -76,7 +76,7 @@ export default function ChannelDraggable({
       <ServerBarItems.Channels
         channel={channel}
         channelPanel={channelPanel}
-        setChannelPannel={setChannelPannel}
+        setChannelPanel={setChannelPanel}
         fetchCategoryInfo={fetchCategoryInfo}
         isPrivileged={isPrivileged}
       />
