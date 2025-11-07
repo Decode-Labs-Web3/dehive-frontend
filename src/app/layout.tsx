@@ -1,6 +1,11 @@
 import "./globals.css";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+// FontAwesome Configuration
+import { config } from "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+config.autoAddCss = false;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,9 +22,7 @@ export const metadata: Metadata = {
   description:
     "Chatting and security with dehive chat apply the blockchain technology",
   icons: {
-    icon: [
-      { url: "/images/logos/dehive.png", type: "image/png" },
-    ],
+    icon: [{ url: "/images/logos/dehive.png", type: "image/png" }],
   },
 };
 
@@ -28,7 +31,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en">
       <body

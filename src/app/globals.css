@@ -2,8 +2,6 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-@import "@stream-io/video-react-sdk/dist/css/styles.css";
-
 :root {
   --background: 220 14% 98%;
   --foreground: 220 8% 8%;
