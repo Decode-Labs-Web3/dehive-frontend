@@ -107,7 +107,6 @@ export default function ChannelMessageOption({
         const formData = new FormData();
         formData.append("file", file);
         formData.append("serverId", serverId);
-        formData.append("channelId", channelId);
 
         const apiResponse = await fetch(
           "/api/servers/conversation/file-upload",
@@ -137,7 +136,7 @@ export default function ChannelMessageOption({
         setLoading(false);
       }
     },
-    [channelId, serverId, setListUploadFile]
+    [ serverId, setListUploadFile]
   );
 
   const handleUploadClick = useCallback(() => {

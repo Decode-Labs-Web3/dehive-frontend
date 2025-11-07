@@ -14,6 +14,7 @@ import AttachmentList from "@/components/common/AttachmentList";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
+import ChannelFileList from "@/components/messages/ChannelFileList";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelHistoryView from "@/components/search/ChannelHistoryView";
@@ -455,6 +456,7 @@ export default function ChannelMessagePage() {
             setMessageSearchId={setMessageSearchId}
           />
           <AirdropDropdown serverId={serverId} />
+          <ChannelFileList serverId={serverId}/>
           {/* <span className="text-xs text-muted-foreground">
             Page {currentPage}
           </span> */}

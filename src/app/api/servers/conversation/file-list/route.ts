@@ -41,9 +41,13 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { type, channelId } = body;
+    const { type, serverId, page } = body;
 
-    if (!channelId || !type) {
+    console.log("dwbekdhbwehdhbwdjhbwdhjhwdbkwejdhbwedjkwed",serverId)
+    console.log("dwbekdhbwehdhbwdjhbwdhjhwdbkwejdhbwedjkwed",type)
+    console.log("dwbekdhbwehdhbwdjhbwdhjhwdbkwejdhbwedjkwed",page)
+
+    if (!serverId || !type) {
       return NextResponse.json(
         {
           success: false,
@@ -55,7 +59,7 @@ export async function POST(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_CHANNEL_MESSAGING}/api/messages/files/list`,
+      `${process.env.DEHIVE_CHANNEL_MESSAGING}/api/messages/files/list?serverId=${serverId}&type=${type}&page=${page}&limit=10`,
       {
         method: "GET",
         headers: {
@@ -67,7 +71,7 @@ export async function POST(req: Request) {
       }
     );
 
-    // console.debug(`${pathname}`, backendResponse.status);
+    console.debug(`${pathname}`, backendResponse.status);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
@@ -76,7 +80,7 @@ export async function POST(req: Request) {
         {
           success: false,
           statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
-          message: error?.message || "Create server failed",
+          message: error?.message || "Fetch upload failed",
         },
         { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
@@ -89,7 +93,7 @@ export async function POST(req: Request) {
       {
         success: true,
         statusCode: response.statusCode || httpStatus.OK,
-        message: response.message || "Following users fetched successfully",
+        message: response.message || "Fetched uploads successfully",
         data: response.data,
       },
       { status: response.statusCode || httpStatus.OK }

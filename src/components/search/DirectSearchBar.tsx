@@ -46,15 +46,17 @@ export default function DirectSearchBar({
   const [isLastPage, setIsLastPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchResult, setSerachResult] = useState<SearchResultProps[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const { channelId } = useParams<{
     channelId: string;
   }>();
+  const prevScrollHeightRef = useRef(0);
+
   const handleKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPage(0);
     setSerachResult([]);
     setIsLastPage(false);
     setKeyword(event.target.value);
+    prevScrollHeightRef.current = 0;
     if (event.target.value.trim().length > 0) {
       fetchSearchList(event.target.value);
     }
@@ -63,7 +65,6 @@ export default function DirectSearchBar({
   const fetchSearchList = async (keywordSearch: string) => {
     if (isLastPage) return;
     try {
-      setError(null);
       const apiResponse = await fetch("/api/search/direct", {
         method: "POST",
         headers: {
@@ -84,7 +85,6 @@ export default function DirectSearchBar({
         console.error(apiResponse);
         console.log("api response error");
         console.groupEnd();
-        setError("Failed to search messages");
         return;
       }
       const response = await apiResponse.json();
@@ -103,12 +103,10 @@ export default function DirectSearchBar({
       console.error(error);
       console.log("server search message error");
       console.groupEnd();
-      setError("Server error while searching"); }
+    }
   };
 
   const searchRef = useRef<HTMLDivElement | null>(null);
-  const prevScrollHeightRef = useRef(0);
-
   const handleScroll = () => {
     const element = searchRef.current;
     if (!element || isLastPage || loadingMore) return;
