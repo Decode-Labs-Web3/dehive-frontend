@@ -28,11 +28,10 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { channelId, keyword } = body;
+    const { channelId, keyword, page } = body;
 
     // console.log("eduhwdilhewodhlwiedukhwedu", channelId)
     // console.log("eduhwdilhewodhlwiedukhwedu", keyword)
-
 
     if (!channelId || !keyword) {
       return NextResponse.json(
@@ -59,7 +58,7 @@ export async function POST(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_CHANNEL_MESSAGING}/api/messages/channels/${channelId}/search?search=${keyword}&page=0&limit=20`,
+      `${process.env.DEHIVE_CHANNEL_MESSAGING}/api/messages/channels/${channelId}/search?search=${keyword}&page=${page}&limit=10`,
       {
         method: "GET",
         headers: {

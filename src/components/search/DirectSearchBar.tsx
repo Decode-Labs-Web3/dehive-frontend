@@ -56,7 +56,7 @@ export default function DirectSearchBar({
   };
 
   const fetchSearchList = useCallback(async () => {
-if (!keyword.trim()) return;
+    if (!keyword.trim()) return;
     if (isLastPage) return;
     try {
       const apiResponse = await fetch("/api/search/direct", {
