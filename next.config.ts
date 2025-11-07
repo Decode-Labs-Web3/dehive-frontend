@@ -5,25 +5,52 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
 
-  // BUILD SPEED OPTIMIZATIONS
+  // 🚀 DEVELOPMENT SPEED OPTIMIZATIONS
   experimental: {
-    // Enable optimized package imports for better tree shaking
-    optimizePackageImports: [
-      "@radix-ui/react-avatar",
-      "@radix-ui/react-dialog",
-      "@radix-ui/react-dropdown-menu",
-      "@radix-ui/react-tabs",
-      "@radix-ui/react-switch",
-      "@fortawesome/react-fontawesome",
-      "@dnd-kit/core",
-      "@dnd-kit/utilities",
-    ],
+    // ⚡ FASTER DEV: Enable Turbopack filesystem caching for faster rebuilds
+    turbopackFileSystemCacheForDev: true,
+    // ⚡ FASTER DEV: Reduce optimizePackageImports for development speed
+    optimizePackageImports:
+      process.env.NODE_ENV === "production"
+        ? [
+            "@radix-ui/react-avatar",
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-switch",
+            "@fortawesome/react-fontawesome",
+            "@dnd-kit/core",
+            "@dnd-kit/utilities",
+          ]
+        : [], // Disable during development for faster compilation
     // Enable scroll restoration for better UX
     scrollRestoration: true,
-    // FASTER BUILDS: Enable faster CSS processing
-    optimizeCss: true,
-    // RUNTIME: Enable Partial Pre-rendering for static pages (disabled due to API route conflicts)
-    // cacheComponents: true,
+    // ⚡ FASTER DEV: Disable CSS optimization during development
+    optimizeCss: process.env.NODE_ENV === "production", // Only enable in production
+    // 🚀 FASTER CSS: Lightning CSS disabled due to PostCSS conflict with Tailwind
+  },
+
+  // 🚀 REACT COMPILER: Enable automatic memoization (stable in Next.js 16)
+  reactCompiler: true,
+
+  // 🚀 CACHE COMPONENTS: Disabled due to API route conflicts
+  // cacheComponents: true, // Uncomment when API routes are updated
+
+  // 🚀 PERFORMANCE OPTIMIZATIONS
+  // Enable compiler optimizations
+  compiler: {
+    // Remove console.logs in production
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+
+  // 🚀 OUTPUT OPTIMIZATION
+  output: "standalone", // For Docker deployment optimization
+
+  // 🚀 LOGGING OPTIMIZATION
+  logging: {
+    fetches: {
+      fullUrl: process.env.NODE_ENV === "development",
+    },
   },
 
   // IMAGE OPTIMIZATION
@@ -35,17 +62,19 @@ const nextConfig: NextConfig = {
     unoptimized: process.env.NODE_ENV === "development",
   },
 
-  // BUNDLE OPTIMIZATION
-  modularizeImports: {
-    "@fortawesome/free-solid-svg-icons": {
-      // Use a more compatible transform for FontAwesome
-      transform: "@fortawesome/free-solid-svg-icons/{{member}}",
-      skipDefaultConversion: true,
-    },
-    "@radix-ui/react-icons": {
-      transform: "@radix-ui/react-icons/{{member}}",
-    },
-  },
+  // 🚀 BUNDLE OPTIMIZATION: Only apply in production for faster dev
+  modularizeImports:
+    process.env.NODE_ENV === "production"
+      ? {
+          "@fortawesome/free-solid-svg-icons": {
+            transform: "@fortawesome/free-solid-svg-icons/{{member}}",
+            skipDefaultConversion: true,
+          },
+          "@radix-ui/react-icons": {
+            transform: "@radix-ui/react-icons/{{member}}",
+          },
+        }
+      : {}, // Disable during development for faster compilation
 
   webpack: (config, { dev }) => {
     // Silence optional React Native storage dependency required by some wallet SDKs on web builds
@@ -58,9 +87,21 @@ const nextConfig: NextConfig = {
       "pino-abstract-transport": false,
     };
 
-    // BUILD SPEED: Enable webpack optimizations
-    if (!dev) {
-      // Production optimizations
+    // 🚀 DEVELOPMENT SPEED: Simplify webpack for faster dev compilation
+    if (dev) {
+      // Development optimizations for speed
+      config.optimization = {
+        ...config.optimization,
+        // ⚡ FASTER DEV: Reduce webpack overhead
+        moduleIds: "named", // Faster than 'deterministic' in dev
+        chunkIds: "named",
+        // ⚡ FASTER DEV: Disable expensive optimizations in development
+        splitChunks: false, // Disable chunk splitting for faster rebuilds
+      };
+      // ⚡ FASTER DEV: Disable source maps processing
+      config.devtool = false;
+    } else {
+      // Production optimizations (unchanged)
       config.optimization = {
         ...config.optimization,
         moduleIds: "deterministic",
@@ -91,8 +132,11 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // TURBOPACK CONFIGURATION: Empty config to silence webpack warning
-  turbopack: {},
+  // 🚀 TURBOPACK OPTIMIZATION: Configure for maximum development speed
+  turbopack: {
+    // ⚡ FASTER DEV: Optimize Turbopack for development
+    // Note: Keep config minimal to avoid conflicts
+  },
 };
 
 export default nextConfig;
