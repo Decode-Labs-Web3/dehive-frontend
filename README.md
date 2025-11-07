@@ -54,7 +54,6 @@ Dehive is a modern, real-time messaging platform inspired by Discord, integratin
 
 ### Utilities
 
-- **React-Toastify 11.0.5** - Toast notifications
 - **Autoprefixer** - CSS vendor prefixing
 - **ESLint** - Code linting with TypeScript support
 

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { toastError } from "@/utils/toast.utils";
 import { Spinner } from "@/components/ui/spinner";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -31,7 +30,6 @@ export default function AuthorizePage() {
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
         console.error(response.message);
-        toastError(response.message);
         router.push("/");
         return;
       }
@@ -50,7 +48,6 @@ export default function AuthorizePage() {
 
       if (!userInfoResponse.ok) {
         console.error("Failed to fetch user info");
-        toastError("Failed to load user info");
         router.push("/");
         return;
       }
@@ -59,7 +56,6 @@ export default function AuthorizePage() {
     } catch (error) {
       console.error(error);
       console.log("Server for SSO error");
-      toastError("SSO server error");
       return;
     }
   }, [ssoToken, state, router]);

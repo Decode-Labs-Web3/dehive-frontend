@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { serverTag } from "@/constants/index.constants";
-import { toastSuccess, toastError } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -43,8 +44,8 @@ interface ServerForm {
 }
 
 const tagIcon: Record<string, IconDefinition> = {
-  "Gaming": faGamepad,
-  "Friends": faUserGroup,
+  Gaming: faGamepad,
+  Friends: faUserGroup,
   "Study Group": faBookOpen,
   "School Club": faSchool,
   "Local Community": faPeopleGroup,
@@ -57,6 +58,7 @@ export default function AddServer({ handleGetServer }: Props) {
   const [tab, setTab] = useState({ ...allFalse, tag: true });
   const [modalOpen, setModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [serverForm, setServerForm] = useState<ServerForm>({
     tags: [],
@@ -73,10 +75,10 @@ export default function AddServer({ handleGetServer }: Props) {
 
   const handleCreateServer = async () => {
     if (serverForm.name === "" || serverForm.description === "") {
-      toastError("Please fill in all fields");
       return;
     }
     console.log(serverForm);
+    setIsLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/server/post", {
         method: "POST",
@@ -90,7 +92,6 @@ export default function AddServer({ handleGetServer }: Props) {
       });
       if (!apiResponse.ok) {
         console.log(apiResponse);
-        toastError("Cann't Create Server");
         return;
       }
       const response = await apiResponse.json();
@@ -103,11 +104,10 @@ export default function AddServer({ handleGetServer }: Props) {
       });
       handleGetServer();
       router.push(`/app/channels/${response.data._id}`);
-      toastSuccess(response.message);
     } catch (error) {
       console.error(error);
-      toastError("Server Create Error");
     } finally {
+      setIsLoading(false);
       setModalOpen(false);
     }
   };
@@ -116,6 +116,7 @@ export default function AddServer({ handleGetServer }: Props) {
     const raw = inviteLink.trim();
     if (raw === "") return;
     const code = raw.match(/code=([^&\s]+)/)?.[1] || raw;
+    setIsLoading(true);
     try {
       const apiResponse = await fetch("/api/invite", {
         method: "POST",
@@ -149,6 +150,8 @@ export default function AddServer({ handleGetServer }: Props) {
       console.error(error);
       console.log("Server for Invite to server error");
       return;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -171,7 +174,11 @@ export default function AddServer({ handleGetServer }: Props) {
             <FontAwesomeIcon icon={faPlus} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="right" align="center" className="bg-popover text-popover-foreground border border-border">
+        <TooltipContent
+          side="right"
+          align="center"
+          className="bg-popover text-popover-foreground border border-border"
+        >
           Add Server
         </TooltipContent>
       </Tooltip>
@@ -246,7 +253,8 @@ export default function AddServer({ handleGetServer }: Props) {
                     onClick={handleCreateServer}
                     disabled={
                       serverForm.name.trim() === "" ||
-                      serverForm.description.trim() === ""
+                      serverForm.description.trim() === "" ||
+                      isLoading
                     }
                   >
                     Create
@@ -260,39 +268,42 @@ export default function AddServer({ handleGetServer }: Props) {
                 <p className="text-xs font-semibold text-muted-foreground">
                   START FROM A TEMPLATE
                 </p>
-                <div className="space-y-3 max-h-200 overflow-y-auto">
-                  {serverTag.map((tag, index) => (
+                <ScrollArea className="h-full">
+                  <div className="space-y-3">
+                    {serverTag.map((tag, index) => (
+                      <Button
+                        key={index}
+                        onClick={() => {
+                          setServerForm((prev) => ({
+                            ...prev,
+                            tags: [tag],
+                          }));
+                          setTab({ ...allFalse, info: true });
+                        }}
+                        className="w-full flex justify-between px-4 py-3"
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                            <FontAwesomeIcon icon={tagIcon[tag]} />
+                          </span>
+                          <span className="text-base">{tag}</span>
+                        </span>
+                        <FontAwesomeIcon icon={faChevronRight} />
+                      </Button>
+                    ))}
                     <Button
-                      key={index}
                       onClick={() => {
-                        setServerForm((prev) => ({
-                          ...prev,
-                          tags: [tag],
-                        }));
+                        setServerForm((prev) => ({ ...prev, tags: [] }));
                         setTab({ ...allFalse, info: true });
                       }}
                       className="w-full flex justify-between px-4 py-3"
                     >
-                      <span className="flex items-center gap-3">
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                          <FontAwesomeIcon icon={tagIcon[tag]} />
-                        </span>
-                        <span className="text-base">{tag}</span>
-                      </span>
+                      <span className="text-base">No tag</span>
                       <FontAwesomeIcon icon={faChevronRight} />
                     </Button>
-                  ))}
-                  <Button
-                    onClick={() => {
-                      setServerForm((prev) => ({ ...prev, tags: [] }));
-                      setTab({ ...allFalse, info: true });
-                    }}
-                    className="w-full flex justify-between px-4 py-3"
-                  >
-                    <span className="text-base">No tag</span>
-                    <FontAwesomeIcon icon={faChevronRight} />
-                  </Button>
-                </div>
+                  </div>
+                </ScrollArea>
+                <Separator className="my-4" />
 
                 <div className="my-5 text-center">
                   <p className="text-lg font-semibold">
@@ -329,7 +340,9 @@ export default function AddServer({ handleGetServer }: Props) {
                   <Button onClick={() => setTab({ ...allFalse, tag: true })}>
                     Back
                   </Button>
-                  <Button onClick={handleInvite}>Join Server</Button>
+                  <Button onClick={handleInvite} disabled={isLoading}>
+                    Join Server
+                  </Button>
                 </DialogFooter>
               </>
             )}

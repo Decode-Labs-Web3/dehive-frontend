@@ -7,7 +7,6 @@ import { Separator } from "@/components/ui/separator";
 import GuideBarItems from "@/components/guildeBaritem";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { toastSuccess, toastError } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { faCopy, faMessage } from "@fortawesome/free-solid-svg-icons";
@@ -48,6 +47,7 @@ export default function GuildBar({
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(false);
   const [servers, setServers] = useState<Server[]>([]);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   const getActiveId = () => {
     if (pathname.includes("/me")) return "me";
@@ -71,16 +71,13 @@ export default function GuildBar({
       });
       if (!apiResponse.ok) {
         console.log(apiResponse);
-        toastError(`Fetch servers failed (${apiResponse.status})`);
         return;
       }
       const response = await apiResponse.json();
       setServers(response.data);
       // console.log("This is server data", response.data);
-      toastSuccess(response.message);
     } catch (error) {
       console.log(error);
-      toastError("Server error");
     } finally {
       setLoading(false);
     }
@@ -91,6 +88,7 @@ export default function GuildBar({
   }, [handleGetServer, refreshVersion]);
 
   const handleLeaveServer = async (serverId: string) => {
+    setIsLeaving(true);
     try {
       const apiResponse = await fetch("/api/servers/members/leave-server", {
         method: "DELETE",
@@ -120,6 +118,8 @@ export default function GuildBar({
     } catch (error) {
       console.error(error);
       console.log("Server error for leave server");
+    } finally {
+      setIsLeaving(false);
     }
   };
 
@@ -209,6 +209,7 @@ export default function GuildBar({
                         <ContextMenuItem
                           className="text-destructive"
                           onClick={() => handleLeaveServer(server._id)}
+                          disabled={isLeaving}
                         >
                           Leave server
                         </ContextMenuItem>

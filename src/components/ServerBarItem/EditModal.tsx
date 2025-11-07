@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getCookie } from "@/utils/cookie.utils";
 import ServerBarItems from "@/components/ServerBarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { toastSuccess, toastError, getCookie } from "@/utils/index.utils";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import {
   faPen,
@@ -152,7 +152,6 @@ export default function EditModal({
 
   const handleDeleteServer = async () => {
     if (deleteServerForm.name.trim() !== server.name) {
-      toastError("The type the server name didn't macth");
       return;
     }
 
@@ -178,7 +177,6 @@ export default function EditModal({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        toastSuccess("Delete Successful");
         setModal({ ...allFalse });
         router.push("/app/channels/me");
         triggerRefeshServer?.();
