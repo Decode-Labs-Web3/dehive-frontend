@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface MemberInServerProps {
   membership_id: string;
@@ -36,7 +37,9 @@ interface MemberInServerProps {
 export default function Server() {
   const { serverId } = useParams<{ serverId: string }>();
   const [memberships, setMemberships] = useState<MemberInServerProps[]>([]);
+  const [loading, setLoading] = useState(false);
   const fetchMember = useCallback(async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/members/memberships", {
         method: "POST",
@@ -62,12 +65,40 @@ export default function Server() {
     } catch (error) {
       console.error(error);
       console.log("Server fetch server member error");
+    } finally {
+      setLoading(false);
     }
   }, [serverId]);
 
   useEffect(() => {
     fetchMember();
   }, [fetchMember]);
+
+  if (loading) {
+    return (
+      <div className="h-full min-h-0 flex flex-col bg-background text-foreground">
+        <header className="shrink-0 px-4 py-3 text-center border-b border-border bg-muted">
+          <h1 className="text-xl font-bold">All Member</h1>
+        </header>
+
+        <ScrollArea className="h-full">
+          <div className="space-y-2 p-2 pb-4">
+            {Array.from({ length: 20 }).map((_, index) => (
+              <div key={index} className="flex items-start gap-3 px-4 py-2">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <div className="min-w-0 flex-1">
+                  <Skeleton className="h-4 w-32 mb-1" />
+                  <Skeleton className="h-3 w-24 mb-2" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <ScrollBar orientation="vertical" />
+        </ScrollArea>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full min-h-0 flex flex-col bg-background text-foreground">

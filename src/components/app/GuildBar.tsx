@@ -164,11 +164,17 @@ export default function GuildBar({
 
         <ScrollArea className="-mx-3">
           {loading && (
-            <div className="flex flex-col gap-2">
-              <Skeleton className="h-10 w-10 rounded-md bg-muted" />
-              <Skeleton className="h-10 w-10 rounded-md bg-muted" />
-              <Skeleton className="h-10 w-10 rounded-md bg-muted" />
-            </div>
+            <>
+              {Array.from({ length: 20 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="relative mb-2 group w-10 h-10 rounded-md ml-3"
+                >
+                  <Skeleton className="w-10 h-10 rounded-md bg-muted" />
+                  <span className="absolute top-1/2 -translate-y-1/2 w-1 rounded-r-full -left-3 h-4 bg-blue-500" />
+                </div>
+              ))}
+            </>
           )}
 
           {servers.length > 0 &&

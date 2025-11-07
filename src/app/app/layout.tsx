@@ -1,9 +1,10 @@
 "use client";
 
-import { Web3Providers } from "@/components/message-onchain/wallet";
 import App from "@/components/app";
 import { getCookie } from "@/utils/cookie.utils";
 import { SoundContext } from "@/contexts/SoundContext";
+import SkeletonApp from "@/components/common/SkeletonApp";
+import { Web3Providers } from "@/components/message-onchain/wallet";
 import SocketStatusProvider from "@/providers/socketStatusProvider";
 import DirectCallProvider from "@/providers/socketDirectCallProvider";
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
@@ -68,7 +69,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const soundValue = useMemo(() => ({ sound, setSound }), [sound]);
 
   if (!userId || !fingerprintHash) {
-    return <h1>Loading...</h1>;
+    return <SkeletonApp />;
   }
 
   return (

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useConversationRefresh } from "@/contexts/ConversationRefreshContext";
 
 interface UserDataProps {
@@ -25,9 +26,11 @@ interface UserDataProps {
 export default function Me() {
   const router = useRouter();
   const [userData, setUserData] = useState<UserDataProps[]>([]);
+  const [loading, setLoading] = useState(false);
   const { triggerRefreshConversation } = useConversationRefresh();
 
   const fetchUserData = useCallback(async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/user/user-following", {
         method: "GET",
@@ -51,6 +54,8 @@ export default function Me() {
     } catch (error) {
       console.error(error);
       console.log("Server fetch user data error");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -92,6 +97,33 @@ export default function Me() {
     },
     [router, triggerRefreshConversation]
   );
+
+  if (loading) {
+    return (
+      <div className="h-full min-h-0 flex flex-col bg-background text-foreground">
+        <header className="shrink-0 px-4 py-3 text-center border-b border-border bg-muted">
+          <h1 className="text-xl font-bold">All Friends</h1>
+        </header>
+
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full">
+            <div className="space-y-2 p-2 pb-4">
+              {Array.from({ length: 20 }).map((_, index) => (
+                <div key={index} className="flex items-start gap-3 px-4 py-2">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <div className="min-w-0 flex-1">
+                    <Skeleton className="h-4 w-32 mb-1" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <ScrollBar orientation="vertical" />
+          </ScrollArea>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full min-h-0 flex flex-col bg-background text-foreground">

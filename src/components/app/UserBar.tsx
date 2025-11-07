@@ -1,9 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import UserPannel from "../userBarItem/UserPannel";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   faGear,
   faMicrophone,
@@ -11,10 +16,6 @@ import {
   faVolumeXmark,
   faMicrophoneSlash,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
@@ -92,9 +93,10 @@ export default function UserBar() {
       setUserData(response.data);
       // console.log("this is user data from user bar",response.data )
       localStorage.setItem("userData", JSON.stringify(response.data));
-      setLoading(false);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -123,13 +125,29 @@ export default function UserBar() {
     }
   }, []);
 
-  if (loading) {
+  if (loading || !userData) {
     return (
-      <Card className="w-full h-full p-2">
-        <CardContent className="flex items-center justify-center h-full">
-          <div className="text-muted-foreground">Loading...</div>
-        </CardContent>
-      </Card>
+      <TooltipProvider>
+        <Card className="w-full h-full p-3">
+          <div className="flex flex-col h-full gap-3">
+            <div className="flex-1 flex items-center justify-center">
+              <div className="flex items-center gap-3 w-full max-w-xs">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="min-w-0 flex-1">
+                  <Skeleton className="h-4 w-32 mb-2" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+            </div>
+          </div>
+        </Card>
+      </TooltipProvider>
     );
   }
 

@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import ServerBarItems from "@/components/ServerBarItem";
+import ServerBarItems from "@/components/serverBarItem";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
@@ -62,10 +62,19 @@ export default function ServerBar() {
 
   if (loading) {
     return (
-      <div className="w-full h-full p-3 space-y-3">
-        <Skeleton className="h-9 w-full" />
-        <Skeleton className="h-6 w-3/4" />
-        <Skeleton className="h-6 w-2/3" />
+      <div className="w-full h-full bg-background border border-border">
+        <div className="relative bg-secondary border border-border p-2">
+          <Skeleton className="h-6 w-3/4" />
+        </div>
+        <div className="p-3 space-y-3">
+          {Array.from({ length: 20 }).map((_, index) => (
+            <div key={index}>
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-2/3" />
+              <Skeleton className="h-6 w-1/3" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -121,83 +130,3 @@ export default function ServerBar() {
     </div>
   );
 }
-
-// "use client";
-// import { useState } from "react";
-
-// type Channel = { id: string; name: string };
-// type Category = { id: string; name: string; channels: Channel[] };
-
-// const demo: Category[] = [
-//   {
-//     id: "welcome",
-//     name: "Welcome",
-//     channels: [
-//       { id: "ch-welcome", name: "welcome" },
-//       { id: "ch-intro", name: "introduction" },
-//     ],
-//   },
-//   {
-//     id: "general",
-//     name: "General",
-//     channels: [
-//       { id: "ch-chat", name: "chat" },
-//       { id: "ch-bot", name: "bot" },
-//       { id: "ch-storage", name: "storage" },
-//     ],
-//   },
-// ];
-
-// export default function ChannelSidebar({
-//   categories = demo,
-// }: {
-//   categories?: Category[];
-// }) {
-//   const [openIds, setOpenIds] = useState<Set<string>>(new Set(categories.map(c => c.id)));
-
-//   const toggle = (id: string) => {
-//     setOpenIds(prev => {
-//       const next = new Set(prev);
-//       next.has(id) ? next.delete(id) : next.add(id);
-//       return next;
-//     });
-//   };
-
-//   return (
-//     <aside className="w-ful p-3 text-gray-300">
-//       {categories.map(cat => {
-//         const open = openIds.has(cat.id);
-//         return (
-//           <section key={cat.id} className="mb-3">
-//             {/* Header */}
-//             <button
-//               onClick={() => toggle(cat.id)}
-//               className="w-full flex items-center justify-between px-3 py-2 rounded hover:bg-white/5"
-//               aria-expanded={open}
-//             >
-//               <span className="font-semibold">{cat.name}</span>
-//               <svg
-//                 className={`w-4 h-4 transition-transform ${open ? "rotate-90" : ""}`}
-//                 viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"
-//               >
-//                 <path d="M7 5l6 5-6 5V5z" />
-//               </svg>
-//             </button>
-
-//             {/* Channels */}
-//             <div className={`overflow-hidden transition-[max-height] duration-300 ${open ? "max-h-60" : "max-h-0"}`}>
-//               <ul className="mt-1 space-y-1">
-//                 {cat.channels.map(ch => (
-//                   <li key={ch.id} className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-white/5">
-//                     <span className="text-lg leading-none">#</span>
-//                     <span className="capitalize">{ch.name}</span>
-//                   </li>
-//                 ))}
-//               </ul>
-//             </div>
-//           </section>
-//         );
-//       })}
-//     </aside>
-//   );
-// }

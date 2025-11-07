@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { useState, useCallback, useEffect } from "react";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
+import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { faCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ConversationUpdate } from "@/interfaces/websocketDirectChat.interface";
 import {
@@ -157,14 +157,19 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
         Direct Messages
       </Link>
       <ScrollArea>
-        {loading && (
+        {loading || userData.length === 0 ? (
           <>
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-10" />
-            <Skeleton className="h-20 w-10" />
+            {Array.from({ length: 20 }).map((_, index) => (
+              <div key={index} className="flex items-center gap-3 px-2 py-2">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <div className="flex-1 min-w-0">
+                  <Skeleton className="h-4 w-32 mb-1" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+            ))}
           </>
-        )}
-        {userData.length > 0 &&
+        ) : (
           userData.map((user) => (
             <div
               key={user.user_id}
@@ -287,7 +292,8 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
                 />
               )}
             </div>
-          ))}
+          ))
+        )}
         <ScrollBar orientation="vertical" />
       </ScrollArea>
     </div>
