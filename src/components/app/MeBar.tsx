@@ -6,6 +6,8 @@ import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useState, useCallback, useEffect } from "react";
+import { useDirectMember } from "@/hooks/useDirectMember";
+import { MemberListProps } from "@/interfaces/user.interface";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
@@ -21,35 +23,32 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-interface UserDataProps {
-  user_id: string;
-  status: string;
-  conversationid: string;
-  displayname: string;
-  username: "william";
-  avatar_ipfs_hash: string;
-  isCall: boolean;
-  last_seen: string;
-  lastMessageAt: string;
-}
-
 interface MeBarProps {
   refreshVersion: number;
 }
 
 export default function MeBar({ refreshVersion }: MeBarProps) {
   const router = useRouter();
-  const [userData, setUserData] = useState<UserDataProps[]>([]);
+  const {
+    directMembers,
+    createDirectMember,
+    updateDirectStatus,
+    updateDirectConversation,
+    deleteDirectMember,
+  } = useDirectMember();
   const [userProfileModal, setUserProfileModal] = useState<
     Record<string, boolean>
   >({});
-  // console.log("this is out side try catch", userData);
+
+  // console.log("this is out side try catch", directMembers);
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [userDropdown, setUserDropdown] = useState<Record<string, boolean>>({});
 
   const fetchUserData = useCallback(async () => {
+    if (loading) return;
     setLoading(true);
+    deleteDirectMember();
     try {
       const apiResponse = await fetch("/api/user/user-status", {
         method: "GET",
@@ -70,17 +69,19 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
         response.message === "Successfully fetched following users status"
       ) {
         const userChatData = response.data.users.filter(
-          (user: UserDataProps) => user.conversationid !== ""
+          (user: MemberListProps) => user.conversationid !== ""
         );
-        setUserData(userChatData);
+
+        createDirectMember(userChatData);
+
         setUserDropdown(
           Object.fromEntries(
-            userChatData.map((user: UserDataProps) => [user.user_id, false])
+            userChatData.map((user: MemberListProps) => [user.user_id, false])
           )
         );
         setUserProfileModal(
           Object.fromEntries(
-            userChatData.map((user: UserDataProps) => [user.user_id, false])
+            userChatData.map((user: MemberListProps) => [user.user_id, false])
           )
         );
       }
@@ -101,29 +102,12 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
     const onConversationUpdate = (p: ConversationUpdate) => {
       console.log("[ws me chat conversationUpdate from me Bar]", p);
       const data = p.data;
-      setUserData((prev: UserDataProps[]) => {
-        const listIndex = prev.findIndex(
-          (old) => old.conversationid === data.conversationId
-        );
-        if (listIndex === -1) {
-          fetchUserData();
-          return prev;
-        }
-        const newList = [...prev];
-        newList[listIndex] = {
-          ...newList[listIndex],
-          status: data.status,
-          isCall: data.isCall,
-          lastMessageAt: data.lastMessageAt,
-        };
-
-        newList.sort(
-          (a, b) =>
-            new Date(b.lastMessageAt).getTime() -
-            new Date(a.lastMessageAt).getTime()
-        );
-        return newList;
-      });
+      updateDirectConversation(
+        data.conversationId,
+        data.status,
+        data.isCall,
+        data.lastMessageAt
+      );
     };
     socket.on("conversation_update", onConversationUpdate);
     return () => {
@@ -138,11 +122,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
     ) => {
       console.log("[ws me bar userStatusChanged]", p);
       if (typeof p === "string") return;
-      setUserData((prev: UserDataProps[]) =>
-        prev.map((user) =>
-          user.user_id === p.userId ? { ...user, status: p.status } : user
-        )
-      );
+      updateDirectStatus(p.userId, p.status);
     };
     socket.on("userStatusChanged", onUserStatusChanged);
     return () => {
@@ -159,7 +139,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
         Direct Messages
       </Link>
       <ScrollArea>
-        {loading || userData.length === 0 ? (
+        {loading ? (
           <>
             {Array.from({ length: 20 }).map((_, index) => (
               <div key={index} className="flex items-center gap-3 px-2 py-2">
@@ -172,7 +152,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
             ))}
           </>
         ) : (
-          userData.map((user) => (
+          directMembers.map((user) => (
             <div
               key={user.user_id}
               // onContextMenuCapture={(event) => {

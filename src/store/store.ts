@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './slices/userSlice';
 import fingerprintReducer from './slices/fingerprintSlice';
+import directMemberReducer from './slices/directMemberSlice';
 
 export const store = configureStore({
   reducer: {
-    fingerprint: fingerprintReducer,
     user: userReducer,
+    fingerprint: fingerprintReducer,
+    directMembers: directMemberReducer,
   },
 });
 

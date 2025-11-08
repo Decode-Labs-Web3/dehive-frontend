@@ -30,8 +30,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { messageId, pageUp } = body;
 
-    console.log("eduhwdilhewodhlwiedukhwedu", messageId);
-    console.log("eduhwdilhewodhlwiedukhwedu", pageUp);
+    // console.log("eduhwdilhewodhlwiedukhwedu", messageId);
+    // console.log("eduhwdilhewodhlwiedukhwedu", pageUp);
 
     if (!messageId) {
       return NextResponse.json(

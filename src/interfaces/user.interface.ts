@@ -24,7 +24,7 @@ interface PrimaryWallet {
   createdAt: string;
   updatedAt: string;
   __v: number;
-};
+}
 
 export interface UserChatWith {
   _id: string;
@@ -55,4 +55,16 @@ interface FollowersList {
   display_name: string;
   username: string;
   following_number: number;
+}
+
+export interface MemberListProps {
+  user_id: string;
+  status: string;
+  conversationid: string;
+  displayname: string;
+  username: string;
+  avatar_ipfs_hash: string;
+  isCall: boolean;
+  last_seen: string;
+  lastMessageAt: string;
 }

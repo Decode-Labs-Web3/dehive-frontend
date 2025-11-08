@@ -30,9 +30,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { channelId, messageId, pageDown } = body;
 
-    console.log("eduhwdilhewodhlwiedukhwedu", channelId);
-    console.log("eduhwdilhewodhlwiedukhwedu", messageId);
-    console.log("eduhwdilhewodhlwiedukhwedu", pageDown);
+    // console.log("eduhwdilhewodhlwiedukhwedu", channelId);
+    // console.log("eduhwdilhewodhlwiedukhwedu", messageId);
+    // console.log("eduhwdilhewodhlwiedukhwedu", pageDown);
 
     if (!messageId || !channelId) {
       return NextResponse.json(

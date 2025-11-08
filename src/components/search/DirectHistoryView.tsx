@@ -10,6 +10,7 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
+import { MemberListProps } from "@/interfaces/user.interface";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DirectFileList from "@/components/messages/DirectFileList";
@@ -66,51 +67,32 @@ interface NewMessage {
   replyTo: string | null;
 }
 
-interface UserChatWith {
-  id: string;
-  displayname: string;
-  username: string;
-  avatar_ipfs_hash: string;
-  wallets: WalletProps[];
-  status: string;
-}
-
-interface WalletProps {
-  _id: string;
-  address: string;
-  user_id: string;
-  name_service: null;
-  is_primary: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
 interface DirectHistoryViewProps {
   channelId: string;
   messageSearchId: string;
+  userChatWith: MemberListProps;
   setMessageSearchId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 export default function DirectHistoryView({
   channelId,
+  userChatWith,
   messageSearchId,
   setMessageSearchId,
 }: DirectHistoryViewProps) {
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
+  const [fristLoad, setfirstLoad] = useState(0);
   const [isEndUp, setIsEndUp] = useState(false);
   const [pageUp, setPageUp] = useState<number>(0);
+  const [loadingUp, setLoadingUp] = useState(false);
   const [isEndDown, setIsEndDown] = useState(false);
   const [pageDown, setPageDown] = useState<number>(0);
-  const [loadingUp, setLoadingUp] = useState(false);
   const [loadingDown, setLoadingDown] = useState(false);
-  const [fristLoad, setfirstLoad] = useState(0);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [messageDelete, setMessageDelete] = useState<Message | null>(null);
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
-
   const [messageReply, setMessageReply] = useState<Message | null>(null);
+  const [messageDelete, setMessageDelete] = useState<Message | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
     content: "",
     uploadIds: [],
@@ -232,15 +214,6 @@ export default function DirectHistoryView({
     setNewMessage((prev) => ({ ...prev, uploadIds: uploadIds }));
   }, [listUploadFile]);
 
-  const [userChatWith, setUserChatWith] = useState<UserChatWith>({
-    id: "",
-    displayname: "",
-    username: "",
-    avatar_ipfs_hash: "",
-    wallets: [],
-    status: "offline",
-  });
-
   useEffect(() => {
     setMessages([]);
     setPageUp(0);
@@ -255,35 +228,6 @@ export default function DirectHistoryView({
     prevScrollHeightRef.current = 0;
     if (listRef.current) listRef.current.scrollTop = 0;
   }, [messageSearchId]);
-
-  const fetchUserChatWith = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/user/chat-with", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ conversationId: channelId }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!apiResponse.ok) {
-        console.error(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      if (response.statusCode === 200 && response.message === "OK") {
-        setUserChatWith(response.data);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Server get user chat with error");
-    }
-  }, [channelId]);
-
-  useEffect(() => {
-    fetchUserChatWith();
-  }, [fetchUserChatWith]);
 
   const fetchMessageUp = useCallback(async () => {
     if (isEndUp) return;
@@ -516,7 +460,7 @@ export default function DirectHistoryView({
                   ? {
                       displayName:
                         referencedMessage?.sender.display_name ??
-                        (message.replyTo?.senderId === userChatWith.id
+                        (message.replyTo?.senderId === userChatWith.user_id
                           ? userChatWith.displayname
                           : "You"),
                       content:
@@ -558,13 +502,13 @@ export default function DirectHistoryView({
                           {message.sender.display_name} Avatar
                         </AvatarFallback>
                       </Avatar>
-                      {message.sender.dehive_id !== userChatWith.id && (
+                      {message.sender.dehive_id !== userChatWith.user_id && (
                         <FontAwesomeIcon
                           icon={faCircle}
                           className="h-2 w-2 text-emerald-500"
                         />
                       )}
-                      {message.sender.dehive_id === userChatWith.id &&
+                      {message.sender.dehive_id === userChatWith.user_id &&
                         userChatWith.status === "online" && (
                           <FontAwesomeIcon
                             icon={faCircle}
@@ -627,7 +571,8 @@ export default function DirectHistoryView({
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-                            {userChatWith.id !== message.sender.dehive_id && (
+                            {userChatWith.user_id !==
+                              message.sender.dehive_id && (
                               <>
                                 <TooltipProvider>
                                   <Tooltip>

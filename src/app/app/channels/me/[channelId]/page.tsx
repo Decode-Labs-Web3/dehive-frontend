@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useAccount } from "wagmi";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -7,25 +8,24 @@ import { Label } from "@/components/ui/label";
 import Wallet from "@/components/common/Wallet";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { getApiHeaders } from "@/utils/api.utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
-import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
+import { useDirectMember } from "@/hooks/useDirectMember";
 import FilePreview from "@/components/common/FilePreview";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DirectFileList from "@/components/messages/DirectFileList";
-import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
 import DirectHistoryView from "@/components/search/DirectHistoryView";
-import DirectMessageOption from "@/components/messages/DirectMessageOption";
 import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
+import DirectMessageOption from "@/components/messages/DirectMessageOption";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -34,7 +34,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -61,15 +60,6 @@ interface NewMessage {
   content: string;
   uploadIds: string[];
   replyTo: string | null;
-}
-
-interface UserChatWith {
-  id: string;
-  displayname: string;
-  username: string;
-  avatar_ipfs_hash: string;
-  wallets: WalletProps[];
-  status: string;
 }
 
 interface WalletProps {
@@ -99,9 +89,12 @@ export default function DirectMessagePage() {
   const router = useRouter();
   const { sound } = useSoundContext();
   const { isConnected } = useAccount();
-  const { fingerprintHash } = useFingerprint();
   const { channelId } = useParams<{ channelId: string }>();
   const [messageSearchId, setMessageSearchId] = useState<string | null>(null);
+  const { directMembers } = useDirectMember();
+  const userChatWith = useMemo(() => {
+    return directMembers.find((member) => member.conversationid === channelId);
+  }, [directMembers, channelId]);
   const [messageReply, setMessageReply] = useState<Message | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessage>({
     content: "",
@@ -109,14 +102,6 @@ export default function DirectMessagePage() {
     replyTo: null,
   });
   const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
-  const [userChatWith, setUserChatWith] = useState<UserChatWith>({
-    id: "",
-    displayname: "",
-    username: "",
-    avatar_ipfs_hash: "",
-    wallets: [],
-    status: "offline",
-  });
   const [messageDelete, setMessageDelete] = useState<Message | null>(null);
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
   const [editMessageField, setEditMessageField] = useState<
@@ -228,33 +213,6 @@ export default function DirectMessagePage() {
     newMessageRef.current?.focus();
   };
 
-  const fetchUserChatWith = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/user/chat-with", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {"Content-Type": "application/json"}),
-        body: JSON.stringify({ conversationId: channelId }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!apiResponse.ok) {
-        console.error(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      if (response.statusCode === 200 && response.message === "OK") {
-        setUserChatWith(response.data);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Server get user chat with error");
-    }
-  }, [channelId]);
-
-  useEffect(() => {
-    fetchUserChatWith();
-  }, [fetchUserChatWith]);
-
   const autoResize = (element: HTMLTextAreaElement | null) => {
     if (!element) return;
     element.style.height = "auto";
@@ -306,7 +264,7 @@ export default function DirectMessagePage() {
   useEffect(() => {
     const socket = getDirectChatSocketIO();
     const onNewMessage = (message: Message) => {
-      if (message.sender.dehive_id === userChatWith.id) {
+      if (message.sender.dehive_id === userChatWith?.user_id) {
         const audio = audioRef.current;
         if (!audio) return;
         if (!sound) return;
@@ -317,52 +275,37 @@ export default function DirectMessagePage() {
     return () => {
       socket.off("newMessage", onNewMessage);
     };
-  }, [userChatWith.id, sound]);
+  }, [userChatWith?.user_id, sound]);
 
-  useEffect(() => {
-    const socket = getStatusSocketIO();
-    const onUserStatusChanged = (
-      p: string | { userId: string; status: string }
-    ) => {
-      if (typeof p === "string") return;
-      if (p.userId === userChatWith.id) {
-        setUserChatWith((prev) => ({ ...prev, status: p.status }));
-      }
-    };
-    socket.on("userStatusChanged", onUserStatusChanged);
-    return () => {
-      socket.off("userStatusChanged", onUserStatusChanged);
-    };
-  }, [userChatWith.id]);
+  // useEffect(() => {
+  //   const index = userChatWith.wallets.findIndex(
+  //     (wallet) => wallet.is_primary === true
+  //   );
+  //   if (privateMode) {
+  //     if (index !== -1) {
+  //       router.push(
+  //         `/app/channels/me/${channelId}/${userChatWith.wallets[index].address}`
+  //       );
+  //     }
+  //   }
+  // }, [privateMode, channelId, router, userChatWith.wallets]);
 
-  useEffect(() => {
-    const index = userChatWith.wallets.findIndex(
-      (wallet) => wallet.is_primary === true
-    );
-    if (privateMode) {
-      if (index !== -1) {
-        router.push(
-          `/app/channels/me/${channelId}/${userChatWith.wallets[index].address}`
-        );
-      }
-    }
-  }, [privateMode, channelId, router, userChatWith.wallets]);
+  // const [isAllowPrivate, setIsAllowPrivate] = useState(false);
 
-  const [isAllowPrivate, setIsAllowPrivate] = useState(false);
-
-  useEffect(() => {
-    const isAllow = userChatWith.wallets.find(
-      (wallet) => wallet.is_primary === true
-    );
-    if (isAllow !== undefined) {
-      setIsAllowPrivate(true);
-    }
-  }, [userChatWith.wallets]);
+  // useEffect(() => {
+  //   const isAllow = userChatWith.wallets.find(
+  //     (wallet) => wallet.is_primary === true
+  //   );
+  //   if (isAllow !== undefined) {
+  //     setIsAllowPrivate(true);
+  //   }
+  // }, [userChatWith.wallets]);
 
   if (messageSearchId) {
     return (
       <DirectHistoryView
         channelId={channelId}
+        userChatWith={userChatWith!}
         messageSearchId={messageSearchId}
         setMessageSearchId={setMessageSearchId}
       />
@@ -376,9 +319,9 @@ export default function DirectMessagePage() {
         <div className="flex items-center gap-3">
           <Avatar className="w-8 h-8">
             <AvatarImage
-              src={`https://ipfs.de-id.xyz/ipfs/${userChatWith.avatar_ipfs_hash}`}
+              src={`https://ipfs.de-id.xyz/ipfs/${userChatWith?.avatar_ipfs_hash}`}
             />
-            <AvatarFallback>{userChatWith.displayname} Avatar</AvatarFallback>
+            <AvatarFallback>{userChatWith?.displayname} Avatar</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
@@ -388,7 +331,7 @@ export default function DirectMessagePage() {
             </div>
           </div>
         </div>
-        {isAllowPrivate && (
+        {/* {isAllowPrivate && (
           <>
             {isConnected ? (
               <div className="flex items-center space-x-2">
@@ -405,7 +348,7 @@ export default function DirectMessagePage() {
               <Wallet />
             )}
           </>
-        )}
+        )} */}
         <div className="flex items-center gap-3">
           <Button
             onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
@@ -446,7 +389,7 @@ export default function DirectMessagePage() {
                 ? {
                     displayName:
                       referencedMessage?.sender.display_name ??
-                      (message.replyTo?.senderId === userChatWith.id
+                      (message.replyTo?.senderId === userChatWith?.user_id
                         ? userChatWith.displayname
                         : "You"),
                     content:
@@ -482,13 +425,13 @@ export default function DirectMessagePage() {
                       </AvatarFallback>
                     </Avatar>
 
-                    {message.sender.dehive_id !== userChatWith.id && (
+                    {message.sender.dehive_id !== userChatWith?.user_id && (
                       <FontAwesomeIcon
                         icon={faCircle}
                         className="text-[8px] text-emerald-500"
                       />
                     )}
-                    {message.sender.dehive_id === userChatWith.id &&
+                    {message.sender.dehive_id === userChatWith?.user_id &&
                       userChatWith.status === "online" && (
                         <FontAwesomeIcon
                           icon={faCircle}
@@ -552,7 +495,7 @@ export default function DirectMessagePage() {
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
-                          {userChatWith.id !== message.sender.dehive_id && (
+                          {userChatWith?.user_id !== message.sender.dehive_id && (
                             <>
                               <TooltipProvider>
                                 <Tooltip>
