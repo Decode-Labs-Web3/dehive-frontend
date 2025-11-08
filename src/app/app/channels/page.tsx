@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import SkeletonApp from "@/components/common/SkeletonApp";
 import { getCookie } from "@/utils/cookie.utils";
 
-export default function AppPage() {
+export default function ChannelsPage() {
   const router = useRouter();
 
   useEffect(() => {
@@ -20,5 +20,5 @@ export default function AppPage() {
     router.push("/app/channels/me");
   }, [router]);
 
-  return <></>;
+  return <SkeletonApp />;
 }

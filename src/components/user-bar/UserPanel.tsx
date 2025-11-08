@@ -341,7 +341,6 @@ export default function UserPanel({
                             {userData?.display_name} Avatar
                           </AvatarFallback>
                         </Avatar>
-                        <div className="absolute bottom-0 right-0 w-6 h-6 bg-[hsl(var(--success))] rounded-full border-4 border-secondary"></div>
                       </div>
                       <div className="flex-1">
                         <CardTitle className="text-xl">

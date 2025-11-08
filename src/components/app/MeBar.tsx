@@ -218,18 +218,17 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
                       />
                       <AvatarFallback>{user.displayname} Avatar</AvatarFallback>
                     </Avatar>
-
+                    <FontAwesomeIcon
+                      icon={faCircle}
+                      className={`text-[8px] ${
+                        user.status === "online"
+                          ? "text-emerald-500"
+                          : "text-zinc-400"
+                      }`}
+                    />
                     <div className="min-w-0 leading-tight">
                       <h1 className="font-medium text-[15px] truncate">
-                        {user.displayname}{" "}
-                        <FontAwesomeIcon
-                          icon={faCircle}
-                          className={`h-2 w-2 ${
-                            user.status === "online"
-                              ? "text-emerald-500"
-                              : "text-zinc-400"
-                          }`}
-                        />
+                        {user.displayname}
                       </h1>
                       <p className="text-xs text-muted-foreground truncate">
                         @{user.username}

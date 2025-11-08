@@ -481,19 +481,21 @@ export default function DirectMessagePage() {
                         {message.sender.display_name} Avatar
                       </AvatarFallback>
                     </Avatar>
+
                     {message.sender.dehive_id !== userChatWith.id && (
                       <FontAwesomeIcon
                         icon={faCircle}
-                        className="h-2 w-2 text-emerald-500"
+                        className="text-[8px] text-emerald-500"
                       />
                     )}
                     {message.sender.dehive_id === userChatWith.id &&
                       userChatWith.status === "online" && (
                         <FontAwesomeIcon
                           icon={faCircle}
-                          className="h-2 w-2 text-emerald-500"
+                          className="text-[8px] text-emerald-500"
                         />
                       )}
+
                     <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
                       {!editMessageField[message._id] ? (
                         <div className="w-full">
