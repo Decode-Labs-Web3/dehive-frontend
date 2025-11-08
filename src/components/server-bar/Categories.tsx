@@ -1,7 +1,7 @@
 "use client";
 
+import { useUser } from "@/hooks/useUser";
 import { useParams } from "next/navigation";
-import { getCookie } from "@/utils/cookie.utils";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import ServerBarItems from "@/components/server-bar";
@@ -82,10 +82,10 @@ interface CategoriesProps {
 }
 
 export default function Categories({ server }: CategoriesProps) {
+  const { user } = useUser();
   const { serverId } = useParams();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string>("");
   const [isPrivileged, setIsPrivileged] = useState(false);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [categories, setCategories] = useState<CategoryProps[]>([]);
@@ -108,13 +108,6 @@ export default function Categories({ server }: CategoriesProps) {
   >({});
   // const [ channelModal, setChannelModal ] = useState<Record<string, boolean>>({})
   // console.log(category);
-
-  useEffect(() => {
-    const userId = getCookie("userId");
-    if (userId) {
-      setUserId(userId);
-    }
-  }, []);
 
   const fetchMember = useCallback(async () => {
     try {
@@ -139,7 +132,7 @@ export default function Categories({ server }: CategoriesProps) {
         const isPrivileged = response.data.some(
           (member: MemberInServerProps) =>
             (member.role === "owner" || member.role === "moderator") &&
-            member._id === userId
+            member._id === user._id
         );
         setIsPrivileged(isPrivileged);
       }
@@ -147,12 +140,12 @@ export default function Categories({ server }: CategoriesProps) {
       console.error(error);
       console.log("Server fetch server member error");
     }
-  }, [server._id, userId]);
+  }, [server._id, user._id]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!user._id) return;
     fetchMember();
-  }, [userId, fetchMember]);
+  }, [user._id, fetchMember]);
 
   const fetchCategoryInfo = useCallback(async () => {
     setLoading(true);
@@ -557,7 +550,7 @@ export default function Categories({ server }: CategoriesProps) {
                           Collapse All Categories
                         </button>
 
-                        {server.owner_id === userId && (
+                        {server.owner_id === user._id && (
                           <>
                             <button
                               onClick={() => {

@@ -1,8 +1,8 @@
 "use client";
 
+import { useUser } from "@/hooks/useUser";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { getCookie } from "@/utils/cookie.utils";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -94,6 +94,7 @@ interface UserInServerProps {
 }
 
 export default function ChannelMessagePage() {
+  const { user } = useUser();
   const { sound } = useSoundContext();
   const { fingerprintHash } = useFingerprint();
   const [userInServer, setUserInServer] = useState<UserInServerProps[]>([]);
@@ -167,7 +168,6 @@ export default function ChannelMessagePage() {
     fetchServerUsers();
   }, [fetchServerUsers]);
 
-  const [userId, setUserId] = useState<string>("");
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessageProps>({
     content: "",
@@ -316,13 +316,6 @@ export default function ChannelMessagePage() {
     resizeNew();
   }, [newMessage, resizeNew]);
 
-  useEffect(() => {
-    const currentUserId = getCookie("userId");
-    if (currentUserId) {
-      setUserId(currentUserId);
-    }
-  }, []);
-
   useLayoutEffect(() => {
     resizeNew();
   }, [newMessage, resizeNew]);
@@ -384,7 +377,7 @@ export default function ChannelMessagePage() {
     const socket = getChannelChatSocketIO();
     const onNewMessage = (message: MessageChannel) => {
       console.log("play sound on new message");
-      if (message.sender.dehive_id !== userId) {
+      if (message.sender.dehive_id !== user._id) {
         const audio = audioRef.current;
         if (!audio) return;
         if (!sound) return;
@@ -395,7 +388,7 @@ export default function ChannelMessagePage() {
     return () => {
       socket.off("newMessage", onNewMessage);
     };
-  }, [userId, sound]);
+  }, [user, sound]);
 
   useEffect(() => {
     const socket = getStatusSocketIO();
@@ -583,7 +576,7 @@ export default function ChannelMessagePage() {
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
-                          {userId === message.sender.dehive_id && (
+                          {user._id === message.sender.dehive_id && (
                             <>
                               <TooltipProvider>
                                 <Tooltip>

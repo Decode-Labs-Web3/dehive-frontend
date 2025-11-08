@@ -1,7 +1,7 @@
 "use client";
 
+import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
-import { getCookie } from "@/utils/cookie.utils";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -89,6 +89,7 @@ export default function ChannelHistoryView({
   messageSearchId,
   setMessageSearchId,
 }: ChannelHistoryViewProps) {
+  const { user } = useUser();
   const { fingerprintHash } = useFingerprint();
   const [fristLoad, setfirstLoad] = useState(0);
   const [isEndUp, setIsEndUp] = useState(false);
@@ -107,13 +108,6 @@ export default function ChannelHistoryView({
     id: "",
     messageEdit: "",
   });
-  const [userId, setUserId] = useState<string>("");
-  useEffect(() => {
-    const currentUserId = getCookie("userId");
-    if (currentUserId) {
-      setUserId(currentUserId);
-    }
-  }, []);
 
   const newMessageRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -618,7 +612,7 @@ export default function ChannelHistoryView({
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-                            {userId === message.sender.dehive_id && (
+                            {user._id === message.sender.dehive_id && (
                               <>
                                 <TooltipProvider>
                                   <Tooltip>

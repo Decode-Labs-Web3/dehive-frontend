@@ -46,23 +46,7 @@ function AuthorizePageContent() {
         router.push("/");
         return;
       }
-
-      console.log(apiResponse);
-
-      const userInfoResponse = await fetch("/api/user/user-info", {
-        method: "GET",
-        headers: getApiHeaders(fingerprintHash),
-        credentials: "include",
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-
-      if (!userInfoResponse.ok) {
-        console.error("Failed to fetch user info");
-        router.push("/");
-        return;
-      }
-
+      // console.log(apiResponse);
       router.push("/app/channels/me");
     } catch (error) {
       console.error(error);

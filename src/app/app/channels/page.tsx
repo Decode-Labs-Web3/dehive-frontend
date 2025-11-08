@@ -1,19 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
+import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
-import SkeletonApp from "@/components/common/SkeletonApp";
-import { getCookie } from "@/utils/cookie.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import SkeletonApp from "@/components/common/SkeletonApp";
 
 export default function ChannelsPage() {
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
-
+  const { user } = useUser();
   useEffect(() => {
-    const userId = getCookie("userId");
-
-    if (!userId || !fingerprintHash) {
+    if (!user._id || !fingerprintHash) {
       router.push("/sso");
       return;
     }

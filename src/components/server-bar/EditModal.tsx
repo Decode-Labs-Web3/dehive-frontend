@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
-import { getCookie } from "@/utils/cookie.utils";
 import { getApiHeaders } from "@/utils/api.utils";
 import ServerBarItems from "@/components/server-bar";
 import { useFingerprint } from "@/hooks/useFingerprint";
@@ -44,8 +44,8 @@ export default function EditModal({
   setServerPanel,
   setServerSettingModal,
 }: EditModalProps) {
+  const { user } = useUser();
   const router = useRouter();
-  const [userId, setUserId] = useState("");
   const { fingerprintHash } = useFingerprint();
   const { triggerRefeshServer } = useServerRefresh();
   // const [server, setServer] = useState<ServerProps>(server)
@@ -56,13 +56,6 @@ export default function EditModal({
     delete: false,
     category: false,
   };
-
-  useEffect(() => {
-    const value = getCookie("userId");
-    if (value) {
-      setUserId(value);
-    }
-  }, []);
 
   const [modal, setModal] = useState<Record<string, boolean>>({ ...allFalse });
 
@@ -308,7 +301,7 @@ export default function EditModal({
           <FontAwesomeIcon icon={faUserPlus} />
         </button>
 
-        {server.owner_id !== userId && (
+        {server.owner_id !== user._id && (
           <button
             onClick={() => {
               setModal({ ...allFalse, leave: true });
@@ -320,7 +313,7 @@ export default function EditModal({
           </button>
         )}
 
-        {server.owner_id === userId && (
+        {server.owner_id === user._id && (
           <>
             <button
               onClick={() => {

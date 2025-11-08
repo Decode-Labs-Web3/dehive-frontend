@@ -1,9 +1,9 @@
 "use client";
 
 import App from "@/components/app";
+import { useUser } from "@/hooks/useUser";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getCookie } from "@/utils/cookie.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelCallProvider from "@/providers/socketChannelCallProvider";
@@ -17,14 +17,8 @@ export default function ServerLayout({
   const { serverId } = useParams<{
     serverId: string;
   }>();
-  const [currentId, setCurrentId] = useState("");
-  useEffect(() => {
-    const userId = getCookie("userId");
-    if (userId) {
-      setCurrentId(userId);
-    }
-  }, []);
-  if (!currentId || !serverId) {
+  const { user } = useUser();
+  if (!user._id || !serverId) {
     return (
       <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
         <aside className="h-full overflow-y-auto border-r border-black/20">
@@ -66,8 +60,8 @@ export default function ServerLayout({
   }
 
   return (
-    <ChannelChatProvider userId={currentId} serverId={serverId}>
-      <ChannelCallProvider userId={currentId} serverId={serverId}>
+    <ChannelChatProvider userId={user._id} serverId={serverId}>
+      <ChannelCallProvider userId={user._id} serverId={serverId}>
         <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
           <aside className="h-full overflow-y-auto border-r border-black/20">
             <App.ServerBar />

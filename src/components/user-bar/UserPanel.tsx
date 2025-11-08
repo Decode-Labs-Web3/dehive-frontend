@@ -42,9 +42,8 @@ interface UserDataProps {
 }
 interface UserPanelProps {
   theme: string;
-  setTheme: React.Dispatch<React.SetStateAction<string>>;
   userData: UserDataProps;
-  handleUserData: () => void;
+  setTheme: React.Dispatch<React.SetStateAction<string>>;
   setUserPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -53,7 +52,6 @@ export default function UserPanel({
   userData,
   setTheme,
   setUserPanel,
-  handleUserData,
 }: UserPanelProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -210,7 +208,6 @@ export default function UserPanel({
         response.statusCode === 200 &&
         response.message === "Profile updated"
       ) {
-        handleUserData();
         setTimeout(() => {
           setUpdateUserInfo({
             avatar_ipfs_hash: userData?.avatar_ipfs_hash,

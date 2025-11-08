@@ -1,25 +1,20 @@
 "use client";
 
 import App from "@/components/app";
-import { getCookie } from "@/utils/cookie.utils";
+import { useUser } from "@/hooks/useUser";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCallback, useEffect, useState } from "react";
 import DirectChatProvider from "@/providers/socketDirectChatProvider";
 import { ConversationRefreshContext } from "@/contexts/ConversationRefreshContext";
 
 export default function MeLayout({ children }: { children: React.ReactNode }) {
-  const [currentId, setCurrentId] = useState("");
+  const { user } = useUser();
   const [refreshVersion, setRefreshVersion] = useState(0);
   const triggerRefreshConversation = useCallback(() => {
     setRefreshVersion((prev) => prev + 1);
   }, []);
-  useEffect(() => {
-    const userId = getCookie("userId");
-    if (userId) {
-      setCurrentId(userId);
-    }
-  }, []);
-  if (!currentId) {
+
+  if (!user._id) {
     return (
       <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
         <aside className="h-full overflow-y-auto border-r border-black/20 p-4 space-y-3">
@@ -62,7 +57,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <DirectChatProvider userId={currentId}>
+    <DirectChatProvider userId={user._id}>
       <ConversationRefreshContext.Provider
         value={{ triggerRefreshConversation }}
       >

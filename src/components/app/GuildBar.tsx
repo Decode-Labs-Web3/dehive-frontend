@@ -1,7 +1,7 @@
 "use client";
 
+import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
-import { getCookie } from "@/utils/cookie.utils";
 import { getApiHeaders } from "@/utils/api.utils";
 import GuideBarItems from "@/components/guilde-bar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,9 +44,9 @@ export default function GuildBar({
 }: {
   refreshVersion: number;
 }) {
+  const { user } = useUser();
   const router = useRouter();
   const pathname = usePathname();
-  const [userId, setUserId] = useState("");
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -123,13 +123,6 @@ export default function GuildBar({
       setIsLeaving(false);
     }
   };
-
-  useEffect(() => {
-    const currentUserId = getCookie("userId");
-    if (currentUserId) {
-      setUserId(currentUserId);
-    }
-  }, []);
 
   return (
     <TooltipProvider>
@@ -210,7 +203,7 @@ export default function GuildBar({
                     </ContextMenuItem>
                     <ContextMenuSeparator />
                     <ContextMenuItem>Invite people</ContextMenuItem>
-                    {userId !== server.owner_id && (
+                    {user._id !== server.owner_id && (
                       <>
                         <ContextMenuSeparator />
                         <ContextMenuItem

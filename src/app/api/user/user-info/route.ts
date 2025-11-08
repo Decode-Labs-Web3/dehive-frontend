@@ -68,7 +68,7 @@ export async function GET(req: Request) {
     }
 
     const response = await backendRes.json();
-    const res = NextResponse.json(
+    return NextResponse.json(
       {
         success: true,
         statusCode: response.statusCode || httpStatus.OK,
@@ -77,16 +77,6 @@ export async function GET(req: Request) {
       },
       { status: response.statusCode || httpStatus.OK }
     );
-
-    res.cookies.set("userId", response.data._id, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: authExpire.sessionToken,
-    });
-
-    return res;
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(

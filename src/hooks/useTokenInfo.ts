@@ -1,6 +1,6 @@
-import { useAccount, useReadContract } from "wagmi";
-import { type Address, isAddress } from "viem";
 import { erc20Abi } from "@/abi/airdropAbi";
+import { type Address, isAddress } from "viem";
+import { useAccount, useReadContract } from "wagmi";
 
 export function useTokenInfo(tokenAddress: Address | undefined) {
   const { address: userAddress } = useAccount();

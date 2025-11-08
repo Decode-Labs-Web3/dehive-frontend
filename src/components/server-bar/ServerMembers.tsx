@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { getCookie } from "@/utils/cookie.utils";
+import { useUser } from "@/hooks/useUser";
 import { useState, useEffect, useCallback } from "react";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -62,9 +62,9 @@ export default function ServerMembers({
   fetchServerInfo,
   setServerPanel,
 }: ServerMembersProps) {
+  const { user } = useUser();
   const { triggerRefeshServer } = useServerRefresh();
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string>();
   const [kickForm, setKickForm] = useState({
     server_id: server._id,
     target_user_dehive_id: "",
@@ -88,12 +88,7 @@ export default function ServerMembers({
     Record<string, boolean>
   >({});
   const [ownershipAgree, setOwnershipAgree] = useState(false);
-  useEffect(() => {
-    const currentUserId = getCookie("userId");
-    if (currentUserId) {
-      setUserId(currentUserId);
-    }
-  }, []);
+
   const fetchServerMember = useCallback(async () => {
     setLoading(true);
     try {
@@ -460,7 +455,7 @@ export default function ServerMembers({
 
                   {/* Moderation actions */}
                   <div className="border-t border-border px-1 py-1">
-                    {userId !== membership._id && (
+                    {user._id !== membership._id && (
                       <>
                         <Link
                           href={`/app/channels/me/${membership._id}`}

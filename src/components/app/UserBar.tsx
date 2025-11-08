@@ -1,14 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useUser } from "@/hooks/useUser";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFingerprint } from "@/hooks/useFingerprint";
 import UserPanel from "@/components/user-bar/UserPanel";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -37,73 +36,12 @@ const PopoverTrigger = dynamic(
   { ssr: false }
 );
 
-interface UserDataProps {
-  _id: string;
-  dehive_role: string;
-  status: string;
-  server_count: number;
-  username: string;
-  display_name: string;
-  bio: string;
-  avatar_ipfs_hash: string;
-  last_login: string;
-  primary_wallet?: PrimaryWalletProps;
-  following_number: number;
-  followers_number: number;
-  is_active: boolean;
-  last_account_deactivation: string;
-}
-
-interface PrimaryWalletProps {
-  _id: string;
-  address: string;
-  user_id: string;
-  name_service: null;
-  is_primary: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
 export default function UserBar() {
+  const { user } = useUser();
   const [sound, setSound] = useState(false);
-  const { fingerprintHash } = useFingerprint();
-  const [loading, setLoading] = useState(false);
   const [userPanel, setUserPanel] = useState(false);
   const [theme, setTheme] = useState<string>("light");
   const [microphone, setMicrophone] = useState(false);
-  const [userData, setUserData] = useState<UserDataProps | null>(null);
-
-  const handleUserData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const apiResponse = await fetch("/api/user/user-info", {
-        method: "GET",
-        headers: getApiHeaders(fingerprintHash),
-        cache: "no-store",
-        credentials: "include",
-        signal: AbortSignal.timeout(10000),
-      });
-
-      if (!apiResponse) {
-        console.error(apiResponse);
-        return;
-      }
-
-      const response = await apiResponse.json();
-      setUserData(response.data);
-      // console.log("this is user data from user bar",response.data )
-      localStorage.setItem("userData", JSON.stringify(response.data));
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    handleUserData();
-  }, [handleUserData]);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -126,7 +64,7 @@ export default function UserBar() {
     }
   }, []);
 
-  if (loading || !userData) {
+  if (!user) {
     return (
       <TooltipProvider>
         <Card className="w-full h-full p-3">
@@ -166,19 +104,19 @@ export default function UserBar() {
                   >
                     <Avatar className="w-12 h-12">
                       <AvatarImage
-                        src={`https://ipfs.de-id.xyz/ipfs/${userData?.avatar_ipfs_hash}`}
+                        src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
                         alt="Avatar"
                       />
                       <AvatarFallback>
-                        {userData?.display_name} Avatar
+                        {user.display_name} Avatar
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1 text-left">
                       <h3 className="text-sm font-semibold truncate">
-                        {userData?.display_name}
+                        {user.display_name}
                       </h3>
                       <h4 className="text-xs text-muted-foreground truncate">
-                        {userData?.dehive_role}
+                        {user.dehive_role}
                       </h4>
                     </div>
                   </button>
@@ -189,37 +127,37 @@ export default function UserBar() {
                       <div className="flex flex-col items-center gap-4">
                         <Avatar className="w-16 h-16">
                           <AvatarImage
-                            src={`https://ipfs.de-id.xyz/ipfs/${userData?.avatar_ipfs_hash}`}
+                            src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
                             alt="Avatar"
                           />
                           <AvatarFallback>
-                            {userData?.display_name}
+                            {user.display_name}
                           </AvatarFallback>
                         </Avatar>
 
                         <div className="text-center">
                           <h3 className="text-lg font-semibold truncate">
-                            {userData?.display_name}
+                            {user.display_name}
                           </h3>
                           <div className="text-sm text-muted-foreground truncate">
-                            @{userData?.username}
+                            @{user.username}
                           </div>
                           <Badge variant="secondary" className="mt-2 text-xs">
-                            {userData?.dehive_role}
+                            {user.dehive_role}
                           </Badge>
                         </div>
 
                         <div className="flex gap-2 text-xs">
                           <Badge variant="outline" className="text-xs">
-                            Followers: {userData?.followers_number}
+                            Followers: {user.followers_number}
                           </Badge>
                           <Badge variant="outline" className="text-xs">
-                            Following: {userData?.following_number}
+                            Following: {user.following_number}
                           </Badge>
                         </div>
 
                         <p className="text-sm text-muted-foreground text-center line-clamp-3">
-                          {userData?.bio || "No bio yet."}
+                          {user.bio}
                         </p>
                       </div>
                     </CardContent>
@@ -284,13 +222,12 @@ export default function UserBar() {
           </div>
         </Card>
       </TooltipProvider>
-      {userPanel && userData && (
+      {userPanel && user && (
         <UserPanel
           theme={theme}
           setTheme={setTheme}
-          userData={userData}
+          userData={user}
           setUserPanel={setUserPanel}
-          handleUserData={handleUserData}
         />
       )}
     </>
