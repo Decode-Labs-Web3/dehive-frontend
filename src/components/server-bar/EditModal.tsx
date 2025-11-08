@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/utils/cookie.utils";
+import { getApiHeaders } from "@/utils/api.utils";
 import ServerBarItems from "@/components/server-bar";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import {
@@ -42,10 +44,11 @@ export default function EditModal({
   setServerPanel,
   setServerSettingModal,
 }: EditModalProps) {
-  // const [server, setServer] = useState<ServerProps>(server)
   const router = useRouter();
   const [userId, setUserId] = useState("");
+  const { fingerprintHash } = useFingerprint();
   const { triggerRefeshServer } = useServerRefresh();
+  // const [server, setServer] = useState<ServerProps>(server)
   const allFalse = {
     edit: false,
     leave: false,
@@ -114,10 +117,9 @@ export default function EditModal({
     try {
       const apiResponse = await fetch("/api/servers/server/patch", {
         method: "PATCH",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           serverId: server._id,
           name: editServerForm.name,
@@ -158,10 +160,9 @@ export default function EditModal({
     try {
       const apiResponse = await fetch("/api/servers/server/delete", {
         method: "DELETE",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ serverId: server._id }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -226,10 +227,9 @@ export default function EditModal({
     try {
       const apiResponse = await fetch("/api/servers/category/post", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           serverId: server._id,
           name: createCategoryForm.name,

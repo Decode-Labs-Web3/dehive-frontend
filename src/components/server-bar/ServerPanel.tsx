@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import { useEffect, useRef, useState } from "react";
 import ServerBarItems from "@/components/server-bar";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { serverTag } from "@/constants/index.constants";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
@@ -67,14 +69,13 @@ export default function ServerPanel({
   setServerSettingModal,
 }: ServerPanelProps) {
   const router = useRouter();
+  const { fingerprintHash } = useFingerprint();
   const { triggerRefeshServer } = useServerRefresh();
-
-  // Ensure the tabs list isn't scrolled past the first items on mount
   const tabsListContainerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    const el = tabsListContainerRef.current;
-    if (el) {
-      el.scrollTop = 0;
+    const element = tabsListContainerRef.current;
+    if (element) {
+      element.scrollTop = 0;
     }
   }, []);
 
@@ -134,10 +135,9 @@ export default function ServerPanel({
     try {
       const apiResponse = await fetch("/api/servers/server/patch", {
         method: "PATCH",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           serverId: server._id,
           name: editServerForm.name,
@@ -177,10 +177,9 @@ export default function ServerPanel({
     try {
       const apiResponse = await fetch("/api/servers/server/delete", {
         method: "DELETE",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ serverId: server._id }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),

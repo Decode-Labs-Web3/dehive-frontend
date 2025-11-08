@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -51,6 +53,7 @@ interface DirectFileListProps {
 export default function DirectFileList({ channelId }: DirectFileListProps) {
   const [page, setPage] = useState(0);
   const [open, setOpen] = useState(false);
+  const { fingerprintHash } = useFingerprint();
   const [isLastPage, setIsLastPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [type, setType] = useState<AttachmentType>(AttachmentType.IMAGE);
@@ -59,10 +62,9 @@ export default function DirectFileList({ channelId }: DirectFileListProps) {
     if (isLastPage) return;
     const apiResponse = await fetch("/api/me/conversation/file-list", {
       method: "POST",
-      headers: {
+      headers: getApiHeaders(fingerprintHash, {
         "Content-Type": "application/json",
-        "X-Frontend-Internal-Request": "true",
-      },
+      }),
       body: JSON.stringify({ type, channelId, page }),
       cache: "no-cache",
       signal: AbortSignal.timeout(10000),

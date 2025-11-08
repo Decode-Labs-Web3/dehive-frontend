@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan, faFolder, faX } from "@fortawesome/free-solid-svg-icons";
@@ -50,13 +52,11 @@ export default function CategoryPanel({
   handleDeleteCategory,
   fetchCategoryInfo,
 }: CategoryPanelProps) {
-  // old boolean tab state removed; using string panelValue only
+  const { fingerprintHash } = useFingerprint();
+  const [panelValue, setPanelValue] = useState<string>("overview");
   const [editCategoryForm, setEditCategoryForm] = useState({
     name: category.name,
   });
-  // retained for potential future use; UI is now driven by `panelValue`
-  // const [tabOption, setTabOption] = useState({ ...allFalse, overview: true });
-  const [panelValue, setPanelValue] = useState<string>("overview");
 
   const handleEditCategoryChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -70,10 +70,9 @@ export default function CategoryPanel({
     try {
       const apiResponse = await fetch("/api/servers/category/patch", {
         method: "PATCH",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           categoryId,
           name: editCategoryForm.name,

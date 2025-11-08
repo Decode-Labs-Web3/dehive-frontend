@@ -1,15 +1,18 @@
 "use client";
 
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
 import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 
 export function useDirectMessage(conversationId: string) {
-  const socket = useRef(getDirectChatSocketIO()).current;
+  const { fingerprintHash } = useFingerprint();
   const [page, setPage] = useState<number>(0);
-  const [isLastPage, setIsLastPage] = useState(false);
   const [sending, setSending] = useState(false);
+  const [isLastPage, setIsLastPage] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const socket = useRef(getDirectChatSocketIO()).current;
   const [messages, setMessages] = useState<Message[]>([]);
   // console.log("dwedwedwedwedwedwqsqwsqwswed",messages);
 
@@ -109,10 +112,9 @@ export function useDirectMessage(conversationId: string) {
         "/api/me/conversation/conversation-list",
         {
           method: "POST",
-          headers: {
+          headers: getApiHeaders(fingerprintHash, {
             "Content-Type": "application/json",
-            "X-Frontend-Internal-Request": "true",
-          },
+          }),
           body: JSON.stringify({ conversationId, page }),
           cache: "no-cache",
           signal: AbortSignal.timeout(10000),

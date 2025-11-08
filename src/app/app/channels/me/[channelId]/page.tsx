@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import Wallet from "@/components/common/Wallet";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useSoundContext } from "@/contexts/SoundContext";
@@ -95,8 +97,9 @@ interface FileUploadProps {
 
 export default function DirectMessagePage() {
   const router = useRouter();
-  const { isConnected } = useAccount();
   const { sound } = useSoundContext();
+  const { isConnected } = useAccount();
+  const { fingerprintHash } = useFingerprint();
   const { channelId } = useParams<{ channelId: string }>();
   const [messageSearchId, setMessageSearchId] = useState<string | null>(null);
   const [messageReply, setMessageReply] = useState<Message | null>(null);
@@ -229,10 +232,7 @@ export default function DirectMessagePage() {
     try {
       const apiResponse = await fetch("/api/user/chat-with", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash, {"Content-Type": "application/json"}),
         body: JSON.stringify({ conversationId: channelId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),

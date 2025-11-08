@@ -3,8 +3,10 @@
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -81,6 +83,7 @@ export default function UserInfoModal({
   setUserProfileModal,
 }: UserInfoModalProps) {
   const router = useRouter();
+  const { fingerprintHash } = useFingerprint();
   const [activeUserId, setActiveUserId] = useState(userId);
   const [tab, setTab] = useState<"activity" | "mutual" | "servers">("mutual");
   const [userInfo, setUserInfo] = useState<UserDataProps | null>(null);
@@ -125,10 +128,9 @@ export default function UserInfoModal({
           "/api/me/conversation/conversation-create",
           {
             method: "POST",
-            headers: {
+            headers: getApiHeaders(fingerprintHash, {
               "Content-Type": "application/json",
-              "X-Frontend-Internal-Request": "true",
-            },
+            }),
             body: JSON.stringify({ otherUserDehiveId }),
             cache: "no-cache",
             signal: AbortSignal.timeout(10000),

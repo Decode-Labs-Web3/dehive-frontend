@@ -3,9 +3,11 @@
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getCookie } from "@/utils/cookie.utils";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useSoundContext } from "@/contexts/SoundContext";
@@ -92,24 +94,23 @@ interface UserInServerProps {
 }
 
 export default function ChannelMessagePage() {
+  const { sound } = useSoundContext();
+  const { fingerprintHash } = useFingerprint();
+  const [userInServer, setUserInServer] = useState<UserInServerProps[]>([]);
+  const [messageSearchId, setMessageSearchId] = useState<string | null>(null);
+  const [channelInfo, setChannelInfo] = useState<ChannelInfoProps | null>(null);
   const { serverId, channelId } = useParams<{
     serverId: string;
     channelId: string;
   }>();
-  const { sound } = useSoundContext();
-  const [messageSearchId, setMessageSearchId] = useState<string | null>(null);
-
-  const [channelInfo, setChannelInfo] = useState<ChannelInfoProps | null>(null);
-  const [userInServer, setUserInServer] = useState<UserInServerProps[]>([]);
 
   const fetchChannel = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/servers/channel/get", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ channelId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -139,10 +140,7 @@ export default function ChannelMessagePage() {
     try {
       const apiResponse = await fetch("/api/servers/members/status", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash, {"Content-Type": "application/json"}),
         body: JSON.stringify({ serverId: serverId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),

@@ -1,8 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import ServerBarItems from "@/components/server-bar";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
@@ -21,9 +23,10 @@ interface ServerProps {
 }
 
 export default function ServerBar() {
-  const { serverId } = useParams();
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [serverPanel, setServerPanel] = useState(false);
+  const { serverId } = useParams<{ serverId: string }>();
   const [server, setServer] = useState<ServerProps | null>(null);
   const [serverSettingModal, setServerSettingModal] = useState(false);
 
@@ -34,10 +37,9 @@ export default function ServerBar() {
     try {
       const apiResponse = await fetch("/api/servers/server-info", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ serverId }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),

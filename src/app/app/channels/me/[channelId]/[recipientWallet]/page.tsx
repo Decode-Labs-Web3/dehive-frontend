@@ -1,6 +1,11 @@
 "use client";
 
+import { sepolia } from "wagmi/chains";
 import { useParams } from "next/navigation";
+import { messageAbi } from "@/abi/messageAbi";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint";
+import { isAddress, getAddress, parseEther, type Abi } from "viem";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   useAccount,
@@ -9,9 +14,6 @@ import {
   useSwitchChain,
   useWriteContract,
 } from "wagmi";
-import { sepolia } from "wagmi/chains";
-import { isAddress, getAddress, parseEther, type Abi } from "viem";
-import { messageAbi } from "@/abi/messageAbi";
 
 // UI components to mirror DirectMessagePage
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +42,7 @@ export default function SmartContractMessagePage() {
     channelId: string;
     recipientWallet: string;
   }>();
+  const { fingerprintHash } = useFingerprint();
   const [newMessage, setNewMessage] = useState<string>("");
   const [conversationId, setConversationId] = useState<bigint | null>(null);
   const [first, setFirst] = useState(20);
@@ -396,10 +399,7 @@ export default function SmartContractMessagePage() {
     try {
       const apiResponse = await fetch("/api/user/chat-with", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash, {"Content-Type": "application/json"}),
         body: JSON.stringify({ conversationId: channelId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),

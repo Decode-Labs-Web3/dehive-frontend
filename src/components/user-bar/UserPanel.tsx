@@ -7,14 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Wallet from "@/components/common/Wallet";
 import { Switch } from "@/components/ui/switch";
+import { getApiHeaders } from "@/utils/api.utils";
 import { useEffect, useRef, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Card,
@@ -55,7 +57,7 @@ export default function UserPanel({
 }: UserPanelProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-
+  const { fingerprintHash } = useFingerprint();
   const { sound, setSound } = useSoundContext();
 
   const handleTheme = (theme: string) => {
@@ -183,10 +185,9 @@ export default function UserPanel({
     try {
       const apiResponse = await fetch("/api/user/profile-change", {
         method: "PUT",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           current: updateUserInfo,
           original: {

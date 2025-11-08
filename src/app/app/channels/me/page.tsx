@@ -1,10 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { getApiHeaders } from "@/utils/api.utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { useEffect, useState, useCallback } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useConversationRefresh } from "@/contexts/ConversationRefreshContext";
 
 interface UserDataProps {
@@ -25,8 +27,9 @@ interface UserDataProps {
 
 export default function Me() {
   const router = useRouter();
-  const [userData, setUserData] = useState<UserDataProps[]>([]);
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState<UserDataProps[]>([]);
   const { triggerRefreshConversation } = useConversationRefresh();
 
   const fetchUserData = useCallback(async () => {
@@ -34,9 +37,7 @@ export default function Me() {
     try {
       const apiResponse = await fetch("/api/user/user-following", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -70,10 +71,9 @@ export default function Me() {
           "/api/me/conversation/conversation-create",
           {
             method: "POST",
-            headers: {
+            headers: getApiHeaders(fingerprintHash, {
               "Content-Type": "application/json",
-              "X-Frontend-Internal-Request": "true",
-            },
+            }),
             body: JSON.stringify({ otherUserDehiveId }),
             cache: "no-cache",
             signal: AbortSignal.timeout(10000),

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { httpStatus } from "@/constants/index.constants";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import {
   generateRequestId,
   apiPathName,
@@ -27,7 +28,8 @@ export async function GET(req: Request) {
       );
     }
 
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
+    // console.log("this is fingerprint from headers:", fingerprint);
 
     if (!fingerprint) {
       return NextResponse.json(

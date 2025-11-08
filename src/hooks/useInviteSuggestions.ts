@@ -1,7 +1,8 @@
 "use client";
 
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { useEffect, useMemo, useState, useCallback } from "react";
-
 interface InviteSuggestion {
   user_id: string;
   avatar_ipfs_hash: string;
@@ -54,6 +55,7 @@ interface Friend {
 }
 
 export function useInviteSuggestions(serverId: string) {
+  const { fingerprintHash } = useFingerprint();
   const [suggestions, setSuggestions] = useState<InviteSuggestion[]>([]);
 
   const fetchAllInfo = useCallback(async () => {
@@ -61,17 +63,16 @@ export function useInviteSuggestions(serverId: string) {
       const [membersResponse, friendsResponse] = await Promise.all([
         fetch("/api/servers/members/memberships", {
           method: "POST",
-          headers: {
+          headers: getApiHeaders(fingerprintHash, {
             "Content-Type": "application/json",
-            "X-Frontend-Internal-Request": "true",
-          },
+          }),
           body: JSON.stringify({ serverId }),
           cache: "no-cache",
           signal: AbortSignal.timeout(10000),
         }),
         fetch("/api/user/user-following", {
           method: "GET",
-          headers: { "X-Frontend-Internal-Request": "true" },
+          headers: getApiHeaders(fingerprintHash),
           cache: "no-store",
           signal: AbortSignal.timeout(10000),
         }),
@@ -85,11 +86,14 @@ export function useInviteSuggestions(serverId: string) {
         return;
       }
 
-      const members = (await membersResponse.json()).data as MemberInServerProps[];
+      const members = (await membersResponse.json())
+        .data as MemberInServerProps[];
       const friends = (await friendsResponse.json()).data as Friend[];
       // console.log("members", members);
       // console.log("friends", friends);
-      const inServer = new Set(members.map((member: MemberInServerProps) => member._id));
+      const inServer = new Set(
+        members.map((member: MemberInServerProps) => member._id)
+      );
       const filtered = friends.filter(
         (friend: Friend) => !inServer.has(friend.user_id)
       );

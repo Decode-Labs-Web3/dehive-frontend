@@ -2,9 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { getCookie } from "@/utils/cookie.utils";
+import { getApiHeaders } from "@/utils/api.utils";
+import GuideBarItems from "@/components/guilde-bar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import GuideBarItems from "@/components/guilde-bar";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -45,9 +47,10 @@ export default function GuildBar({
   const router = useRouter();
   const pathname = usePathname();
   const [userId, setUserId] = useState("");
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
-  const [servers, setServers] = useState<Server[]>([]);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [servers, setServers] = useState<Server[]>([]);
 
   const getActiveId = () => {
     if (pathname.includes("/me")) return "me";
@@ -63,9 +66,7 @@ export default function GuildBar({
     try {
       const apiResponse = await fetch("/api/servers/server/get", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });

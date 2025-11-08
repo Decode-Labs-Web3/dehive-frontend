@@ -1,9 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import CallPage from "@/components/common/CallPage";
 import { useDirectCall } from "@/hooks/useDirectCall";
 import { useParams, useRouter } from "next/navigation";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useEffect, useCallback, useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,6 +32,7 @@ interface WalletProps {
 
 export default function DirectCallPage() {
   const router = useRouter();
+  const { fingerprintHash } = useFingerprint();
   const { channelId } = useParams<{ channelId: string }>();
   const [userChatWith, setUserChatWith] = useState<UserChatWith>({
     id: "",
@@ -48,10 +51,7 @@ export default function DirectCallPage() {
     try {
       const apiResponse = await fetch("/api/user/chat-with", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash, {"Content-Type": "application/json"}),
         body: JSON.stringify({ conversationId: channelId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),

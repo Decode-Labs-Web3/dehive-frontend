@@ -2,9 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { getCookie } from "@/utils/cookie.utils";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
@@ -87,19 +89,20 @@ export default function ChannelHistoryView({
   messageSearchId,
   setMessageSearchId,
 }: ChannelHistoryViewProps) {
+  const { fingerprintHash } = useFingerprint();
+  const [fristLoad, setfirstLoad] = useState(0);
+  const [isEndUp, setIsEndUp] = useState(false);
+  const [pageUp, setPageUp] = useState<number>(0);
+  const [loadingUp, setLoadingUp] = useState(false);
+  const [isEndDown, setIsEndDown] = useState(false);
+  const [pageDown, setPageDown] = useState<number>(0);
+  const [loadingDown, setLoadingDown] = useState(false);
+  const [messages, setMessages] = useState<MessageChannel[]>([]);
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
+  const [userInServer, setUserInServer] = useState<UserInServerProps[]>([]);
   const [messageDelete, setMessageDelete] = useState<MessageChannel | null>(
     null
   );
-  const [messages, setMessages] = useState<MessageChannel[]>([]);
-  const [isEndUp, setIsEndUp] = useState(false);
-  const [pageUp, setPageUp] = useState<number>(0);
-  const [isEndDown, setIsEndDown] = useState(false);
-  const [pageDown, setPageDown] = useState<number>(0);
-  const [loadingUp, setLoadingUp] = useState(false);
-  const [loadingDown, setLoadingDown] = useState(false);
-  const [fristLoad, setfirstLoad] = useState(0);
-  const [userInServer, setUserInServer] = useState<UserInServerProps[]>([]);
   const [editMessage, setEditMessage] = useState({
     id: "",
     messageEdit: "",
@@ -158,10 +161,9 @@ export default function ChannelHistoryView({
     try {
       const apiResponse = await fetch("/api/servers/members/status", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ serverId: serverId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -193,10 +195,9 @@ export default function ChannelHistoryView({
     try {
       const apiResponse = await fetch("/api/search/channel-up", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           channelId,
           messageId: messageSearchId,
@@ -232,10 +233,9 @@ export default function ChannelHistoryView({
     try {
       const apiResponse = await fetch("/api/search/channel-down", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           channelId,
           messageId: messageSearchId,

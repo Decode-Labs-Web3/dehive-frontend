@@ -5,6 +5,7 @@ import { getCookie } from "@/utils/cookie.utils";
 import { SoundContext } from "@/contexts/SoundContext";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import SkeletonApp from "@/components/common/SkeletonApp";
+import { fingerprintService } from "@/services/fingerprint.services";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { Web3Providers } from "@/components/message-onchain/wallet";
 import SocketStatusProvider from "@/providers/socketStatusProvider";
@@ -15,10 +16,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sound, setSound] = useState(true);
   const [userId, setUserId] = useState<string>("");
   const [refreshVersion, setRefreshVersion] = useState(0);
-  const { fingerprintHash } = useFingerprint();
   const triggerRefeshServer = useCallback(() => {
     setRefreshVersion((prev) => prev + 1);
   }, []);
+  const { fingerprintHash, updateFingerprint } = useFingerprint();
+
+  useEffect(() => {
+    (async () => {
+      const { fingerprint_hashed } = await fingerprintService();
+      updateFingerprint(fingerprint_hashed);
+    })();
+  }, [updateFingerprint]);
 
   useEffect(() => {
     const saveSound = localStorage.getItem("sound");

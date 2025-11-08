@@ -29,7 +29,8 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
+    // console.log("this is fingerprint from headers:", fingerprint);
 
     if (!fingerprint) {
       return NextResponse.json(
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("hello this is body",body)
+    console.log("hello this is body", body);
 
     const backendResponse = await fetch(
       `${process.env.DEHIVE_DIRECT_MESSAGING}/api/dm/send`,

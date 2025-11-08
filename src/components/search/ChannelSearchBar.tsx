@@ -3,6 +3,8 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -41,9 +43,10 @@ export default function ChannelSearchBar({
   channelId,
   setMessageSearchId,
 }: ChannelSearchBarProps) {
+  const [page, setPage] = useState(0);
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState("");
-  const [page, setPage] = useState(0);
+  const { fingerprintHash } = useFingerprint();
   const [isLastPage, setIsLastPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchResult, setSerachResult] = useState<SearchResultProps[]>([]);
@@ -57,10 +60,9 @@ export default function ChannelSearchBar({
     try {
       const apiResponse = await fetch("/api/search/channel", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           channelId,
           keyword,

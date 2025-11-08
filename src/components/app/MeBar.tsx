@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { useState, useCallback, useEffect } from "react";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -42,16 +44,16 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
     Record<string, boolean>
   >({});
   // console.log("this is out side try catch", userData);
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [userDropdown, setUserDropdown] = useState<Record<string, boolean>>({});
+
   const fetchUserData = useCallback(async () => {
     setLoading(true);
     try {
       const apiResponse = await fetch("/api/user/user-status", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });

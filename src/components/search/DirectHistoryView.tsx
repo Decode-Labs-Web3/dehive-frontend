@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
@@ -96,6 +98,7 @@ export default function DirectHistoryView({
   setMessageSearchId,
 }: DirectHistoryViewProps) {
   const router = useRouter();
+  const { fingerprintHash } = useFingerprint();
   const [isEndUp, setIsEndUp] = useState(false);
   const [pageUp, setPageUp] = useState<number>(0);
   const [isEndDown, setIsEndDown] = useState(false);
@@ -257,10 +260,9 @@ export default function DirectHistoryView({
     try {
       const apiResponse = await fetch("/api/user/chat-with", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ conversationId: channelId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -288,10 +290,9 @@ export default function DirectHistoryView({
     try {
       const apiResponse = await fetch("/api/search/direct-up", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           messageId: messageSearchId,
           pageUp,
@@ -326,10 +327,9 @@ export default function DirectHistoryView({
     try {
       const apiResponse = await fetch("/api/search/direct-down", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           messageId: messageSearchId,
           pageDown,

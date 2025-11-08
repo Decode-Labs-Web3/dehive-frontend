@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   useCallback,
@@ -51,14 +53,14 @@ export default function DirectMessageOption({
   channelId,
   setListUploadFile,
 }: DirectMessageOptionProps) {
-  const [open, setOpen] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-
   const webcamRef = useRef<Webcam>(null);
+  const [open, setOpen] = useState(false);
+  const { fingerprintHash } = useFingerprint();
+  const [isReady, setIsReady] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [hasCamError, setHasCamError] = useState<string | null>(null);
-  const [isReady, setIsReady] = useState(false);
   const [, setCapturedFile] = useState<File | null>(null);
 
   const handleUserMedia = useCallback(() => {
@@ -108,9 +110,7 @@ export default function DirectMessageOption({
 
         const apiResponse = await fetch("/api/me/conversation/file-upload", {
           method: "POST",
-          headers: {
-            "X-Frontend-Internal-Request": "true",
-          },
+          headers: getApiHeaders(fingerprintHash),
           body: formData,
           cache: "no-store",
           signal: AbortSignal.timeout(30000),

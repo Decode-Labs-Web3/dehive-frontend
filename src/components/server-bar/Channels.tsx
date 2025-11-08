@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import ServerBarItems from "@/components/server-bar";
 import { useParams, useRouter } from "next/navigation";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getChannelCallSocketIO } from "@/lib/socketioChannelCallSingleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -75,8 +77,9 @@ export default function Channels({
   setChannelPanel,
   fetchCategoryInfo,
 }: ChannelPageProps) {
-  const { serverId } = useParams();
   const router = useRouter();
+  const { fingerprintHash } = useFingerprint();
+  const { serverId } = useParams<{ serverId: string }>();
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
   const [userChannel, setUserChannel] = useState<UserChannelProps[]>([]);
 
@@ -93,10 +96,9 @@ export default function Channels({
     try {
       const apiResponse = await fetch("/api/servers/channel/delete", {
         method: "DELETE",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ channelId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),

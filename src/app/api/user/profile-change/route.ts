@@ -63,7 +63,8 @@ export async function PUT(req: Request) {
       );
     }
 
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
+    // console.log("this is fingerprint from headers:", fingerprint);
     const sessionId = (await cookies()).get("sessionId")?.value;
     if (!sessionId) {
       return NextResponse.json(

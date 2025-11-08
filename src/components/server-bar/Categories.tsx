@@ -2,8 +2,10 @@
 
 import { useParams } from "next/navigation";
 import { getCookie } from "@/utils/cookie.utils";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import ServerBarItems from "@/components/server-bar";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useState, useCallback, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -81,9 +83,13 @@ interface CategoriesProps {
 
 export default function Categories({ server }: CategoriesProps) {
   const { serverId } = useParams();
+  const { fingerprintHash } = useFingerprint();
+  const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string>("");
-  const [open, setOpen] = useState<Record<string, boolean>>({});
   const [isPrivileged, setIsPrivileged] = useState(false);
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+  const [categories, setCategories] = useState<CategoryProps[]>([]);
+  const [channelPanel, setChannelPanel] = useState<Record<string, boolean>>({});
   const [createChannelModal, setCreateChannelModal] = useState<
     Record<string, boolean>
   >({});
@@ -94,15 +100,12 @@ export default function Categories({ server }: CategoriesProps) {
     name: "",
     type: "TEXT",
   });
-  const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<CategoryProps[]>([]);
   const [deleteCategoryModal, setDeleteCategoryModal] = useState<
     Record<string, boolean>
   >({});
   const [editCategoryModal, setEditCategoryModal] = useState<
     Record<string, boolean>
   >({});
-  const [channelPanel, setChannelPanel] = useState<Record<string, boolean>>({});
   // const [ channelModal, setChannelModal ] = useState<Record<string, boolean>>({})
   // console.log(category);
 
@@ -117,10 +120,9 @@ export default function Categories({ server }: CategoriesProps) {
     try {
       const apiResponse = await fetch("/api/servers/members/memberships", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ serverId: server._id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -157,10 +159,9 @@ export default function Categories({ server }: CategoriesProps) {
     try {
       const apiResponse = await fetch("/api/servers/category/get", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ serverId }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -227,9 +228,6 @@ export default function Categories({ server }: CategoriesProps) {
           )
         )
       );
-
-      // note: flatMap is combine between map and flat method
-      // note: fromEntries turn pair of array like [[123, true], [456, true]] to pair of key value { 123: true, 456: true}
     } catch (error) {
       console.log(error);
     } finally {
@@ -252,10 +250,9 @@ export default function Categories({ server }: CategoriesProps) {
     try {
       const apiResponse = await fetch("/api/servers/channel/post", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           serverId,
           categoryId: categoryId,
@@ -295,10 +292,9 @@ export default function Categories({ server }: CategoriesProps) {
     try {
       const apiResponse = await fetch("/api/servers/category/delete", {
         method: "DELETE",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ categoryId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -338,10 +334,9 @@ export default function Categories({ server }: CategoriesProps) {
     try {
       const apiResponse = await fetch("/api/servers/channel/move", {
         method: "PATCH",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ channelId, targetCategoryId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),

@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { serverTag } from "@/constants/index.constants";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -54,11 +56,12 @@ const tagIcon: Record<string, IconDefinition> = {
 
 export default function AddServer({ handleGetServer }: Props) {
   const router = useRouter();
-  const allFalse = { tag: false, info: false, invite: false };
-  const [tab, setTab] = useState({ ...allFalse, tag: true });
+  const { fingerprintHash } = useFingerprint();
   const [modalOpen, setModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const allFalse = { tag: false, info: false, invite: false };
+  const [tab, setTab] = useState({ ...allFalse, tag: true });
 
   const [serverForm, setServerForm] = useState<ServerForm>({
     tags: [],
@@ -82,10 +85,9 @@ export default function AddServer({ handleGetServer }: Props) {
     try {
       const apiResponse = await fetch("/api/servers/server/post", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify(serverForm),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),

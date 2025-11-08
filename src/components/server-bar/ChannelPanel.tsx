@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -47,12 +49,12 @@ export default function ChannelPanel({
   fetchCategoryInfo,
   handleDeleteChannel,
 }: ChannelPanelProps) {
+  const { fingerprintHash } = useFingerprint();
+  const [channelPanelSetting, setChannelPanelSetting] =
+    useState<string>("overview");
   const [editChannelForm, setEditChannelForm] = useState({
     name: channel.name,
   });
-  const [channelPanelSetting, setChannelPanelSetting] =
-    useState<string>("overview");
-
   const handleEditChannelChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -65,10 +67,9 @@ export default function ChannelPanel({
     try {
       const apiResponse = await fetch("/api/servers/channel/patch", {
         method: "PATCH",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           channelId,
           name: editChannelForm.name,

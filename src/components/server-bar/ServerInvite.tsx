@@ -1,7 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect, useCallback } from "react";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -34,11 +36,12 @@ interface ServerInviteProps {
 }
 
 export default function ServerInvite({ server, setModal }: ServerInviteProps) {
+  const [isOpen, setIsOpen] = useState(true);
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [code, setCode] = useState<number | null>(null);
   const { suggestions } = useInviteSuggestions(server._id);
   const [isSended, setIsSended] = useState<Record<string, boolean>>({});
-  const [isOpen, setIsOpen] = useState(true); // Thêm state cho Dialog
   useEffect(() => {
     setIsSended(
       Object.fromEntries(
@@ -58,10 +61,9 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
     try {
       const apiResponse = await fetch("/api/servers/server-code", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           serverId: server._id,
         }),
@@ -102,10 +104,9 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
         "/api/me/conversation/conversation-create",
         {
           method: "POST",
-          headers: {
+          headers: getApiHeaders(fingerprintHash, {
             "Content-Type": "application/json",
-            "X-Frontend-Internal-Request": "true",
-          },
+          }),
           body: JSON.stringify({ otherUserDehiveId }),
           cache: "no-cache",
           signal: AbortSignal.timeout(10000),

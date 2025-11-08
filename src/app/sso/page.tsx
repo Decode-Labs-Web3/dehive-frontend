@@ -25,7 +25,7 @@ function AuthorizePageContent() {
     })();
   }, [updateFingerprint]);
 
-  console.log("This is fingerprint", fingerprintHash);
+  // console.log("This is fingerprint", fingerprintHash);
 
   const handleAuthorize = useCallback(async () => {
     if (!fingerprintHash) return;
