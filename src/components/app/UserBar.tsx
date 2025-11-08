@@ -3,7 +3,9 @@
 import dynamic from "next/dynamic";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import UserPanel from "@/components/user-bar/UserPanel";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect, useCallback } from "react";
@@ -65,9 +67,10 @@ interface PrimaryWalletProps {
 
 export default function UserBar() {
   const [sound, setSound] = useState(false);
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
-  const [theme, setTheme] = useState<string>("light");
   const [userPanel, setUserPanel] = useState(false);
+  const [theme, setTheme] = useState<string>("light");
   const [microphone, setMicrophone] = useState(false);
   const [userData, setUserData] = useState<UserDataProps | null>(null);
 
@@ -76,9 +79,7 @@ export default function UserBar() {
     try {
       const apiResponse = await fetch("/api/user/user-info", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-store",
         credentials: "include",
         signal: AbortSignal.timeout(10000),

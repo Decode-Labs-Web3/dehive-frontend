@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { fingerprintService } from "@/services/fingerprint.services";
 import { faRightToBracket } from "@fortawesome/free-solid-svg-icons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,21 +13,12 @@ export default function Login() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const { fingerprint_hashed } = await fingerprintService();
-      document.cookie = `fingerprint=${fingerprint_hashed}; path=/; max-age=31536000; SameSite=Lax`;
-    })();
-  }, []);
-
   const handleLogin = async () => {
     try {
       setLoading(true);
       const apiResponse = await fetch("/api/auth/create-sso", {
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        method: "GET",
+        headers: getApiHeaders(),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });

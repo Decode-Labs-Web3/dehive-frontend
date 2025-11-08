@@ -1,10 +1,11 @@
 import "./globals.css";
-import "@stream-io/video-react-sdk/dist/css/styles.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-// FontAwesome Configuration
-import { config } from "@fortawesome/fontawesome-svg-core";
+import { ReduxProvider } from "@/store/ReduxProvider";
 import "@fortawesome/fontawesome-svg-core/styles.css";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
+import { config } from "@fortawesome/fontawesome-svg-core";
+
 config.autoAddCss = false;
 
 const geistSans = Geist({
@@ -36,7 +37,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );

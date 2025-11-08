@@ -44,9 +44,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // console.log("this is ssoToken and state from sso", ssoToken, state);
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
-    console.log("this is fingerprint:", fingerprint);
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
+    // console.log("this is fingerprint from headers:", fingerprint);
 
     if (!fingerprint) {
       return NextResponse.json(

@@ -1,10 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint";
+import { Suspense, useCallback, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { fingerprintService } from "@/services/fingerprint.services";
 import { faRobot, faFaceSmile } from "@fortawesome/free-solid-svg-icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -13,15 +16,25 @@ function AuthorizePageContent() {
   const router = useRouter();
   const ssoToken = searchParams.get("sso_token");
   const state = searchParams.get("state");
+  const { fingerprintHash, updateFingerprint } = useFingerprint();
+
+  useEffect(() => {
+    (async () => {
+      const { fingerprint_hashed } = await fingerprintService();
+      updateFingerprint(fingerprint_hashed);
+    })();
+  }, [updateFingerprint]);
+
+  console.log("This is fingerprint", fingerprintHash);
 
   const handleAuthorize = useCallback(async () => {
+    if (!fingerprintHash) return;
     try {
       const apiResponse = await fetch("/api/auth/get-sso", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         credentials: "include",
         body: JSON.stringify({ ssoToken, state }),
         cache: "no-cache",
@@ -38,9 +51,7 @@ function AuthorizePageContent() {
 
       const userInfoResponse = await fetch("/api/user/user-info", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         credentials: "include",
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -58,11 +69,41 @@ function AuthorizePageContent() {
       console.log("Server for SSO error");
       return;
     }
-  }, [ssoToken, state, router]);
+  }, [ssoToken, state, router, fingerprintHash]);
 
   useEffect(() => {
     handleAuthorize();
   }, [handleAuthorize]);
+
+  if (!fingerprintHash) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+        <Card className="w-full max-w-xl bg-card border-border shadow-xl">
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-lg">
+                <FontAwesomeIcon icon={faRobot} className="w-6 h-6" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Creating Fingerprint</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Setting up secure connection
+                </p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <Spinner className="text-muted-foreground w-5 h-5" />
+              <div className="text-sm text-card-foreground">
+                <span>Generating fingerprint...</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">

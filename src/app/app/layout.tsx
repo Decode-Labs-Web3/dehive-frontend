@@ -3,18 +3,19 @@
 import App from "@/components/app";
 import { getCookie } from "@/utils/cookie.utils";
 import { SoundContext } from "@/contexts/SoundContext";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import SkeletonApp from "@/components/common/SkeletonApp";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Web3Providers } from "@/components/message-onchain/wallet";
 import SocketStatusProvider from "@/providers/socketStatusProvider";
 import DirectCallProvider from "@/providers/socketDirectCallProvider";
-import { useState, useCallback, useEffect, useMemo } from "react";
 import { ServerRefreshContext } from "@/contexts/ServerRefreshContext.contexts";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sound, setSound] = useState(true);
   const [userId, setUserId] = useState<string>("");
-  const [fingerprintHash, setFingerprintHash] = useState<string>("");
   const [refreshVersion, setRefreshVersion] = useState(0);
+  const { fingerprintHash } = useFingerprint();
   const triggerRefeshServer = useCallback(() => {
     setRefreshVersion((prev) => prev + 1);
   }, []);
@@ -38,12 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (currentUserId) {
       setUserId(currentUserId);
     }
-    const fingerprint = getCookie("fingerprint");
-    if (fingerprint) {
-      setFingerprintHash(fingerprint);
-    }
   }, []);
-
 
   const soundValue = useMemo(() => ({ sound, setSound }), [sound]);
 
