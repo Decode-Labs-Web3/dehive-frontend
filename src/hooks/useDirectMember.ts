@@ -1,5 +1,5 @@
-import { MemberListProps } from "@/interfaces/user.interface";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { DirectMemberListProps } from "@/interfaces/user.interface";
 import {
   createMemberList,
   updateMemberStatus,
@@ -11,7 +11,7 @@ export const useDirectMember = () => {
   const dispatch = useAppDispatch();
   const directMembers = useAppSelector((state) => state.directMembers);
 
-  const createDirectMember = (memberList: MemberListProps[]) => {
+  const createDirectMember = (memberList: DirectMemberListProps[]) => {
     dispatch(createMemberList(memberList));
   };
 

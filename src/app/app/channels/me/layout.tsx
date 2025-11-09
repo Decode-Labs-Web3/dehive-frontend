@@ -2,19 +2,109 @@
 
 import App from "@/components/app";
 import { useUser } from "@/hooks/useUser";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { useCallback, useEffect, useState } from "react";
+import { useDirectMember } from "@/hooks/useDirectMember";
+import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
+import { DirectMemberListProps } from "@/interfaces/user.interface";
 import DirectChatProvider from "@/providers/socketDirectChatProvider";
+import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
+import { ConversationUpdate } from "@/interfaces/websocketDirectChat.interface";
 import { ConversationRefreshContext } from "@/contexts/ConversationRefreshContext";
 
 export default function MeLayout({ children }: { children: React.ReactNode }) {
   const { user } = useUser();
+  const { fingerprintHash } = useFingerprint();
+  const [loading, setLoading] = useState(false);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const triggerRefreshConversation = useCallback(() => {
     setRefreshVersion((prev) => prev + 1);
   }, []);
+  const {
+    directMembers,
+    createDirectMember,
+    updateDirectStatus,
+    updateDirectConversation,
+    deleteDirectMember,
+  } = useDirectMember();
 
-  if (!user._id) {
+  const fetchUserData = useCallback(async () => {
+    if (loading) return;
+    setLoading(true);
+    deleteDirectMember();
+    try {
+      const apiResponse = await fetch("/api/user/user-status", {
+        method: "GET",
+        headers: getApiHeaders(fingerprintHash),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse) {
+        console.error(apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+      // console.log("This is response data", response)
+      if (
+        response.statusCode === 200 &&
+        response.message === "Successfully fetched following users status"
+      ) {
+        const userChatData = response.data.users.filter(
+          (user: DirectMemberListProps) => user.conversationid !== ""
+        );
+
+        createDirectMember(userChatData);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server fetch user data error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData, refreshVersion]);
+
+  useEffect(() => {
+    const socket = getDirectChatSocketIO();
+    const onConversationUpdate = (p: ConversationUpdate) => {
+      console.log("[ws me chat conversationUpdate from me Bar]", p);
+      const data = p.data;
+      updateDirectConversation(
+        data.conversationId,
+        data.status,
+        data.isCall,
+        data.lastMessageAt
+      );
+    };
+    socket.on("conversation_update", onConversationUpdate);
+    return () => {
+      socket.off("conversation_update", onConversationUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    const socket = getStatusSocketIO();
+    const onUserStatusChanged = (
+      p: string | { userId: string; status: string }
+    ) => {
+      console.log("[ws me bar userStatusChanged]", p);
+      if (typeof p === "string") return;
+      updateDirectStatus(p.userId, p.status);
+    };
+    socket.on("userStatusChanged", onUserStatusChanged);
+    return () => {
+      socket.off("userStatusChanged", onUserStatusChanged);
+    };
+  }, []);
+
+  if (!user._id || loading) {
     return (
       <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
         <aside className="h-full overflow-y-auto border-r border-black/20 p-4 space-y-3">

@@ -9,11 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AutoLink from "@/components/common/AutoLink";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
+import { useServerMember } from "@/hooks/useServerMember";
 import FilePreview from "@/components/common/FilePreview";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import AttachmentList from "@/components/common/AttachmentList";
-import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import ChannelFileList from "@/components/messages/ChannelFileList";
@@ -82,22 +82,11 @@ interface ChannelInfoProps {
   __v: number;
 }
 
-interface UserInServerProps {
-  user_id: string;
-  status: "online" | "offline";
-  conversationid: string;
-  displayname: string;
-  username: string;
-  avatar_ipfs_hash: string;
-  isCall: boolean;
-  last_seen: string;
-}
-
 export default function ChannelMessagePage() {
   const { user } = useUser();
   const { sound } = useSoundContext();
+  const { serverMembers } = useServerMember();
   const { fingerprintHash } = useFingerprint();
-  const [userInServer, setUserInServer] = useState<UserInServerProps[]>([]);
   const [messageSearchId, setMessageSearchId] = useState<string | null>(null);
   const [channelInfo, setChannelInfo] = useState<ChannelInfoProps | null>(null);
   const { serverId, channelId } = useParams<{
@@ -136,37 +125,6 @@ export default function ChannelMessagePage() {
   useEffect(() => {
     fetchChannel();
   }, [fetchChannel]);
-
-  const fetchServerUsers = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/servers/members/status", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {"Content-Type": "application/json"}),
-        body: JSON.stringify({ serverId: serverId }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!apiResponse.ok) {
-        console.error(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      if (
-        response.statusCode === 200 &&
-        response.message === "Successfully fetched all server members"
-      ) {
-        console.log("This is server users", response.data);
-        setUserInServer(response.data.users);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Server deleted channel fail");
-    }
-  }, [serverId]);
-
-  useEffect(() => {
-    fetchServerUsers();
-  }, [fetchServerUsers]);
 
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessageProps>({
@@ -390,30 +348,6 @@ export default function ChannelMessagePage() {
     };
   }, [user, sound]);
 
-  useEffect(() => {
-    const socket = getStatusSocketIO();
-    const onUserStatusChanged = (
-      p: string | { userId: string; status: string }
-    ) => {
-      console.log("[ws me bar userStatusChanged]", p);
-      if (typeof p === "string") return;
-      const index = userInServer.findIndex((user) => user.user_id === p.userId);
-      if (index === -1) return;
-      setUserInServer((prevUsers) => {
-        const next = [...prevUsers];
-        next[index] = {
-          ...next[index],
-          status: p.status as "online" | "offline",
-        };
-        return next;
-      });
-    };
-    socket.on("userStatusChanged", onUserStatusChanged);
-    return () => {
-      socket.off("userStatusChanged", onUserStatusChanged);
-    };
-  }, [userInServer]);
-
   if (messageSearchId) {
     return (
       <ChannelHistoryView
@@ -476,7 +410,7 @@ export default function ChannelMessagePage() {
                 : null;
               const replyDisplayName = message.replyTo
                 ? referencedMessage?.sender.display_name ??
-                  userInServer.find(
+                  serverMembers.find(
                     (user) => user.user_id === message.replyTo?.senderId
                   )?.displayname ??
                   "Unknown user"
@@ -512,7 +446,7 @@ export default function ChannelMessagePage() {
                         {message.sender.display_name} Avatar
                       </AvatarFallback>
                     </Avatar>
-                    {userInServer.find(
+                    {serverMembers?.find(
                       (user) => user.user_id === message.sender.dehive_id
                     )?.status === "online" && (
                       <FontAwesomeIcon

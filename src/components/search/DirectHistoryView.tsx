@@ -10,7 +10,7 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
-import { MemberListProps } from "@/interfaces/user.interface";
+import { DirectMemberListProps } from "@/interfaces/user.interface";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DirectFileList from "@/components/messages/DirectFileList";
@@ -70,7 +70,7 @@ interface NewMessage {
 interface DirectHistoryViewProps {
   channelId: string;
   messageSearchId: string;
-  userChatWith: MemberListProps;
+  userChatWith: DirectMemberListProps;
   setMessageSearchId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 

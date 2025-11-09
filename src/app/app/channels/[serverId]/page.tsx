@@ -1,52 +1,27 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { getApiHeaders } from "@/utils/api.utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useFingerprint } from "@/hooks/useFingerprint";
 import { useCallback, useEffect, useState } from "react";
+import { MemberInServerProps } from "@/interfaces/user.interface";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-
-interface MemberInServerProps {
-  membership_id: string;
-  _id: string;
-  username: string;
-  display_name: string;
-  avatar: string;
-  avatar_ipfs_hash: string;
-  status: string;
-  server_count: number;
-  bio: string;
-  is_banned: boolean;
-  last_login: string;
-  following_number: number;
-  followers_number: number;
-  is_following: boolean;
-  is_follower: boolean;
-  is_blocked: boolean;
-  is_blocked_by: boolean;
-  mutual_followers_number: number;
-  mutual_followers_list: [];
-  is_active: boolean;
-  wallets: [];
-  __v: number;
-  role: string;
-  is_muted: boolean;
-  joined_at: string;
-}
 
 export default function Server() {
+  const { fingerprintHash } = useFingerprint();
+  const [loading, setLoading] = useState(false);
   const { serverId } = useParams<{ serverId: string }>();
   const [memberships, setMemberships] = useState<MemberInServerProps[]>([]);
-  const [loading, setLoading] = useState(false);
   const fetchMember = useCallback(async () => {
     setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/members/memberships", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ serverId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),

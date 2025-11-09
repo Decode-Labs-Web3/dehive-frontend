@@ -1,13 +1,13 @@
-import { MemberListProps } from "@/interfaces/user.interface";
+import { DirectMemberListProps } from "@/interfaces/user.interface";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-const initialState: MemberListProps[] = [];
+const initialState: DirectMemberListProps[] = [];
 
 const directMemberSlice = createSlice({
   name: "directMembers",
   initialState,
   reducers: {
-    createMemberList(_state, action: PayloadAction<MemberListProps[]>) {
+    createMemberList(_state, action: PayloadAction<DirectMemberListProps[]>) {
       return action.payload;
     },
     updateMemberStatus(

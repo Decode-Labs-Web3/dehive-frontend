@@ -2,9 +2,13 @@
 
 import App from "@/components/app";
 import { useUser } from "@/hooks/useUser";
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useCallback, useEffect } from "react";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFingerprint } from "@/hooks/useFingerprint";
+import { useServerMember } from "@/hooks/useServerMember";
+import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelCallProvider from "@/providers/socketChannelCallProvider";
 import ChannelChatProvider from "@/providers/socketChannelChatProvider";
@@ -14,10 +18,62 @@ export default function ServerLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = useUser();
+  const { fingerprintHash } = useFingerprint();
   const { serverId } = useParams<{
     serverId: string;
   }>();
-  const { user } = useUser();
+  const { createServerMember, updateServerStatus, deleteServerMember } =
+    useServerMember();
+  const fetchServerUsers = useCallback(async () => {
+    deleteServerMember();
+    try {
+      const apiResponse = await fetch("/api/servers/members/status", {
+        method: "POST",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ serverId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 200 &&
+        response.message === "Successfully fetched all server members"
+      ) {
+        console.log("Server members fetched:", response.data.users);
+        createServerMember(response.data.users);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server deleted channel fail");
+    }
+  }, [serverId]);
+
+  useEffect(() => {
+    fetchServerUsers();
+  }, [fetchServerUsers]);
+
+  useEffect(() => {
+    const socket = getStatusSocketIO();
+    const onUserStatusChanged = (
+      p: string | { userId: string; status: string }
+    ) => {
+      console.log("[ws me bar userStatusChanged]", p);
+      if (typeof p === "string") return;
+      updateServerStatus(p.userId, p.status);
+    };
+    socket.on("userStatusChanged", onUserStatusChanged);
+    return () => {
+      socket.off("userStatusChanged", onUserStatusChanged);
+    };
+  }, []);
+
   if (!user._id || !serverId) {
     return (
       <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
