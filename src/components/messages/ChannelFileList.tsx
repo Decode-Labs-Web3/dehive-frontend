@@ -5,7 +5,9 @@ import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { AttachmentType } from "@/constants/attachment.constant";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ServerMessageFileListProps } from "@/interfaces/message.interface";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Sheet,
@@ -22,27 +24,6 @@ import {
   faClapperboard,
 } from "@fortawesome/free-solid-svg-icons";
 
-export enum AttachmentType {
-  IMAGE = "image",
-  VIDEO = "video",
-  AUDIO = "audio",
-  FILE = "file",
-}
-
-interface FileListProps {
-  _id: string
-  ownerId: string;
-  serverId: string;
-  type: string;
-  ipfsHash: string;
-  name: string;
-  size: number;
-  mimeType: string;
-  width: number;
-  height: number;
-  createdAt: string;
-}
-
 interface ChannelFileListProps {
   serverId: string;
 }
@@ -54,7 +35,7 @@ export default function ChannelFileList({ serverId }: ChannelFileListProps) {
   const [isLastPage, setIsLastPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [type, setType] = useState<AttachmentType>(AttachmentType.IMAGE);
-  const [fileList, setFileList] = useState<FileListProps[]>([]);
+  const [fileList, setFileList] = useState<ServerMessageFileListProps[]>([]);
   const fetchFileList = useCallback(async () => {
     if (isLastPage) return;
     const apiResponse = await fetch("/api/servers/conversation/file-list", {

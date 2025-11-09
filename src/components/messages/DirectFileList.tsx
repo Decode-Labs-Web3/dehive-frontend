@@ -3,10 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import { AttachmentType } from "@/constants/attachment.constant";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { DirectMessageFileListProps } from "@/interfaces/message.interface";
 import {
   Sheet,
   SheetContent,
@@ -22,30 +24,6 @@ import {
   faClapperboard,
 } from "@fortawesome/free-solid-svg-icons";
 
-export enum AttachmentType {
-  IMAGE = "image",
-  VIDEO = "video",
-  AUDIO = "audio",
-  FILE = "file",
-}
-
-interface FileListProps {
-  _id: string;
-  ownerId: string;
-  conversationId: string;
-  type: string;
-  url: string;
-  ipfsHash: string;
-  name: string;
-  size: number;
-  mimeType: string;
-  width: number;
-  height: number;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
 interface DirectFileListProps {
   channelId: string;
 }
@@ -57,7 +35,7 @@ export default function DirectFileList({ channelId }: DirectFileListProps) {
   const [isLastPage, setIsLastPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [type, setType] = useState<AttachmentType>(AttachmentType.IMAGE);
-  const [fileList, setFileList] = useState<FileListProps[]>([]);
+  const [fileList, setFileList] = useState<DirectMessageFileListProps[]>([]);
   const fetchFileList = useCallback(async () => {
     if (isLastPage) return;
     const apiResponse = await fetch("/api/me/conversation/file-list", {

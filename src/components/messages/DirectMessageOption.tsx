@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {FileUploadProps} from "@/interfaces/message.interface";
 import {
   useCallback,
   useRef,
@@ -31,18 +32,6 @@ import {
   DialogContent,
   DialogDescription,
 } from "@/components/ui/dialog";
-
-interface FileUploadProps {
-  uploadId: string;
-  type: "image" | "video" | "audio" | "file";
-  ipfsHash: string;
-  name: string;
-  size: number;
-  mimeType: string;
-  width: number;
-  height: number;
-  durationMs: number;
-}
 
 interface DirectMessageOptionProps {
   channelId: string;

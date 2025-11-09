@@ -5,6 +5,7 @@ import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import {FileUploadProps} from "@/interfaces/message.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   useCallback,
@@ -30,18 +31,6 @@ import {
   DialogContent,
   DialogDescription,
 } from "@/components/ui/dialog";
-
-interface FileUploadProps {
-  uploadId: string;
-  type: "image" | "video" | "audio" | "file";
-  ipfsHash: string;
-  name: string;
-  size: number;
-  mimeType: string;
-  width: number;
-  height: number;
-  durationMs: number;
-}
 
 interface ChannelMessageOptionProps {
   serverId: string;
