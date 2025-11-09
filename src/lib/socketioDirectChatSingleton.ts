@@ -1,25 +1,16 @@
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import type {
   ServerToClientDirectChat,
   ClientToServerDirectChat,
 } from "../interfaces/websocketDirectChat.interface";
-
-const URL = process.env.NEXT_PUBLIC_DIRECT_CHAT_SIO_URL!;
-let _directChatSocket: Socket<
-  ServerToClientDirectChat,
-  ClientToServerDirectChat
-> | null = null;
+import { getSocket, SocketType } from "./socketFactory";
 
 export function getDirectChatSocketIO(): Socket<
   ServerToClientDirectChat,
   ClientToServerDirectChat
 > {
-  if (_directChatSocket) return _directChatSocket;
-  _directChatSocket = io(URL, {
-    transports: ["websocket"],
-    autoConnect: false,
-    reconnection: true,
-    reconnectionAttempts: Infinity,
-  });
-  return _directChatSocket;
+  return getSocket(SocketType.DirectChat) as Socket<
+    ServerToClientDirectChat,
+    ClientToServerDirectChat
+  >;
 }

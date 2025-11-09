@@ -1,27 +1,16 @@
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import type {
   ServerToClientDirectCall,
   ClientToServerDirectCall,
 } from "../interfaces/websocketDirectCall.interface";
-
-const URL = process.env.NEXT_PUBLIC_DIRECT_CALL_SIO_URL!;
-let _directCallSocket: Socket<
-  ServerToClientDirectCall,
-  ClientToServerDirectCall
-> | null = null;
+import { getSocket, SocketType } from "./socketFactory";
 
 export function getDirectCallSocketIO(): Socket<
   ServerToClientDirectCall,
   ClientToServerDirectCall
 > {
-  if (_directCallSocket) return _directCallSocket;
-
-  _directCallSocket = io(URL, {
-    transports: ["websocket"],
-    autoConnect: false,
-    reconnection: true,
-    reconnectionAttempts: Infinity,
-  });
-
-  return _directCallSocket;
+  return getSocket(SocketType.DirectCall) as Socket<
+    ServerToClientDirectCall,
+    ClientToServerDirectCall
+  >;
 }

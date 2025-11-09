@@ -3,25 +3,14 @@ import type {
   ServerToClientChannelCall,
   ClientToServerChannelCall,
 } from "../interfaces/websocketChannelCall.interface";
-
-const URL = process.env.NEXT_PUBLIC_CHANNEL_CALL_SIO_URL!;
-let _channelCallSocket: Socket<
-  ServerToClientChannelCall,
-  ClientToServerChannelCall
-> | null = null;
+import { getSocket, SocketType } from "./socketFactory";
 
 export function getChannelCallSocketIO(): Socket<
   ServerToClientChannelCall,
   ClientToServerChannelCall
 > {
-  if (_channelCallSocket) return _channelCallSocket;
-
-  _channelCallSocket = io(URL, {
-    transports: ["websocket"],
-    autoConnect: false,
-    reconnection: true,
-    reconnectionAttempts: Infinity,
-  });
-
-  return _channelCallSocket;
+  return getSocket(SocketType.ChannelCall) as Socket<
+    ServerToClientChannelCall,
+    ClientToServerChannelCall
+  >;
 }
