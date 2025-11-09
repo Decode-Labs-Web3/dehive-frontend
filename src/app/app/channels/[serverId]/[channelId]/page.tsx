@@ -14,6 +14,7 @@ import FilePreview from "@/components/common/FilePreview";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import AttachmentList from "@/components/common/AttachmentList";
+import { FileUploadProps, NewMessageProps } from "@/interfaces/message.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import ChannelFileList from "@/components/messages/ChannelFileList";
@@ -53,24 +54,6 @@ import {
   faHashtag,
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
-
-interface FileUploadProps {
-  uploadId: string;
-  type: "image" | "video" | "audio" | "file";
-  ipfsHash: string;
-  name: string;
-  size: number;
-  mimeType: string;
-  width: number;
-  height: number;
-  durationMs: number;
-}
-
-interface NewMessageProps {
-  content: string;
-  uploadIds: string[];
-  replyTo: string | null;
-}
 
 interface ChannelInfoProps {
   _id: string;
@@ -353,6 +336,7 @@ export default function ChannelMessagePage() {
       <ChannelHistoryView
         serverId={serverId}
         channelId={channelId}
+        serverMembers={serverMembers}
         messageSearchId={messageSearchId}
         setMessageSearchId={setMessageSearchId}
       />

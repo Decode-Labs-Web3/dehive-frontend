@@ -10,14 +10,15 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
-import { DirectMemberListProps } from "@/interfaces/user.interface";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DirectFileList from "@/components/messages/DirectFileList";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
+import { DirectMemberListProps } from "@/interfaces/user.interface";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
 import DirectMessageOption from "@/components/messages/DirectMessageOption";
+import { FileUploadProps, NewMessageProps } from "@/interfaces/message.interface";
 import {
   Dialog,
   DialogContent,
@@ -49,24 +50,6 @@ import {
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
 
-interface FileUploadProps {
-  uploadId: string;
-  type: "image" | "video" | "audio" | "file";
-  ipfsHash: string;
-  name: string;
-  size: number;
-  mimeType: string;
-  width: number;
-  height: number;
-  durationMs: number;
-}
-
-interface NewMessage {
-  content: string;
-  uploadIds: string[];
-  replyTo: string | null;
-}
-
 interface DirectHistoryViewProps {
   channelId: string;
   messageSearchId: string;
@@ -93,7 +76,7 @@ export default function DirectHistoryView({
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
   const [messageReply, setMessageReply] = useState<Message | null>(null);
   const [messageDelete, setMessageDelete] = useState<Message | null>(null);
-  const [newMessage, setNewMessage] = useState<NewMessage>({
+  const [newMessage, setNewMessage] = useState<NewMessageProps>({
     content: "",
     uploadIds: [],
     replyTo: null,

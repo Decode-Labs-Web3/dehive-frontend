@@ -13,10 +13,12 @@ import { useChannelMessage } from "@/hooks/useChannelMessage";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
+import { ServerMemberListProps } from "@/interfaces/user.interface";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
+import { FileUploadProps, NewMessageProps } from "@/interfaces/message.interface";
 import {
   Dialog,
   DialogContent,
@@ -47,45 +49,18 @@ import {
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
 
-interface NewMessageProps {
-  content: string;
-  uploadIds: string[];
-  replyTo: string | null;
-}
-
-interface UserInServerProps {
-  user_id: string;
-  status: "online" | "offline";
-  conversationid: string;
-  displayname: string;
-  username: string;
-  avatar_ipfs_hash: string;
-  isCall: boolean;
-  last_seen: string;
-}
-
-interface FileUploadProps {
-  uploadId: string;
-  type: "image" | "video" | "audio" | "file";
-  ipfsHash: string;
-  name: string;
-  size: number;
-  mimeType: string;
-  width: number;
-  height: number;
-  durationMs: number;
-}
-
 interface ChannelHistoryViewProps {
   serverId: string;
   channelId: string;
   messageSearchId: string;
+  serverMembers: ServerMemberListProps[];
   setMessageSearchId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 export default function ChannelHistoryView({
   serverId,
   channelId,
+  serverMembers,
   messageSearchId,
   setMessageSearchId,
 }: ChannelHistoryViewProps) {
@@ -100,7 +75,6 @@ export default function ChannelHistoryView({
   const [loadingDown, setLoadingDown] = useState(false);
   const [messages, setMessages] = useState<MessageChannel[]>([]);
   const [deleteMessageModal, setDeleteMessageModal] = useState(false);
-  const [userInServer, setUserInServer] = useState<UserInServerProps[]>([]);
   const [messageDelete, setMessageDelete] = useState<MessageChannel | null>(
     null
   );
@@ -150,39 +124,6 @@ export default function ChannelHistoryView({
     prevScrollHeightRef.current = 0;
     if (listRef.current) listRef.current.scrollTop = 0;
   }, [messageSearchId]);
-
-  const fetchServerUsers = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/servers/members/status", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ serverId: serverId }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!apiResponse.ok) {
-        console.error(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      if (
-        response.statusCode === 200 &&
-        response.message === "Successfully fetched all server members"
-      ) {
-        console.log("This is server users", response.data);
-        setUserInServer(response.data.users);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Server deleted channel fail");
-    }
-  }, [serverId]);
-
-  useEffect(() => {
-    fetchServerUsers();
-  }, [fetchServerUsers]);
 
   const fetchMessageUp = useCallback(async () => {
     if (isEndUp) return;
@@ -506,7 +447,7 @@ export default function ChannelHistoryView({
                   ? {
                       displayName:
                         referencedMessage?.sender.display_name ??
-                        userInServer.find(
+                        serverMembers.find(
                           (user) => user.user_id === message.replyTo?.senderId
                         )?.displayname ??
                         "Unknown user",
@@ -549,7 +490,7 @@ export default function ChannelHistoryView({
                           {message.sender.display_name} Avatar
                         </AvatarFallback>
                       </Avatar>
-                      {userInServer.find(
+                      {serverMembers.find(
                         (user) => user.user_id === message.sender.dehive_id
                       )?.status === "online" && (
                         <FontAwesomeIcon

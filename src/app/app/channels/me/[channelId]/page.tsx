@@ -26,6 +26,7 @@ import DirectHistoryView from "@/components/search/DirectHistoryView";
 import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import DirectMessageOption from "@/components/messages/DirectMessageOption";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { FileUploadProps, NewMessageProps } from "@/interfaces/message.interface";
 import {
   Dialog,
   DialogContent,
@@ -56,35 +57,6 @@ import {
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
 
-interface NewMessage {
-  content: string;
-  uploadIds: string[];
-  replyTo: string | null;
-}
-
-interface WalletProps {
-  _id: string;
-  address: string;
-  user_id: string;
-  name_service: null;
-  is_primary: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
-interface FileUploadProps {
-  uploadId: string;
-  type: "image" | "video" | "audio" | "file";
-  ipfsHash: string;
-  name: string;
-  size: number;
-  mimeType: string;
-  width: number;
-  height: number;
-  durationMs: number;
-}
-
 export default function DirectMessagePage() {
   const router = useRouter();
   const { sound } = useSoundContext();
@@ -96,7 +68,7 @@ export default function DirectMessagePage() {
     return directMembers.find((member) => member.conversationid === channelId);
   }, [directMembers, channelId]);
   const [messageReply, setMessageReply] = useState<Message | null>(null);
-  const [newMessage, setNewMessage] = useState<NewMessage>({
+  const [newMessage, setNewMessage] = useState<NewMessageProps>({
     content: "",
     uploadIds: [],
     replyTo: null,
@@ -277,29 +249,29 @@ export default function DirectMessagePage() {
     };
   }, [userChatWith?.user_id, sound]);
 
-  // useEffect(() => {
-  //   const index = userChatWith.wallets.findIndex(
-  //     (wallet) => wallet.is_primary === true
-  //   );
-  //   if (privateMode) {
-  //     if (index !== -1) {
-  //       router.push(
-  //         `/app/channels/me/${channelId}/${userChatWith.wallets[index].address}`
-  //       );
-  //     }
-  //   }
-  // }, [privateMode, channelId, router, userChatWith.wallets]);
+  useEffect(() => {
+    const index = userChatWith?.wallets.findIndex(
+      (wallet) => wallet.is_primary === true
+    );
+    if (privateMode && index) {
+      if (index !== -1) {
+        router.push(
+          `/app/channels/me/${channelId}/${userChatWith?.wallets[index].address}`
+        );
+      }
+    }
+  }, [privateMode, channelId, router, userChatWith?.wallets]);
 
-  // const [isAllowPrivate, setIsAllowPrivate] = useState(false);
+  const [isAllowPrivate, setIsAllowPrivate] = useState(false);
 
-  // useEffect(() => {
-  //   const isAllow = userChatWith.wallets.find(
-  //     (wallet) => wallet.is_primary === true
-  //   );
-  //   if (isAllow !== undefined) {
-  //     setIsAllowPrivate(true);
-  //   }
-  // }, [userChatWith.wallets]);
+  useEffect(() => {
+    const isAllow = userChatWith?.wallets.find(
+      (wallet) => wallet.is_primary === true
+    );
+    if (isAllow !== undefined) {
+      setIsAllowPrivate(true);
+    }
+  }, [userChatWith?.wallets]);
 
   if (messageSearchId) {
     return (
@@ -331,7 +303,7 @@ export default function DirectMessagePage() {
             </div>
           </div>
         </div>
-        {/* {isAllowPrivate && (
+        {isAllowPrivate && (
           <>
             {isConnected ? (
               <div className="flex items-center space-x-2">
@@ -348,7 +320,7 @@ export default function DirectMessagePage() {
               <Wallet />
             )}
           </>
-        )} */}
+        )}
         <div className="flex items-center gap-3">
           <Button
             onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
