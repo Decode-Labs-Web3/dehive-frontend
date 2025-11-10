@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendRes.json();
-    console.log("channel-list response:", response);
+    // console.log("channel-list response:", response);
     return NextResponse.json(
       {
         success: true,

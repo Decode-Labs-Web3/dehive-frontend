@@ -12,13 +12,17 @@ import FilePreview from "@/components/common/FilePreview";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import MessageSkeleton from "@/components/search/MessageSkeleton";
 import DirectFileList from "@/components/messages/DirectFileList";
 import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { DirectMemberListProps } from "@/interfaces/user.interface";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
 import DirectMessageOption from "@/components/messages/DirectMessageOption";
-import { FileUploadProps, NewMessageProps } from "@/interfaces/message.interface";
+import {
+  FileUploadProps,
+  NewMessageProps,
+} from "@/interfaces/message.interface";
 import {
   Dialog,
   DialogContent,
@@ -388,14 +392,14 @@ export default function DirectHistoryView({
         <div className="flex items-center gap-3">
           <Avatar className="w-8 h-8">
             <AvatarImage
-            // src={`https://ipfs.de-id.xyz/ipfs/${userChatWith.avatar_ipfs_hash}`}
+              src={`https://ipfs.de-id.xyz/ipfs/${userChatWith.avatar_ipfs_hash}`}
             />
-            {/* <AvatarFallback>{userChatWith.displayname} Avatar</AvatarFallback> */}
+            <AvatarFallback>{userChatWith.displayname} Avatar</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-foreground">
-                {/* {userChatWith?.displayname} */}
+                {userChatWith?.displayname}
               </h1>
             </div>
           </div>
@@ -418,212 +422,223 @@ export default function DirectHistoryView({
         </div>
       </div>
 
-      <ScrollArea
-        ref={listRef}
-        onScrollViewport={handleScroll}
-        className="flex-1 px-6 py-6 bg-background"
-      >
-        <div className="flex flex-col gap-4">
-          {loadingUp && (
-            <>
-              <Skeleton className="h-20 w-full bg-muted" />
-              <Skeleton className="h-20 w-full bg-muted" />
-              <Skeleton className="h-20 w-full bg-muted" />
-              <h1>Loading page up...</h1>
-            </>
-          )}
-          {fristLoad > 1 &&
-            messages
-              .filter((message) => !message.isDeleted)
-              .map((message) => {
-                const referencedMessage = message.replyTo
-                  ? messages.find((m) => m._id === message.replyTo?._id)
-                  : null;
-                const replyInfo = message.replyTo
-                  ? {
-                      displayName:
-                        referencedMessage?.sender.display_name ??
-                        (message.replyTo?.senderId === userChatWith.user_id
-                          ? userChatWith.displayname
-                          : "You"),
-                      content:
-                        referencedMessage?.content ??
-                        message.replyTo?.content ??
-                        "Message unavailable",
-                    }
-                  : null;
+      {fristLoad >= 2 ? (
+        <ScrollArea
+          ref={listRef}
+          onScrollViewport={handleScroll}
+          className="flex-1 px-6 py-6 bg-background"
+        >
+          <div className="flex flex-col gap-4">
+            {loadingUp && (
+              <>
+                <Skeleton className="h-20 w-full bg-muted" />
+                <Skeleton className="h-20 w-full bg-muted" />
+                <Skeleton className="h-20 w-full bg-muted" />
+                <h1>Loading page up...</h1>
+              </>
+            )}
+            {fristLoad >= 2 &&
+              messages
+                .filter((message) => !message.isDeleted)
+                .map((message) => {
+                  const referencedMessage = message.replyTo
+                    ? messages.find((m) => m._id === message.replyTo?._id)
+                    : null;
+                  const replyInfo = message.replyTo
+                    ? {
+                        displayName:
+                          referencedMessage?.sender.display_name ??
+                          (message.replyTo?.senderId === userChatWith.user_id
+                            ? userChatWith.displayname
+                            : "You"),
+                        content:
+                          referencedMessage?.content ??
+                          message.replyTo?.content ??
+                          "Message unavailable",
+                      }
+                    : null;
 
-                return (
-                  <div
-                    key={message._id}
-                    ref={
-                      message._id === messageSearchId ? targetMessageRef : null
-                    }
-                    className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
-                  >
-                    {replyInfo && (
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent mb-2 max-w-full">
-                        <span className="text-xs font-semibold text-foreground mr-2">
-                          Replying to {replyInfo.displayName}
-                        </span>
-                        <span className="truncate text-xs text-foreground">
-                          {replyInfo.content}
-                        </span>
-                      </div>
-                    )}
-
+                  return (
                     <div
-                      className={`flex w-full ${
-                        message._id === messageSearchId ? "bg-red-500" : null
-                      }`}
+                      key={message._id}
+                      ref={
+                        message._id === messageSearchId
+                          ? targetMessageRef
+                          : null
+                      }
+                      className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
                     >
-                      <Avatar className="w-8 h-8 shrink-0">
-                        <AvatarImage
-                          src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
-                        />
-                        <AvatarFallback>
-                          {message.sender.display_name} Avatar
-                        </AvatarFallback>
-                      </Avatar>
-                      {message.sender.dehive_id !== userChatWith.user_id && (
-                        <FontAwesomeIcon
-                          icon={faCircle}
-                          className="h-2 w-2 text-emerald-500"
-                        />
+                      {replyInfo && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent mb-2 max-w-full">
+                          <span className="text-xs font-semibold text-foreground mr-2">
+                            Replying to {replyInfo.displayName}
+                          </span>
+                          <span className="truncate text-xs text-foreground">
+                            {replyInfo.content}
+                          </span>
+                        </div>
                       )}
-                      {message.sender.dehive_id === userChatWith.user_id &&
-                        userChatWith.status === "online" && (
+
+                      <div
+                        className={`flex w-full ${
+                          message._id === messageSearchId ? "bg-red-500" : null
+                        }`}
+                      >
+                        <Avatar className="w-8 h-8 shrink-0">
+                          <AvatarImage
+                            src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
+                          />
+                          <AvatarFallback>
+                            {message.sender.display_name} Avatar
+                          </AvatarFallback>
+                        </Avatar>
+                        {message.sender.dehive_id !== userChatWith.user_id && (
                           <FontAwesomeIcon
                             icon={faCircle}
                             className="h-2 w-2 text-emerald-500"
                           />
                         )}
-                      <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
-                        {!editMessageField[message._id] ? (
-                          <div className="w-full">
-                            <div className="flex items-center gap-2">
-                              <h2 className="text-sm font-semibold text-foreground">
-                                {message.sender.display_name}
-                              </h2>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(message.createdAt).toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
-                              <AutoLink text={message.content} />
-                              {message.isEdited && (
-                                <span className="ml-2 text-xs text-muted-foreground">
-                                  (edited)
+                        {message.sender.dehive_id === userChatWith.user_id &&
+                          userChatWith.status === "online" && (
+                            <FontAwesomeIcon
+                              icon={faCircle}
+                              className="h-2 w-2 text-emerald-500"
+                            />
+                          )}
+                        <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
+                          {!editMessageField[message._id] ? (
+                            <div className="w-full">
+                              <div className="flex items-center gap-2">
+                                <h2 className="text-sm font-semibold text-foreground">
+                                  {message.sender.display_name}
+                                </h2>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(message.createdAt).toLocaleString()}
                                 </span>
+                              </div>
+                              <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
+                                <AutoLink text={message.content} />
+                                {message.isEdited && (
+                                  <span className="ml-2 text-xs text-muted-foreground">
+                                    (edited)
+                                  </span>
+                                )}
+                              </div>
+                              <AttachmentList
+                                attachments={message.attachments}
+                              />
+                            </div>
+                          ) : (
+                            <Textarea
+                              name="editMessage"
+                              value={editMessage.messageEdit}
+                              onChange={handleEditMessageChange}
+                              onKeyDown={(event) =>
+                                handleEditMessageKeyDown(event, message.content)
+                              }
+                              placeholder="Edit message"
+                              autoFocus
+                              disabled={sending}
+                              className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border"
+                            />
+                          )}
+
+                          {!editMessageField[message._id] && (
+                            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      onClick={() =>
+                                        handleMessageReply(message)
+                                      }
+                                      className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
+                                    >
+                                      <FontAwesomeIcon
+                                        icon={faArrowTurnUp}
+                                        rotation={270}
+                                      />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="bg-black">
+                                    Reply
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              {userChatWith.user_id !==
+                                message.sender.dehive_id && (
+                                <>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
+                                          onClick={() => {
+                                            setEditMessageField(
+                                              Object.fromEntries(
+                                                messages.map((messagelist) => [
+                                                  messagelist._id,
+                                                  messagelist._id ===
+                                                    message._id,
+                                                ])
+                                              )
+                                            );
+                                            setEditMessage({
+                                              id: message._id,
+                                              messageEdit: message.content,
+                                            });
+                                          }}
+                                        >
+                                          <FontAwesomeIcon icon={faPen} />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="bg-black">
+                                        Edit
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          className="h-8 w-8 p-0 text-destructive bg-secondary hover:bg-accent"
+                                          onClick={() => {
+                                            setDeleteMessageModal(true);
+                                            setMessageDelete(message);
+                                          }}
+                                        >
+                                          <FontAwesomeIcon icon={faTrash} />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="bg-black">
+                                        Delete
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </>
                               )}
                             </div>
-                            <AttachmentList attachments={message.attachments} />
-                          </div>
-                        ) : (
-                          <Textarea
-                            name="editMessage"
-                            value={editMessage.messageEdit}
-                            onChange={handleEditMessageChange}
-                            onKeyDown={(event) =>
-                              handleEditMessageKeyDown(event, message.content)
-                            }
-                            placeholder="Edit message"
-                            autoFocus
-                            disabled={sending}
-                            className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border"
-                          />
-                        )}
-
-                        {!editMessageField[message._id] && (
-                          <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    onClick={() => handleMessageReply(message)}
-                                    className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
-                                  >
-                                    <FontAwesomeIcon
-                                      icon={faArrowTurnUp}
-                                      rotation={270}
-                                    />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent className="bg-black">
-                                  Reply
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                            {userChatWith.user_id !==
-                              message.sender.dehive_id && (
-                              <>
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        className="h-8 w-8 p-0 bg-secondary hover:bg-accent text-secondary-foreground"
-                                        onClick={() => {
-                                          setEditMessageField(
-                                            Object.fromEntries(
-                                              messages.map((messagelist) => [
-                                                messagelist._id,
-                                                messagelist._id === message._id,
-                                              ])
-                                            )
-                                          );
-                                          setEditMessage({
-                                            id: message._id,
-                                            messageEdit: message.content,
-                                          });
-                                        }}
-                                      >
-                                        <FontAwesomeIcon icon={faPen} />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-black">
-                                      Edit
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        className="h-8 w-8 p-0 text-destructive bg-secondary hover:bg-accent"
-                                        onClick={() => {
-                                          setDeleteMessageModal(true);
-                                          setMessageDelete(message);
-                                        }}
-                                      >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-black">
-                                      Delete
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </>
-                            )}
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-          {loadingDown && (
-            <>
-              <h1>Loading page down...</h1>
-              <Skeleton className="h-20 w-full bg-muted" />
-              <Skeleton className="h-20 w-full bg-muted" />
-              <Skeleton className="h-20 w-full bg-muted" />
-            </>
-          )}
-        </div>
-        <ScrollBar orientation="vertical" />
-      </ScrollArea>
+                  );
+                })}
+            {loadingDown && (
+              <>
+                <h1>Loading page down...</h1>
+                <Skeleton className="h-20 w-full bg-muted" />
+                <Skeleton className="h-20 w-full bg-muted" />
+                <Skeleton className="h-20 w-full bg-muted" />
+              </>
+            )}
+          </div>
+          <ScrollBar orientation="vertical" />
+        </ScrollArea>
+      ) : (
+        <MessageSkeleton />
+      )}
 
       <Dialog
         open={deleteMessageModal}
