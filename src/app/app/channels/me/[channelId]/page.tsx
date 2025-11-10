@@ -253,11 +253,15 @@ export default function DirectMessagePage() {
   }, [userChatWith?.user_id, sound]);
 
   useEffect(() => {
-    const index = userChatWith?.wallets.findIndex(
-      (wallet) => wallet.is_primary === true
-    );
-    if (privateMode && index) {
-      if (index !== -1) {
+    if (privateMode) {
+      const index = userChatWith?.wallets.findIndex(
+        (wallet) => wallet.is_primary === true
+      );
+      console.log(
+        "Private mode on, switching wallet",
+        userChatWith?.wallets[index!]?.address
+      );
+      if (index !== undefined && index !== -1) {
         router.push(
           `/app/channels/me/${channelId}/${userChatWith?.wallets[index].address}`
         );

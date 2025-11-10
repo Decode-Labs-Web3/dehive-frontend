@@ -7,6 +7,7 @@ import ServerBarItems from "@/components/server-bar";
 import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useChannelMember } from "@/hooks/useChannelMember";
+import { ChannelProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -32,16 +33,6 @@ import {
   faVolumeXmark,
   faMicrophoneSlash,
 } from "@fortawesome/free-solid-svg-icons";
-
-interface ChannelProps {
-  _id: string;
-  name: string;
-  type: string;
-  category_id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
 
 interface ChannelPageProps {
   channel: ChannelProps;

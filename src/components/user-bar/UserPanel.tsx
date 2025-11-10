@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useSoundContext } from "@/contexts/SoundContext";
+import { UserDataProps } from "@/interfaces/user.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -26,20 +27,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
-interface UserDataProps {
-  _id: string;
-  dehive_role: string;
-  status: string;
-  server_count: number;
-  username: string;
-  display_name: string;
-  bio: string;
-  avatar_ipfs_hash: string;
-  last_login: string;
-  following_number: number;
-  followers_number: number;
-  is_active: boolean;
-}
 interface UserPanelProps {
   theme: string;
   userData: UserDataProps;

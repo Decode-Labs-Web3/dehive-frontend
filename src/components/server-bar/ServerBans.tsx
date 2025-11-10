@@ -3,23 +3,11 @@
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect, useCallback } from "react";
+import { ServerProps } from "@/interfaces/server.interface";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
-
-interface ServerProps {
-  _id: string;
-  name: string;
-  description: string;
-  owner_id: string;
-  member_count: number;
-  is_private: boolean;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  _v: boolean;
-}
 
 interface ServerBansProps {
   server: ServerProps;

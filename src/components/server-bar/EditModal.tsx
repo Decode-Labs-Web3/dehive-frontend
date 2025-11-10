@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { getApiHeaders } from "@/utils/api.utils";
 import ServerBarItems from "@/components/server-bar";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import {
@@ -28,19 +29,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-interface ServerProps {
-  _id: string;
-  name: string;
-  description: string;
-  owner_id: string;
-  member_count: number;
-  is_private: boolean;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  _v: boolean;
-}
 
 interface EditModalProps {
   server: ServerProps;

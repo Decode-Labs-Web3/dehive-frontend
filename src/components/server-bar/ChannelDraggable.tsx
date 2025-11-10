@@ -3,16 +3,7 @@
 import React from "react";
 import { useDraggable } from "@dnd-kit/core";
 import ServerBarItems from "@/components/server-bar";
-
-interface ChannelProps {
-  _id: string;
-  name: string;
-  type: string;
-  category_id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
+import { ChannelProps } from "@/interfaces/server.interface";
 
 interface ChannelDraggableProps {
   channel: ChannelProps;

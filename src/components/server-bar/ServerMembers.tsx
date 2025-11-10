@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect, useCallback } from "react";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { MemberInServerProps } from "@/interfaces/user.interface";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
@@ -27,34 +28,6 @@ interface ServerMembersProps {
   server: ServerProps;
   fetchServerInfo: () => void;
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-interface MemberInServerProps {
-  membership_id: string;
-  _id: string;
-  username: string;
-  display_name: string;
-  avatar: string;
-  avatar_ipfs_hash: string;
-  status: string;
-  server_count: number;
-  bio: string;
-  is_banned: boolean;
-  last_login: string;
-  following_number: number;
-  followers_number: number;
-  is_following: boolean;
-  is_follower: boolean;
-  is_blocked: boolean;
-  is_blocked_by: boolean;
-  mutual_followers_number: number;
-  mutual_followers_list: [];
-  is_active: boolean;
-  wallets: [];
-  __v: number;
-  role: string;
-  is_muted: boolean;
-  joined_at: string;
 }
 
 export default function ServerMembers({

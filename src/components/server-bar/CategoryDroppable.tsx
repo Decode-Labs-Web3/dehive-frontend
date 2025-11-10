@@ -2,26 +2,7 @@
 
 import React from "react";
 import { useDroppable } from "@dnd-kit/core";
-
-interface CategoryProps {
-  _id: string;
-  name: string;
-  server_id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-  channels: ChannelProps[];
-}
-
-interface ChannelProps {
-  _id: string;
-  name: string;
-  type: string;
-  category_id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
+import { CategoryProps } from "@/interfaces/server.interface";
 
 interface CategoryDroppableProps {
   category: CategoryProps;

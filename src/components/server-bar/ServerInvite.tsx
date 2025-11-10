@@ -7,6 +7,7 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect, useCallback } from "react";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import {  ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useInviteSuggestions } from "@/hooks/useInviteSuggestions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,19 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-interface ServerProps {
-  _id: string;
-  name: string;
-  description: string;
-  owner_id: string;
-  member_count: number;
-  is_private: boolean;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  _v: boolean;
-}
 
 interface ServerInviteProps {
   server: ServerProps;

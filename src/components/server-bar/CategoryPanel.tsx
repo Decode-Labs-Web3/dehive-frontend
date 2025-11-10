@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
+import { CategoryProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan, faFolder, faX } from "@fortawesome/free-solid-svg-icons";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -16,26 +17,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-interface CategoryProps {
-  _id: string;
-  name: string;
-  server_id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-  channels: ChannelProps[];
-}
-
-interface ChannelProps {
-  _id: string;
-  name: string;
-  type: string;
-  category_id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
 
 interface CategoryPanelProps {
   category: CategoryProps;

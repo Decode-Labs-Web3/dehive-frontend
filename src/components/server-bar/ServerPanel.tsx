@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import ServerBarItems from "@/components/server-bar";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { SERVER_TAGS } from "@/constants/index.constants";
+import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
@@ -41,19 +42,6 @@ const tagIcon: Record<string, IconDefinition> = {
   "Local Community": faPeopleGroup,
   "Artist & Creators": faPalette,
 };
-
-interface ServerProps {
-  _id: string;
-  name: string;
-  description: string;
-  owner_id: string;
-  member_count: number;
-  is_private: boolean;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  _v: boolean;
-}
 
 interface ServerPanelProps {
   server: ServerProps;

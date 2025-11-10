@@ -2,6 +2,7 @@
 
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import { MemberInServerProps } from "@/interfaces/user.interface";
 import { useEffect, useMemo, useState, useCallback } from "react";
 interface InviteSuggestion {
   user_id: string;
@@ -9,35 +10,6 @@ interface InviteSuggestion {
   username: string;
   display_name: string;
 }
-
-interface MemberInServerProps {
-  membership_id: string;
-  _id: string;
-  username: string;
-  display_name: string;
-  avatar: string;
-  avatar_ipfs_hash: string;
-  status: string;
-  server_count: number;
-  bio: string;
-  is_banned: boolean;
-  last_login: string;
-  following_number: number;
-  followers_number: number;
-  is_following: boolean;
-  is_follower: boolean;
-  is_blocked: boolean;
-  is_blocked_by: boolean;
-  mutual_followers_number: number;
-  mutual_followers_list: [];
-  is_active: boolean;
-  wallets: [];
-  __v: number;
-  role: string;
-  is_muted: boolean;
-  joined_at: string;
-}
-
 interface Friend {
   followers_number: number;
   avatar_ipfs_hash: string;

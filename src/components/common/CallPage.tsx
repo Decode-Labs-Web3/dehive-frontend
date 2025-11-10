@@ -78,21 +78,6 @@ function ScreenShareBtn({ onAfter }: { onAfter?: () => void }) {
   );
 }
 
-interface UserDataProps {
-  _id: string;
-  dehive_role: string;
-  status: string;
-  server_count: number;
-  username: string;
-  display_name: string;
-  bio: string;
-  avatar_ipfs_hash: string;
-  last_login: string;
-  following_number: number;
-  followers_number: number;
-  is_active: boolean;
-}
-
 interface CallPageProps {
   callId: string;
   endCall: () => void;

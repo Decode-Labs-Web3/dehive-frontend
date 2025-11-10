@@ -2,6 +2,9 @@
 
 import { useUser } from "@/hooks/useUser";
 import { useParams } from "next/navigation";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import ServerBarItems from "@/components/server-bar";
@@ -9,6 +12,9 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useState, useCallback, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { MemberInServerProps } from "@/interfaces/user.interface";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CategoryProps, ServerProps } from "@/interfaces/server.interface";
 import {
   faChevronRight,
   faChevronDown,
@@ -24,82 +30,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-
-interface CategoryProps {
-  _id: string;
-  name: string;
-  server_id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-  channels: ChannelProps[];
-}
-
-interface ChannelProps {
-  _id: string;
-  name: string;
-  type: string;
-  category_id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
-interface ServerProps {
-  _id: string;
-  name: string;
-  description: string;
-  owner_id: string;
-  member_count: number;
-  is_private: boolean;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  _v: boolean;
-}
-
-interface MemberInServerProps {
-  membership_id: string;
-  _id: string;
-  username: string;
-  display_name: string;
-  avatar: string;
-  avatar_ipfs_hash: string;
-  status: string;
-  server_count: number;
-  bio: string;
-  is_banned: boolean;
-  last_login: string;
-  following_number: number;
-  followers_number: number;
-  is_following: boolean;
-  is_follower: boolean;
-  is_blocked: boolean;
-  is_blocked_by: boolean;
-  mutual_followers_number: number;
-  mutual_followers_list: [];
-  is_active: boolean;
-  wallets: [];
-  __v: number;
-  role: string;
-  is_muted: boolean;
-  joined_at: string;
-}
 
 interface CategoriesProps {
   server: ServerProps;
