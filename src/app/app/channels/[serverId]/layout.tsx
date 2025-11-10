@@ -31,8 +31,14 @@ export default function ServerLayout({
   const { serverId } = useParams<{
     serverId: string;
   }>();
-  const { channelMembers, createChannelMember, deleteChannelMember } =
-    useChannelMember();
+  const {
+    createChannelMember,
+    serverChannelMember,
+    joinChannelMember,
+    statusChannelMember,
+    leftChannelMember,
+    deleteChannelMember,
+  } = useChannelMember();
   const { createServerMember, updateServerStatus, deleteServerMember } =
     useServerMember();
   const fetchServerUsers = useCallback(async () => {
@@ -98,7 +104,7 @@ export default function ServerLayout({
   useEffect(() => {
     fetchChannelList();
     fetchServerUsers();
-  }, [fetchServerUsers, fetchChannelList]);
+  }, [fetchServerUsers, fetchChannelList, serverId]);
 
   useEffect(() => {
     const socket = getStatusSocketIO();
@@ -118,7 +124,7 @@ export default function ServerLayout({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onServerJoined = (p: JoinedServer) => {
-      console.log("serverJoined quang minh", p);
+      serverChannelMember(p.channels);
     };
     socket.on("serverJoined", onServerJoined);
     return () => {
@@ -129,7 +135,7 @@ export default function ServerLayout({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
-      console.log("userJoinedChannel quang minh", p);
+      joinChannelMember(p);
     };
     socket.on("userJoinedChannel", onUserJoinedChannel);
     return () => {
@@ -140,7 +146,7 @@ export default function ServerLayout({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserStatusChanged = (p: UserStatusChangedPayload) => {
-      console.log("userStatusChanged quang minh", p);
+      statusChannelMember(p);
     };
     socket.on("userStatusChanged", onUserStatusChanged);
     return () => {
@@ -151,7 +157,7 @@ export default function ServerLayout({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserLeftChannel = (p: UserLeftChannelPayload) => {
-      console.log("userLeftChannel quang minh", p);
+      leftChannelMember(p);
     };
     socket.on("userLeftChannel", onUserLeftChannel);
     return () => {

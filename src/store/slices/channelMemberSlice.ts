@@ -1,5 +1,11 @@
-import { ChannelMemberListProps } from "../../interfaces/call.interface";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { ChannelMemberListProps } from "../../interfaces/call.interface";
+import {
+  Channels,
+  UserStatusChangedPayload,
+  UserJoinedChannelPayload,
+  UserLeftChannelPayload,
+} from "@/interfaces/websocketChannelCall.interface";
 
 const initialState: ChannelMemberListProps[] = [];
 
@@ -10,17 +16,42 @@ const channelMemberSlice = createSlice({
     createMemberList(_state, action: PayloadAction<ChannelMemberListProps[]>) {
       return action.payload;
     },
-    userJoinServer(state, action: PayloadAction<ChannelMemberListProps>) {
-      state.push(action.payload);
+    userJoinServer(state, action: PayloadAction<Channels[]>) {
+      state.forEach((stateChannel) => {
+        const index = action.payload.findIndex(
+          (payloadChannel) => payloadChannel.channel_id === stateChannel._id
+        );
+        if (index !== -1) {
+          stateChannel.participants = action.payload[index].participants;
+        }
+      });
     },
-    userJoinChannel(state, action: PayloadAction<ChannelMemberListProps>) {
-      state.push(action.payload);
+    userJoinChannel(state, action: PayloadAction<UserJoinedChannelPayload>) {
+      state
+        .find((channel) => channel._id === action.payload.channel_id)
+        ?.participants?.push(action.payload.user_info);
     },
-    userStatusChange(state, action: PayloadAction<ChannelMemberListProps>) {
-      state.push(action.payload);
+    userStatusChange(state, action: PayloadAction<UserStatusChangedPayload>) {
+      const channel = state.find(
+        (channel) => channel._id === action.payload.channel_id
+      );
+      if (channel && channel.participants) {
+        channel.participants = channel.participants.map((user) =>
+          user._id === action.payload.user_info._id
+            ? action.payload.user_info
+            : user
+        );
+      }
     },
-    userLeftChannel(state, action: PayloadAction<ChannelMemberListProps>) {
-      state.push(action.payload);
+    userLeftChannel(state, action: PayloadAction<UserLeftChannelPayload>) {
+      const channel = state.find(
+        (channel) => channel._id === action.payload.channel_id
+      );
+      if (channel && channel.participants) {
+        channel.participants = channel.participants.filter(
+          (user) => user._id !== action.payload.user_id
+        );
+      }
     },
     clearMemberList() {
       return initialState;
@@ -28,5 +59,12 @@ const channelMemberSlice = createSlice({
   },
 });
 
-export const { createMemberList, clearMemberList } = channelMemberSlice.actions;
+export const {
+  createMemberList,
+  userJoinServer,
+  userJoinChannel,
+  userStatusChange,
+  userLeftChannel,
+  clearMemberList,
+} = channelMemberSlice.actions;
 export default channelMemberSlice.reducer;

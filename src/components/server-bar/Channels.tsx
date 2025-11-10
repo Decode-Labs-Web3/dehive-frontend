@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import ServerBarItems from "@/components/server-bar";
 import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import { useChannelMember } from "@/hooks/useChannelMember";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getChannelCallSocketIO } from "@/lib/socketioChannelCallSingleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -23,12 +23,6 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import {
-  JoinedServer,
-  UserJoinedChannelPayload,
-  UserStatusChangedPayload,
-  UserLeftChannelPayload,
-} from "@/interfaces/websocketChannelCall.interface";
 import {
   faCopy,
   faHashtag,
@@ -59,17 +53,6 @@ interface ChannelPageProps {
   >;
 }
 
-interface UserChannelProps {
-  _id: string;
-  username: string;
-  display_name: string;
-  avatar_ipfs_hash: string;
-  isCamera: boolean;
-  isMic: boolean;
-  isHeadphone: boolean;
-  isLive: boolean;
-}
-
 export default function Channels({
   channel,
   channelPanel,
@@ -81,7 +64,12 @@ export default function Channels({
   const { fingerprintHash } = useFingerprint();
   const { serverId } = useParams<{ serverId: string }>();
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
-  const [userChannel, setUserChannel] = useState<UserChannelProps[]>([]);
+  const { channelMembers } = useChannelMember();
+  const userChannel = useMemo(() => {
+    return channelMembers.find(
+      (channelMember) => channelMember._id === channel._id
+    )?.participants;
+  }, [channelMembers, channel._id]);
 
   const handleChannelClick = () => {
     console.log("Channel clicked:", channel._id, channel.type);
@@ -125,95 +113,6 @@ export default function Channels({
     }
   };
 
-  useEffect(() => {
-    const socket = getChannelCallSocketIO();
-    const onServerJoined = (p: JoinedServer) => {
-      // console.log("[channel call serverJoined] quang minh", p);
-      const participants =
-        p?.channels?.find(
-          (channelItem) => channelItem.channel_id === channel._id
-        )?.participants ?? [];
-
-      setUserChannel(participants);
-    };
-    socket.on("serverJoined", onServerJoined);
-    return () => {
-      socket.off("serverJoined", onServerJoined);
-    };
-  }, [channel._id]);
-
-  useEffect(() => {
-    const socket = getChannelCallSocketIO();
-    const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
-      // console.log("[channel call userJoinedChannel] quang minh", p);
-      if (p.channel_id === channel._id) {
-        console.log("[channel call userJoinedChannel]", p);
-        setUserChannel((prev) => {
-          if (!p.user_info || !p.user_info._id) return prev;
-          const exists = prev.some((u) => u._id === p.user_info._id);
-          if (exists) return prev;
-          return [...prev, p.user_info];
-        });
-      }
-    };
-    socket.on("userJoinedChannel", onUserJoinedChannel);
-    return () => {
-      socket.off("userJoinedChannel", onUserJoinedChannel);
-    };
-  }, [channel._id]);
-
-  useEffect(() => {
-    const socket = getChannelCallSocketIO();
-    const onUserStatusChanged = (p: UserStatusChangedPayload) => {
-      // console.log("[channel call userLeftChannel] quang minh", p);
-      if (p.channel_id === channel._id) {
-        console.log("User status channel", p);
-        setUserChannel((prev) => {
-          if (!p.user_info || !p.user_info._id) return prev;
-          const userIndex = prev.findIndex(
-            (oldUser) => oldUser._id === p.user_info._id
-          );
-          if (userIndex === -1) return prev;
-
-          const next = [...prev];
-          next[userIndex] = {
-            ...next[userIndex],
-            isCamera: !!p.user_info.isCamera,
-            isMic: !!p.user_info.isMic,
-            isHeadphone: !!p.user_info.isHeadphone,
-            isLive: !!p.user_info.isLive,
-          };
-
-          return next;
-        });
-      }
-    };
-    socket.on("userStatusChanged", onUserStatusChanged);
-    return () => {
-      socket.off("userStatusChanged", onUserStatusChanged);
-    };
-  }, [channel._id]);
-
-  useEffect(() => {
-    const socket = getChannelCallSocketIO();
-    const onUserLeftChannel = (p: UserLeftChannelPayload) => {
-      // console.log("[channel call userLeftChannel] quang minh", p);
-      if (p.channel_id === channel._id) {
-        console.log("User left channel", p);
-        const idToRemove = p?.user_info?._id || p.user_id;
-        if (!idToRemove) return;
-
-        setUserChannel((prev) =>
-          prev.filter((user) => user._id !== idToRemove)
-        );
-      }
-    };
-    socket.on("userLeftChannel", onUserLeftChannel);
-    return () => {
-      socket.off("userLeftChannel", onUserLeftChannel);
-    };
-  }, [channel._id]);
-
   return (
     <>
       <ContextMenu>
@@ -245,7 +144,7 @@ export default function Channels({
             <div className="flex flex-col m-2">
               {channel.type === "VOICE" && (
                 <div className="flex flex-col items-center gap-1">
-                  {userChannel.map((user) => (
+                  {userChannel?.map((user) => (
                     <div
                       key={user._id}
                       className="flex items-start justify-start gap-2"
