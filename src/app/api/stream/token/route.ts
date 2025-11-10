@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   if (denied) return denied;
 
   try {
-    const userId = (await cookies()).get("userId")?.value;
+    const userId = req.headers.get("X-User-Id");
 
     if (!userId) {
       return NextResponse.json(

@@ -1,5 +1,16 @@
 "use client";
 
+import { useUser } from "@/hooks/useUser";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faMicrophone,
+  faMicrophoneSlash,
+  faVideo,
+  faVideoSlash,
+  faDisplay,
+  faCircleStop,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   CallingState,
   SpeakerLayout,
@@ -13,7 +24,6 @@ import {
   ReactionsButton,
   CancelCallButton,
 } from "@stream-io/video-react-sdk";
-import { useEffect, useState, useCallback, useMemo } from "react";
 
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
@@ -25,11 +35,10 @@ function MicButton({ onAfter }: { onAfter?: (isMicOn: boolean) => void }) {
     <button
       onClick={async () => {
         await microphone.toggle();
-        // isMute is the previous state; after toggle the new state is !isMute
         onAfter?.(isMute);
       }}
     >
-      {isMute ? "Unmute" : "Mute"}
+      <FontAwesomeIcon icon={isMute ? faMicrophoneSlash : faMicrophone} />
     </button>
   );
 }
@@ -45,7 +54,7 @@ function CamButton({ onAfter }: { onAfter?: (isCameraOn: boolean) => void }) {
         onAfter?.(isMute);
       }}
     >
-      {isMute ? "Camera On" : "Camera Off"}
+      <FontAwesomeIcon icon={isMute ? faVideoSlash : faVideo} />
     </button>
   );
 }
@@ -64,33 +73,13 @@ function ScreenShareBtn({
     <button
       disabled={!isSharing && someoneSharing}
       onClick={async () => {
-        try {
-          await screenShare.toggle();
-          // after toggle, new sharing state is !isSharing
-          onAfter?.(!isSharing);
-        } catch (e) {
-          console.warn("screenshare toggle failed:", e);
-        }
+        await screenShare.toggle();
+        onAfter?.(!isSharing);
       }}
     >
-      {isSharing ? "Stop Share" : "Share Screen"}
+      <FontAwesomeIcon icon={isSharing ? faCircleStop : faDisplay} />
     </button>
   );
-}
-
-interface UserDataProps {
-  _id: string;
-  dehive_role: string;
-  status: string;
-  server_count: number;
-  username: string;
-  display_name: string;
-  bio: string;
-  avatar_ipfs_hash: string;
-  last_login: string;
-  following_number: number;
-  followers_number: number;
-  is_active: boolean;
 }
 
 interface CallPageProps {
@@ -109,22 +98,15 @@ export default function ChannelCall({
   endCall,
   updateUserStatus,
 }: CallPageProps) {
-  const [userData, setUserData] = useState<UserDataProps | null>(null);
-  useEffect(() => {
-    const userData = localStorage.getItem("userData");
-    if (userData) {
-      setUserData(JSON.parse(userData));
-    }
-  }, []);
-
-  const user = useMemo(() => {
-    if (!userData) return null;
+  const { user } = useUser();
+  const userData = useMemo(() => {
+    if (!user) return null;
     return {
-      id: userData._id,
-      name: userData.display_name,
-      image: `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`,
+      id: user._id,
+      name: user.display_name,
+      image: `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`,
     } as User;
-  }, [userData]);
+  }, [user]);
 
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);
@@ -137,6 +119,7 @@ export default function ChannelCall({
       method: "GET",
       headers: {
         "X-Frontend-Internal-Request": "true",
+        "X-User-Id": user._id,
       },
       cache: "no-store",
       signal: AbortSignal.timeout(10000),
@@ -159,7 +142,7 @@ export default function ChannelCall({
     if (!token) return;
     const streamVideoClient = new StreamVideoClient({
       apiKey: apiKey,
-      user: user!,
+      user: userData!,
       token: token!,
     });
     const streamCall = streamVideoClient.call("default", callId);

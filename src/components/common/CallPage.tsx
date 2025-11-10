@@ -1,5 +1,15 @@
 "use client";
 
+import { useUser } from "@/hooks/useUser";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faMicrophone,
+  faMicrophoneSlash,
+  faVideo,
+  faVideoSlash,
+  faDisplay,
+  faCircleStop,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   CallingState,
   SpeakerLayout,
@@ -10,9 +20,6 @@ import {
   useCallStateHooks,
   type User,
   type Call,
-  // ToggleAudioPublishingButton,
-  // ToggleVideoPublishingButton,
-  // ScreenShareButton,
   ReactionsButton,
   CancelCallButton,
 } from "@stream-io/video-react-sdk";
@@ -31,7 +38,7 @@ function MicButton({ onAfter }: { onAfter?: () => void }) {
         onAfter?.();
       }}
     >
-      {isMute ? "Unmute" : "Mute"}
+      <FontAwesomeIcon icon={isMute ? faMicrophoneSlash : faMicrophone} />
     </button>
   );
 }
@@ -47,7 +54,7 @@ function CamButton({ onAfter }: { onAfter?: () => void }) {
         onAfter?.();
       }}
     >
-      {isMute ? "Camera On" : "Camera Off"}
+      <FontAwesomeIcon icon={isMute ? faVideoSlash : faVideo} />
     </button>
   );
 }
@@ -62,15 +69,11 @@ function ScreenShareBtn({ onAfter }: { onAfter?: () => void }) {
     <button
       disabled={!isSharing && someoneSharing}
       onClick={async () => {
-        try {
-          await screenShare.toggle();
-          onAfter?.();
-        } catch (e) {
-          console.warn("screenshare toggle failed:", e);
-        }
+        await screenShare.toggle();
+        onAfter?.();
       }}
     >
-      {isSharing ? "Stop Share" : "Share Screen"}
+      <FontAwesomeIcon icon={isSharing ? faCircleStop : faDisplay} />
     </button>
   );
 }
@@ -96,22 +99,15 @@ interface CallPageProps {
 }
 
 export default function CallPage({ callId, endCall }: CallPageProps) {
-  const [userData, setUserData] = useState<UserDataProps | null>(null);
-  useEffect(() => {
-    const userData = localStorage.getItem("userData");
-    if (userData) {
-      setUserData(JSON.parse(userData));
-    }
-  }, []);
-
-  const user = useMemo(() => {
-    if (!userData) return null;
+  const { user } = useUser();
+  const userData = useMemo(() => {
+    if (!user) return null;
     return {
-      id: userData._id,
-      name: userData.display_name,
-      image: `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`,
+      id: user._id,
+      name: user.display_name,
+      image: `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`,
     } as User;
-  }, [userData]);
+  }, [user]);
 
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);
@@ -124,6 +120,7 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
       method: "GET",
       headers: {
         "X-Frontend-Internal-Request": "true",
+        "X-User-Id": user._id,
       },
       cache: "no-store",
       signal: AbortSignal.timeout(10000),
@@ -146,7 +143,7 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
     if (!token) return;
     const streamVideoClient = new StreamVideoClient({
       apiKey: apiKey,
-      user: user!,
+      user: userData!,
       token: token!,
     });
     const streamCall = streamVideoClient.call("default", callId);
