@@ -44,7 +44,7 @@ const nextConfig: NextConfig = {
   },
 
   // 🚀 OUTPUT OPTIMIZATION
-  output: "standalone", // For Docker deployment optimization
+  // output: process.env.NODE_ENV === "production" ? "export" : undefined, // Static export for Electron production
 
   // 🚀 LOGGING OPTIMIZATION
   logging: {

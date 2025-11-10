@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getApiHeaders } from "@/utils/api.utils";
+import { isElectron, openExternal } from "@/utils/electron.utils";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightToBracket } from "@fortawesome/free-solid-svg-icons";
@@ -26,7 +27,14 @@ export default function Login() {
 
       if (!response.success)
         throw new Error(response.message || "Cannot start SSO");
-      router.push(response.data);
+
+      if (isElectron()) {
+        // In Electron, open external URL in default browser
+        openExternal(response.data);
+      } else {
+        // In browser, navigate normally
+        router.push(response.data);
+      }
     } catch (error) {
       console.error(error);
     } finally {
