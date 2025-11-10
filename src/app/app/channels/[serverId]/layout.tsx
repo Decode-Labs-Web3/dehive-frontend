@@ -8,6 +8,7 @@ import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useServerMember } from "@/hooks/useServerMember";
+import { useChannelMember } from "@/hooks/useChannelMember";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelCallProvider from "@/providers/socketChannelCallProvider";
@@ -23,6 +24,8 @@ export default function ServerLayout({
   const { serverId } = useParams<{
     serverId: string;
   }>();
+  const { channelMembers, createChannelMember, deleteChannelMember } =
+    useChannelMember();
   const { createServerMember, updateServerStatus, deleteServerMember } =
     useServerMember();
   const fetchServerUsers = useCallback(async () => {
@@ -46,7 +49,7 @@ export default function ServerLayout({
         response.statusCode === 200 &&
         response.message === "Successfully fetched all server members"
       ) {
-        console.log("Server members fetched:", response.data.users);
+        // console.log("Server members fetched:", response.data.users);
         createServerMember(response.data.users);
       }
     } catch (error) {
@@ -55,9 +58,42 @@ export default function ServerLayout({
     }
   }, [serverId]);
 
+   const fetchChannelList = useCallback(async () => {
+    deleteChannelMember();
+    try {
+      const apiResponse = await fetch("/api/servers/channel-list", {
+        method: "POST",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ serverId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        console.log("channelMembers in server layout hai:", response);
+        createChannelMember(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server deleted channel fail");
+    }
+  }, [serverId]);
+
   useEffect(() => {
+    fetchChannelList();
     fetchServerUsers();
-  }, [fetchServerUsers]);
+  }, [fetchServerUsers, fetchChannelList]);
+
+  console.log("channelMembers in server layout:", channelMembers);
 
   useEffect(() => {
     const socket = getStatusSocketIO();
