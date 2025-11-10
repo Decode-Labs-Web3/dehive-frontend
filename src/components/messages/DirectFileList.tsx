@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
-import { AttachmentType } from "@/constants/attachment.constant";
+import { ATTACHMENT_TYPE, AttachmentType } from "@/constants/index.constants";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -34,7 +34,7 @@ export default function DirectFileList({ channelId }: DirectFileListProps) {
   const { fingerprintHash } = useFingerprint();
   const [isLastPage, setIsLastPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [type, setType] = useState<AttachmentType>(AttachmentType.IMAGE);
+  const [type, setType] = useState<AttachmentType>(ATTACHMENT_TYPE.IMAGE);
   const [fileList, setFileList] = useState<DirectMessageFileListProps[]>([]);
   const fetchFileList = useCallback(async () => {
     if (isLastPage) return;
@@ -111,22 +111,28 @@ export default function DirectFileList({ channelId }: DirectFileListProps) {
               }}
               className="gap-2"
             >
-              <ToggleGroupItem value={AttachmentType.IMAGE} aria-label="Images">
+              <ToggleGroupItem
+                value={ATTACHMENT_TYPE.IMAGE}
+                aria-label="Images"
+              >
                 <FontAwesomeIcon icon={faImage} className="mr-2" />
                 Images
               </ToggleGroupItem>
 
-              <ToggleGroupItem value={AttachmentType.VIDEO} aria-label="Videos">
+              <ToggleGroupItem
+                value={ATTACHMENT_TYPE.VIDEO}
+                aria-label="Videos"
+              >
                 <FontAwesomeIcon icon={faClapperboard} className="mr-2" />
                 Videos
               </ToggleGroupItem>
 
-              <ToggleGroupItem value={AttachmentType.AUDIO} aria-label="Audio">
+              <ToggleGroupItem value={ATTACHMENT_TYPE.AUDIO} aria-label="Audio">
                 <FontAwesomeIcon icon={faFileAudio} className="mr-2" />
                 Audio
               </ToggleGroupItem>
 
-              <ToggleGroupItem value={AttachmentType.FILE} aria-label="Files">
+              <ToggleGroupItem value={ATTACHMENT_TYPE.FILE} aria-label="Files">
                 <FontAwesomeIcon icon={faFile} className="mr-2" />
                 Files
               </ToggleGroupItem>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { httpStatus } from "@/constants/index.constants";
+import { HTTP_STATUS } from "@/constants/index.constants";
 
 export const dynamic = "force-dynamic";
 type MessageSent = {
@@ -22,10 +22,10 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.BAD_REQUEST,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: "Missing conversationId",
         },
-        { status: httpStatus.BAD_REQUEST }
+        { status: HTTP_STATUS.BAD_REQUEST }
       );
     }
 

@@ -5,7 +5,7 @@ import {
   apiPathName,
   guardInternal,
 } from "@/utils/index.utils";
-import { httpStatus } from "@/constants/index.constants";
+import { HTTP_STATUS } from "@/constants/index.constants";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
@@ -20,10 +20,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.BAD_REQUEST,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: "Missing sessionId",
         },
-        { status: httpStatus.BAD_REQUEST }
+        { status: HTTP_STATUS.BAD_REQUEST }
       );
     }
 
@@ -37,10 +37,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.BAD_REQUEST,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: httpStatus.BAD_REQUEST }
+        { status: HTTP_STATUS.BAD_REQUEST }
       );
     }
 
@@ -50,11 +50,11 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.BAD_REQUEST,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message:
             "Missing required fields: serverId and categoryId and name and type are required",
         },
-        { status: httpStatus.BAD_REQUEST }
+        { status: HTTP_STATUS.BAD_REQUEST }
       );
     }
 
@@ -86,10 +86,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
+          statusCode: backendResponse.status || HTTP_STATUS.BAD_REQUEST,
           message: error?.message || "Create category failed",
         },
-        { status: backendResponse.status || httpStatus.BAD_REQUEST }
+        { status: backendResponse.status || HTTP_STATUS.BAD_REQUEST }
       );
     }
 
@@ -99,21 +99,21 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || httpStatus.CREATED,
+        statusCode: response.statusCode || HTTP_STATUS.CREATED,
         message: response.message || "Operation successful",
         data: response.data,
       },
-      { status: response.statusCode || httpStatus.CREATED }
+      { status: response.statusCode || HTTP_STATUS.CREATED }
     );
   } catch (error) {
     console.error("/api/servers/channel/post handler error:", error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
         message: "Server error while get server",
       },
-      { status: httpStatus.INTERNAL_SERVER_ERROR }
+      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

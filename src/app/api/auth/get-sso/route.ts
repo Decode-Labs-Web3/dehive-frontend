@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { authExpire, httpStatus } from "@/constants/index.constants";
+import { AUTH_EXPIRE, HTTP_STATUS } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
@@ -23,10 +23,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.UNAUTHORIZED,
+          statusCode: HTTP_STATUS.UNAUTHORIZED,
           message: "SSO State is expired",
         },
-        { status: httpStatus.UNAUTHORIZED }
+        { status: HTTP_STATUS.UNAUTHORIZED }
       );
     }
 
@@ -37,10 +37,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.UNAUTHORIZED,
+          statusCode: HTTP_STATUS.UNAUTHORIZED,
           message: "SSO State mismatch",
         },
-        { status: httpStatus.UNAUTHORIZED }
+        { status: HTTP_STATUS.UNAUTHORIZED }
       );
     }
 
@@ -51,10 +51,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.BAD_REQUEST,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: httpStatus.BAD_REQUEST }
+        { status: HTTP_STATUS.BAD_REQUEST }
       );
     }
 
@@ -85,10 +85,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || httpStatus.UNAUTHORIZED,
+          statusCode: backendRes.status || HTTP_STATUS.UNAUTHORIZED,
           message: error?.message || "SSO failed",
         },
-        { status: backendRes.status || httpStatus.UNAUTHORIZED }
+        { status: backendRes.status || HTTP_STATUS.UNAUTHORIZED }
       );
     }
 
@@ -98,10 +98,10 @@ export async function POST(req: Request) {
     const res = NextResponse.json(
       {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: HTTP_STATUS.OK,
         message: "SSO token created",
       },
-      { status: httpStatus.OK }
+      { status: HTTP_STATUS.OK }
     );
 
     res.cookies.delete("ssoState");
@@ -110,13 +110,13 @@ export async function POST(req: Request) {
 
     res.cookies.set(
       "accessExp",
-      String(Math.floor(Date.now() / 1000) + authExpire.sessionToken),
+      String(Math.floor(Date.now() / 1000) + AUTH_EXPIRE.sessionToken),
       {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: authExpire.sessionToken,
+        maxAge: AUTH_EXPIRE.sessionToken,
       }
     );
 
@@ -125,7 +125,7 @@ export async function POST(req: Request) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: authExpire.sessionToken,
+      maxAge: AUTH_EXPIRE.sessionToken,
     });
 
     return res;
@@ -134,10 +134,10 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
         message: "Server create SSO fail",
       },
-      { status: httpStatus.INTERNAL_SERVER_ERROR }
+      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -148,9 +148,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: httpStatus.METHOD_NOT_ALLOWED,
+      statusCode: HTTP_STATUS.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: httpStatus.METHOD_NOT_ALLOWED }
+    { status: HTTP_STATUS.METHOD_NOT_ALLOWED }
   );
 }

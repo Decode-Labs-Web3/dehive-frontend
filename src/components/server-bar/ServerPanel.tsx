@@ -8,7 +8,7 @@ import { getApiHeaders } from "@/utils/api.utils";
 import { useEffect, useRef, useState } from "react";
 import ServerBarItems from "@/components/server-bar";
 import { useFingerprint } from "@/hooks/useFingerprint";
-import { serverTag } from "@/constants/index.constants";
+import { SERVER_TAGS } from "@/constants/index.constants";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
@@ -374,7 +374,7 @@ export default function ServerPanel({
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-3">
-                      {serverTag.map((tag) => (
+                      {SERVER_TAGS.map((tag) => (
                         <Button
                           key={tag}
                           onClick={() => toggleTag(tag)}

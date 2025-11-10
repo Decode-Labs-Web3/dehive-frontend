@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Separator } from "@/components/ui/separator";
 import { useFingerprint } from "@/hooks/useFingerprint";
-import { serverTag } from "@/constants/index.constants";
+import { SERVER_TAGS } from "@/constants/index.constants";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
@@ -270,9 +270,9 @@ export default function AddServer({ handleGetServer }: Props) {
                 <p className="text-xs font-semibold text-muted-foreground">
                   START FROM A TEMPLATE
                 </p>
-                <ScrollArea className="h-full">
+                <ScrollArea>
                   <div className="space-y-3">
-                    {serverTag.map((tag, index) => (
+                    {SERVER_TAGS.map((tag, index) => (
                       <Button
                         key={index}
                         onClick={() => {

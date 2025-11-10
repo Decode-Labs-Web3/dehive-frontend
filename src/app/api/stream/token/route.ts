@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { StreamClient } from "@stream-io/node-sdk";
-import { httpStatus } from "@/constants/index.constants";
+import { HTTP_STATUS } from "@/constants/index.constants";
 export const runtime = "nodejs";
 import {
   generateRequestId,
@@ -22,10 +22,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.UNAUTHORIZED,
+          statusCode: HTTP_STATUS.UNAUTHORIZED,
           message: "userId is not found",
         },
-        { status: httpStatus.UNAUTHORIZED }
+        { status: HTTP_STATUS.UNAUTHORIZED }
       );
     }
 
@@ -41,21 +41,21 @@ export async function GET(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: HTTP_STATUS.OK,
         message: "Stream.io token retrieved successfully",
         data: { token },
       },
-      { status: httpStatus.OK }
+      { status: HTTP_STATUS.OK }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
         message: "Server get user info fail",
       },
-      { status: httpStatus.INTERNAL_SERVER_ERROR }
+      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

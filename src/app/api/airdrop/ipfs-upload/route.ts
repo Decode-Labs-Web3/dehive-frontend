@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { httpStatus } from "@/constants/index.constants";
+import { HTTP_STATUS } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
@@ -19,10 +19,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.BAD_REQUEST,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: "Invalid data provided",
         },
-        { status: httpStatus.BAD_REQUEST }
+        { status: HTTP_STATUS.BAD_REQUEST }
       );
     }
 
@@ -47,10 +47,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+          statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
           message: "IPFS upload failed",
         },
-        { status: httpStatus.INTERNAL_SERVER_ERROR }
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
       );
     }
 
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      statusCode: httpStatus.OK,
+      statusCode: HTTP_STATUS.OK,
       message: "IPFS upload successful",
       data: {
         hash: result.IpfsHash,
@@ -70,10 +70,10 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
         message: "Internal server error",
       },
-      { status: httpStatus.INTERNAL_SERVER_ERROR }
+      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

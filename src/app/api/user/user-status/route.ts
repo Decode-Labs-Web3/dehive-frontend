@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { httpStatus } from "@/constants/index.constants";
+import { HTTP_STATUS } from "@/constants/index.constants";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import {
   generateRequestId,
@@ -21,10 +21,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.UNAUTHORIZED,
+          statusCode: HTTP_STATUS.UNAUTHORIZED,
           message: "SessionId is not found",
         },
-        { status: httpStatus.UNAUTHORIZED }
+        { status: HTTP_STATUS.UNAUTHORIZED }
       );
     }
 
@@ -35,10 +35,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.BAD_REQUEST,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: httpStatus.BAD_REQUEST }
+        { status: HTTP_STATUS.BAD_REQUEST }
       );
     }
 
@@ -64,10 +64,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
+          statusCode: backendRes.status || HTTP_STATUS.BAD_REQUEST,
           message: error?.message,
         },
-        { status: backendRes.status || httpStatus.BAD_REQUEST }
+        { status: backendRes.status || HTTP_STATUS.BAD_REQUEST }
       );
     }
 
@@ -75,21 +75,22 @@ export async function GET(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || httpStatus.OK,
-        message: response.message || "Successfully fetched following users status",
+        statusCode: response.statusCode || HTTP_STATUS.OK,
+        message:
+          response.message || "Successfully fetched following users status",
         data: response.data,
       },
-      { status: response.statusCode || httpStatus.OK }
+      { status: response.statusCode || HTTP_STATUS.OK }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
         message: "Server get user info fail",
       },
-      { status: httpStatus.INTERNAL_SERVER_ERROR }
+      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

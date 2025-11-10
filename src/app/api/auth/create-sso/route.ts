@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto";
-import { authExpire, httpStatus } from "@/constants/index.constants";
+import { AUTH_EXPIRE, HTTP_STATUS } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
@@ -20,10 +20,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+          statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
           message: "Missing DECODE_BASE_URL",
         },
-        { status: httpStatus.INTERNAL_SERVER_ERROR }
+        { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
       );
     }
 
@@ -42,11 +42,11 @@ export async function GET(req: NextRequest) {
     const res = NextResponse.json(
       {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: HTTP_STATUS.OK,
         message: "Login URL created",
         data: ssoUrl,
       },
-      { status: httpStatus.OK }
+      { status: HTTP_STATUS.OK }
     );
 
     res.cookies.delete("ssoState");
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: authExpire.ssoState,
+      maxAge: AUTH_EXPIRE.ssoState,
     });
 
     return res;
@@ -65,11 +65,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
         message:
           error instanceof Error ? error.message : "Failed to create SSO URL",
       },
-      { status: httpStatus.INTERNAL_SERVER_ERROR }
+      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.log(`${pathname} - ${requestId}`);

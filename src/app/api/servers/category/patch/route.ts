@@ -5,7 +5,7 @@ import {
   apiPathName,
   guardInternal,
 } from "@/utils/index.utils";
-import { httpStatus } from "@/constants/index.constants";
+import { HTTP_STATUS } from "@/constants/index.constants";
 
 export async function PATCH(req: Request) {
   const requestId = generateRequestId();
@@ -20,11 +20,11 @@ export async function PATCH(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.BAD_REQUEST,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: "Missing sessionId",
         },
         {
-          status: httpStatus.BAD_REQUEST,
+          status: HTTP_STATUS.BAD_REQUEST,
         }
       );
     }
@@ -36,10 +36,10 @@ export async function PATCH(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.BAD_REQUEST,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: "Missing serverId or name",
         },
-        { status: httpStatus.BAD_REQUEST }
+        { status: HTTP_STATUS.BAD_REQUEST }
       );
     }
 
@@ -54,10 +54,10 @@ export async function PATCH(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: httpStatus.BAD_REQUEST,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: httpStatus.BAD_REQUEST }
+        { status: HTTP_STATUS.BAD_REQUEST }
       );
     }
     const backendRes = await fetch(
@@ -83,10 +83,10 @@ export async function PATCH(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
+          statusCode: backendRes.status || HTTP_STATUS.BAD_REQUEST,
           message: error.message,
         },
-        { status: backendRes.status || httpStatus.BAD_REQUEST }
+        { status: backendRes.status || HTTP_STATUS.BAD_REQUEST }
       );
     }
 
@@ -94,20 +94,20 @@ export async function PATCH(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || httpStatus.OK,
+        statusCode: response.statusCode || HTTP_STATUS.OK,
         message: response.message || "Operation successful",
       },
-      { status: response.statusCode || httpStatus.OK }
+      { status: response.statusCode || HTTP_STATUS.OK }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
         message: "Server error for edit server",
       },
-      { status: httpStatus.INTERNAL_SERVER_ERROR }
+      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.log(`${pathname} - ${requestId}`);
