@@ -72,6 +72,7 @@ export default function ServerPanel({
   const { fingerprintHash } = useFingerprint();
   const { triggerRefeshServer } = useServerRefresh();
   const tabsListContainerRef = useRef<HTMLDivElement | null>(null);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const element = tabsListContainerRef.current;
     if (element) {
@@ -132,6 +133,7 @@ export default function ServerPanel({
 
     if (missing || nothingChanged) return;
 
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/server/patch", {
         method: "PATCH",
@@ -165,6 +167,8 @@ export default function ServerPanel({
     } catch (error) {
       console.error(error);
       console.log("Server error for edit server");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -174,6 +178,7 @@ export default function ServerPanel({
       return;
     }
 
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/server/delete", {
         method: "DELETE",
@@ -201,6 +206,8 @@ export default function ServerPanel({
     } catch (error) {
       console.error(error);
       console.log("Server error for delete server");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -437,6 +444,7 @@ export default function ServerPanel({
                         size="sm"
                         className="bg-success text-success-foreground hover:opacity-90"
                         onClick={handleEditServer}
+                        disabled={loading}
                       >
                         Save Changes
                       </Button>
@@ -478,6 +486,7 @@ export default function ServerPanel({
             <Button
               className="bg-destructive text-destructive-foreground shadow hover:bg-destructive/90"
               onClick={handleDeleteServer}
+              disabled={loading}
             >
               Delete
             </Button>

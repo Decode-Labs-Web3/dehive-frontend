@@ -17,6 +17,17 @@ import {
   faFolderPlus,
   faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface ServerProps {
   _id: string;
@@ -47,6 +58,7 @@ export default function EditModal({
   const { user } = useUser();
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
+  const [loading, setLoading] = useState(false);
   const { triggerRefeshServer } = useServerRefresh();
   // const [server, setServer] = useState<ServerProps>(server)
   const allFalse = {
@@ -56,7 +68,6 @@ export default function EditModal({
     delete: false,
     category: false,
   };
-
   const [modal, setModal] = useState<Record<string, boolean>>({ ...allFalse });
 
   const [editServerForm, setEditServerForm] = useState({
@@ -107,6 +118,7 @@ export default function EditModal({
 
     if (missing || nothingChanged) return;
 
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/server/patch", {
         method: "PATCH",
@@ -142,6 +154,8 @@ export default function EditModal({
     } catch (error) {
       console.error(error);
       console.log("Server error for edit server");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,6 +164,7 @@ export default function EditModal({
       return;
     }
 
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/server/delete", {
         method: "DELETE",
@@ -178,10 +193,13 @@ export default function EditModal({
     } catch (error) {
       console.error(error);
       console.log("Server error for delete server");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleLeaveServer = async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/members/leave-server", {
         method: "DELETE",
@@ -212,11 +230,14 @@ export default function EditModal({
     } catch (error) {
       console.error(error);
       console.log("Server error for leave server");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCreateCategory = async () => {
     if (createCategoryForm.name.trim() === "") return;
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/category/post", {
         method: "POST",
@@ -246,6 +267,8 @@ export default function EditModal({
     } catch (error) {
       console.log(error);
       console.error("Server error create category");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -384,246 +407,194 @@ export default function EditModal({
         )}
       </div>
 
-      {modal.edit && (
-        <div
-          role="dialog"
-          tabIndex={-1}
-          ref={(element: HTMLDivElement) => {
-            element?.focus();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              setModal({ ...allFalse, edit: false });
-            }
-          }}
-          className="fixed inset-0 flex items-center justify-center z-30"
-        >
-          <div
-            onClick={() => setModal({ ...allFalse, edit: false })}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
-          />
-
-          <div className="relative w-full max-w-md rounded-lg bg-background text-foreground border border-border shadow-xl p-5 z-50">
-            <h1 className="text-base font-semibold mb-1">Edit your server</h1>
-            <p className="text-sm text-muted-foreground mb-4">
+      <Dialog
+        open={modal.edit}
+        onOpenChange={(open) => {
+          if (!open) setModal({ ...allFalse, edit: false });
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit your server</DialogTitle>
+            <DialogDescription>
               Update your server name and description.
-            </p>
-
-            <label
-              htmlFor="name"
-              className="text-sm text-muted-foreground mb-1 block"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Server name
+              </Label>
+              <Input
+                id="name"
+                name="name"
+                value={editServerForm.name}
+                onChange={handleEditServerChange}
+                className="col-span-3"
+                placeholder="Write your title"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="description" className="text-right">
+                Description
+              </Label>
+              <Input
+                id="description"
+                name="description"
+                value={editServerForm.description}
+                onChange={handleEditServerChange}
+                className="col-span-3"
+                placeholder="Write your description"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setServerSettingModal(false);
+                setModal({ ...allFalse, edit: false });
+              }}
             >
-              Server name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={editServerForm.name}
-              onChange={handleEditServerChange}
-              className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded-md px-3 py-2 mb-3 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-              placeholder="Write your title"
-              required
-            />
-
-            <label
-              htmlFor="description"
-              className="text-sm text-muted-foreground mb-1 block"
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEditServer}
+              disabled={
+                editServerForm.name.trim() === "" ||
+                editServerForm.description.trim() === "" ||
+                loading
+              }
             >
-              Server description
-            </label>
-            <input
-              id="description"
-              name="description"
-              type="text"
-              value={editServerForm.description}
-              onChange={handleEditServerChange}
-              className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-              placeholder="Write your description"
-              required
-            />
+              Edit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => {
-                  setServerSettingModal(false);
-                  setModal({ ...allFalse, edit: false });
-                }}
-                className="border border-border text-foreground rounded px-3 py-2 hover:bg-accent"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleEditServer}
-                disabled={
-                  editServerForm.name.trim() === "" ||
-                  editServerForm.description.trim() === ""
-                }
-                className={`bg-primary text-primary-foreground rounded px-4 py-2 hover:opacity-90 disabled:opacity-50 ${
-                  editServerForm.name.trim() === "" &&
-                  editServerForm.description.trim() === "" &&
-                  "cursor-not-allowed"
-                }`}
-              >
-                Edit
-              </button>
+      <Dialog
+        open={modal.delete}
+        onOpenChange={(open) => {
+          if (!open) setModal({ ...allFalse, delete: false });
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Server</DialogTitle>
+            <DialogDescription>
+              Please type the name of "{server.name}" to confirm.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="delete-name" className="text-right">
+                Server name
+              </Label>
+              <Input
+                id="delete-name"
+                name="name"
+                value={deleteServerForm.name}
+                onChange={handleDeleteServerChange}
+                className="col-span-3"
+              />
             </div>
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setServerSettingModal(false);
+                setModal({ ...allFalse, delete: false });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteServer}
+              disabled={loading}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {modal.delete && (
-        <div
-          role="dialog"
-          tabIndex={-1}
-          ref={(element: HTMLDivElement) => {
-            element?.focus();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              setModal({ ...allFalse, delete: false });
-            }
-          }}
-          className="fixed inset-0 flex items-center justify-center z-30"
-        >
-          <div
-            onClick={() => setModal({ ...allFalse, delete: false })}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
-          />
-          <div className="relative w-full max-w-md rounded-lg bg-background text-foreground border border-border shadow-xl p-5 z-50">
-            <h1 className="text-base font-semibold mb-1">Delete Server</h1>
-            <p className="text-sm text-muted-foreground mb-4">
-              Please type the name of {`"${server.name}"`} to confirm.
-            </p>
-            <input
-              id="name"
-              name="name"
-              value={deleteServerForm.name}
-              onChange={handleDeleteServerChange}
-              className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            />
+      <Dialog
+        open={modal.leave}
+        onOpenChange={(open) => {
+          if (!open) setModal({ ...allFalse, leave: false });
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Leave {server.name}</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to leave {server.name}? You won't be able to
+              rejoin this server unless you are re-invited.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setServerSettingModal(false);
+                setModal({ ...allFalse, leave: false });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleLeaveServer}
+              disabled={loading}
+            >
+              Leave
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-            <div className="flex flex-row justify-end gap-2">
-              <button
-                onClick={() => {
-                  setServerSettingModal(false);
-                  setModal({
-                    ...allFalse,
-                    delete: false,
-                  });
-                }}
-                className="border border-border text-foreground rounded px-3 py-2 hover:bg-accent"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteServer}
-                className="bg-destructive text-destructive-foreground rounded px-4 py-2 hover:opacity-90"
-              >
-                Delete
-              </button>
+      <Dialog
+        open={modal.category}
+        onOpenChange={(open) => {
+          if (!open) setModal({ ...allFalse, category: false });
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create Category</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="category-name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="category-name"
+                name="name"
+                value={createCategoryForm.name}
+                onChange={handleCreateCategoryChange}
+                className="col-span-3"
+              />
             </div>
           </div>
-        </div>
-      )}
-
-      {modal.leave && (
-        <div
-          role="dialog"
-          tabIndex={-1}
-          ref={(element: HTMLDivElement) => {
-            element?.focus();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              setModal({ ...allFalse, leave: false });
-            }
-          }}
-          className="fixed inset-0 flex items-center justify-center z-30"
-        >
-          <div
-            onClick={() => setModal((prev) => ({ ...prev, leave: false }))}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
-          />
-          <div className="relative w-full max-w-md rounded-lg bg-background text-foreground border border-border shadow-xl p-5 z-50">
-            <h1 className="text-base font-semibold mb-1">
-              Leave {server.name}
-            </h1>
-            <p className="text-sm text-muted-foreground mb-4">
-              Are you sure you want to leave {server.name}? You {"won't"} be
-              able to rejoin this server unless you are re-invited.
-            </p>
-            <div className="flex flex-row justify-end gap-2">
-              <button
-                onClick={() => {
-                  setServerSettingModal(false);
-                  setModal({ ...allFalse, leave: false });
-                }}
-                className="border border-border text-foreground rounded px-3 py-2 hover:bg-accent"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleLeaveServer}
-                className="bg-destructive text-destructive-foreground rounded px-4 py-2 hover:opacity-90"
-              >
-                Leave
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {modal.category && (
-        <div
-          role="dialog"
-          tabIndex={-1}
-          ref={(element: HTMLDivElement) => {
-            element?.focus();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              setModal({ ...allFalse, category: false });
-            }
-          }}
-          className="fixed inset-0 flex items-center justify-center z-30"
-        >
-          <div
-            onClick={() => setModal({ ...allFalse, category: false })}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-          />
-          <div className="relative w-full max-w-md rounded-lg bg-background text-foreground border border-border shadow-xl p-5 z-50">
-            <h1 className="text-base font-semibold mb-1">Create Category</h1>
-
-            <input
-              id="name"
-              name="name"
-              value={createCategoryForm.name}
-              onChange={handleCreateCategoryChange}
-              className="w-full border border-border bg-background text-foreground placeholder:text-muted-foreground rounded-md px-3 py-2 mb-4 outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            />
-
-            <div className="flex flex-row justify-end gap-2">
-              <button
-                onClick={() => {
-                  setServerSettingModal(false);
-                  setModal({ ...allFalse, category: false });
-                }}
-                className="border border-border text-foreground rounded px-3 py-2 hover:bg-accent"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateCategory}
-                className="bg-primary text-primary-foreground rounded px-4 py-2 hover:opacity-90"
-              >
-                Create
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setServerSettingModal(false);
+                setModal({ ...allFalse, category: false });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreateCategory} disabled={loading}>
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {modal.invite && (
         <>
