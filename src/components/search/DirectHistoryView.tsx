@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import AutoLink from "@/components/common/AutoLink";
+import Markdown from "@/components/common/Markdown";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
@@ -517,7 +517,7 @@ export default function DirectHistoryView({
                                 </span>
                               </div>
                               <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
-                                <AutoLink text={message.content} />
+                                <Markdown>{message.content}</Markdown>
                                 {message.isEdited && (
                                   <span className="ml-2 text-xs text-muted-foreground">
                                     (edited)
