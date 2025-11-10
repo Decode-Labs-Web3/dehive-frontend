@@ -141,7 +141,7 @@ export default function ChannelFileList({ serverId }: ChannelFileListProps) {
               </ToggleGroupItem>
             </ToggleGroup>
             <SheetDescription>
-              List of files shared in this direct message.
+              List of files shared in this server message.
             </SheetDescription>
           </SheetHeader>
           {fileList.length > 0 ? (

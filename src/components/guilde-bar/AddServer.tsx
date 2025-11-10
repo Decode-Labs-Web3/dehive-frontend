@@ -35,7 +35,8 @@ import {
   faPalette,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
-interface Props {
+
+interface AddServerProps {
   handleGetServer: () => void;
 }
 
@@ -54,7 +55,7 @@ const tagIcon: Record<string, IconDefinition> = {
   "Artist & Creators": faPalette,
 };
 
-export default function AddServer({ handleGetServer }: Props) {
+export default function AddServer({ handleGetServer }: AddServerProps) {
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
   const [modalOpen, setModalOpen] = useState(false);

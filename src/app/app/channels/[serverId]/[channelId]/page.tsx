@@ -14,17 +14,18 @@ import FilePreview from "@/components/common/FilePreview";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import AttachmentList from "@/components/common/AttachmentList";
-import { FileUploadProps, NewMessageProps } from "@/interfaces/message.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import ChannelFileList from "@/components/messages/ChannelFileList";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import ServerMemberList from "@/components/messages/ServerMemberList";
 import ChannelHistoryView from "@/components/search/ChannelHistoryView";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
+import { FileUploadProps, NewMessageProps } from "@/interfaces/message.interface";
 import {
   Dialog,
   DialogContent,
@@ -367,6 +368,7 @@ export default function ChannelMessagePage() {
           />
           <AirdropDropdown serverId={serverId} />
           <ChannelFileList serverId={serverId} />
+          <ServerMemberList />
           {/* <span className="text-xs text-muted-foreground">
             Page {currentPage}
           </span> */}

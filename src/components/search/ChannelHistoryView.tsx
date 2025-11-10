@@ -16,6 +16,7 @@ import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import { ServerMemberListProps } from "@/interfaces/user.interface";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import ServerMemberList from "@/components/messages/ServerMemberList";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
 import { FileUploadProps, NewMessageProps } from "@/interfaces/message.interface";
@@ -405,16 +406,13 @@ export default function ChannelHistoryView({
             </div>
           </div>
         </div>
-        <ChannelSearchBar
-          channelId={channelId}
-          setMessageSearchId={setMessageSearchId}
-        />
         <div className="flex items-center gap-3">
           <ChannelSearchBar
             channelId={channelId}
             setMessageSearchId={setMessageSearchId}
           />
           <AirdropDropdown serverId={serverId} />
+          <ServerMemberList />
           {/* <span className="text-xs text-muted-foreground">
             Page up: {pageUp} {isEndUp && "yes"} --- Page down: {pageDown}{" "}
             {isEndDown && "yes"}

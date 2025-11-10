@@ -26,7 +26,10 @@ import DirectHistoryView from "@/components/search/DirectHistoryView";
 import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import DirectMessageOption from "@/components/messages/DirectMessageOption";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { FileUploadProps, NewMessageProps } from "@/interfaces/message.interface";
+import {
+  FileUploadProps,
+  NewMessageProps,
+} from "@/interfaces/message.interface";
 import {
   Dialog,
   DialogContent,
@@ -467,7 +470,8 @@ export default function DirectMessagePage() {
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
-                          {userChatWith?.user_id !== message.sender.dehive_id && (
+                          {userChatWith?.user_id !==
+                            message.sender.dehive_id && (
                             <>
                               <TooltipProvider>
                                 <Tooltip>
