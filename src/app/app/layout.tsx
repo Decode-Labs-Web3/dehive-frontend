@@ -26,7 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     (async () => {
       try {
         const { fingerprint_hashed } = await fingerprintService();
-        console.log("Fingerprint hashed:", fingerprint_hashed);
+        // console.log("Fingerprint hashed:", fingerprint_hashed);
         updateFingerprint(fingerprint_hashed);
       } catch (error) {
         console.error("Error getting fingerprint:", error);
@@ -61,13 +61,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         signal: AbortSignal.timeout(10000),
       });
 
-      console.log("API response status:", apiResponse.status);
+      // console.log("API response status:", apiResponse.status);
       if (!apiResponse.ok) {
         console.error("Failed to fetch user info");
         return;
       }
       const response = await apiResponse.json();
-      console.log("API response:", response);
+      // console.log("API response:", response);
       if (response.statusCode === 200 && response.message === "User found") {
         updateUser(response.data);
       }

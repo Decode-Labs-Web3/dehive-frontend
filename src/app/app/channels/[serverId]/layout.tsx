@@ -13,6 +13,13 @@ import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelCallProvider from "@/providers/socketChannelCallProvider";
 import ChannelChatProvider from "@/providers/socketChannelChatProvider";
+import { getChannelCallSocketIO } from "@/lib/socketioChannelCallSingleton";
+import {
+  JoinedServer,
+  UserJoinedChannelPayload,
+  UserStatusChangedPayload,
+  UserLeftChannelPayload,
+} from "@/interfaces/websocketChannelCall.interface";
 
 export default function ServerLayout({
   children,
@@ -58,7 +65,7 @@ export default function ServerLayout({
     }
   }, [serverId]);
 
-   const fetchChannelList = useCallback(async () => {
+  const fetchChannelList = useCallback(async () => {
     deleteChannelMember();
     try {
       const apiResponse = await fetch("/api/servers/channel-list", {
@@ -79,7 +86,7 @@ export default function ServerLayout({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        console.log("channelMembers in server layout hai:", response);
+        // console.log("channelMembers in server layout hai:", response);
         createChannelMember(response.data);
       }
     } catch (error) {
@@ -93,8 +100,6 @@ export default function ServerLayout({
     fetchServerUsers();
   }, [fetchServerUsers, fetchChannelList]);
 
-  console.log("channelMembers in server layout:", channelMembers);
-
   useEffect(() => {
     const socket = getStatusSocketIO();
     const onUserStatusChanged = (
@@ -107,6 +112,50 @@ export default function ServerLayout({
     socket.on("userStatusChanged", onUserStatusChanged);
     return () => {
       socket.off("userStatusChanged", onUserStatusChanged);
+    };
+  }, []);
+
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onServerJoined = (p: JoinedServer) => {
+      console.log("serverJoined quang minh", p);
+    };
+    socket.on("serverJoined", onServerJoined);
+    return () => {
+      socket.off("serverJoined", onServerJoined);
+    };
+  }, []);
+
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
+      console.log("userJoinedChannel quang minh", p);
+    };
+    socket.on("userJoinedChannel", onUserJoinedChannel);
+    return () => {
+      socket.off("userJoinedChannel", onUserJoinedChannel);
+    };
+  }, []);
+
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onUserStatusChanged = (p: UserStatusChangedPayload) => {
+      console.log("userStatusChanged quang minh", p);
+    };
+    socket.on("userStatusChanged", onUserStatusChanged);
+    return () => {
+      socket.off("userStatusChanged", onUserStatusChanged);
+    };
+  }, []);
+
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onUserLeftChannel = (p: UserLeftChannelPayload) => {
+      console.log("userLeftChannel quang minh", p);
+    };
+    socket.on("userLeftChannel", onUserLeftChannel);
+    return () => {
+      socket.off("userLeftChannel", onUserLeftChannel);
     };
   }, []);
 

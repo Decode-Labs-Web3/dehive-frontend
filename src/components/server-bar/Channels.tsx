@@ -128,7 +128,7 @@ export default function Channels({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onServerJoined = (p: JoinedServer) => {
-      console.log("[channel call serverJoined] quang minh", p);
+      // console.log("[channel call serverJoined] quang minh", p);
       const participants =
         p?.channels?.find(
           (channelItem) => channelItem.channel_id === channel._id

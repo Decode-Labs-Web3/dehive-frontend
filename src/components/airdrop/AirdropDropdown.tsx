@@ -314,18 +314,18 @@ export default function AirdropDropdown({ serverId }: { serverId: string }) {
 
   // Filter campaigns by search query (campaign name only)
   useEffect(() => {
-    console.log("=== Search Filter Debug ===");
-    console.log("Search query:", searchQuery);
-    console.log("Eligible only:", eligibleOnly);
-    console.log("Total campaigns with metadata:", campaignsWithMetadata.length);
-    console.log(
-      "Campaigns with names:",
-      campaignsWithMetadata.map((c) => ({
-        id: c.id,
-        name: c.campaignName,
-        createdAt: c.createdAt,
-      }))
-    );
+    // console.log("=== Search Filter Debug ===");
+    // console.log("Search query:", searchQuery);
+    // console.log("Eligible only:", eligibleOnly);
+    // console.log("Total campaigns with metadata:", campaignsWithMetadata.length);
+    // console.log(
+    //   "Campaigns with names:",
+    //   campaignsWithMetadata.map((c) => ({
+    //     id: c.id,
+    //     name: c.campaignName,
+    //     createdAt: c.createdAt,
+    //   }))
+    // );
 
     let filtered = [...campaignsWithMetadata];
 
@@ -356,18 +356,18 @@ export default function AirdropDropdown({ serverId }: { serverId: string }) {
 
     // Note: Eligible filter requires checking IPFS metadata for user address
     // This will be handled in AirdropCampaignList component
-    console.log(
-      "Final filtered campaigns (sorted by newest first):",
-      filtered.length
-    );
-    console.log(
-      "Filtered campaigns:",
-      filtered.map((c) => ({
-        id: c.id,
-        name: c.campaignName,
-        createdAt: c.createdAt,
-      }))
-    );
+    // console.log(
+    //   "Final filtered campaigns (sorted by newest first):",
+    //   filtered.length
+    // );
+    // console.log(
+    //   "Filtered campaigns:",
+    //   filtered.map((c) => ({
+    //     id: c.id,
+    //     name: c.campaignName,
+    //     createdAt: c.createdAt,
+    //   }))
+    // );
     setFilteredCampaigns(filtered);
   }, [searchQuery, eligibleOnly, campaignsWithMetadata]);
 
