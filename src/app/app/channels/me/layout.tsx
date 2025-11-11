@@ -30,7 +30,6 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
   } = useDirectMember();
 
   const fetchUserData = useCallback(async () => {
-    if (loading) return;
     setLoading(true);
     deleteDirectMember();
     try {
@@ -64,7 +63,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [createDirectMember, deleteDirectMember, fingerprintHash, loading]);
+  }, [createDirectMember, deleteDirectMember, fingerprintHash]);
 
   useEffect(() => {
     fetchUserData();

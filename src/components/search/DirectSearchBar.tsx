@@ -112,7 +112,8 @@ export default function DirectSearchBar({
     }, 1000);
 
     return () => clearTimeout(id);
-  }, [keyword, fetchSearchList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyword]);
 
   useEffect(() => {
     if (!keyword.trim()) return;

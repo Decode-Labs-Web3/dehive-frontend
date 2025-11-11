@@ -96,6 +96,7 @@ export default function ChannelSearchBar({
       console.log("server search message error");
       console.groupEnd();
     }
+
   }, [channelId, isLastPage, page, keyword, fingerprintHash]);
 
   useEffect(() => {
@@ -109,7 +110,8 @@ export default function ChannelSearchBar({
     }, 1000);
 
     return () => clearTimeout(id);
-  }, [keyword, fetchSearchList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyword]);
 
   useEffect(() => {
     if (!keyword.trim()) return;
