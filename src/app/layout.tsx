@@ -25,6 +25,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: "/images/logos/dehive.png", type: "image/png" }],
   },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

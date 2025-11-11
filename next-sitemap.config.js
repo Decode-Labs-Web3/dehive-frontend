@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.SITE_URL || "https://your-domain.com",
+  siteUrl: process.env.SITE_URL || "https://dehive.decodenetwork.app",
   generateRobotsTxt: true,
   // Exclude API routes and private pages
   exclude: ["/api/*", "/admin/*", "/private/*"],

@@ -54,7 +54,7 @@ export default function Wallet() {
       ) : (
         <Button
           onClick={() =>
-            router.push("https://app.decodenetwork.app/dashboard/wallets")
+            router.push("https://decode.decodenetwork.app/dashboard/wallets")
           }
         >
           Register Primary Wallet

@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 
 const SITE_NAME = "Dehive";
-const SITE_DESCRIPTION =
-  "Dehive - dehive is the message app for user.";
+const SITE_DESCRIPTION = "Dehive - dehive is the message app for user.";
 
 const SITE_URL =
-  process.env.PUBLIC_FRONTEND_URL || "https://dehhive.com";
+  process.env.PUBLIC_FRONTEND_URL || "https://dehive.decodenetwork.app";
 
 const SITE_ICON = "/images/tokens/3d_token_nobg.png";
 
