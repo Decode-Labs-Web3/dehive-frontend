@@ -1,25 +1,58 @@
-name: Deploy
+name: Frontend CI/CD
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
-  deploy:
+  lint_build:
     runs-on: ubuntu-latest
     steps:
-      - uses: appleboy/ssh-action@v1.2.1
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install deps (CI)
+        run: npm ci
+      - name: Type check
+        run: npm run type-check
+      - name: Lint
+        run: npm run lint
+      - name: Build (verification)
+        run: npm run build
+
+  deploy:
+    needs: lint_build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH (build on server)
+        uses: appleboy/ssh-action@v1.2.1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
             APP_DIR=/var/www/dehive-frontend
             REPO=https://github.com/Decode-Labs-Web3/dehive-frontend.git
-            # Ensure working copy exists and is a git repo
+            PM2_NAME=dehive-frontend
+            # Ensure nvm + Node 20
+            if ! command -v nvm >/dev/null 2>&1; then
+              curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+            fi
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            nvm install 20 >/dev/null
+            nvm use 20
+
+            # Prepare working copy (supports pre-existing non-git dir)
             if [ -d "$APP_DIR/.git" ]; then
               cd "$APP_DIR"
               git fetch --all --prune
@@ -28,7 +61,6 @@ jobs:
               sudo mkdir -p "$APP_DIR"
               sudo chown -R "$USER":"$USER" "$APP_DIR"
               cd "$APP_DIR"
-              # Initialize repo in place (handles existing non-empty dir)
               git init
               git remote remove origin >/dev/null 2>&1 || true
               git remote add origin "$REPO"
@@ -36,11 +68,24 @@ jobs:
               git checkout -B main origin/main || git checkout -t origin/main
               git reset --hard origin/main
             fi
-            # Install deps, build, and start with pm2
-            npm i
+
+            # Clean install & build
+            rm -rf node_modules
+            npm ci
             npm run build
+
+            # Start or reload with pm2
             if ! command -v pm2 >/dev/null 2>&1; then
               npm i -g pm2
             fi
-            pm2 start npm --name dehive-frontend -- run start || pm2 restart dehive-frontend --update-env
+            if pm2 list | grep -q "${PM2_NAME}"; then
+              pm2 reload "${PM2_NAME}" --update-env || pm2 restart "${PM2_NAME}" --update-env
+            else
+              pm2 start "npm run start" --name "${PM2_NAME}" --cwd "$APP_DIR"
+            fi
             pm2 save
+
+            # Optional: restart cloudflared tunnel if present
+            if systemctl list-unit-files | grep -q cloudflared.service; then
+              systemctl is-active --quiet cloudflared || sudo systemctl restart cloudflared
+            fi
