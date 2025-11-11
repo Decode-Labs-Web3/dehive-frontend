@@ -12,10 +12,6 @@ const nextConfig: NextConfig = {
     BACKEND_BASE_URL: process.env.BACKEND_BASE_URL,
   },
 
-  // Create a self-contained server bundle (good for PM2/Docker)
-  output: "standalone",
-
-  // Keep server bundle lean (no external packages specified)
   images: {
     unoptimized: process.env.NODE_ENV === "development",
     formats: ["image/webp", "image/avif"],

@@ -5,7 +5,7 @@ const SITE_DESCRIPTION =
   "DeHive is a secure Web3 messaging app with identity, channels, voice, and on‑chain features — built for communities and power users.";
 
 const SITE_URL =
-  process.env.PUBLIC_FRONTEND_URL || "https://dehive.decodenetwork.app";
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "https://dehive.decodenetwork.app";
 
 const SITE_ICON = "/images/logos/dehive.png";
 
