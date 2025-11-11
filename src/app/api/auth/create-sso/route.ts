@@ -29,8 +29,9 @@ export async function GET(req: NextRequest) {
 
     const appId = "dehive";
 
-    const origin = req.nextUrl.origin;
+    const origin = `${req.nextUrl.protocol}//${req.headers.get("host")}`;
     const redirectUri = `${origin}/sso`;
+    console.log("dewdwedwdwedwedwed", redirectUri);
 
     const state = randomBytes(16).toString("base64url");
 
