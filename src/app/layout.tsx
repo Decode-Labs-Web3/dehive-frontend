@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { defaultMetadata } from "@/seo.config";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ReduxProvider } from "@/store/ReduxProvider";
 import "@fortawesome/fontawesome-svg-core/styles.css";
@@ -18,15 +19,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Dehive",
-  description:
-    "Chatting and security with dehive chat apply the blockchain technology",
-  icons: {
-    icon: [{ url: "/images/logos/dehive.png", type: "image/png" }],
-  },
-  manifest: "/manifest.json",
-};
+export const metadata: Metadata = defaultMetadata;
 
 export default function RootLayout({
   children,

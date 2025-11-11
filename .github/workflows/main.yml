@@ -53,8 +53,30 @@ jobs:
           script: |
             set -e
             cd /var/www/dehive-frontend
+            # Preserve environment files
+            PRESERVE_DIR="/tmp/dehive-env-$(date +%s)"
+            mkdir -p "$PRESERVE_DIR"
+            for f in .env .env.production .env.local; do
+              if [ -f "$f" ]; then cp "$f" "$PRESERVE_DIR/"; fi
+            done
+
+            # Remove previous deployment except env files and the uploaded archive
+            find . -mindepth 1 -maxdepth 1 \
+              ! -name '.' \
+              ! -name '..' \
+              ! -name '.env' \
+              ! -name '.env.production' \
+              ! -name '.env.local' \
+              ! -name 'build.tar.gz' \
+              -exec rm -rf {} +
+
+            # Extract new build and restore env files
             tar -xzf build.tar.gz
             rm -f build.tar.gz
+            for f in .env .env.production .env.local; do
+              if [ -f "$PRESERVE_DIR/$f" ]; then mv "$PRESERVE_DIR/$f" "$f"; fi
+            done
+            rm -rf "$PRESERVE_DIR"
             if [ -f package-lock.json ]; then
               npm ci --omit=dev
             else

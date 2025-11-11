@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
 const SITE_NAME = "Dehive";
-const SITE_DESCRIPTION = "Dehive - dehive is the message app for user.";
+const SITE_DESCRIPTION =
+  "DeHive is a secure Web3 messaging app with identity, channels, voice, and on‑chain features — built for communities and power users.";
 
 const SITE_URL =
   process.env.PUBLIC_FRONTEND_URL || "https://dehive.decodenetwork.app";
@@ -14,7 +15,7 @@ export const defaultMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_NAME,
-    template: "%s | Decode Protocol",
+    template: "%s | Dehive",
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
@@ -91,7 +92,7 @@ export function buildPageMetadata(
   return {
     ...defaultMetadata,
     title: title
-      ? { default: title, template: "%s | Decode Protocol" }
+      ? { default: title, template: "%s | Dehive" }
       : defaultMetadata.title,
     description: description || defaultMetadata.description,
     openGraph: {
