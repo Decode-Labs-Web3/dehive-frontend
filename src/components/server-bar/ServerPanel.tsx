@@ -332,6 +332,10 @@ export default function ServerPanel({
                 <ServerBarItems.ServerBans server={server} />
               </TabsContent>
 
+              <TabsContent value="nft" className="mt-0">
+                <ServerBarItems.ServerNFT server={server} />
+              </TabsContent>
+
               <TabsContent value="profile" className="mt-0">
                 <div className="max-w-xl mt-4 space-y-6">
                   <div className="space-y-2">
