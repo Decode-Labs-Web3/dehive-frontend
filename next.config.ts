@@ -76,7 +76,7 @@ const nextConfig: NextConfig = {
         }
       : {}, // Disable during development for faster compilation
 
-  webpack: (config, { dev }) => {
+  webpack: (config, { dev, isServer }) => {
     // Silence optional React Native storage dependency required by some wallet SDKs on web builds
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
@@ -100,7 +100,7 @@ const nextConfig: NextConfig = {
       };
       // ⚡ FASTER DEV: Disable source maps processing
       config.devtool = false;
-    } else {
+    } else if (!isServer) {
       // Production optimizations (unchanged)
       config.optimization = {
         ...config.optimization,

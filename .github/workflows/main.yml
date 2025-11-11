@@ -9,44 +9,37 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      build_succeeded: ${{ steps.next_build.outcome == 'success' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20.x
           cache: npm
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
       - run: npm ci
       - name: Build
-        id: next_build
         run: npm run build
-        continue-on-error: true
       - name: Archive build
-        if: always()
         run: |
-          set -u
-          FILES=()
-          if [ -d ".next" ]; then FILES+=(.next); fi
-          if [ -d "public" ]; then FILES+=(public); fi
-          if [ -f package.json ]; then FILES+=(package.json); fi
+          set -e
+          FILES=(.next public package.json)
           if [ -f package-lock.json ]; then FILES+=(package-lock.json); fi
-          if [ ${#FILES[@]} -eq 0 ]; then
-            echo "No build output found. Creating placeholder artifact."
-            echo "Build outcome: ${{ steps.next_build.outcome }}" > BUILD_STATUS.txt
-            FILES=(BUILD_STATUS.txt)
-          fi
           tar -czf build.tar.gz "${FILES[@]}"
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: next-build
           path: build.tar.gz
-          if-no-files-found: ignore
+          if-no-files-found: error
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' && needs.build.outputs.build_succeeded == 'true'
+    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/download-artifact@v4
         with:

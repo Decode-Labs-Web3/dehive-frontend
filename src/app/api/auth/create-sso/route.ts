@@ -1,11 +1,11 @@
 import { randomBytes } from "crypto";
+import { NextRequest, NextResponse } from "next/server";
 import { AUTH_EXPIRE, HTTP_STATUS } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
   guardInternal,
 } from "@/utils/index.utils";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const requestId = generateRequestId();
