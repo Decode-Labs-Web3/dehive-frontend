@@ -25,6 +25,8 @@ jobs:
       - run: npm ci
       - name: Build
         run: npm run build
+        env:
+          DECODE_BASE_URL: ${{ secrets.DECODE_BASE_URL }}
       - name: Archive build
         run: |
           set -e
@@ -85,6 +87,12 @@ jobs:
               if [ -f "$PRESERVE_DIR/$f" ]; then mv "$PRESERVE_DIR/$f" "$f"; fi
             done
             rm -rf "$PRESERVE_DIR"
+            # Export env vars from preserved files so Next.js runtime (and pm2) sees them
+            set -a
+            [ -f .env ] && . ./.env || true
+            [ -f .env.production ] && . ./.env.production || true
+            [ -f .env.local ] && . ./.env.local || true
+            set +a
             if [ -f package-lock.json ]; then
               npm ci --omit=dev
             else
@@ -94,7 +102,7 @@ jobs:
               npm i -g pm2
             fi
             if pm2 describe dehive-frontend >/dev/null 2>&1; then
-              pm2 restart dehive-frontend
+              pm2 restart dehive-frontend --update-env
             else
               pm2 start npm --name dehive-frontend -- run start
             fi

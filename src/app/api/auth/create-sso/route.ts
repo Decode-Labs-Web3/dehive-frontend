@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // console.log("hello this is sso")
-    const decodeBase = process.env.DECODE_BASE_URL!;
+    const decodeBase = process.env.DECODE_BASE_URL! || "https://decode.decodenetwork.app";
     if (!decodeBase) {
       return NextResponse.json(
         {
