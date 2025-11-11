@@ -239,6 +239,13 @@ export default function ServerPanel({
                   Server Tag
                 </TabsTrigger>
                 <TabsTrigger
+                  value="nft"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  Server NFT
+                </TabsTrigger>
+                <TabsTrigger
                   value="members"
                   vertical
                   className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"

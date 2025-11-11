@@ -6,21 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ServerBarItems from "@/components/server-bar";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useState, useEffect, useCallback } from "react";
+import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
-
-interface ServerProps {
-  _id: string;
-  name: string;
-  description: string;
-  owner_id: string;
-  member_count: number;
-  is_private: boolean;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  _v: boolean;
-}
 
 export default function ServerBar() {
   const { fingerprintHash } = useFingerprint();

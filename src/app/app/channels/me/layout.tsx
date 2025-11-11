@@ -23,7 +23,6 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
     setRefreshVersion((prev) => prev + 1);
   }, []);
   const {
-    directMembers,
     createDirectMember,
     updateDirectStatus,
     updateDirectConversation,
@@ -39,7 +38,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
         method: "GET",
         headers: getApiHeaders(fingerprintHash),
         cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(20000),
       });
 
       if (!apiResponse) {

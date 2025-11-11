@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
+import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { faCopy, faMessage } from "@fortawesome/free-solid-svg-icons";
@@ -26,19 +27,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-interface Server {
-  _id: string;
-  name: string;
-  description: string;
-  owner_id: string;
-  member_count: number;
-  is_private: number;
-  tags: [];
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
 export default function GuildBar({
   refreshVersion,
 }: {
@@ -50,7 +38,7 @@ export default function GuildBar({
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
-  const [servers, setServers] = useState<Server[]>([]);
+  const [servers, setServers] = useState<ServerProps[]>([]);
 
   const getActiveId = () => {
     if (pathname.includes("/me")) return "me";

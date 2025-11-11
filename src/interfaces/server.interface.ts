@@ -29,4 +29,11 @@ export interface ServerProps {
   createdAt: string;
   updatedAt: string;
   _v: boolean;
+  nft_gated?: {
+    enabled: boolean;
+    network: string;
+    chain_id: string;
+    contract_address: string;
+    required_balance: number;
+  };
 }

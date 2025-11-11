@@ -54,7 +54,7 @@ export async function GET(req: Request) {
           "x-fingerprint-hashed": fingerprint,
         },
         cache: "no-store",
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(20000),
       }
     );
 
