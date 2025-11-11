@@ -64,7 +64,7 @@ export default function Markdown({ children, className }: MarkdownProps) {
     a: ({ href, children, ...rest }) => (
       <a
         href={href}
-        target="_self"
+        target="_blank"
         rel="noopener noreferrer nofollow"
         className="text-blue-500 underline hover:opacity-80 break-all"
         {...rest}

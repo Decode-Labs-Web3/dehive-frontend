@@ -10,6 +10,7 @@ import Markdown from "@/components/common/Markdown";
 import { Card, CardContent } from "@/components/ui/card";
 import { useServerMember } from "@/hooks/useServerMember";
 import FilePreview from "@/components/common/FilePreview";
+import LinkPreview from "@/components/common/LinkPreview";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMember } from "@/hooks/useChannelMember";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
@@ -415,6 +416,10 @@ export default function ChannelMessagePage() {
                           </div>
                           <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
                             <Markdown>{message.content}</Markdown>
+                            <LinkPreview
+                              content={message.content}
+                              className="mt-2 w-full max-w-xl"
+                            />
                             {message.isEdited && (
                               <span className="ml-2 text-xs text-muted-foreground">
                                 (edited)

@@ -9,6 +9,7 @@ import Markdown from "@/components/common/Markdown";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
+import LinkPreview from "@/components/common/LinkPreview";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -518,6 +519,10 @@ export default function DirectHistoryView({
                               </div>
                               <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
                                 <Markdown>{message.content}</Markdown>
+                                <LinkPreview
+                                  content={message.content}
+                                  className="mt-2 w-full max-w-xl"
+                                />
                                 {message.isEdited && (
                                   <span className="ml-2 text-xs text-muted-foreground">
                                     (edited)

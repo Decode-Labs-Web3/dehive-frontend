@@ -14,11 +14,9 @@ import {
   useSwitchChain,
   useWriteContract,
 } from "wagmi";
-
-// UI components to mirror DirectMessagePage
+import Markdown from "@/components/common/Markdown";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import AutoLink from "@/components/common/AutoLink";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import SmartContractOption from "@/components/messages/SmartContractOption";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -399,7 +397,9 @@ export default function SmartContractMessagePage() {
     try {
       const apiResponse = await fetch("/api/user/chat-with", {
         method: "POST",
-        headers: getApiHeaders(fingerprintHash, {"Content-Type": "application/json"}),
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
         body: JSON.stringify({ conversationId: channelId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -674,7 +674,6 @@ export default function SmartContractMessagePage() {
         const txt = await res.text().catch(() => "");
         throw new Error(`Relayer HTTP ${res.status} ${res.statusText} ${txt}`);
       }
-      // Do not optimistically append; events watcher will bring it in.
       setNewMessage("");
       setError(null);
     } catch (e: unknown) {
@@ -990,7 +989,7 @@ export default function SmartContractMessagePage() {
                         </span>
                       </div>
                       <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
-                        <AutoLink text={message.content} />
+                        <Markdown>{message.content}</Markdown>
                       </div>
                     </div>
                   </div>

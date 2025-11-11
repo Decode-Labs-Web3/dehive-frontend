@@ -10,7 +10,9 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import Markdown from "@/components/common/Markdown";
 import { Card, CardContent } from "@/components/ui/card";
+import LinkPreview from "@/components/common/LinkPreview";
 import { useDirectMember } from "@/hooks/useDirectMember";
 import FilePreview from "@/components/common/FilePreview";
 import { useSoundContext } from "@/contexts/SoundContext";
@@ -58,7 +60,6 @@ import {
   faCircle,
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
-import Markdown from "@/components/common/Markdown";
 
 export default function DirectMessagePage() {
   const router = useRouter();
@@ -431,6 +432,10 @@ export default function DirectMessagePage() {
                           </div>
                           <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
                             <Markdown>{message.content}</Markdown>
+                            <LinkPreview
+                              content={message.content}
+                              className="mt-2 w-full max-w-xl"
+                            />
                             {message.isEdited && (
                               <span className="ml-2 text-xs text-muted-foreground">
                                 (edited)

@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDirectMember } from "@/hooks/useDirectMember";
-import { DirectMemberListProps } from "@/interfaces/user.interface";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { DirectMemberListProps } from "@/interfaces/user.interface";
 import { faCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -23,9 +23,7 @@ interface MeBarProps {
 
 export default function MeBar({ refreshVersion }: MeBarProps) {
   const router = useRouter();
-  const {
-    directMembers,
-  } = useDirectMember();
+  const { directMembers } = useDirectMember();
   const [userProfileModal, setUserProfileModal] = useState<
     Record<string, boolean>
   >({});
@@ -77,7 +75,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
           >
             <DropdownMenu
               modal={false}
-              open={userDropdown[user.user_id]}
+              open={userDropdown[user.user_id] ?? false}
               onOpenChange={() =>
                 setUserDropdown((prev) => ({
                   ...prev,

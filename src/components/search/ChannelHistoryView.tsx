@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Markdown from "@/components/common/Markdown";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
+import LinkPreview from "@/components/common/LinkPreview";
 import FilePreview from "@/components/common/FilePreview";
 import { useChannelMember } from "@/hooks/useChannelMember";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
@@ -520,6 +521,10 @@ export default function ChannelHistoryView({
                               </div>
                               <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
                                 <Markdown>{message.content}</Markdown>
+                                <LinkPreview
+                                  content={message.content}
+                                  className="mt-2 w-full max-w-xl"
+                                />
                                 {message.isEdited && (
                                   <span className="ml-2 text-xs text-muted-foreground">
                                     (edited)
