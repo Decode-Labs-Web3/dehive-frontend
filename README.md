@@ -145,7 +145,7 @@ Dehive is a cutting-edge, blockchain-integrated real-time messaging platform tha
    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
 
    # External Services
-   NEXT_DECODE_BASE_URL=https://decode.protocol.url
+   DECODE_BASE_URL=https://decode.protocol.url
    DEHIVE_APP_ID=dehive
    PUBLIC_FRONTEND_URL=http://localhost:9000
 

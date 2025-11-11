@@ -1,4 +1,5 @@
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useCallback } from "react";
 import { DirectMemberListProps } from "@/interfaces/user.interface";
 import {
   createMemberList,
@@ -11,33 +12,42 @@ export const useDirectMember = () => {
   const dispatch = useAppDispatch();
   const directMembers = useAppSelector((state) => state.directMembers);
 
-  const createDirectMember = (memberList: DirectMemberListProps[]) => {
-    dispatch(createMemberList(memberList));
-  };
+  const createDirectMember = useCallback(
+    (memberList: DirectMemberListProps[]) => {
+      dispatch(createMemberList(memberList));
+    },
+    [dispatch]
+  );
 
-  const updateDirectStatus = (userId: string, status: string) => {
-    dispatch(updateMemberStatus({ userId, status }));
-  };
+  const updateDirectStatus = useCallback(
+    (userId: string, status: string) => {
+      dispatch(updateMemberStatus({ userId, status }));
+    },
+    [dispatch]
+  );
 
-  const updateDirectConversation = (
-    conversationId: string,
-    status: string,
-    isCall: boolean,
-    lastMessageAt: string
-  ) => {
-    dispatch(
-      updateMemberConversation({
-        conversationId,
-        status,
-        isCall,
-        lastMessageAt,
-      })
-    );
-  };
+  const updateDirectConversation = useCallback(
+    (
+      conversationId: string,
+      status: string,
+      isCall: boolean,
+      lastMessageAt: string
+    ) => {
+      dispatch(
+        updateMemberConversation({
+          conversationId,
+          status,
+          isCall,
+          lastMessageAt,
+        })
+      );
+    },
+    [dispatch]
+  );
 
-  const deleteDirectMember = () => {
+  const deleteDirectMember = useCallback(() => {
     dispatch(clearMemberList());
-  };
+  }, [dispatch]);
 
   return {
     directMembers,

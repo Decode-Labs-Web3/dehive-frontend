@@ -33,6 +33,7 @@ export default function Me() {
   const { triggerRefreshConversation } = useConversationRefresh();
 
   const fetchUserData = useCallback(async () => {
+    if (!fingerprintHash) return;
     setLoading(true);
     try {
       const apiResponse = await fetch("/api/user/user-following", {

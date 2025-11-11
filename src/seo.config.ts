@@ -7,7 +7,7 @@ const SITE_DESCRIPTION =
 const SITE_URL =
   process.env.PUBLIC_FRONTEND_URL || "https://dehive.decodenetwork.app";
 
-const SITE_ICON = "/images/tokens/3d_token_nobg.png";
+const SITE_ICON = "/images/logos/dehive.png";
 
 const IS_PROD = process.env.NODE_ENV === "production";
 
