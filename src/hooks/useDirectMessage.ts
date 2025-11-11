@@ -135,7 +135,7 @@ export function useDirectMessage(conversationId: string) {
       console.error(error);
       setErr("Failed to load history");
     }
-  }, [conversationId, page]);
+  }, [conversationId, page, fingerprintHash]);
 
   const send = useCallback(
     async (

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import remarkGfm from "remark-gfm";
 import ReactMarkdown, { Components } from "react-markdown";
 

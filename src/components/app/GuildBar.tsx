@@ -70,7 +70,7 @@ export default function GuildBar({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fingerprintHash]);
 
   useEffect(() => {
     handleGetServer();

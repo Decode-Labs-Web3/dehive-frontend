@@ -69,7 +69,7 @@ export default function ServerLayout({
       console.error(error);
       console.log("Server deleted channel fail");
     }
-  }, [serverId]);
+  }, [serverId, fingerprintHash, deleteServerMember, createServerMember]);
 
   const fetchChannelList = useCallback(async () => {
     deleteChannelMember();
@@ -99,7 +99,7 @@ export default function ServerLayout({
       console.error(error);
       console.log("Server deleted channel fail");
     }
-  }, [serverId]);
+  }, [serverId, fingerprintHash, deleteChannelMember, createChannelMember]);
 
   useEffect(() => {
     fetchChannelList();
@@ -119,7 +119,7 @@ export default function ServerLayout({
     return () => {
       socket.off("userStatusChanged", onUserStatusChanged);
     };
-  }, []);
+  }, [updateServerStatus]);
 
   useEffect(() => {
     const socket = getChannelCallSocketIO();
@@ -130,7 +130,7 @@ export default function ServerLayout({
     return () => {
       socket.off("serverJoined", onServerJoined);
     };
-  }, []);
+  }, [serverChannelMember]);
 
   useEffect(() => {
     const socket = getChannelCallSocketIO();
@@ -141,7 +141,7 @@ export default function ServerLayout({
     return () => {
       socket.off("userJoinedChannel", onUserJoinedChannel);
     };
-  }, []);
+  }, [joinChannelMember]);
 
   useEffect(() => {
     const socket = getChannelCallSocketIO();
@@ -152,7 +152,7 @@ export default function ServerLayout({
     return () => {
       socket.off("userStatusChanged", onUserStatusChanged);
     };
-  }, []);
+  }, [statusChannelMember]);
 
   useEffect(() => {
     const socket = getChannelCallSocketIO();
@@ -163,7 +163,7 @@ export default function ServerLayout({
     return () => {
       socket.off("userLeftChannel", onUserLeftChannel);
     };
-  }, []);
+  }, [leftChannelMember]);
 
   if (!user._id || !serverId) {
     return (

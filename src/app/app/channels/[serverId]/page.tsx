@@ -43,7 +43,7 @@ export default function Server() {
     } finally {
       setLoading(false);
     }
-  }, [serverId]);
+  }, [serverId, fingerprintHash]);
 
   useEffect(() => {
     fetchMember();

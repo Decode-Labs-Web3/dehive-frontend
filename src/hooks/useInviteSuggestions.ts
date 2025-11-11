@@ -81,7 +81,7 @@ export function useInviteSuggestions(serverId: string) {
       console.error(error);
       console.log("Server for useInviteSuggestions");
     }
-  }, [serverId]);
+  }, [serverId, fingerprintHash]);
 
   useEffect(() => {
     fetchAllInfo();

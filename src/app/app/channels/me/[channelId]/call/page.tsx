@@ -68,7 +68,7 @@ export default function DirectCallPage() {
       console.error(error);
       console.log("Server get user chat with error");
     }
-  }, [channelId]);
+  }, [channelId, fingerprintHash]);
 
   useEffect(() => {
     fetchUserChatWith();

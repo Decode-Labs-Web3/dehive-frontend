@@ -77,7 +77,7 @@ export default function ChannelHistoryView({
   const { channelMembers } = useChannelMember();
   const channelInfo = useMemo(() => {
     return channelMembers.find((channel) => channel._id === channelId);
-  }, [channelId]);
+  }, [channelId, channelMembers]);
   const { fingerprintHash } = useFingerprint();
   const [fristLoad, setfirstLoad] = useState(0);
   const [isEndUp, setIsEndUp] = useState(false);
@@ -170,7 +170,7 @@ export default function ChannelHistoryView({
       console.log("Server direct message up error");
       console.groupEnd();
     }
-  }, [channelId, messageSearchId, pageUp, isEndUp]);
+  }, [channelId, messageSearchId, pageUp, isEndUp, fingerprintHash]);
 
   useEffect(() => {
     fetchMessageUp();
@@ -208,7 +208,7 @@ export default function ChannelHistoryView({
       console.log("Server direct message up error");
       console.groupEnd();
     }
-  }, [channelId, messageSearchId, pageDown, isEndDown]);
+  }, [channelId, messageSearchId, pageDown, isEndDown, fingerprintHash]);
 
   useEffect(() => {
     fetchMessageDown();

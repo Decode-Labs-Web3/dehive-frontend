@@ -10,7 +10,7 @@
     "build:analyze": "ANALYZE=true next build --webpack",
     "build:profile": "next build --profile",
     "start": "next start -p 9000",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf .next out",

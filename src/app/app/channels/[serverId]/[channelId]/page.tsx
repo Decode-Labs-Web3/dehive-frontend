@@ -72,7 +72,7 @@ export default function ChannelMessagePage() {
   const { channelMembers } = useChannelMember();
   const channelInfo = useMemo(() => {
     return channelMembers.find((channel) => channel._id === channelId);
-  }, [channelId]);
+  }, [channelId, channelMembers]);
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessageProps>({
     content: "",

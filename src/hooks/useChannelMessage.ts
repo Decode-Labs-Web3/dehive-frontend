@@ -131,7 +131,7 @@ export function useChannelMessage(channelId: string) {
       console.error(error);
       setErr("Failed to load history");
     }
-  }, [channelId, page]);
+  }, [channelId, page, fingerprintHash]);
 
   const send = useCallback(
     async (

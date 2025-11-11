@@ -96,7 +96,7 @@ export default function ChannelSearchBar({
       console.log("server search message error");
       console.groupEnd();
     }
-  }, [channelId, isLastPage, page, keyword]);
+  }, [channelId, isLastPage, page, keyword, fingerprintHash]);
 
   useEffect(() => {
     setPage(0);
@@ -109,7 +109,7 @@ export default function ChannelSearchBar({
     }, 1000);
 
     return () => clearTimeout(id);
-  }, [keyword]);
+  }, [keyword, fetchSearchList]);
 
   useEffect(() => {
     if (!keyword.trim()) return;

@@ -248,7 +248,7 @@ export default function DirectHistoryView({
       console.log("Server direct message up error");
       console.groupEnd();
     }
-  }, [messageSearchId, pageUp, isEndUp]);
+  }, [messageSearchId, pageUp, isEndUp, fingerprintHash]);
 
   useEffect(() => {
     fetchMessageUp();
@@ -285,7 +285,7 @@ export default function DirectHistoryView({
       console.log("Server direct message up error");
       console.groupEnd();
     }
-  }, [messageSearchId, pageDown, isEndDown]);
+  }, [messageSearchId, pageDown, isEndDown, fingerprintHash]);
 
   useEffect(() => {
     fetchMessageDown();

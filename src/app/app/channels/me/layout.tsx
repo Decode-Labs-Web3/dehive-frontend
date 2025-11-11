@@ -64,7 +64,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [createDirectMember, deleteDirectMember, fingerprintHash, loading]);
 
   useEffect(() => {
     fetchUserData();
@@ -86,7 +86,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
     return () => {
       socket.off("conversation_update", onConversationUpdate);
     };
-  }, []);
+  }, [updateDirectConversation]);
 
   useEffect(() => {
     const socket = getStatusSocketIO();
@@ -101,7 +101,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
     return () => {
       socket.off("userStatusChanged", onUserStatusChanged);
     };
-  }, []);
+  }, [updateDirectStatus]);
 
   if (!user._id || loading) {
     return (

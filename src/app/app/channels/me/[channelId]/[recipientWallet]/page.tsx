@@ -412,7 +412,7 @@ export default function SmartContractMessagePage() {
     } catch (err) {
       console.error("fetchUserChatWith error", err);
     }
-  }, [channelId]);
+  }, [channelId, fingerprintHash]);
   useEffect(() => {
     fetchUserChatWith();
   }, [fetchUserChatWith]);

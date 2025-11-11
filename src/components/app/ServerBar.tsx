@@ -44,7 +44,7 @@ export default function ServerBar() {
     } finally {
       setLoading(false);
     }
-  }, [serverId]);
+  }, [serverId, fingerprintHash]);
 
   useEffect(() => {
     fetchServerInfo();

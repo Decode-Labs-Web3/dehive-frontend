@@ -56,7 +56,7 @@ export default function DirectFileList({ channelId }: DirectFileListProps) {
       setFileList((prev) => [...prev, ...response.data.items]);
       setIsLastPage(response.data.metadata.is_last_page);
     }
-  }, [channelId, type, isLastPage, page]);
+  }, [channelId, type, isLastPage, page, fingerprintHash]);
 
   useEffect(() => {
     if (open) {

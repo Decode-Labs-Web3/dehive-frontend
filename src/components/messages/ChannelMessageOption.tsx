@@ -122,7 +122,7 @@ export default function ChannelMessageOption({
         setLoading(false);
       }
     },
-    [ serverId, setListUploadFile]
+    [ serverId, setListUploadFile, fingerprintHash ]
   );
 
   const handleUploadClick = useCallback(() => {

@@ -77,7 +77,7 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
     } finally {
       setLoading(false);
     }
-  }, [server._id]);
+  }, [server._id, fingerprintHash]);
 
   useEffect(() => {
     fetchCode();

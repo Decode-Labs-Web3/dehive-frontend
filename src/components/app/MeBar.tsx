@@ -48,7 +48,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
         ])
       )
     );
-  }, [refreshVersion]);
+  }, [refreshVersion, directMembers]);
 
   return (
     <div className="w-full h-full bg-background border-r border-border text-foreground overflow-y-auto">

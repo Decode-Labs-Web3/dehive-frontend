@@ -120,7 +120,7 @@ export default function DirectMessageOption({
         setLoading(false);
       }
     },
-    [channelId, setListUploadFile]
+    [channelId, setListUploadFile, fingerprintHash]
   );
 
   const handleUploadClick = useCallback(() => {

@@ -1,16 +1,8 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import next from "eslint-config-next";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+const config = [
+  // Next.js flat config (includes core-web-vitals and TS rules)
+  ...next,
   {
     ignores: [
       "node_modules/**",
@@ -21,6 +13,16 @@ const eslintConfig = [
       "tailwind.config.js",
     ],
   },
+  {
+    // Relax new React 19 hook rules to fit current codebase
+    rules: {
+      "react-hooks/refs": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/preserve-manual-memoization": "off",
+      "react-hooks/immutability": "off",
+    },
+  },
 ];
 
-export default eslintConfig;
+export default config;

@@ -151,7 +151,7 @@ export default function UserInfoModal({
         console.log("Server create conversation is error");
       }
     },
-    [router]
+    [router, fingerprintHash]
   );
 
   return (

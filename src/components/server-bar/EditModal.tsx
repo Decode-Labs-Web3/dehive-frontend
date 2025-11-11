@@ -470,7 +470,7 @@ export default function EditModal({
           <DialogHeader>
             <DialogTitle>Delete Server</DialogTitle>
             <DialogDescription>
-              Please type the name of "{server.name}" to confirm.
+              Please type the name of &quot;{server.name}&quot; to confirm.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -518,8 +518,8 @@ export default function EditModal({
           <DialogHeader>
             <DialogTitle>Leave {server.name}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to leave {server.name}? You won't be able to
-              rejoin this server unless you are re-invited.
+              Are you sure you want to leave {server.name}? You won&apos;t be
+              able to rejoin this server unless you are re-invited.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

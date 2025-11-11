@@ -59,7 +59,7 @@ export default function ChannelFileList({ serverId }: ChannelFileListProps) {
       setFileList((prev) => [...prev, ...response.data.items]);
       setIsLastPage(response.data.metadata.is_last_page);
     }
-  }, [serverId, type, isLastPage, page]);
+  }, [serverId, type, isLastPage, page, fingerprintHash]);
 
   useEffect(() => {
     if (open) {

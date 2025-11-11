@@ -96,7 +96,7 @@ export default function Categories({ server }: CategoriesProps) {
       console.error(error);
       console.log("Server fetch server member error");
     }
-  }, [server._id, user._id]);
+  }, [server._id, user._id, fingerprintHash]);
 
   useEffect(() => {
     if (!user._id) return;
@@ -173,7 +173,7 @@ export default function Categories({ server }: CategoriesProps) {
     } finally {
       setLoading(false);
     }
-  }, [serverId]);
+  }, [serverId, fingerprintHash]);
 
   useEffect(() => {
     fetchCategoryInfo();
@@ -519,7 +519,7 @@ export default function Categories({ server }: CategoriesProps) {
                   <DialogDescription>
                     Are you sure you want to delete{" "}
                     <span className="font-bold">{category.name}</span>? This
-                    action can't be undone.
+                    action can&apos;t be undone.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>

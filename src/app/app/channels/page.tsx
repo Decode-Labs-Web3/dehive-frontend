@@ -17,7 +17,7 @@ export default function ChannelsPage() {
     }
 
     router.push("/app/channels/me");
-  }, [router, fingerprintHash]);
+  }, [router, user._id, fingerprintHash]);
 
   return <SkeletonApp />;
 }

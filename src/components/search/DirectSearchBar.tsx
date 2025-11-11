@@ -99,7 +99,7 @@ export default function DirectSearchBar({
       console.log("server search message error");
       console.groupEnd();
     }
-  }, [channelId, keyword, page, isLastPage]);
+  }, [channelId, keyword, page, isLastPage, fingerprintHash]);
 
   useEffect(() => {
     setPage(0);
@@ -112,7 +112,7 @@ export default function DirectSearchBar({
     }, 1000);
 
     return () => clearTimeout(id);
-  }, [keyword]);
+  }, [keyword, fetchSearchList]);
 
   useEffect(() => {
     if (!keyword.trim()) return;

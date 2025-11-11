@@ -118,7 +118,7 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
     const response = await apiResponse.json();
     // console.log("this is data from callPage", response);
     setToken(response.data.token);
-  }, []);
+  }, [user._id]);
 
   useEffect(() => {
     getToken();
@@ -165,7 +165,7 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
         });
       }
     };
-  }, [token, apiKey, callId, user]);
+  }, [token, apiKey, callId, user, userData]);
 
   if (error) {
     return (

@@ -58,7 +58,7 @@ export default function Me() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fingerprintHash]);
 
   useEffect(() => {
     fetchUserData();
@@ -95,7 +95,7 @@ export default function Me() {
         console.log("Server create conversation is error");
       }
     },
-    [router, triggerRefreshConversation]
+    [router, triggerRefreshConversation, fingerprintHash]
   );
 
   if (loading) {

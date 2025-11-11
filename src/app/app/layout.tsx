@@ -74,7 +74,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Error fetching user info:", error);
     }
-  }, [fingerprintHash]);
+  }, [fingerprintHash, updateUser]);
 
   useEffect(() => {
     if (fingerprintHash) {
