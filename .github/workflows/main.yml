@@ -26,7 +26,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          DECODE_BASE_URL: ${{ secrets.DECODE_BASE_URL }}
+          NEXT_DECODE_BASE_URL: ${{ secrets.NEXT_DECODE_BASE_URL }}
       - name: Archive build
         run: |
           set -e

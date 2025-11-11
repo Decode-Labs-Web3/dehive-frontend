@@ -15,13 +15,14 @@ export async function GET(req: NextRequest) {
 
   try {
     // console.log("hello this is sso")
-    const decodeBase = process.env.DECODE_BASE_URL! || "https://decode.decodenetwork.app";
+    const decodeBase =
+      process.env.NEXT_DECODE_BASE_URL!
     if (!decodeBase) {
       return NextResponse.json(
         {
           success: false,
           statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
-          message: "Missing DECODE_BASE_URL",
+          message: "Missing NEXT_DECODE_BASE_URL",
         },
         { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
       );
