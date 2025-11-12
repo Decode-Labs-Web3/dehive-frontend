@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { ChannelMemberListProps } from "@/interfaces/call.interface";
 import {
@@ -19,29 +20,44 @@ export const useChannelMember = () => {
   const dispatch = useAppDispatch();
   const channelMembers = useAppSelector((state) => state.channelMembers);
 
-  const createChannelMember = (memberList: ChannelMemberListProps[]) => {
-    dispatch(createMemberList(memberList));
-  };
+  const createChannelMember = useCallback(
+    (memberList: ChannelMemberListProps[]) => {
+      dispatch(createMemberList(memberList));
+    },
+    [dispatch]
+  );
 
-  const serverChannelMember = (memberList: Channels[]) => {
-    dispatch(userJoinServer(memberList));
-  };
+  const serverChannelMember = useCallback(
+    (memberList: Channels[]) => {
+      dispatch(userJoinServer(memberList));
+    },
+    [dispatch]
+  );
 
-  const joinChannelMember = (memberList: UserJoinedChannelPayload) => {
-    dispatch(userJoinChannel(memberList));
-  };
+  const joinChannelMember = useCallback(
+    (memberList: UserJoinedChannelPayload) => {
+      dispatch(userJoinChannel(memberList));
+    },
+    [dispatch]
+  );
 
-  const statusChannelMember = (memberList: UserStatusChangedPayload) => {
-    dispatch(userStatusChange(memberList));
-  };
+  const statusChannelMember = useCallback(
+    (memberList: UserStatusChangedPayload) => {
+      dispatch(userStatusChange(memberList));
+    },
+    [dispatch]
+  );
 
-  const leftChannelMember = (memberList: UserLeftChannelPayload) => {
-    dispatch(userLeftChannel(memberList));
-  };
+  const leftChannelMember = useCallback(
+    (memberList: UserLeftChannelPayload) => {
+      dispatch(userLeftChannel(memberList));
+    },
+    [dispatch]
+  );
 
-  const deleteChannelMember = () => {
+  const deleteChannelMember = useCallback(() => {
     dispatch(clearMemberList());
-  };
+  }, [dispatch]);
 
   return {
     channelMembers,

@@ -42,6 +42,7 @@ export default function ServerLayout({
   const { createServerMember, updateServerStatus, deleteServerMember } =
     useServerMember();
   const fetchServerUsers = useCallback(async () => {
+        if (!fingerprintHash || !serverId) return;
     deleteServerMember();
     try {
       const apiResponse = await fetch("/api/servers/members/status", {
@@ -72,6 +73,7 @@ export default function ServerLayout({
   }, [serverId, fingerprintHash, deleteServerMember, createServerMember]);
 
   const fetchChannelList = useCallback(async () => {
+        if (!fingerprintHash || !serverId) return;
     deleteChannelMember();
     try {
       const apiResponse = await fetch("/api/servers/channel-list", {

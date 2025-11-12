@@ -5,6 +5,7 @@
   "main": "electron/main.js",
   "scripts": {
     "dev": "next dev -p 9000",
+    "dev:webpack": "next dev -p 9000 --webpack",
     "dev:fast": "next dev -p 9000 --turbo",
     "build": "node ./node_modules/next/dist/bin/next build --webpack",
     "build:analyze": "ANALYZE=true next build --webpack",

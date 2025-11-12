@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
 
-  // Minimal env exposure to the client at build time
   env: {
     BACKEND_BASE_URL: process.env.BACKEND_BASE_URL,
   },
@@ -27,6 +26,7 @@ const nextConfig: NextConfig = {
   logging: {
     fetches: { fullUrl: !PROD },
   },
+  turbopack: {},
   webpack: (config) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
