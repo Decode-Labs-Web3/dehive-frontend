@@ -42,7 +42,7 @@ export const defaultMetadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: "/images/tokens/3d_token_nobg.png",
+        url: new URL("/images/tokens/3d_token_nobg.png", SITE_URL).toString(),
         width: 1200,
         height: 630,
         alt: SITE_NAME,
@@ -53,7 +53,7 @@ export const defaultMetadata: Metadata = {
     card: "summary_large_image",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: ["/images/tokens/3d_token_nobg.png"],
+    images: [new URL("/images/tokens/3d_token_nobg.png", SITE_URL).toString()],
   },
   robots: {
     index: IS_PROD,

@@ -19,7 +19,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = defaultMetadata;
+export const metadata: Metadata = {
+  ...defaultMetadata,
+  // Ensure Next sees metadataBase directly on the root metadata object
+  metadataBase: new URL("https://dehive.decodenetwork.app"),
+};
 
 export default function RootLayout({
   children,

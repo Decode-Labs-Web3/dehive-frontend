@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const PROD = process.env.NODE_ENV === "production";
 
@@ -25,6 +26,18 @@ const nextConfig: NextConfig = {
 
   logging: {
     fetches: { fullUrl: !PROD },
+  },
+  webpack: (config) => {
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      // Stub out optional React Native storage used by MetaMask SDK to silence resolution warnings
+      "@react-native-async-storage/async-storage": path.resolve(
+        __dirname,
+        "src/shims/asyncStorage.ts"
+      ),
+    };
+    return config;
   },
 };
 

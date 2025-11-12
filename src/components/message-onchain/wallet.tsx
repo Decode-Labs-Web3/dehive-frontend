@@ -3,10 +3,10 @@
 
 import { sepolia } from "wagmi/chains";
 import "@rainbow-me/rainbowkit/styles.css";
-import { injected } from "wagmi/connectors";
+import { injected, walletConnect } from "wagmi/connectors";
 import { WagmiProvider, http, createConfig } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { RainbowKitProvider, getDefaultConfig } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 
 const queryClient = new QueryClient();
 
@@ -20,25 +20,34 @@ if (!wcProjectId && typeof window !== "undefined") {
   //   "WalletConnect projectId missing. Injected wallets still work, but some WC features will be disabled. Set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID to remove this warning."
   // );
 }
-// If projectId available: use RainbowKit default (WalletConnect enabled)
-// Else: fall back to a minimal wagmi config with only injected connector (no calls to web3modal API)
-const config = wcProjectId
-  ? getDefaultConfig({
-      appName: "Dehive Chat",
-      projectId: wcProjectId,
-      chains: [sepolia],
-      transports: {
-        [sepolia.id]: http("https://1rpc.io/sepolia"),
-      },
-    })
-  : createConfig({
-      chains: [sepolia],
-      connectors: [injected()],
-      transports: {
-        [sepolia.id]: http("https://1rpc.io/sepolia"),
-      },
-      ssr: true,
-    });
+// Build connectors explicitly to avoid bundling MetaMask SDK via RainbowKit defaults
+const connectors = wcProjectId
+  ? [
+      injected(),
+      walletConnect({
+        projectId: wcProjectId,
+        metadata: {
+          name: "Dehive Chat",
+          description: "Dehive Chat dApp",
+          url:
+            typeof window !== "undefined"
+              ? window.location.origin
+              : "https://dehive.app",
+          icons: ["https://dehive.app/icon.png"],
+        },
+        showQrModal: true,
+      }),
+    ]
+  : [injected()];
+
+const config = createConfig({
+  chains: [sepolia],
+  connectors,
+  transports: {
+    [sepolia.id]: http("https://1rpc.io/sepolia"),
+  },
+  ssr: true,
+});
 
 export function Web3Providers({ children }: { children: React.ReactNode }) {
   return (
