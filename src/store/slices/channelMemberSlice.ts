@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ChannelMemberListProps } from "../../interfaces/call.interface";
+import { ChannelMemberListProps } from "@/interfaces/call.interface";
 import {
   Channels,
   UserStatusChangedPayload,

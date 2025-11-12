@@ -11,17 +11,17 @@ export const useServerMember = () => {
   const dispatch = useAppDispatch();
   const serverMembers = useAppSelector((state) => state.serverMembers);
 
-  const createServerMember = useCallback((memberList: ServerMemberListProps[]) => {
+  const createServerMember = (memberList: ServerMemberListProps[]) => {
     dispatch(createMemberList(memberList));
-  }, [dispatch]);
+  };
 
-  const updateServerStatus = useCallback((userId: string, status: string) => {
+  const updateServerStatus = (userId: string, status: string) => {
     dispatch(updateMemberStatus({ userId, status }));
-  }, [dispatch]);
+  };
 
-  const deleteServerMember = useCallback(() => {
+  const deleteServerMember = () => {
     dispatch(clearMemberList());
-  }, [dispatch]);
+  };
 
   return {
     serverMembers,

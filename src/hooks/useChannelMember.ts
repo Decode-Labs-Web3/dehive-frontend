@@ -20,44 +20,29 @@ export const useChannelMember = () => {
   const dispatch = useAppDispatch();
   const channelMembers = useAppSelector((state) => state.channelMembers);
 
-  const createChannelMember = useCallback(
-    (memberList: ChannelMemberListProps[]) => {
-      dispatch(createMemberList(memberList));
-    },
-    [dispatch]
-  );
+  const createChannelMember = (memberList: ChannelMemberListProps[]) => {
+    dispatch(createMemberList(memberList));
+  };
 
-  const serverChannelMember = useCallback(
-    (memberList: Channels[]) => {
-      dispatch(userJoinServer(memberList));
-    },
-    [dispatch]
-  );
+  const serverChannelMember = (memberList: Channels[]) => {
+    dispatch(userJoinServer(memberList));
+  };
 
-  const joinChannelMember = useCallback(
-    (memberList: UserJoinedChannelPayload) => {
-      dispatch(userJoinChannel(memberList));
-    },
-    [dispatch]
-  );
+  const joinChannelMember = (memberList: UserJoinedChannelPayload) => {
+    dispatch(userJoinChannel(memberList));
+  };
 
-  const statusChannelMember = useCallback(
-    (memberList: UserStatusChangedPayload) => {
-      dispatch(userStatusChange(memberList));
-    },
-    [dispatch]
-  );
+  const statusChannelMember = (memberList: UserStatusChangedPayload) => {
+    dispatch(userStatusChange(memberList));
+  };
 
-  const leftChannelMember = useCallback(
-    (memberList: UserLeftChannelPayload) => {
-      dispatch(userLeftChannel(memberList));
-    },
-    [dispatch]
-  );
+  const leftChannelMember = (memberList: UserLeftChannelPayload) => {
+    dispatch(userLeftChannel(memberList));
+  };
 
-  const deleteChannelMember = useCallback(() => {
+  const deleteChannelMember = () => {
     dispatch(clearMemberList());
-  }, [dispatch]);
+  };
 
   return {
     channelMembers,

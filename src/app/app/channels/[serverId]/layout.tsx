@@ -32,6 +32,7 @@ export default function ServerLayout({
     serverId: string;
   }>();
   const {
+    channelMembers,
     createChannelMember,
     serverChannelMember,
     joinChannelMember,
@@ -39,11 +40,18 @@ export default function ServerLayout({
     leftChannelMember,
     deleteChannelMember,
   } = useChannelMember();
-  const { createServerMember, updateServerStatus, deleteServerMember } =
-    useServerMember();
+  const {
+    serverMembers,
+    createServerMember,
+    updateServerStatus,
+    deleteServerMember,
+  } = useServerMember();
+
+  console.log("edhhwjedbhjwedbwjedbkwejdbwekdbwed", channelMembers);
+  console.log("edhhwjedbhjwedbwjedbkwejdbwekdbwed", serverMembers);
+
   const fetchServerUsers = useCallback(async () => {
-        if (!fingerprintHash || !serverId) return;
-    deleteServerMember();
+    if (!fingerprintHash || !serverId) return;
     try {
       const apiResponse = await fetch("/api/servers/members/status", {
         method: "POST",
@@ -70,11 +78,11 @@ export default function ServerLayout({
       console.error(error);
       console.log("Server deleted channel fail");
     }
-  }, [serverId, fingerprintHash, deleteServerMember, createServerMember]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverId, fingerprintHash]);
 
   const fetchChannelList = useCallback(async () => {
-        if (!fingerprintHash || !serverId) return;
-    deleteChannelMember();
+    if (!fingerprintHash || !serverId) return;
     try {
       const apiResponse = await fetch("/api/servers/channel-list", {
         method: "POST",
@@ -101,19 +109,22 @@ export default function ServerLayout({
       console.error(error);
       console.log("Server deleted channel fail");
     }
-  }, [serverId, fingerprintHash, deleteChannelMember, createChannelMember]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverId, fingerprintHash]);
 
   useEffect(() => {
+    deleteServerMember();
+    deleteChannelMember();
     fetchChannelList();
     fetchServerUsers();
-  }, [fetchServerUsers, fetchChannelList, serverId]);
+  }, []);
 
   useEffect(() => {
     const socket = getStatusSocketIO();
     const onUserStatusChanged = (
       p: string | { userId: string; status: string }
     ) => {
-      console.log("[ws me bar userStatusChanged]", p);
+      console.log("[ws me bar userStatusChanged] quang minh", p);
       if (typeof p === "string") return;
       updateServerStatus(p.userId, p.status);
     };
@@ -137,6 +148,7 @@ export default function ServerLayout({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
+      console.log("userJoinedChannel quang minh", p);
       joinChannelMember(p);
     };
     socket.on("userJoinedChannel", onUserJoinedChannel);
@@ -148,6 +160,7 @@ export default function ServerLayout({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserStatusChanged = (p: UserStatusChangedPayload) => {
+      console.log("userStatusChanged quang minh", p);
       statusChannelMember(p);
     };
     socket.on("userStatusChanged", onUserStatusChanged);
@@ -159,6 +172,7 @@ export default function ServerLayout({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserLeftChannel = (p: UserLeftChannelPayload) => {
+      console.log("userLeftChannel quang minh", p);
       leftChannelMember(p);
     };
     socket.on("userLeftChannel", onUserLeftChannel);
