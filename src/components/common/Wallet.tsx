@@ -1,55 +1,16 @@
 "use client";
 
+import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Skeleton } from "@/components/ui/skeleton";
-
-interface UserDataProps {
-  _id: string;
-  dehive_role: string;
-  status: string;
-  server_count: number;
-  username: string;
-  display_name: string;
-  bio: string;
-  avatar_ipfs_hash: string;
-  last_login: string;
-  primary_wallet?: PrimaryWalletProps;
-  following_number: number;
-  followers_number: number;
-  is_active: boolean;
-  last_account_deactivation: string;
-}
-
-interface PrimaryWalletProps {
-  _id: string;
-  address: string;
-  user_id: string;
-  name_service: null;
-  is_primary: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
 
 export default function Wallet() {
   const router = useRouter();
-  const [userData, setUserData] = useState<UserDataProps>();
-  useEffect(() => {
-    const userInfo = localStorage.getItem("userData");
-    if (userInfo) {
-      const user = JSON.parse(userInfo);
-      setUserData(user);
-    }
-  }, []);
-  if (!userData) {
-    return <Skeleton className="h-10 w-40 rounded-md" />;
-  }
+  const { user } = useUser();
   return (
     <>
-      {userData.primary_wallet ? (
+      {user?.primary_wallet ? (
         <ConnectButton />
       ) : (
         <Button

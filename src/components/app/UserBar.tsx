@@ -130,9 +130,7 @@ export default function UserBar() {
                             src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
                             alt="Avatar"
                           />
-                          <AvatarFallback>
-                            {user.display_name}
-                          </AvatarFallback>
+                          <AvatarFallback>{user.display_name}</AvatarFallback>
                         </Avatar>
 
                         <div className="text-center">
