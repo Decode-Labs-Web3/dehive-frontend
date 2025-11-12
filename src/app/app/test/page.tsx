@@ -2,20 +2,39 @@
 
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMoneyBillTransfer, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import {
+  faMoneyBillTransfer,
+  faCircleInfo,
+} from "@fortawesome/free-solid-svg-icons";
 
 // shadcn/ui
 import { Button } from "@/components/ui/button";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-  DialogFooter, DialogDescription, DialogTrigger
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -50,14 +69,22 @@ export default function MoneyTransferDialog() {
               <FontAwesomeIcon icon={faMoneyBillTransfer} />
               Transfer Money
             </DialogTitle>
-            <DialogDescription>UI skeleton only — no logic wired yet.</DialogDescription>
+            <DialogDescription>
+              UI skeleton only — no logic wired yet.
+            </DialogDescription>
           </DialogHeader>
 
           {/* Recipient */}
           <div className="space-y-2">
             <Label>Recipient</Label>
-            <Input placeholder="0x… recipient" value={recipient} onChange={(e) => setRecipient(e.target.value)} />
-            <p className="text-xs text-muted-foreground">ENS supported (visual only).</p>
+            <Input
+              placeholder="0x… recipient"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              ENS supported (visual only).
+            </p>
           </div>
 
           {/* Asset type (Radio) */}
@@ -71,11 +98,15 @@ export default function MoneyTransferDialog() {
             >
               <div className="flex items-center space-x-2 border rounded-md px-3 py-2">
                 <RadioGroupItem id="asset-native" value="native" />
-                <Label htmlFor="asset-native" className="cursor-pointer">Native</Label>
+                <Label htmlFor="asset-native" className="cursor-pointer">
+                  Native
+                </Label>
               </div>
               <div className="flex items-center space-x-2 border rounded-md px-3 py-2">
                 <RadioGroupItem id="asset-erc20" value="erc20" />
-                <Label htmlFor="asset-erc20" className="cursor-pointer">ERC-20</Label>
+                <Label htmlFor="asset-erc20" className="cursor-pointer">
+                  ERC-20
+                </Label>
               </div>
             </RadioGroup>
           </div>
@@ -84,8 +115,14 @@ export default function MoneyTransferDialog() {
           {assetType === "erc20" && (
             <div className="space-y-2 mt-4">
               <Label>Token (address or symbol)</Label>
-              <Input placeholder="0xToken…" value={tokenAddress} onChange={(e) => setTokenAddress(e.target.value)} />
-              <p className="text-xs text-muted-foreground">Static field (no lookup).</p>
+              <Input
+                placeholder="0xToken…"
+                value={tokenAddress}
+                onChange={(e) => setTokenAddress(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Static field (no lookup).
+              </p>
             </div>
           )}
 
@@ -93,17 +130,31 @@ export default function MoneyTransferDialog() {
           <div className="space-y-2 mt-4">
             <Label>Amount</Label>
             <div className="flex gap-2">
-              <Input type="number" step="any" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
-              <Button variant="secondary" type="button">MAX</Button>
+              <Input
+                type="number"
+                step="any"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+              <Button variant="secondary" type="button">
+                MAX
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground">Balance preview here (static).</p>
+            <p className="text-xs text-muted-foreground">
+              Balance preview here (static).
+            </p>
           </div>
 
           {/* Memo & CID */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div className="space-y-2">
               <Label>Memo (optional)</Label>
-              <Input placeholder="Note to recipient…" value={memo} onChange={(e) => setMemo(e.target.value)} />
+              <Input
+                placeholder="Note to recipient…"
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -129,7 +180,9 @@ export default function MoneyTransferDialog() {
             <div className="mt-4 border rounded-lg p-3 flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium">Use Permit (EIP-2612)</div>
-                <div className="text-xs text-muted-foreground">Skip on-chain approve by signing a permit.</div>
+                <div className="text-xs text-muted-foreground">
+                  Skip on-chain approve by signing a permit.
+                </div>
               </div>
               <Switch />
             </div>
@@ -139,7 +192,9 @@ export default function MoneyTransferDialog() {
           <Card className="mt-4 border-dashed">
             <CardHeader className="py-3">
               <CardTitle className="text-base">Estimate</CardTitle>
-              <CardDescription>Platform fee, recipient receive, gas (static)</CardDescription>
+              <CardDescription>
+                Platform fee, recipient receive, gas (static)
+              </CardDescription>
             </CardHeader>
             <Separator />
             <CardContent className="py-4 text-sm grid gap-2">
@@ -166,14 +221,23 @@ export default function MoneyTransferDialog() {
           <Alert className="mt-4">
             <AlertTitle>Heads up</AlertTitle>
             <AlertDescription>
-              Transfers are live. Ensure you are on the correct network and amounts are accurate.
+              Transfers are live. Ensure you are on the correct network and
+              amounts are accurate.
             </AlertDescription>
           </Alert>
 
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
             <Button
-              disabled={sending || !address || !recipient || !amount || (assetType === "erc20" && !tokenAddress)}
+              disabled={
+                sending ||
+                !address ||
+                !recipient ||
+                !amount ||
+                (assetType === "erc20" && !tokenAddress)
+              }
               onClick={async () => {
                 try {
                   setSending(true);
@@ -181,12 +245,14 @@ export default function MoneyTransferDialog() {
                     recipient,
                     amount,
                     assetType,
-                    tokenAddress: assetType === "erc20" ? tokenAddress : undefined,
+                    tokenAddress:
+                      assetType === "erc20" ? tokenAddress : undefined,
                     tokenSymbol: assetType === "erc20" ? "ERC20" : undefined,
-                    memo
+                    memo,
                   });
                   console.log("Transfer success", result);
-                  if (typeof window !== "undefined") alert(`Sent!\nTx: ${result.txHash}\nCID: ${result.cid}`);
+                  if (typeof window !== "undefined")
+                    alert(`Sent!\nTx: ${result.txHash}\nCID: ${result.cid}`);
                   setOpen(false);
                   setRecipient("");
                   setAmount("");
@@ -194,7 +260,8 @@ export default function MoneyTransferDialog() {
                   setMemo("");
                 } catch (e: any) {
                   console.error(e);
-                  if (typeof window !== "undefined") alert(e.message || "Transfer failed");
+                  if (typeof window !== "undefined")
+                    alert(e.message || "Transfer failed");
                 } finally {
                   setSending(false);
                 }

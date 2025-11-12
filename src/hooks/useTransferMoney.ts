@@ -8,7 +8,7 @@ import { computeConversationId } from "@/lib/scMessage";
 import type {
   TransferMoneyParams,
   PaymentTransferRecord,
-  PaymentTransferResult
+  PaymentTransferResult,
 } from "@/interfaces/payment.interface";
 
 // Assumes PaymentHub facet installed in same proxy used elsewhere.
@@ -25,7 +25,10 @@ export function useTransferMoney() {
 
   const transferMoney = useCallback(
     async (params: TransferMoneyParams): Promise<PaymentTransferResult> => {
-      if (!PAYMENT_PROXY_ADDRESS) throw new Error("Payment proxy address missing (NEXT_PUBLIC_PROXY_ADDRESS)");
+      if (!PAYMENT_PROXY_ADDRESS)
+        throw new Error(
+          "Payment proxy address missing (NEXT_PUBLIC_PROXY_ADDRESS)"
+        );
       if (!sender) throw new Error("Wallet not connected");
       const recipient = getAddress(params.recipient);
       const senderAddr = getAddress(sender);
@@ -40,28 +43,42 @@ export function useTransferMoney() {
         sender: senderAddr,
         recipient,
         amount: params.amount,
-        token: params.assetType === "native" ? "native" : params.tokenSymbol || "ERC20",
-        token_address: params.assetType === "native" ? "0x0000000000000000000000000000000000000000" : getAddress(params.tokenAddress || "0x"),
-        message: params.memo || ""
+        token:
+          params.assetType === "native"
+            ? "native"
+            : params.tokenSymbol || "ERC20",
+        token_address:
+          params.assetType === "native"
+            ? "0x0000000000000000000000000000000000000000"
+            : getAddress(params.tokenAddress || "0x"),
+        message: params.memo || "",
       };
 
       // Construct tx
       const clientMsgId = `client-${Date.now()}`;
-  let txHash: `0x${string}`;
+      let txHash: `0x${string}`;
       if (params.assetType === "native") {
         // Value passed as ETH
         const value = parseEther(params.amount);
         txHash = await writeContractAsync({
           address: PAYMENT_PROXY_ADDRESS,
-            // cast as any for wagmi when using const ABI subset
+          // cast as any for wagmi when using const ABI subset
           abi: paymentHubAbi as any,
           functionName: "sendNative",
           // Post-IPFS upload strategy: pass empty cid/hash
-          args: [convId, recipient, "", "0x0000000000000000000000000000000000000000000000000000000000000000", mode, clientMsgId],
-          value
+          args: [
+            convId,
+            recipient,
+            "",
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+            mode,
+            clientMsgId,
+          ],
+          value,
         });
       } else {
-        if (!params.tokenAddress) throw new Error("tokenAddress required for ERC-20 transfer");
+        if (!params.tokenAddress)
+          throw new Error("tokenAddress required for ERC-20 transfer");
         // Determine token decimals for accurate parsing
         let decimals = 18;
         try {
@@ -70,7 +87,7 @@ export function useTransferMoney() {
               address: getAddress(params.tokenAddress),
               abi: erc20Abi as any,
               functionName: "decimals",
-              args: []
+              args: [],
             })) as number;
             if (typeof d === "number" && d > 0 && d <= 36) decimals = d;
           }
@@ -80,7 +97,16 @@ export function useTransferMoney() {
           address: PAYMENT_PROXY_ADDRESS,
           abi: paymentHubAbi as any,
           functionName: "sendERC20",
-          args: [convId, recipient, getAddress(params.tokenAddress), amountWei, "", "0x0000000000000000000000000000000000000000000000000000000000000000", mode, clientMsgId]
+          args: [
+            convId,
+            recipient,
+            getAddress(params.tokenAddress),
+            amountWei,
+            "",
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+            mode,
+            clientMsgId,
+          ],
         });
       }
 
@@ -95,7 +121,7 @@ export function useTransferMoney() {
       const ipfsResp = await fetch("/api/ipfs/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ record })
+        body: JSON.stringify({ record }),
       });
       if (!ipfsResp.ok) {
         throw new Error(`IPFS upload failed: ${await ipfsResp.text()}`);

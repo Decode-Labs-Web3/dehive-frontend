@@ -7,9 +7,9 @@ export const paymentHubAbi = [
     name: "computeConversationId",
     inputs: [
       { name: "user1", type: "address" },
-      { name: "user2", type: "address" }
+      { name: "user2", type: "address" },
     ],
-    outputs: [{ name: "conversationId", type: "uint256" }]
+    outputs: [{ name: "conversationId", type: "uint256" }],
   },
   {
     type: "function",
@@ -21,9 +21,9 @@ export const paymentHubAbi = [
       { name: "ipfsCid", type: "string" },
       { name: "contentHash", type: "bytes32" },
       { name: "mode", type: "uint8" },
-      { name: "clientMsgId", type: "string" }
+      { name: "clientMsgId", type: "string" },
     ],
-    outputs: [{ name: "success", type: "bool" }]
+    outputs: [{ name: "success", type: "bool" }],
   },
   {
     type: "function",
@@ -37,10 +37,10 @@ export const paymentHubAbi = [
       { name: "ipfsCid", type: "string" },
       { name: "contentHash", type: "bytes32" },
       { name: "mode", type: "uint8" },
-      { name: "clientMsgId", type: "string" }
+      { name: "clientMsgId", type: "string" },
     ],
-    outputs: [{ name: "success", type: "bool" }]
-  }
+    outputs: [{ name: "success", type: "bool" }],
+  },
 ] as const;
 
 export type PaymentHubAbi = typeof paymentHubAbi;

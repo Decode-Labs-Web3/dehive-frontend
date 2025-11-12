@@ -29,12 +29,12 @@ const { transferMoney } = useTransferMoney();
 
 await transferMoney({
   recipient: "0xRecipient…",
-  amount: "0.5",         // decimal string
-  assetType: "native",    // or "erc20"
+  amount: "0.5", // decimal string
+  assetType: "native", // or "erc20"
   tokenAddress: undefined, // required if assetType = "erc20"
-  tokenSymbol: "USDC",    // optional display label
+  tokenSymbol: "USDC", // optional display label
   memo: "optional note",
-  mode: 0                  // 0 public, 1 secret (for PaymentHub)
+  mode: 0, // 0 public, 1 secret (for PaymentHub)
 });
 ```
 
@@ -45,13 +45,14 @@ Returns `{ txHash, cid, record }`. The `record` JSON saved to IPFS:
   "sender": "0x…",
   "recipient": "0x…",
   "amount": "1.23",
-  "token": "native",  // or symbol like "USDC"
+  "token": "native", // or symbol like "USDC"
   "token_address": "0x0000000000000000000000000000000000000000",
   "message": "optional memo"
 }
 ```
 
 Notes:
+
 - For ERC‑20, the hook will read `decimals()` from the token to parse the `amount`.
 - The on-chain call passes empty `ipfsCid`/`contentHash` and uploads to IPFS after the transaction is confirmed (as requested).
 - If you need on-chain linkage to the IPFS CID, switch the flow to upload first, then include `cid` and `keccak256(JSON)` in the contract call.
