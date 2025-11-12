@@ -1,4 +1,5 @@
 name: Deploy
+
 on:
   push:
     branches: [ main ]
@@ -8,14 +9,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: appleboy/ssh-action@v1.2.1
+      - name: SSH to droplet and deploy
+        uses: appleboy/ssh-action@v1.2.1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
+          port: 22
           script: |
             set -e
+
             APP_DIR=/var/www/dehive-frontend
             REPO_SSH=git@github.com:Decode-Labs-Web3/dehive-frontend.git
 
@@ -31,14 +34,13 @@ jobs:
             fi
 
             command -v node >/dev/null 2>&1 || (curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs build-essential)
-
-            npm ci
-            npm run build
-
             command -v pm2 >/dev/null 2>&1 || npm i -g pm2
+
+            npm ci --production=false
+            npm run build
 
             pm2 describe dehive-frontend >/dev/null 2>&1 \
               && pm2 restart dehive-frontend --update-env \
-              || PORT=9000 pm2 start "npm run start -- -p 9000" --name dehive-frontend --cwd "$APP_DIR"
+              || pm2 start "npm run start" --name dehive-frontend --cwd "$APP_DIR"
 
             pm2 save
