@@ -7,7 +7,7 @@ import {
   guardInternal,
 } from "@/utils/index.utils";
 
-export async function POST(req: Request) {
+export async function PATCH(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
   const denied = guardInternal(req);
@@ -27,18 +27,36 @@ export async function POST(req: Request) {
       );
     }
 
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
+    // console.log("this is fingerprint from headers:", fingerprint);
+
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
+          message: "Missing fingerprint header",
+        },
+        { status: HTTP_STATUS.BAD_REQUEST }
+      );
+    }
     const body = await req.json();
-    const { serverId } = body;
+    const { serverId, tag } = body as { serverId: string; tag?: string };
+
+    const requestBody = {
+      tags: tag && tag.trim().length > 0 ? [tag] : ([] as string[]),
+    };
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_USER_DEHIVE_SERVER}/api/memberships/servers/${serverId}/audit-logs?page=0&limit=100`,
+      `${process.env.DEHIVE_SERVER}/api/servers/${serverId}/tags`,
       {
-        method: "POST",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           "x-session-id": sessionId,
+          "x-fingerprint-hashed": fingerprint,
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(requestBody),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
@@ -66,7 +84,7 @@ export async function POST(req: Request) {
       {
         success: true,
         statusCode: response.statusCode || HTTP_STATUS.OK,
-        message: response.message ||  "Audit logs retrieved successfully",
+        message: response.message || "Operation successful",
         data: response.data,
       },
       { status: HTTP_STATUS.OK }

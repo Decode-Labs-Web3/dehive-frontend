@@ -80,12 +80,16 @@ export default function ServerPanel({
     name: "",
   });
 
-  const [selectedTags, setSelectedTags] = useState<string[]>(server.tags);
+  const [selectedTags, setSelectedTags] = useState<string | null>(
+    server.tags.length > 0 ? server.tags[0] : null
+  );
 
   const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
+    setSelectedTags((prev) => {
+      const next = prev === tag ? null : tag;
+      handleServerTagChange(next);
+      return next;
+    });
   };
 
   const handleDeleteServerChange = (
@@ -105,6 +109,44 @@ export default function ServerPanel({
       ...prev,
       [event.target.name]: event.target.value,
     }));
+  };
+
+  const handleServerTagChange = async (nextTag: string | null) => {
+    setLoading(true);
+    try {
+      const apiResponse = await fetch("/api/servers/server-tag", {
+        method: "PATCH",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          serverId: server._id,
+          tag: nextTag ?? "",
+        }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+      console.log("this is response from edit server tag", response);
+
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        fetchServerInfo?.();
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server error for edit server tag");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const serverInfoChange =
@@ -378,10 +420,11 @@ export default function ServerPanel({
                           key={tag}
                           onClick={() => toggleTag(tag)}
                           className={`justify-start ${
-                            selectedTags.includes(tag)
+                            selectedTags === tag
                               ? "bg-background text-primary-foreground"
                               : "bg-muted text-muted-foreground"
                           }`}
+                          disabled={loading}
                         >
                           <span className="flex items-center gap-3">
                             <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground">
@@ -393,12 +436,16 @@ export default function ServerPanel({
                       ))}
                     </div>
                     <Button
-                      onClick={() => setSelectedTags([])}
+                      onClick={() => {
+                        setSelectedTags(null);
+                        handleServerTagChange(null);
+                      }}
                       className={`mt-3 justify-start ${
-                        selectedTags.length === 0
+                        selectedTags === null
                           ? "bg-background text-primary-foreground"
                           : "bg-muted text-muted-foreground"
                       }`}
+                      disabled={loading}
                     >
                       No tag
                     </Button>
