@@ -49,7 +49,9 @@ export default function ServerMembers({
     Record<string, boolean>
   >({});
   const [ownershipAgree, setOwnershipAgree] = useState(false);
+  const [roleAgree, setRoleAgree] = useState(false);
 
+  const [roleModal, setRoleModal] = useState<Record<string, boolean>>({});
   const fetchServerMember = useCallback(async () => {
     setLoading(true);
     try {
@@ -113,10 +115,18 @@ export default function ServerMembers({
             ])
           )
         );
+        setRoleModal(
+          Object.fromEntries(
+            response.data.map((membership: MemberInServerProps) => [
+              membership._id,
+              false,
+            ])
+          )
+        );
       }
     } catch (error) {
       console.error(error);
-      console.log("Sever error for fetch server membership");
+      console.log("Server error for fetch server membership");
     } finally {
       setLoading(false);
     }
@@ -140,6 +150,7 @@ export default function ServerMembers({
       kickForm.reason.trim() === ""
     )
       return;
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/members/kick", {
         method: "POST",
@@ -171,6 +182,8 @@ export default function ServerMembers({
     } catch (error) {
       console.error(error);
       console.log("Server error kick user");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,6 +202,7 @@ export default function ServerMembers({
       banForm.reason.trim() === ""
     )
       return;
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/members/ban", {
         method: "POST",
@@ -208,7 +222,7 @@ export default function ServerMembers({
       const response = await apiResponse.json();
       if (
         response.statusCode === 201 &&
-        response.message === "User successfully baned."
+        response.message === "User successfully banned."
       ) {
         fetchServerMember();
         setBanForm({
@@ -220,11 +234,14 @@ export default function ServerMembers({
     } catch (error) {
       console.error(error);
       console.log("Server error ban user");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleTransferOwnership = async (memberId: string) => {
     if (!ownershipAgree) return;
+    setLoading(true);
     try {
       const apiResponse = await fetch(
         "/api/servers/members/transfer-ownership",
@@ -263,6 +280,55 @@ export default function ServerMembers({
     } catch (error) {
       console.error(error);
       console.log("Server error ban user");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSetRole = async (memberId: string, role: string) => {
+    if (!roleAgree) return;
+    setLoading(true);
+    try {
+      const apiResponse = await fetch("/api/servers/members/role", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({
+          serverId: server._id,
+          memberId,
+          role,
+        }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse) {
+        console.error(apiResponse);
+        return;
+      }
+
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        setRoleModal((prev) => ({
+          ...prev,
+          [memberId]: false,
+        }));
+        setMemberships((prev) =>
+          prev.map((member) =>
+            member._id === memberId ? { ...member, role: role } : member
+          )
+        );
+        setRoleAgree(false);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server error ban user");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -366,6 +432,7 @@ export default function ServerMembers({
                 }))
               }
               className="justify-self-end"
+              disabled={loading}
             >
               <FontAwesomeIcon icon={faEllipsisVertical} />
             </button>
@@ -442,6 +509,7 @@ export default function ServerMembers({
                             }));
                           }}
                           className="block w-full text-left px-4 py-2 text-destructive hover:bg-destructive/10 rounded-md"
+                          disabled={loading}
                         >
                           Kick {membership.username}
                         </button>
@@ -463,11 +531,29 @@ export default function ServerMembers({
                             }));
                           }}
                           className="block w-full text-left px-4 py-2 text-destructive hover:bg-destructive/10 rounded-md"
+                          disabled={loading}
                         >
                           Ban {membership.username}
                         </button>
 
                         <div className="border-t border-border my-1" />
+
+                        <button
+                          onClick={() => {
+                            setUserSettingModal((prev) => ({
+                              ...prev,
+                              [membership._id]: false,
+                            }));
+                            setRoleModal((prev) => ({
+                              ...prev,
+                              [membership._id]: true,
+                            }));
+                          }}
+                          className="block w-full text-left px-4 py-2 hover:bg-accent rounded-md"
+                          disabled={loading}
+                        >
+                          Role Assign
+                        </button>
 
                         <button
                           onClick={() => {
@@ -482,6 +568,7 @@ export default function ServerMembers({
                             setOwnershipAgree(false);
                           }}
                           className="block w-full text-left px-4 py-2 hover:bg-accent rounded-md"
+                          disabled={loading}
                         >
                           Transfer Ownership
                         </button>
@@ -504,6 +591,7 @@ export default function ServerMembers({
                         }, 1000);
                       }}
                       className="flex items-center justify-between w-full px-4 py-3 text-muted-foreground hover:bg-accent"
+                      disabled={loading}
                     >
                       Copy User ID
                       <FontAwesomeIcon icon={faCopy} />
@@ -634,6 +722,7 @@ export default function ServerMembers({
                       }));
                     }}
                     className="rounded-md px-3 py-1.5 text-sm font-medium border border-border hover:bg-accent"
+                    disabled={loading}
                   >
                     Cancel
                   </button>
@@ -641,6 +730,7 @@ export default function ServerMembers({
                   <button
                     onClick={handleBanUser}
                     className="rounded-md px-3 py-1.5 text-sm font-medium bg-destructive text-destructive-foreground hover:opacity-90 disabled:opacity-60"
+                    disabled={loading}
                   >
                     Ban
                   </button>
@@ -715,6 +805,7 @@ export default function ServerMembers({
                       }));
                     }}
                     className="rounded-md px-3 py-1.5 text-sm font-medium border border-border hover:bg-accent"
+                    disabled={loading}
                   >
                     Cancel
                   </button>
@@ -722,6 +813,7 @@ export default function ServerMembers({
                   <button
                     onClick={handleKickUser}
                     className="rounded-md px-3 py-1.5 text-sm font-medium bg-destructive text-destructive-foreground hover:opacity-90 disabled:opacity-60"
+                    disabled={loading}
                   >
                     Kick
                   </button>
@@ -787,18 +879,101 @@ export default function ServerMembers({
                       setOwnershipAgree(false);
                     }}
                     className="rounded-md px-3 py-1.5 text-sm font-medium border border-border hover:bg-accent"
+                    disabled={loading}
                   >
                     Cancel
                   </button>
 
                   <button
                     onClick={() => handleTransferOwnership(membership._id)}
-                    disabled={!ownershipAgree}
+                    disabled={!ownershipAgree || loading}
                     className={`rounded-md px-3 py-1.5 text-sm font-medium bg-destructive text-destructive-foreground ${
-                      !ownershipAgree && "cursor-not-allowed opacity-60"
+                      (!ownershipAgree || loading) &&
+                      "cursor-not-allowed opacity-60"
                     }`}
                   >
                     Transfer Ownership
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {roleModal[membership._id] && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="fixed inset-0 z-[250] flex items-center justify-center px-4"
+            >
+              <div
+                onClick={() => {
+                  setRoleModal((prev) => ({
+                    ...prev,
+                    [membership._id]: false,
+                  }));
+                  setRoleAgree(false);
+                }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              />
+
+              <div className="relative w-full max-w-md bg-background text-foreground rounded-lg border border-border shadow-xl z-[300] overflow-hidden">
+                <div className="px-6 py-4 border-b border-border">
+                  <h2 className="text-lg font-semibold">Assign Role</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    This will assign the role of{" "}
+                    {membership.role === "member" ? "moderator" : "member"} to @
+                    {membership.username} in the {server.name} server.
+                  </p>
+                </div>
+
+                <div className="px-6 py-4">
+                  <label
+                    htmlFor="agree"
+                    className="flex items-start gap-3 text-sm text-muted-foreground"
+                  >
+                    <input
+                      id="agree"
+                      type="checkbox"
+                      checked={roleAgree}
+                      onChange={() => setRoleAgree((prev) => !prev)}
+                      required
+                    />
+                    <span>
+                      I acknowledge that by assigning the{" "}
+                      {membership.role === "member" ? "moderator" : "member"}{" "}
+                      role to @{membership.username}, they will be granted the
+                      corresponding permissions in this server.
+                    </span>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-muted/10">
+                  <button
+                    onClick={() => {
+                      setRoleModal((prev) => ({
+                        ...prev,
+                        [membership._id]: false,
+                      }));
+                    }}
+                    className="rounded-md px-3 py-1.5 text-sm font-medium border border-border hover:bg-accent"
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handleSetRole(
+                        membership._id,
+                        membership.role === "member" ? "moderator" : "member"
+                      )
+                    }
+                    disabled={!roleAgree || loading}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium bg-destructive text-destructive-foreground ${
+                      (!roleAgree || loading) && "cursor-not-allowed opacity-60"
+                    }`}
+                  >
+                    Assign Role
                   </button>
                 </div>
               </div>

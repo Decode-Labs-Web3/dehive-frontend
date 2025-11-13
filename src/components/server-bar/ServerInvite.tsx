@@ -120,10 +120,9 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
 
       const sendRes = await fetch("/api/me/conversation/file-send", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify(payload),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
