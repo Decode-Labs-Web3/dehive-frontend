@@ -117,6 +117,7 @@ export default function ServerLayout({
     deleteChannelMember();
     fetchChannelList();
     fetchServerUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

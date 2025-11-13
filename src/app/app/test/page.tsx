@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faMoneyBillTransfer,
@@ -38,20 +38,86 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { useTransferMoney } from "@/hooks/useTransferMoney";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 
 export default function MoneyTransferDialog() {
+  const userA = "0xdeb4dc315c9f952133c2cc2f953b965a3e87e332";
+  const userB = "0x3f1fc384bd71a64cb031983fac059c9e452ad247";
   const [open, setOpen] = useState(false);
   const [assetType, setAssetType] = useState<"native" | "erc20">("native");
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [tokenAddress, setTokenAddress] = useState("");
+  const [tokenSymbol, setTokenSymbol] = useState("");
   const [memo, setMemo] = useState("");
   const { address } = useAccount();
+  const chainId = useChainId();
   const { transferMoney } = useTransferMoney();
   const [sending, setSending] = useState(false);
+
+  type Token = {
+    address: string;
+    symbol: string;
+    name: string;
+    decimals: number;
+    balance: string; // raw
+    logoURI?: string;
+    chainId: number;
+  };
+
+  const [tokens, setTokens] = useState<Token[]>([]);
+  const [tokensLoading, setTokensLoading] = useState(false);
+  const [tokensError, setTokensError] = useState<string | null>(null);
+
+  // Load user's ERC-20s when needed
+  useEffect(() => {
+    let abort = false;
+    async function load() {
+      if (assetType !== "erc20" || !address || !open) return;
+      setTokensLoading(true);
+      setTokensError(null);
+      try {
+        const res = await fetch(
+          `/api/tokens?address=${address}&chainId=${chainId || 1}`,
+          {
+            method: "GET",
+            headers: { "X-Frontend-Internal-Request": "true" },
+          }
+        );
+        if (!res.ok) throw new Error(await res.text());
+        const json = await res.json();
+        if (abort) return;
+        setTokens(Array.isArray(json.tokens) ? json.tokens : []);
+      } catch (e: any) {
+        if (abort) return;
+        setTokensError(e?.message || "Failed to load tokens");
+      } finally {
+        if (!abort) setTokensLoading(false);
+      }
+    }
+    load();
+    return () => {
+      abort = true;
+    };
+  }, [assetType, address, open, chainId]);
+
+  const selectedToken = useMemo(
+    () =>
+      tokens.find(
+        (t) => t.address.toLowerCase() === tokenAddress.toLowerCase()
+      ),
+    [tokens, tokenAddress]
+  );
 
   return (
     <TooltipProvider>
@@ -77,11 +143,7 @@ export default function MoneyTransferDialog() {
           {/* Recipient */}
           <div className="space-y-2">
             <Label>Recipient</Label>
-            <Input
-              placeholder="0x… recipient"
-              value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
-            />
+            {userB}
             <p className="text-xs text-muted-foreground">
               ENS supported (visual only).
             </p>
@@ -114,15 +176,86 @@ export default function MoneyTransferDialog() {
           {/* Token (only when ERC-20) */}
           {assetType === "erc20" && (
             <div className="space-y-2 mt-4">
-              <Label>Token (address or symbol)</Label>
-              <Input
-                placeholder="0xToken…"
-                value={tokenAddress}
-                onChange={(e) => setTokenAddress(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Static field (no lookup).
-              </p>
+              <Label>Token</Label>
+              <div className="flex gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between"
+                    >
+                      {selectedToken ? (
+                        <span>
+                          {selectedToken.symbol || "Token"}
+                          <span className="text-muted-foreground ml-2 text-xs">
+                            {Number(selectedToken.balance) > 0
+                              ? "• has balance"
+                              : ""}
+                          </span>
+                        </span>
+                      ) : tokensLoading ? (
+                        "Loading tokens…"
+                      ) : tokensError ? (
+                        "Failed to load — use manual"
+                      ) : tokens.length ? (
+                        "Select a token"
+                      ) : (
+                        "No tokens found — use manual"
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-72 max-h-80 overflow-auto">
+                    <DropdownMenuLabel>Your tokens</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {tokens.map((t) => (
+                      <DropdownMenuItem
+                        key={t.address}
+                        onClick={() => {
+                          setTokenAddress(t.address);
+                          setTokenSymbol(t.symbol || "ERC20");
+                        }}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {t.symbol || "(no symbol)"}
+                          </span>
+                          <span className="text-xs text-muted-foreground break-all">
+                            {t.address}
+                          </span>
+                        </div>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          {t.name}
+                        </span>
+                      </DropdownMenuItem>
+                    ))}
+                    {tokens.length === 0 && (
+                      <div className="px-2 py-6 text-sm text-muted-foreground">
+                        No ERC-20 balances detected for this chain.
+                      </div>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Or enter token address</Label>
+                <Input
+                  placeholder="0xToken…"
+                  value={tokenAddress}
+                  onChange={(e) => {
+                    setTokenAddress(e.target.value);
+                    setTokenSymbol("");
+                  }}
+                />
+                {selectedToken && (
+                  <p className="text-xs text-muted-foreground">
+                    {selectedToken.symbol} • Decimals {selectedToken.decimals}
+                  </p>
+                )}
+                {tokensError && (
+                  <p className="text-xs text-red-500">{tokensError}</p>
+                )}
+              </div>
             </div>
           )}
 
@@ -247,7 +380,10 @@ export default function MoneyTransferDialog() {
                     assetType,
                     tokenAddress:
                       assetType === "erc20" ? tokenAddress : undefined,
-                    tokenSymbol: assetType === "erc20" ? "ERC20" : undefined,
+                    tokenSymbol:
+                      assetType === "erc20"
+                        ? tokenSymbol || selectedToken?.symbol || "ERC20"
+                        : undefined,
                     memo,
                   });
                   console.log("Transfer success", result);
