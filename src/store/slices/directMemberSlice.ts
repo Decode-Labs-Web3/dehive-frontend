@@ -1,13 +1,29 @@
+import type { RootState } from "@/store/store";
 import { DirectMemberListProps } from "@/interfaces/user.interface";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
 
 const initialState: DirectMemberListProps[] = [];
+
+type UpdateMemberConversationPayload = {
+  conversationId: string;
+  status: string;
+  isCall: boolean;
+  lastMessageAt: string;
+};
+
+const sortByLastMessage = (state: DirectMemberListProps[]) => {
+  state.sort((a, b) => {
+    const timeA = new Date(a.lastMessageAt).getTime();
+    const timeB = new Date(b.lastMessageAt).getTime();
+    return timeB - timeA;
+  });
+};
 
 const directMemberSlice = createSlice({
   name: "directMembers",
   initialState,
   reducers: {
-    createMemberList(_state, action: PayloadAction<DirectMemberListProps[]>) {
+    setMemberList(_state, action: PayloadAction<DirectMemberListProps[]>) {
       return action.payload;
     },
     updateMemberStatus(
@@ -22,47 +38,37 @@ const directMemberSlice = createSlice({
         state[memberIndex].status = status;
       }
     },
-    updateMemberConversation(
-      state,
-      action: PayloadAction<{
-        conversationId: string;
-        status: string;
-        isCall: boolean;
-        lastMessageAt: string;
-      }>
-    ) {
+
+    updateMemberConversation(state, action: PayloadAction<UpdateMemberConversationPayload>) {
       const { conversationId, status, isCall, lastMessageAt } = action.payload;
-      const memberIndex = state.findIndex(
-        (member) => member.conversationid === conversationId
-      );
-      if (memberIndex !== -1) {
-        state[memberIndex] = {
-          ...state[memberIndex],
-          status,
-          isCall,
-          lastMessageAt,
-        };
-        state.sort(
-          (a, b) =>
-            new Date(b.lastMessageAt).getTime() -
-            new Date(a.lastMessageAt).getTime()
-        );
-      } else {
+      const member = state.find((member) => member.conversationid === conversationId);
+
+      if (!member) {
         console.warn(
           `Member with conversation ID ${conversationId} not found.`
         );
+        return;
       }
-    },
-    clearMemberList() {
-      return initialState;
+
+      member.status = status;
+      member.isCall = isCall;
+      member.lastMessageAt = lastMessageAt;
+
+      sortByLastMessage(state);
     },
   },
 });
 
 export const {
-  createMemberList,
+  setMemberList,
   updateMemberStatus,
   updateMemberConversation,
-  clearMemberList,
 } = directMemberSlice.actions;
 export default directMemberSlice.reducer;
+
+const selectDirectMembersState = (state: RootState) => state.directMembers;
+
+export const selectDirectMembers = createSelector(
+  [selectDirectMembersState],
+  (members) => members
+);

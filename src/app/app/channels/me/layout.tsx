@@ -23,15 +23,13 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
     setRefreshVersion((prev) => prev + 1);
   }, []);
   const {
-    createDirectMember,
+    setDirectMember,
     updateDirectStatus,
     updateDirectConversation,
-    deleteDirectMember,
   } = useDirectMember();
 
   const fetchUserData = useCallback(async () => {
     setLoading(true);
-    deleteDirectMember();
     try {
       const apiResponse = await fetch("/api/user/user-status", {
         method: "GET",
@@ -55,7 +53,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
           (user: DirectMemberListProps) => user.conversationid !== ""
         );
 
-        createDirectMember(userChatData);
+        setDirectMember(userChatData);
       }
     } catch (error) {
       console.error(error);
@@ -63,15 +61,14 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [createDirectMember, deleteDirectMember, fingerprintHash]);
+  }, [setDirectMember, fingerprintHash]);
 
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData, refreshVersion]);
 
-  useEffect(() => {
-    const socket = getDirectChatSocketIO();
-    const onConversationUpdate = (p: ConversationUpdate) => {
+  const handleConversationUpdate = useCallback(
+    (p: ConversationUpdate) => {
       console.log("[ws me chat conversationUpdate from me Bar]", p);
       const data = p.data;
       updateDirectConversation(
@@ -80,27 +77,34 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
         data.isCall,
         data.lastMessageAt
       );
-    };
-    socket.on("conversation_update", onConversationUpdate);
-    return () => {
-      socket.off("conversation_update", onConversationUpdate);
-    };
-  }, [updateDirectConversation]);
+    },
+    [updateDirectConversation]
+  );
 
   useEffect(() => {
-    const socket = getStatusSocketIO();
-    const onUserStatusChanged = (
-      p: string | { userId: string; status: string }
-    ) => {
+    const socket = getDirectChatSocketIO();
+    socket.on("conversation_update", handleConversationUpdate);
+    return () => {
+      socket.off("conversation_update", handleConversationUpdate);
+    };
+  }, [handleConversationUpdate]);
+
+  const handleUserStatusChanged = useCallback(
+    (p: string | { userId: string; status: string }) => {
       console.log("[ws me bar userStatusChanged]", p);
       if (typeof p === "string") return;
       updateDirectStatus(p.userId, p.status);
-    };
-    socket.on("userStatusChanged", onUserStatusChanged);
+    },
+    [updateDirectStatus]
+  );
+
+  useEffect(() => {
+    const socket = getStatusSocketIO();
+    socket.on("userStatusChanged", handleUserStatusChanged);
     return () => {
-      socket.off("userStatusChanged", onUserStatusChanged);
+      socket.off("userStatusChanged", handleUserStatusChanged);
     };
-  }, [updateDirectStatus]);
+  }, [handleUserStatusChanged]);
 
   if (!user._id || loading) {
     return (

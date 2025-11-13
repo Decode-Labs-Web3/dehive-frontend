@@ -2,19 +2,31 @@ import { useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { DirectMemberListProps } from "@/interfaces/user.interface";
 import {
-  createMemberList,
+  setMemberList,
   updateMemberStatus,
+  selectDirectMembers,
   updateMemberConversation,
-  clearMemberList,
 } from "@/store/slices/directMemberSlice";
 
-export const useDirectMember = () => {
-  const dispatch = useAppDispatch();
-  const directMembers = useAppSelector((state) => state.directMembers);
+interface UseDirectMemberResult {
+  directMembers: DirectMemberListProps[];
+  setDirectMember: (memberList: DirectMemberListProps[]) => void;
+  updateDirectStatus: (userId: string, status: string) => void;
+  updateDirectConversation: (
+    conversationId: string,
+    status: string,
+    isCall: boolean,
+    lastMessageAt: string
+  ) => void;
+}
 
-  const createDirectMember = useCallback(
+export const useDirectMember = (): UseDirectMemberResult => {
+  const dispatch = useAppDispatch();
+  const directMembers = useAppSelector(selectDirectMembers);
+
+  const setDirectMember = useCallback(
     (memberList: DirectMemberListProps[]) => {
-      dispatch(createMemberList(memberList));
+      dispatch(setMemberList(memberList));
     },
     [dispatch]
   );
@@ -45,15 +57,10 @@ export const useDirectMember = () => {
     [dispatch]
   );
 
-  const deleteDirectMember = useCallback(() => {
-    dispatch(clearMemberList());
-  }, [dispatch]);
-
   return {
     directMembers,
-    createDirectMember,
+    setDirectMember,
     updateDirectStatus,
     updateDirectConversation,
-    deleteDirectMember,
   };
 };
