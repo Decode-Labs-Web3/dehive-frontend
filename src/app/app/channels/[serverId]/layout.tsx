@@ -2,11 +2,12 @@
 
 import App from "@/components/app";
 import { useUser } from "@/hooks/useUser";
-import { useParams } from "next/navigation";
-import { useCallback, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import { useCallback, useEffect, useState } from "react";
 import { useServerMember } from "@/hooks/useServerMember";
 import { useChannelMember } from "@/hooks/useChannelMember";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
@@ -27,7 +28,9 @@ export default function ServerLayout({
   children: React.ReactNode;
 }) {
   const { user } = useUser();
+  const router = useRouter();
   const { fingerprintHash } = useFingerprint();
+  const [serverNotFound, setServerNotFound] = useState(false);
   const { serverId } = useParams<{
     serverId: string;
   }>();
@@ -38,10 +41,7 @@ export default function ServerLayout({
     statusChannelMember,
     leftChannelMember,
   } = useChannelMember();
-  const {
-    setServerMember,
-    updateServerStatus,
-  } = useServerMember();
+  const { setServerMember, updateServerStatus } = useServerMember();
 
   const fetchServerUsers = useCallback(async () => {
     if (!fingerprintHash || !serverId) return;
@@ -55,6 +55,12 @@ export default function ServerLayout({
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
+
+      if (apiResponse.status === 404) {
+        setServerNotFound(true);
+        return;
+      }
+
       if (!apiResponse.ok) {
         console.error(apiResponse);
         return;
@@ -85,6 +91,10 @@ export default function ServerLayout({
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
+      if (apiResponse.status === 404) {
+        setServerNotFound(true);
+        return;
+      }
       if (!apiResponse.ok) {
         console.error(apiResponse);
         return;
@@ -106,7 +116,7 @@ export default function ServerLayout({
   useEffect(() => {
     fetchChannelList();
     fetchServerUsers();
-  }, [ fetchServerUsers, fetchChannelList]);
+  }, [fetchServerUsers, fetchChannelList]);
 
   useEffect(() => {
     const socket = getStatusSocketIO();
@@ -169,6 +179,29 @@ export default function ServerLayout({
       socket.off("userLeftChannel", onUserLeftChannel);
     };
   }, [leftChannelMember]);
+
+  if (serverNotFound) {
+    return (
+      <div className="h-full flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center space-y-4">
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">Server does not exist</h2>
+            <p className="text-sm text-muted-foreground">
+              You may have entered the wrong path, the server has been deleted,
+              or you no longer have access.
+            </p>
+          </div>
+
+          <Button
+            onClick={() => router.push("/app/channels/me")}
+            className="mt-2"
+          >
+            Back to Direct Messages
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!user._id || !serverId) {
     return (

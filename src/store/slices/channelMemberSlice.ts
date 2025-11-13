@@ -28,9 +28,25 @@ const channelMemberSlice = createSlice({
       });
     },
     userJoinChannel(state, action: PayloadAction<UserJoinedChannelPayload>) {
-      state
-        .find((channel) => channel._id === action.payload.channel_id)
-        ?.participants?.push(action.payload.user_info);
+      const { channel_id, user_info } = action.payload;
+
+      const channel = state.find((channel) => channel._id === channel_id);
+      if (!channel) return;
+
+      if (!channel.participants) {
+        channel.participants = [user_info];
+        return;
+      }
+
+      const idx = channel.participants.findIndex(
+        (user) => user._id === user_info._id
+      );
+
+      if (idx === -1) {
+        channel.participants.push(user_info);
+      } else {
+        channel.participants[idx] = user_info;
+      }
     },
     userStatusChange(state, action: PayloadAction<UserStatusChangedPayload>) {
       const channel = state.find(
