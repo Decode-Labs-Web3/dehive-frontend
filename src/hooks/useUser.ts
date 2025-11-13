@@ -1,26 +1,29 @@
 import { UserDataProps } from "@/interfaces/user.interface";
-import { setUser, clearUser } from "@/store/slices/userSlice";
+import { createUser, updateUser, selectUser } from "@/store/slices/userSlice";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useCallback } from "react";
 
 export const useUser = () => {
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.user);
+  const user = useAppSelector(selectUser);
 
-  const updateUser = useCallback(
+  const setUser = useCallback(
     (fullUser: UserDataProps) => {
-      dispatch(setUser(fullUser));
+      dispatch(createUser(fullUser));
     },
     [dispatch]
   );
 
-  const deleteUser = useCallback(() => {
-    dispatch(clearUser());
-  }, [dispatch]);
+  const updateUserDetail = useCallback(
+    (avatar_ipfs_hash: string, display_name: string, bio: string) => {
+      dispatch(updateUser({ avatar_ipfs_hash, display_name, bio }));
+    },
+    [dispatch]
+  );
 
   return {
     user,
-    updateUser,
-    deleteUser,
+    setUser,
+    updateUserDetail,
   };
 };

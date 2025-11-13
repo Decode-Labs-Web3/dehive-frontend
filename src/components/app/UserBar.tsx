@@ -223,7 +223,6 @@ export default function UserBar() {
       {userPanel && user && (
         <UserPanel
           theme={theme}
-          userData={user}
           setTheme={setTheme}
           setUserPanel={setUserPanel}
         />

@@ -1,6 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
+import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useSoundContext } from "@/contexts/SoundContext";
-import { UserDataProps } from "@/interfaces/user.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -29,20 +29,20 @@ import {
 
 interface UserPanelProps {
   theme: string;
-  userData: UserDataProps;
   setTheme: React.Dispatch<React.SetStateAction<string>>;
   setUserPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function UserPanel({
   theme,
-  userData,
   setTheme,
   setUserPanel,
 }: UserPanelProps) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
   const { fingerprintHash } = useFingerprint();
+  const { user, updateUserDetail } = useUser();
+  const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { sound, setSound } = useSoundContext();
 
   const handleTheme = (theme: string) => {
@@ -68,9 +68,9 @@ export default function UserPanel({
   });
 
   const [updateUserInfo, setUpdateUserInfo] = useState({
-    avatar_ipfs_hash: userData?.avatar_ipfs_hash,
-    display_name: userData?.display_name,
-    bio: userData?.bio,
+    avatar_ipfs_hash: user.avatar_ipfs_hash,
+    display_name: user.display_name,
+    bio: user.bio,
   });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -83,6 +83,7 @@ export default function UserPanel({
   if (!mounted) return null;
 
   const handleLogout = async () => {
+    setLoading(true);
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
@@ -101,6 +102,8 @@ export default function UserPanel({
       }
     } catch (error) {
       console.error("Logout error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -167,6 +170,7 @@ export default function UserPanel({
 
   const handleUpdateProfile = async (event: React.FormEvent) => {
     event.preventDefault();
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/user/profile-change", {
         method: "PUT",
@@ -176,9 +180,9 @@ export default function UserPanel({
         body: JSON.stringify({
           current: updateUserInfo,
           original: {
-            avatar_ipfs_hash: userData?.avatar_ipfs_hash,
-            display_name: userData?.display_name,
-            bio: userData?.bio,
+            avatar_ipfs_hash: user.avatar_ipfs_hash,
+            display_name: user.display_name,
+            bio: user.bio,
           },
         }),
         cache: "no-store",
@@ -195,15 +199,12 @@ export default function UserPanel({
         response.statusCode === 200 &&
         response.message === "Profile updated"
       ) {
-        setTimeout(() => {
-          setUpdateUserInfo({
-            avatar_ipfs_hash: userData?.avatar_ipfs_hash,
-            display_name: userData?.display_name,
-            bio: userData?.bio,
-          });
-        }, 1000);
+        updateUserDetail(
+          updateUserInfo.avatar_ipfs_hash,
+          updateUserInfo.display_name,
+          updateUserInfo.bio
+        );
       }
-
       if (
         response.statusCode === 207 &&
         response.message === "Partial update"
@@ -213,13 +214,15 @@ export default function UserPanel({
     } catch (error) {
       console.error("Profile update request error:", error);
       return;
+    } finally {
+      setLoading(false);
     }
   };
 
   const isProfileChange =
-    updateUserInfo.display_name !== userData.display_name ||
-    updateUserInfo.bio !== userData.bio ||
-    updateUserInfo.avatar_ipfs_hash !== userData.avatar_ipfs_hash;
+    updateUserInfo.display_name !== user.display_name ||
+    updateUserInfo.bio !== user.bio ||
+    updateUserInfo.avatar_ipfs_hash !== user.avatar_ipfs_hash;
 
   const content = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
@@ -276,6 +279,7 @@ export default function UserPanel({
                 variant="destructive"
                 className="w-full flex items-center justify-between px-3"
                 onClick={handleLogout}
+                disabled={loading}
               >
                 <span>Logout</span>
                 <FontAwesomeIcon icon={faRightFromBracket} />
@@ -320,19 +324,19 @@ export default function UserPanel({
                       <div className="relative">
                         <Avatar>
                           <AvatarImage
-                            src={`https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`}
+                            src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
                           />
                           <AvatarFallback>
-                            {userData?.display_name} Avatar
+                            {user.display_name} Avatar
                           </AvatarFallback>
                         </Avatar>
                       </div>
                       <div className="flex-1">
                         <CardTitle className="text-xl">
-                          {userData.display_name}
+                          {user.display_name}
                         </CardTitle>
                         <CardDescription className="text-sm text-muted-foreground">
-                          @{userData.username}
+                          @{user.username}
                         </CardDescription>
                       </div>
                       <Button
@@ -366,7 +370,7 @@ export default function UserPanel({
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex-1">
                           <p className="text-sm text-foreground">
-                            {userData.display_name}
+                            {user.display_name}
                           </p>
                         </div>
                         <Button
@@ -390,7 +394,7 @@ export default function UserPanel({
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <p className="text-sm text-foreground">
-                            {userData.bio || "No bio yet"}
+                            {user.bio || "No bio yet"}
                           </p>
                         </div>
                         <Button variant="secondary" size="sm">
@@ -413,7 +417,7 @@ export default function UserPanel({
                             Servers
                           </p>
                           <p className="text-lg font-semibold text-foreground">
-                            {userData.server_count}
+                            {user.server_count}
                           </p>
                         </div>
                         <div>
@@ -421,7 +425,7 @@ export default function UserPanel({
                             Role
                           </p>
                           <p className="text-lg font-semibold text-foreground">
-                            {userData.dehive_role}
+                            {user.dehive_role}
                           </p>
                         </div>
                         <div>
@@ -429,7 +433,7 @@ export default function UserPanel({
                             Following
                           </p>
                           <p className="text-lg font-semibold text-foreground">
-                            {userData.following_number}
+                            {user.following_number}
                           </p>
                         </div>
                         <div>
@@ -437,7 +441,7 @@ export default function UserPanel({
                             Followers
                           </p>
                           <p className="text-lg font-semibold text-foreground">
-                            {userData.followers_number}
+                            {user.followers_number}
                           </p>
                         </div>
                       </div>
@@ -472,7 +476,7 @@ export default function UserPanel({
                             src={`https://ipfs.de-id.xyz/ipfs/${updateUserInfo.avatar_ipfs_hash}`}
                           />
                           <AvatarFallback>
-                            {userData?.display_name} Avatar
+                            {user.display_name} Avatar
                           </AvatarFallback>
                         </Avatar>
                       )}
@@ -580,13 +584,14 @@ export default function UserPanel({
                     <Button
                       onClick={() => {
                         setUpdateUserInfo({
-                          avatar_ipfs_hash: userData?.avatar_ipfs_hash,
-                          display_name: userData?.display_name,
-                          bio: userData?.bio,
+                          avatar_ipfs_hash: user.avatar_ipfs_hash,
+                          display_name: user.display_name,
+                          bio: user.bio,
                         });
                       }}
                       variant="outline"
                       size="sm"
+                      disabled={loading}
                     >
                       Reset
                     </Button>
@@ -594,6 +599,7 @@ export default function UserPanel({
                       onClick={handleUpdateProfile}
                       variant="default"
                       size="sm"
+                      disabled={loading}
                     >
                       Save Changes
                     </Button>

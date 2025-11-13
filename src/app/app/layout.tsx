@@ -15,7 +15,7 @@ import { ServerRefreshContext } from "@/contexts/ServerRefreshContext.contexts";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sound, setSound] = useState(true);
-  const { user, updateUser } = useUser();
+  const { user, setUser } = useUser();
   const [refreshVersion, setRefreshVersion] = useState(0);
   const triggerRefeshServer = useCallback(() => {
     setRefreshVersion((prev) => prev + 1);
@@ -69,12 +69,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       const response = await apiResponse.json();
       // console.log("API response:", response);
       if (response.statusCode === 200 && response.message === "User found") {
-        updateUser(response.data);
+        setUser(response.data);
       }
     } catch (error) {
       console.error("Error fetching user info:", error);
     }
-  }, [fingerprintHash, updateUser]);
+  }, [fingerprintHash, setUser]);
 
   useEffect(() => {
     if (fingerprintHash) {

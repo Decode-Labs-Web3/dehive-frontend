@@ -1,5 +1,6 @@
+import type { RootState } from "@/store/store";
 import { UserDataProps } from "@/interfaces/user.interface";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
 
 const initialState: UserDataProps = {
   _id: "",
@@ -17,18 +18,28 @@ const initialState: UserDataProps = {
   last_account_deactivation: "",
 };
 
+type UpdateUserPayload = {
+  avatar_ipfs_hash: string;
+  display_name: string;
+  bio: string;
+};
+
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setUser(_state, action: PayloadAction<UserDataProps>) {
+    createUser(_state, action: PayloadAction<UserDataProps>) {
       return action.payload;
     },
-    clearUser() {
-      return initialState;
+    updateUser(state, action: PayloadAction<UpdateUserPayload>) {
+      Object.assign(state, action.payload);
     },
   },
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { createUser, updateUser } = userSlice.actions;
 export default userSlice.reducer;
+
+const selectUserState = (state: RootState) => state.user;
+
+export const selectUser = selectUserState;

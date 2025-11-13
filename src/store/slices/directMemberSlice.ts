@@ -1,4 +1,4 @@
-import type { RootState } from "@/store/store";
+import { RootState } from "@/store/store";
 import { DirectMemberListProps } from "@/interfaces/user.interface";
 import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
 
