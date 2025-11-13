@@ -1,5 +1,6 @@
+import type { RootState } from "@/store/store";
 import { ServerMemberListProps } from "@/interfaces/user.interface";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
 
 const initialState: ServerMemberListProps[] = [];
 
@@ -7,7 +8,7 @@ const serverMemberSlice = createSlice({
   name: "serverMembers",
   initialState,
   reducers: {
-    createMemberList(_state, action: PayloadAction<ServerMemberListProps[]>) {
+    setMemberList(_state, action: PayloadAction<ServerMemberListProps[]>) {
       return action.payload;
     },
     updateMemberStatus(
@@ -22,12 +23,16 @@ const serverMemberSlice = createSlice({
         state[memberIndex].status = status;
       }
     },
-    clearMemberList() {
-      return initialState;
-    },
   },
 });
 
-export const { createMemberList, updateMemberStatus, clearMemberList } =
+export const { setMemberList, updateMemberStatus } =
   serverMemberSlice.actions;
 export default serverMemberSlice.reducer;
+
+const selectServerMembersState = (state: RootState) => state.serverMembers;
+
+export const selectServerMembers = createSelector(
+  [selectServerMembersState],
+  (members) => members
+);

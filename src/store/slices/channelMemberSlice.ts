@@ -13,7 +13,7 @@ const channelMemberSlice = createSlice({
   name: "channelMembers",
   initialState,
   reducers: {
-    createMemberList(_state, action: PayloadAction<ChannelMemberListProps[]>) {
+    setMemberList(_state, action: PayloadAction<ChannelMemberListProps[]>) {
       return action.payload;
     },
     userJoinServer(state, action: PayloadAction<Channels[]>) {
@@ -53,18 +53,14 @@ const channelMemberSlice = createSlice({
         );
       }
     },
-    clearMemberList() {
-      return initialState;
-    },
   },
 });
 
 export const {
-  createMemberList,
+  setMemberList,
   userJoinServer,
   userJoinChannel,
   userStatusChange,
   userLeftChannel,
-  clearMemberList,
 } = channelMemberSlice.actions;
 export default channelMemberSlice.reducer;

@@ -2,31 +2,39 @@ import { useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { ServerMemberListProps } from "@/interfaces/user.interface";
 import {
-  createMemberList,
+  setMemberList,
   updateMemberStatus,
-  clearMemberList,
+  selectServerMembers,
 } from "@/store/slices/serverMemberSlice";
 
-export const useServerMember = () => {
+interface UseServerMemberResult {
+  serverMembers: ServerMemberListProps[];
+  setServerMember: (memberList: ServerMemberListProps[]) => void;
+  updateServerStatus: (userId: string, status: string) => void;
+}
+
+export const useServerMember = (): UseServerMemberResult => {
   const dispatch = useAppDispatch();
-  const serverMembers = useAppSelector((state) => state.serverMembers);
 
-  const createServerMember = (memberList: ServerMemberListProps[]) => {
-    dispatch(createMemberList(memberList));
-  };
+  const serverMembers = useAppSelector(selectServerMembers);
 
-  const updateServerStatus = (userId: string, status: string) => {
-    dispatch(updateMemberStatus({ userId, status }));
-  };
+  const setServerMember = useCallback(
+    (memberList: ServerMemberListProps[]) => {
+      dispatch(setMemberList(memberList));
+    },
+    [dispatch]
+  );
 
-  const deleteServerMember = () => {
-    dispatch(clearMemberList());
-  };
+  const updateServerStatus = useCallback(
+    (userId: string, status: string) => {
+      dispatch(updateMemberStatus({ userId, status }));
+    },
+    [dispatch]
+  );
 
   return {
     serverMembers,
-    createServerMember,
+    setServerMember,
     updateServerStatus,
-    deleteServerMember,
   };
 };

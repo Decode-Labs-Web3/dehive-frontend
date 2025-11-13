@@ -8,20 +8,19 @@ import {
   UserLeftChannelPayload,
 } from "@/interfaces/websocketChannelCall.interface";
 import {
-  createMemberList,
+  setMemberList,
   userJoinServer,
   userJoinChannel,
   userStatusChange,
   userLeftChannel,
-  clearMemberList,
 } from "@/store/slices/channelMemberSlice";
 
 export const useChannelMember = () => {
   const dispatch = useAppDispatch();
   const channelMembers = useAppSelector((state) => state.channelMembers);
 
-  const createChannelMember = (memberList: ChannelMemberListProps[]) => {
-    dispatch(createMemberList(memberList));
+  const setChannelMember = (memberList: ChannelMemberListProps[]) => {
+    dispatch(setMemberList(memberList));
   };
 
   const serverChannelMember = (memberList: Channels[]) => {
@@ -40,17 +39,12 @@ export const useChannelMember = () => {
     dispatch(userLeftChannel(memberList));
   };
 
-  const deleteChannelMember = () => {
-    dispatch(clearMemberList());
-  };
-
   return {
     channelMembers,
-    createChannelMember,
+    setChannelMember,
     serverChannelMember,
     joinChannelMember,
     statusChannelMember,
     leftChannelMember,
-    deleteChannelMember,
   };
 };
