@@ -61,7 +61,7 @@ export default function Channels({
       (channelMember) => channelMember._id === channel._id
     )?.participants;
   }, [channelMembers, channel._id]);
-  console.log("dewhdjwedjkwehdwkedhwedhewdiwedu",userChannel);
+  // console.log("dewhdjwedjkwehdwkedhwedhewdiwedu",userChannel);
 
   const handleChannelClick = () => {
     console.log("Channel clicked:", channel._id, channel.type);
