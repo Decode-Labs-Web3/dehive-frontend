@@ -13,31 +13,47 @@ import {
   userJoinChannel,
   userStatusChange,
   userLeftChannel,
+  selectChannelMembers,
 } from "@/store/slices/channelMemberSlice";
 
 export const useChannelMember = () => {
   const dispatch = useAppDispatch();
-  const channelMembers = useAppSelector((state) => state.channelMembers);
+  const channelMembers = useAppSelector(selectChannelMembers);
 
-  const setChannelMember = (memberList: ChannelMemberListProps[]) => {
-    dispatch(setMemberList(memberList));
-  };
+  const setChannelMember = useCallback(
+    (memberList: ChannelMemberListProps[]) => {
+      dispatch(setMemberList(memberList));
+    },
+    [dispatch]
+  );
 
-  const serverChannelMember = (memberList: Channels[]) => {
-    dispatch(userJoinServer(memberList));
-  };
+  const serverChannelMember = useCallback(
+    (memberList: Channels[]) => {
+      dispatch(userJoinServer(memberList));
+    },
+    [dispatch]
+  );
 
-  const joinChannelMember = (memberList: UserJoinedChannelPayload) => {
-    dispatch(userJoinChannel(memberList));
-  };
+  const joinChannelMember = useCallback(
+    (memberList: UserJoinedChannelPayload) => {
+      dispatch(userJoinChannel(memberList));
+    },
+    [dispatch]
+  );
 
-  const statusChannelMember = (memberList: UserStatusChangedPayload) => {
-    dispatch(userStatusChange(memberList));
-  };
+  const statusChannelMember = useCallback(
+    (memberList: UserStatusChangedPayload) => {
+      dispatch(userStatusChange(memberList));
+    },
+    [dispatch]
+  );
 
-  const leftChannelMember = (memberList: UserLeftChannelPayload) => {
-    dispatch(userLeftChannel(memberList));
-  };
+  const leftChannelMember = useCallback(
+    (memberList: UserLeftChannelPayload) => {
+      dispatch(userLeftChannel(memberList));
+    },
+    [dispatch]
+  );
 
   return {
     channelMembers,

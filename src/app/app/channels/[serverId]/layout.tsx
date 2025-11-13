@@ -73,40 +73,40 @@ export default function ServerLayout({
     }
   }, [serverId, fingerprintHash, setServerMember]);
 
-  // const fetchChannelList = useCallback(async () => {
-  //   if (!fingerprintHash || !serverId) return;
-  //   try {
-  //     const apiResponse = await fetch("/api/servers/channel-list", {
-  //       method: "POST",
-  //       headers: getApiHeaders(fingerprintHash, {
-  //         "Content-Type": "application/json",
-  //       }),
-  //       body: JSON.stringify({ serverId }),
-  //       cache: "no-cache",
-  //       signal: AbortSignal.timeout(10000),
-  //     });
-  //     if (!apiResponse.ok) {
-  //       console.error(apiResponse);
-  //       return;
-  //     }
-  //     const response = await apiResponse.json();
-  //     if (
-  //       response.statusCode === 200 &&
-  //       response.message === "Operation successful"
-  //     ) {
-  //       // console.log("channelMembers in server layout hai:", response);
-  //       // setChannelMember(response.data);
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //     console.log("Server deleted channel fail");
-  //   }
-  // }, [serverId, fingerprintHash]);
+  const fetchChannelList = useCallback(async () => {
+    if (!fingerprintHash || !serverId) return;
+    try {
+      const apiResponse = await fetch("/api/servers/channel-list", {
+        method: "POST",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ serverId }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 200 &&
+        response.message === "Operation successful"
+      ) {
+        // console.log("channelMembers in server layout hai:", response);
+        setChannelMember(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server deleted channel fail");
+    }
+  }, [serverId, fingerprintHash, setChannelMember]);
 
   useEffect(() => {
-    // fetchChannelList();
+    fetchChannelList();
     fetchServerUsers();
-  }, [ fetchServerUsers]);
+  }, [ fetchServerUsers, fetchChannelList]);
 
   useEffect(() => {
     const socket = getStatusSocketIO();
@@ -123,52 +123,52 @@ export default function ServerLayout({
     };
   }, [updateServerStatus]);
 
-  // useEffect(() => {
-  //   const socket = getChannelCallSocketIO();
-  //   const onServerJoined = (p: JoinedServer) => {
-  //     serverChannelMember(p.channels);
-  //   };
-  //   socket.on("serverJoined", onServerJoined);
-  //   return () => {
-  //     socket.off("serverJoined", onServerJoined);
-  //   };
-  // }, [serverChannelMember]);
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onServerJoined = (p: JoinedServer) => {
+      serverChannelMember(p.channels);
+    };
+    socket.on("serverJoined", onServerJoined);
+    return () => {
+      socket.off("serverJoined", onServerJoined);
+    };
+  }, [serverChannelMember]);
 
-  // useEffect(() => {
-  //   const socket = getChannelCallSocketIO();
-  //   const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
-  //     console.log("userJoinedChannel quang minh", p);
-  //     joinChannelMember(p);
-  //   };
-  //   socket.on("userJoinedChannel", onUserJoinedChannel);
-  //   return () => {
-  //     socket.off("userJoinedChannel", onUserJoinedChannel);
-  //   };
-  // }, [joinChannelMember]);
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
+      console.log("userJoinedChannel quang minh", p);
+      joinChannelMember(p);
+    };
+    socket.on("userJoinedChannel", onUserJoinedChannel);
+    return () => {
+      socket.off("userJoinedChannel", onUserJoinedChannel);
+    };
+  }, [joinChannelMember]);
 
-  // useEffect(() => {
-  //   const socket = getChannelCallSocketIO();
-  //   const onUserStatusChanged = (p: UserStatusChangedPayload) => {
-  //     console.log("userStatusChanged quang minh", p);
-  //     statusChannelMember(p);
-  //   };
-  //   socket.on("userStatusChanged", onUserStatusChanged);
-  //   return () => {
-  //     socket.off("userStatusChanged", onUserStatusChanged);
-  //   };
-  // }, [statusChannelMember]);
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onUserStatusChanged = (p: UserStatusChangedPayload) => {
+      console.log("userStatusChanged quang minh", p);
+      statusChannelMember(p);
+    };
+    socket.on("userStatusChanged", onUserStatusChanged);
+    return () => {
+      socket.off("userStatusChanged", onUserStatusChanged);
+    };
+  }, [statusChannelMember]);
 
-  // useEffect(() => {
-  //   const socket = getChannelCallSocketIO();
-  //   const onUserLeftChannel = (p: UserLeftChannelPayload) => {
-  //     console.log("userLeftChannel quang minh", p);
-  //     leftChannelMember(p);
-  //   };
-  //   socket.on("userLeftChannel", onUserLeftChannel);
-  //   return () => {
-  //     socket.off("userLeftChannel", onUserLeftChannel);
-  //   };
-  // }, [leftChannelMember]);
+  useEffect(() => {
+    const socket = getChannelCallSocketIO();
+    const onUserLeftChannel = (p: UserLeftChannelPayload) => {
+      console.log("userLeftChannel quang minh", p);
+      leftChannelMember(p);
+    };
+    socket.on("userLeftChannel", onUserLeftChannel);
+    return () => {
+      socket.off("userLeftChannel", onUserLeftChannel);
+    };
+  }, [leftChannelMember]);
 
   if (!user._id || !serverId) {
     return (

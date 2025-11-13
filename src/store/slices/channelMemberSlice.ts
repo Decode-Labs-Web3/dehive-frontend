@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from "@/store/store";
 import { ChannelMemberListProps } from "@/interfaces/call.interface";
+import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
 import {
   Channels,
   UserStatusChangedPayload,
@@ -64,3 +65,10 @@ export const {
   userLeftChannel,
 } = channelMemberSlice.actions;
 export default channelMemberSlice.reducer;
+
+const selectChannelMembersState = (state: RootState) => state.channelMembers;
+
+export const selectChannelMembers = createSelector(
+  [selectChannelMembersState],
+  (members) => members
+);
