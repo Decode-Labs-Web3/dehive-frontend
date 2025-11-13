@@ -246,25 +246,18 @@ export default function ServerPanel({
                   Server NFT
                 </TabsTrigger>
                 <TabsTrigger
+                  value="log"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  Server Log
+                </TabsTrigger>
+                <TabsTrigger
                   value="members"
                   vertical
                   className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
                 >
                   Members
-                </TabsTrigger>
-                <TabsTrigger
-                  value="invites"
-                  vertical
-                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
-                >
-                  Invites
-                </TabsTrigger>
-                <TabsTrigger
-                  value="role"
-                  vertical
-                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
-                >
-                  Role
                 </TabsTrigger>
                 <TabsTrigger
                   value="bans"

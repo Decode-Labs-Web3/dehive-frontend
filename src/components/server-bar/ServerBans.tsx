@@ -194,7 +194,7 @@ export default function ServerBans({ server }: ServerBansProps) {
         >
           <Avatar>
             <AvatarImage
-              src={`https://dehive-avatars.infura-ipfs.io/ipfs/${member.user_profile.avatar_ipfs_hash}`}
+              src={`https://ipfs.de-id.xyz/ipfs/${member.user_profile.avatar_ipfs_hash}`}
               alt={`${member.user_profile.display_name} avatar`}
             />
             <AvatarFallback>
