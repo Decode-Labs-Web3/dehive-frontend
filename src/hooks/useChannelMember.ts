@@ -14,6 +14,10 @@ import {
   userStatusChange,
   userLeftChannel,
   selectChannelMembers,
+  setCategoryDelete,
+  setChannelMove,
+  setChannelCreate,
+  setChannelDelete,
 } from "@/store/slices/channelMemberSlice";
 
 export const useChannelMember = () => {
@@ -23,6 +27,34 @@ export const useChannelMember = () => {
   const setChannelMember = useCallback(
     (memberList: ChannelMemberListProps[]) => {
       dispatch(setMemberList(memberList));
+    },
+    [dispatch]
+  );
+
+  const deleteCategory = useCallback(
+    (categoryId: string) => {
+      dispatch(setCategoryDelete({ categoryId }));
+    },
+    [dispatch]
+  );
+
+  const moveChannel = useCallback(
+    (channelId: string, categoryId: string) => {
+      dispatch(setChannelMove({ channelId, categoryId }));
+    },
+    [dispatch]
+  );
+
+  const createChannel = useCallback(
+    (channel: ChannelMemberListProps) => {
+      dispatch(setChannelCreate(channel));
+    },
+    [dispatch]
+  );
+
+  const deleteChannel = useCallback(
+    (channelId: string) => {
+      dispatch(setChannelDelete({ channelId }));
     },
     [dispatch]
   );
@@ -62,5 +94,9 @@ export const useChannelMember = () => {
     joinChannelMember,
     statusChannelMember,
     leftChannelMember,
+    deleteCategory,
+    moveChannel,
+    createChannel,
+    deleteChannel,
   };
 };

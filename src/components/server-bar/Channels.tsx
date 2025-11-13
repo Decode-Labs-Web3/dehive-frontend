@@ -55,7 +55,7 @@ export default function Channels({
   const { fingerprintHash } = useFingerprint();
   const { serverId } = useParams<{ serverId: string }>();
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
-  const { channelMembers } = useChannelMember();
+  const { channelMembers, deleteChannel } = useChannelMember();
   const userChannel = useMemo(() => {
     return channelMembers.find(
       (channelMember) => channelMember._id === channel._id
@@ -97,6 +97,7 @@ export default function Channels({
           ...prev,
           [channel._id]: false,
         }));
+        deleteChannel(channelId)
         fetchCategoryInfo?.();
       }
     } catch (error) {

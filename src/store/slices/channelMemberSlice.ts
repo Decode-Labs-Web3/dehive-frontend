@@ -17,6 +17,28 @@ const channelMemberSlice = createSlice({
     setMemberList(_state, action: PayloadAction<ChannelMemberListProps[]>) {
       return action.payload;
     },
+    setCategoryDelete(state, action: PayloadAction<{ categoryId: string }>) {
+      const { categoryId } = action.payload;
+      return state.filter((channel) => channel.category_id !== categoryId);
+    },
+    setChannelMove(
+      state,
+      action: PayloadAction<{ channelId: string; categoryId: string }>
+    ) {
+      const { channelId, categoryId } = action.payload;
+      return state.map((channel) =>
+        channel._id === channelId
+          ? { ...channel, category_id: categoryId }
+          : channel
+      );
+    },
+    setChannelCreate(state, action: PayloadAction<ChannelMemberListProps>) {
+      state.push(action.payload);
+    },
+    setChannelDelete(state, action: PayloadAction<{ channelId: string }>) {
+      const { channelId } = action.payload;
+      return state.filter((channel) => channel._id !== channelId);
+    },
     userJoinServer(state, action: PayloadAction<Channels[]>) {
       state.forEach((stateChannel) => {
         const index = action.payload.findIndex(
@@ -79,6 +101,10 @@ export const {
   userJoinChannel,
   userStatusChange,
   userLeftChannel,
+  setCategoryDelete,
+  setChannelMove,
+  setChannelCreate,
+  setChannelDelete,
 } = channelMemberSlice.actions;
 export default channelMemberSlice.reducer;
 

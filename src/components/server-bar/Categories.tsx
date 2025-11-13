@@ -11,6 +11,7 @@ import ServerBarItems from "@/components/server-bar";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useState, useCallback, useEffect } from "react";
+import { useChannelMember } from "@/hooks/useChannelMember";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MemberInServerProps } from "@/interfaces/user.interface";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -44,6 +45,8 @@ export default function Categories({ server }: CategoriesProps) {
   const { user } = useUser();
   const { serverId } = useParams();
   const { fingerprintHash } = useFingerprint();
+  const { deleteCategory, moveChannel, createChannel } =
+    useChannelMember();
   const [loading, setLoading] = useState(false);
   const [isPrivileged, setIsPrivileged] = useState(false);
   const [open, setOpen] = useState<Record<string, boolean>>({});
@@ -213,6 +216,7 @@ export default function Categories({ server }: CategoriesProps) {
         response.statusCode === 201 &&
         response.message === "Operation successful"
       ) {
+        createChannel(response.date);
         fetchCategoryInfo();
         setCreateChannelModal((prev) => ({
           ...prev,
@@ -263,6 +267,8 @@ export default function Categories({ server }: CategoriesProps) {
           [categoryId]: false,
         }));
 
+        deleteCategory(categoryId);
+
         fetchCategoryInfo();
       }
     } catch (error) {
@@ -297,6 +303,7 @@ export default function Categories({ server }: CategoriesProps) {
         response.message === "Operation successful"
       ) {
         // fetchCategoryInfo();
+        moveChannel(channelId, targetCategoryId);
         console.log("moving channel successfully, slient move");
       }
     } catch (error) {
