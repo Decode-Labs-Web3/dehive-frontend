@@ -6,24 +6,20 @@ type Token = {
   symbol: string;
   name: string;
   decimals: number;
-  balance: string; // raw string balance in smallest unit
+  balance: string;
   logoURI?: string;
   chainId: number;
 };
 
-// Helper: parse query params with sane defaults
-function getQueryParams(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const address = (searchParams.get("address") || "").trim();
-  const chainId = Number(searchParams.get("chainId") || 1);
-  const includeZero = searchParams.get("includeZero") === "true";
-  const provider = (searchParams.get("provider") || "").trim().toLowerCase();
-  return { address, chainId, includeZero, provider };
-}
-
-export async function GET(req: NextRequest) {
+// POST only: accept JSON body instead of query params
+// Body shape: { address: string; chainId?: number; includeZero?: boolean; provider?: string }
+export async function POST(req: NextRequest) {
   try {
-    const { address, chainId, includeZero, provider } = getQueryParams(req);
+    const body = await req.json().catch(() => ({}));
+    const address: string = (body.address || "").trim();
+    const chainId: number = Number(body.chainId ?? 1);
+    const includeZero: boolean = Boolean(body.includeZero);
+    const provider: string = (body.provider || "").trim().toLowerCase();
 
     if (!address || !isAddress(address)) {
       return NextResponse.json(
@@ -35,7 +31,6 @@ export async function GET(req: NextRequest) {
     const covalentKey = process.env.COVALENT_API_KEY;
     const alchemyKey = process.env.ALCHEMY_API_KEY;
 
-    // Determine provider order: query param > env default > legacy default
     const envDefault = (
       process.env.DEFAULT_TOKEN_INDEXER_PROVIDER || ""
     ).toLowerCase();
@@ -45,7 +40,7 @@ export async function GET(req: NextRequest) {
         ? ["alchemy", "covalent"]
         : preferred === "covalent"
         ? ["covalent", "alchemy"]
-        : ["covalent", "alchemy"]; // legacy default
+        : ["covalent", "alchemy"]; // default priority
 
     for (const p of order) {
       if (p === "alchemy" && alchemyKey) {
@@ -79,12 +74,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "No indexer configured. Set COVALENT_API_KEY or ALCHEMY_API_KEY in server env to enable token discovery.",
+          "No indexer configured. Provide COVALENT_API_KEY or ALCHEMY_API_KEY in server env variables.",
       },
       { status: 501 }
     );
   } catch (err: any) {
-    console.error("/api/tokens error", err);
+    console.error("/api/tokens POST error", err);
     return NextResponse.json(
       { error: err?.message || "Unexpected error" },
       { status: 500 }
