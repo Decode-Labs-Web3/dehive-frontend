@@ -1,6 +1,7 @@
 import Channels from "@/components/server-bar/Channels";
 import EditModal from "@/components/server-bar/EditModal";
 import ServerNFT from "@/components/server-bar/ServerNFT";
+import ServerLog from "@/components/server-bar/ServerLog";
 import ServerBans from "@/components/server-bar/ServerBans";
 import Categories from "@/components/server-bar/Categories";
 import ServerPanel from "@/components/server-bar/ServerPanel";
@@ -24,6 +25,7 @@ const ServerBarItems = {
   ServerPanel,
   ServerInvite,
   ServerMembers,
+  ServerLog,
 };
 
 export default ServerBarItems;

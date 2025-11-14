@@ -288,7 +288,7 @@ export default function ServerPanel({
                   Server NFT
                 </TabsTrigger>
                 <TabsTrigger
-                  value="log"
+                  value="logs"
                   vertical
                   className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
                 >
@@ -369,6 +369,10 @@ export default function ServerPanel({
 
               <TabsContent value="nft" className="mt-0">
                 <ServerBarItems.ServerNFT server={server} />
+              </TabsContent>
+
+              <TabsContent value="logs" className="mt-0">
+                <ServerBarItems.ServerLog />
               </TabsContent>
 
               <TabsContent value="profile" className="mt-0">

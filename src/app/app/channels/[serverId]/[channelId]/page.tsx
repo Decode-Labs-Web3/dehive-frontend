@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import Markdown from "@/components/common/Markdown";
+import { useServerRoot } from "@/hooks/useServerRoot";
 import { Card, CardContent } from "@/components/ui/card";
 import { useServerMember } from "@/hooks/useServerMember";
 import FilePreview from "@/components/common/FilePreview";
@@ -62,12 +63,18 @@ import {
 export default function ChannelMessagePage() {
   const { user } = useUser();
   const { sound } = useSoundContext();
+  const { serverRoot } = useServerRoot();
   const { serverMembers } = useServerMember();
   const [messageSearchId, setMessageSearchId] = useState<string | null>(null);
   const { serverId, channelId } = useParams<{
     serverId: string;
     channelId: string;
   }>();
+  const channel = useMemo(() => {
+    return serverRoot
+      .flatMap((category) => category.channels)
+      .find((channel) => channel._id === channelId);
+  }, [serverRoot, channelId]);
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessageProps>({
     content: "",
@@ -293,6 +300,7 @@ export default function ChannelMessagePage() {
   if (messageSearchId) {
     return (
       <ChannelHistoryView
+        channel={channel || null}
         serverId={serverId}
         channelId={channelId}
         serverMembers={serverMembers}
@@ -314,7 +322,7 @@ export default function ChannelMessagePage() {
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-foreground">
-                {/* {channelInfo?.name} */}
+                {channel?.name}
               </h1>
             </div>
           </div>

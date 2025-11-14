@@ -282,6 +282,7 @@ export default function Categories({ server }: CategoriesProps) {
     try {
       await handleChannelMove(channelId, targetCategoryId);
     } catch (error) {
+      moveChannelRoot(targetCategoryId, sourceCategoryId, channelId);
       console.error(error);
     }
   };

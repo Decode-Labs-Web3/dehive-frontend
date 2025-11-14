@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { useUser } from "@/hooks/useUser";
 import MessageSkeleton from "./MessageSkeleton";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ import ServerMemberList from "@/components/messages/ServerMemberList";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
+import { ChannelProps } from "@/interfaces/server.interface";
 import {
   FileUploadProps,
   NewMessageProps,
@@ -58,6 +58,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ChannelHistoryViewProps {
+  channel: ChannelProps | null;
   serverId: string;
   channelId: string;
   messageSearchId: string;
@@ -66,6 +67,7 @@ interface ChannelHistoryViewProps {
 }
 
 export default function ChannelHistoryView({
+  channel,
   serverId,
   channelId,
   serverMembers,
@@ -405,7 +407,7 @@ export default function ChannelHistoryView({
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-foreground">
-                {/* {channelInfo?.name} */}
+                {channel?.name}
               </h1>
             </div>
           </div>

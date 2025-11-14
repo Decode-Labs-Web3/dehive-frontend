@@ -28,17 +28,27 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { serverId } = body;
+    const { serverId, page } = body;
+
+    if (!serverId) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
+          message: "Missing serverId",
+        },
+        { status: HTTP_STATUS.BAD_REQUEST }
+      );
+    }
 
     const backendResponse = await fetch(
-      `${process.env.DEHIVE_USER_DEHIVE_SERVER}/api/memberships/servers/${serverId}/audit-logs?page=0&limit=100`,
+      `${process.env.DEHIVE_USER_DEHIVE_SERVER}/api/memberships/servers/${serverId}/audit-logs?page=${page}&limit=15`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
           "x-session-id": sessionId,
         },
-        body: JSON.stringify(body),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
