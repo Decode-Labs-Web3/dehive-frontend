@@ -21,7 +21,6 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   ...defaultMetadata,
-  // Ensure Next sees metadataBase directly on the root metadata object
   metadataBase: new URL("https://dehive.decodenetwork.app"),
 };
 

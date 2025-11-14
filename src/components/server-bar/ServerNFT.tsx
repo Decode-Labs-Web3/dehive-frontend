@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useState, useEffect, useCallback } from "react";
-import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -32,39 +32,37 @@ interface NFTInfoProps {
   required_balance: number;
 }
 
-interface ServerNFTProps {
-  server: ServerProps;
-}
-
-export default function ServerNFT({ server }: ServerNFTProps) {
+export default function ServerNFT() {
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
-  const { serverId } = useParams<{ serverId: string }>();
   const [isNFT, setIsNFT] = useState<boolean>(false);
+  const { serverId } = useParams<{ serverId: string }>();
   const [statusNFT, setStatusNFT] = useState<boolean>(false);
+  const { serverInfomation, updateServerNFTInformation } =
+    useServerInfomation();
   const [originalNftInfo, setOriginalNftInfo] = useState<NFTInfoProps | null>(
     null
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   useEffect(() => {
-    if (server.nft_gated) {
+    if (serverInfomation.nft_gated) {
       setOriginalNftInfo({
-        enabled: server.nft_gated.enabled,
-        network: server.nft_gated.network,
-        contract_address: server.nft_gated.contract_address,
-        required_balance: server.nft_gated.required_balance,
+        enabled: serverInfomation.nft_gated.enabled,
+        network: serverInfomation.nft_gated.network,
+        contract_address: serverInfomation.nft_gated.contract_address,
+        required_balance: serverInfomation.nft_gated.required_balance,
       });
       setIsNFT(true);
-      setStatusNFT(server.nft_gated.enabled);
+      setStatusNFT(serverInfomation.nft_gated.enabled);
       return;
     }
     setIsNFT(false);
-  }, [server.nft_gated]);
+  }, [serverInfomation.nft_gated]);
   const [nftInfo, setNftInfo] = useState<NFTInfoProps>({
-    enabled: server.nft_gated?.enabled || false,
-    network: server.nft_gated?.network || "base",
-    contract_address: server.nft_gated?.contract_address || "",
-    required_balance: server.nft_gated?.required_balance || 1,
+    enabled: serverInfomation.nft_gated?.enabled || false,
+    network: serverInfomation.nft_gated?.network || "base",
+    contract_address: serverInfomation.nft_gated?.contract_address || "",
+    required_balance: serverInfomation.nft_gated?.required_balance || 1,
   });
 
   const fetchServerNFT = useCallback(
@@ -90,6 +88,7 @@ export default function ServerNFT({ server }: ServerNFTProps) {
           response.statusCode === 200 &&
           response.message === "Operation successful"
         ) {
+          updateServerNFTInformation(response.data);
           setOriginalNftInfo(info);
           setIsNFT(true);
           setIsDialogOpen(false);
@@ -100,7 +99,7 @@ export default function ServerNFT({ server }: ServerNFTProps) {
         setLoading(false);
       }
     },
-    [fingerprintHash, serverId]
+    [fingerprintHash, serverId, updateServerNFTInformation]
   );
 
   return (

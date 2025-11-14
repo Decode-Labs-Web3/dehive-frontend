@@ -7,7 +7,6 @@ import { getApiHeaders } from "@/utils/api.utils";
 import ServerBarItems from "@/components/server-bar";
 import { useServerRoot } from "@/hooks/useServerRoot";
 import { useFingerprint } from "@/hooks/useFingerprint";
-import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
@@ -33,24 +32,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface EditModalProps {
-  server: ServerProps;
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
   setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function EditModal({
-  server,
   setServerPanel,
   setServerSettingModal,
 }: EditModalProps) {
   const { user } = useUser();
   const router = useRouter();
-  const { updateServerInfomation } = useServerInfomation();
+  const { createCategory } = useServerRoot();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const { triggerRefeshServer } = useServerRefresh();
-  const { createCategory } = useServerRoot();
-  // const [server, setServer] = useState<ServerProps>(server)
+  const { serverInfomation, updateServerInfomation } = useServerInfomation();
   const allFalse = {
     edit: false,
     leave: false,
@@ -61,8 +57,8 @@ export default function EditModal({
   const [modal, setModal] = useState<Record<string, boolean>>({ ...allFalse });
 
   const [editServerForm, setEditServerForm] = useState({
-    name: server.name,
-    description: server.description,
+    name: serverInfomation.name,
+    description: serverInfomation.description,
   });
 
   const [deleteServerForm, setDeleteServerFrom] = useState({
@@ -104,7 +100,7 @@ export default function EditModal({
 
     const missing = name === "" || description === "";
     const nothingChanged =
-      name === server.name && description === server.description;
+      name === serverInfomation.name && description === serverInfomation.description;
 
     if (missing || nothingChanged) return;
 
@@ -116,7 +112,7 @@ export default function EditModal({
           "Content-Type": "application/json",
         }),
         body: JSON.stringify({
-          serverId: server._id,
+          serverId: serverInfomation._id,
           name: editServerForm.name,
           description: editServerForm.description,
         }),
@@ -150,7 +146,7 @@ export default function EditModal({
   };
 
   const handleDeleteServer = async () => {
-    if (deleteServerForm.name.trim() !== server.name) {
+    if (deleteServerForm.name.trim() !== serverInfomation.name) {
       return;
     }
 
@@ -161,7 +157,7 @@ export default function EditModal({
         headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
         }),
-        body: JSON.stringify({ serverId: server._id }),
+        body: JSON.stringify({ serverId: serverInfomation._id }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -197,7 +193,7 @@ export default function EditModal({
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify({ serverId: server._id }),
+        body: JSON.stringify({ serverId: serverInfomation._id }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -235,7 +231,7 @@ export default function EditModal({
           "Content-Type": "application/json",
         }),
         body: JSON.stringify({
-          serverId: server._id,
+          serverId: serverInfomation._id,
           name: createCategoryForm.name,
         }),
         cache: "no-cache",
@@ -315,7 +311,7 @@ export default function EditModal({
           <FontAwesomeIcon icon={faUserPlus} />
         </button>
 
-        {server.owner_id !== user._id && (
+        {serverInfomation.owner_id !== user._id && (
           <button
             onClick={() => {
               setModal({ ...allFalse, leave: true });
@@ -327,7 +323,7 @@ export default function EditModal({
           </button>
         )}
 
-        {server.owner_id === user._id && (
+        {serverInfomation.owner_id === user._id && (
           <>
             <button
               onClick={() => {
@@ -381,7 +377,7 @@ export default function EditModal({
                 const button = event.currentTarget;
                 const oldText = button.textContent;
 
-                await navigator.clipboard.writeText(server._id);
+                await navigator.clipboard.writeText(serverInfomation._id);
 
                 button.textContent = "Copied!";
 
@@ -473,7 +469,7 @@ export default function EditModal({
           <DialogHeader>
             <DialogTitle>Delete Server</DialogTitle>
             <DialogDescription>
-              Please type the name of &quot;{server.name}&quot; to confirm.
+              Please type the name of &quot;{serverInfomation.name}&quot; to confirm.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -519,9 +515,9 @@ export default function EditModal({
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Leave {server.name}</DialogTitle>
+            <DialogTitle>Leave {serverInfomation.name}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to leave {server.name}? You won&apos;t be
+              Are you sure you want to leave {serverInfomation.name}? You won&apos;t be
               able to rejoin this server unless you are re-invited.
             </DialogDescription>
           </DialogHeader>
@@ -589,7 +585,7 @@ export default function EditModal({
 
       {modal.invite && (
         <>
-          <ServerBarItems.ServerInvite server={server} setModal={setModal} />
+          <ServerBarItems.ServerInvite setModal={setModal} />
         </>
       )}
     </>

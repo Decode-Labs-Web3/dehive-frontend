@@ -34,10 +34,14 @@ const serverInfoSlice = createSlice({
       const { tag } = action.payload;
       state.tags = [tag];
     },
+    updateServerNFT(_state, action: PayloadAction<ServerProps>) {
+      return action.payload;
+    },
   },
 });
 
-export const { createServer, updateServer, updateSeverTags } = serverInfoSlice.actions;
+export const { createServer, updateServer, updateSeverTags, updateServerNFT } =
+  serverInfoSlice.actions;
 export default serverInfoSlice.reducer;
 
 const selectServerInfomation = (state: RootState) => state.serverInfomation;

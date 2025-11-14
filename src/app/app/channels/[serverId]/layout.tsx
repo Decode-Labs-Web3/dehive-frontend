@@ -38,18 +38,12 @@ export default function ServerLayout({
   }>();
   const { setServerMember, updateServerStatus } = useServerMember();
   const {
-    serverRoot,
     createServerRoot,
     userJoinServerRoot,
     userJoinChannelRoot,
     userLeftChannelRoot,
     userStatusChangeRoot,
   } = useServerRoot();
-
-  console.log(
-    "eewdwbhedjhwdbwededgwegdwejhdgekwudgweuiydkwgduywegduwekdgweud",
-    serverInfomation
-  );
 
   const fetchServerInfo = useCallback(async () => {
     try {
@@ -225,7 +219,7 @@ export default function ServerLayout({
     );
   }
 
-  if (!user._id || !serverId) {
+  if (!user._id || !serverId || !serverInfomation._id) {
     return (
       <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
         <aside className="h-full overflow-y-auto border-r border-black/20">

@@ -9,7 +9,6 @@ import { useEffect, useRef, useState } from "react";
 import ServerBarItems from "@/components/server-bar";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { SERVER_TAGS } from "@/constants/index.constants";
-import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
@@ -45,13 +44,11 @@ const tagIcon: Record<string, IconDefinition> = {
 };
 
 interface ServerPanelProps {
-  server: ServerProps;
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
   setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function ServerPanel({
-  server,
   setServerPanel,
   setServerSettingModal,
 }: ServerPanelProps) {
@@ -59,8 +56,8 @@ export default function ServerPanel({
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const { triggerRefeshServer } = useServerRefresh();
-  const { updateServerInfomation, updateServerTag } = useServerInfomation();
   const tabsListContainerRef = useRef<HTMLDivElement | null>(null);
+  const { serverInfomation ,updateServerInfomation, updateServerTag } = useServerInfomation();
   useEffect(() => {
     const element = tabsListContainerRef.current;
     if (element) {
@@ -72,8 +69,8 @@ export default function ServerPanel({
     useState<string>("profile");
 
   const [editServerForm, setEditServerForm] = useState({
-    name: server.name,
-    description: server.description,
+    name: serverInfomation.name,
+    description: serverInfomation.description,
   });
 
   const [deleteServerForm, setDeleteServerFrom] = useState({
@@ -81,7 +78,7 @@ export default function ServerPanel({
   });
 
   const [selectedTags, setSelectedTags] = useState<string | null>(
-    server.tags.length > 0 ? server.tags[0] : null
+    serverInfomation.tags.length > 0 ? serverInfomation.tags[0] : null
   );
 
   const toggleTag = (tag: string) => {
@@ -120,7 +117,7 @@ export default function ServerPanel({
           "Content-Type": "application/json",
         }),
         body: JSON.stringify({
-          serverId: server._id,
+          serverId: serverInfomation._id,
           tag: nextTag ?? "",
         }),
         cache: "no-cache",
@@ -150,8 +147,8 @@ export default function ServerPanel({
   };
 
   const serverInfoChange =
-    editServerForm.name !== server.name ||
-    editServerForm.description !== server.description;
+    editServerForm.name !== serverInfomation.name ||
+    editServerForm.description !== serverInfomation.description;
 
   const handleEditServer = async () => {
     const name = editServerForm.name.trim();
@@ -159,7 +156,7 @@ export default function ServerPanel({
 
     const missing = name === "" || description === "";
     const nothingChanged =
-      name === server.name && description === server.description;
+      name === serverInfomation.name && description === serverInfomation.description;
 
     if (missing || nothingChanged) return;
 
@@ -171,7 +168,7 @@ export default function ServerPanel({
           "Content-Type": "application/json",
         }),
         body: JSON.stringify({
-          serverId: server._id,
+          serverId: serverInfomation._id,
           name: editServerForm.name,
           description: editServerForm.description,
         }),
@@ -203,7 +200,7 @@ export default function ServerPanel({
   };
 
   const handleDeleteServer = async () => {
-    if (deleteServerForm.name.trim() !== server.name) {
+    if (deleteServerForm.name.trim() !== serverInfomation.name) {
       console.log("The type the server name didn't macth");
       return;
     }
@@ -215,7 +212,7 @@ export default function ServerPanel({
         headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
         }),
-        body: JSON.stringify({ serverId: server._id }),
+        body: JSON.stringify({ serverId: serverInfomation._id }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -357,17 +354,16 @@ export default function ServerPanel({
             <div className="flex-1 overflow-y-auto px-10 py-8">
               <TabsContent value="members" className="mt-0">
                 <ServerBarItems.ServerMembers
-                  server={server}
                   setServerPanel={setServerPanel}
                 />
               </TabsContent>
 
               <TabsContent value="bans" className="mt-0">
-                <ServerBarItems.ServerBans server={server} />
+                <ServerBarItems.ServerBans />
               </TabsContent>
 
               <TabsContent value="nft" className="mt-0">
-                <ServerBarItems.ServerNFT server={server} />
+                <ServerBarItems.ServerNFT />
               </TabsContent>
 
               <TabsContent value="logs" className="mt-0">
@@ -475,8 +471,8 @@ export default function ServerPanel({
                         className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
                         onClick={() => {
                           setEditServerForm({
-                            name: server.name,
-                            description: server.description,
+                            name: serverInfomation.name,
+                            description: serverInfomation.description,
                           });
                         }}
                       >
@@ -509,7 +505,7 @@ export default function ServerPanel({
           <DialogHeader>
             <DialogTitle>Delete Server</DialogTitle>
             <DialogDescription>
-              Please type the name of &quot;{server.name}&quot; to confirm.
+              Please type the name of &quot;{serverInfomation.name}&quot; to confirm.
             </DialogDescription>
           </DialogHeader>
           <Input

@@ -4,33 +4,32 @@ import Link from "next/link";
 import { useUser } from "@/hooks/useUser";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect, useCallback } from "react";
-import { ServerProps } from "@/interfaces/server.interface";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MemberInServerProps } from "@/interfaces/user.interface";
+import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerMembersProps {
-  server: ServerProps;
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function ServerMembers({
-  server,
   setServerPanel,
 }: ServerMembersProps) {
   const { user } = useUser();
+  const { serverInfomation } = useServerInfomation();
   const { triggerRefeshServer } = useServerRefresh();
   const [loading, setLoading] = useState(false);
   const [kickForm, setKickForm] = useState({
-    server_id: server._id,
+    server_id: serverInfomation._id,
     target_user_dehive_id: "",
     reason: "",
   });
   const [banForm, setBanForm] = useState({
-    server_id: server._id,
+    server_id: serverInfomation._id,
     target_user_dehive_id: "",
     reason: "Suspicious or spam account",
   });
@@ -59,7 +58,7 @@ export default function ServerMembers({
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify({ serverId: server._id }),
+        body: JSON.stringify({ serverId: serverInfomation._id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -128,7 +127,7 @@ export default function ServerMembers({
     } finally {
       setLoading(false);
     }
-  }, [server]);
+  }, [serverInfomation._id]);
 
   useEffect(() => {
     fetchServerMember();
@@ -172,7 +171,7 @@ export default function ServerMembers({
       ) {
         fetchServerMember();
         setKickForm({
-          server_id: server._id,
+          server_id: serverInfomation._id,
           target_user_dehive_id: "",
           reason: "",
         });
@@ -224,7 +223,7 @@ export default function ServerMembers({
       ) {
         fetchServerMember();
         setBanForm({
-          server_id: server._id,
+          server_id: serverInfomation._id,
           target_user_dehive_id: "",
           reason: "Suspicious or spam account",
         });
@@ -250,7 +249,7 @@ export default function ServerMembers({
             "X-Frontend-Internal-Request": "true",
           },
           body: JSON.stringify({
-            serverId: server._id,
+            serverId: serverInfomation._id,
             memberId,
           }),
           cache: "no-cache",
@@ -293,7 +292,7 @@ export default function ServerMembers({
           "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
-          serverId: server._id,
+          serverId: serverInfomation._id,
           memberId,
           role,
         }),
@@ -841,7 +840,7 @@ export default function ServerMembers({
                 <div className="px-6 py-4 border-b border-border">
                   <h2 className="text-lg font-semibold">Transfer Ownership</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    This will transfer ownership of {server.name} server to @
+                    This will transfer ownership of {serverInfomation.name} server to @
                     {membership.username}. This cannot be undone!
                   </p>
                 </div>
@@ -919,7 +918,7 @@ export default function ServerMembers({
                   <p className="mt-1 text-sm text-muted-foreground">
                     This will assign the role of{" "}
                     {membership.role === "member" ? "moderator" : "member"} to @
-                    {membership.username} in the {server.name} server.
+                    {membership.username} in the {serverInfomation.name} server.
                   </p>
                 </div>
 

@@ -7,8 +7,8 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect, useCallback } from "react";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { useInviteSuggestions } from "@/hooks/useInviteSuggestions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -19,16 +19,16 @@ import {
 } from "@/components/ui/dialog";
 
 interface ServerInviteProps {
-  server: ServerProps;
   setModal: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
 }
 
-export default function ServerInvite({ server, setModal }: ServerInviteProps) {
+export default function ServerInvite({ setModal }: ServerInviteProps) {
   const [isOpen, setIsOpen] = useState(true);
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
+  const { serverInfomation } = useServerInfomation();
   const [code, setCode] = useState<number | null>(null);
-  const { suggestions } = useInviteSuggestions(server._id);
+  const { suggestions } = useInviteSuggestions(serverInfomation._id);
   const [isSended, setIsSended] = useState<Record<string, boolean>>({});
   useEffect(() => {
     setIsSended(
@@ -53,7 +53,7 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
           "Content-Type": "application/json",
         }),
         body: JSON.stringify({
-          serverId: server._id,
+          serverId: serverInfomation._id,
         }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -76,7 +76,7 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
     } finally {
       setLoading(false);
     }
-  }, [server._id, fingerprintHash]);
+  }, [serverInfomation._id, fingerprintHash]);
 
   useEffect(() => {
     fetchCode();
@@ -173,7 +173,7 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
     >
       <DialogContent className="w-full max-w-md">
         <DialogHeader>
-          <DialogTitle>Invite friends to {server.name} server</DialogTitle>
+          <DialogTitle>Invite friends to {serverInfomation.name} server</DialogTitle>
           <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
             <span>#</span>
             <span>general</span>

@@ -12,10 +12,11 @@ import { useServerRoot } from "@/hooks/useServerRoot";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useState, useCallback, useEffect } from "react";
+import { CategoryProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { MemberInServerProps } from "@/interfaces/user.interface";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CategoryProps, ServerProps } from "@/interfaces/server.interface";
 import {
   faChevronRight,
   faChevronDown,
@@ -37,19 +38,16 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 
-interface CategoriesProps {
-  server: ServerProps;
-}
-
-export default function Categories({ server }: CategoriesProps) {
+export default function Categories() {
   const { user } = useUser();
-  const { serverRoot, createChannelRoot, deleteCategoryRoot, moveChannelRoot } =
-    useServerRoot();
   const { serverId } = useParams();
+  const { serverInfomation } = useServerInfomation();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [isPrivileged, setIsPrivileged] = useState(false);
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  const { serverRoot, createChannelRoot, deleteCategoryRoot, moveChannelRoot } =
+    useServerRoot();
   const [createChannelModal, setCreateChannelModal] = useState<
     Record<string, boolean>
   >({});
@@ -71,7 +69,7 @@ export default function Categories({ server }: CategoriesProps) {
         headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
         }),
-        body: JSON.stringify({ serverId: server._id }),
+        body: JSON.stringify({ serverId: serverInfomation._id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -95,7 +93,7 @@ export default function Categories({ server }: CategoriesProps) {
       console.error(error);
       console.log("Server fetch server member error");
     }
-  }, [server._id, user._id, fingerprintHash]);
+  }, [serverInfomation._id, user._id, fingerprintHash]);
 
   useEffect(() => {
     if (!user._id) return;
@@ -384,7 +382,7 @@ export default function Categories({ server }: CategoriesProps) {
                 >
                   Collapse All Categories
                 </ContextMenuItem>
-                {server.owner_id === user._id && (
+                {serverInfomation.owner_id === user._id && (
                   <>
                     <ContextMenuItem
                       onClick={() => {

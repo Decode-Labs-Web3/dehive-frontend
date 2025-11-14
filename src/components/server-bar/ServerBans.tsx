@@ -3,15 +3,11 @@
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect, useCallback } from "react";
-import { ServerProps } from "@/interfaces/server.interface";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
-
-interface ServerBansProps {
-  server: ServerProps;
-}
 
 interface MembersBanProps {
   _id: string;
@@ -46,8 +42,9 @@ interface UserProfile {
   mutual_followers_list: [];
 }
 
-export default function ServerBans({ server }: ServerBansProps) {
+export default function ServerBans() {
   const [loading, setLoading] = useState(false);
+  const { serverInfomation } = useServerInfomation();
   const [banSettingModal, setBanSettingModal] = useState<
     Record<string, boolean>
   >({});
@@ -56,7 +53,7 @@ export default function ServerBans({ server }: ServerBansProps) {
   >({});
   const [unbanModal, setUnbanModal] = useState<Record<string, boolean>>({});
   const [unbanForm, setUnbanForm] = useState({
-    server_id: server._id,
+    server_id: serverInfomation._id,
     target_user_dehive_id: "",
     reason: "",
   });
@@ -71,7 +68,7 @@ export default function ServerBans({ server }: ServerBansProps) {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify({ serverId: server._id }),
+        body: JSON.stringify({ serverId: serverInfomation._id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -101,7 +98,7 @@ export default function ServerBans({ server }: ServerBansProps) {
     } finally {
       setLoading(false);
     }
-  }, [server]);
+  }, [serverInfomation._id]);
 
   useEffect(() => {
     fetchBanList();
@@ -148,7 +145,7 @@ export default function ServerBans({ server }: ServerBansProps) {
       ) {
         fetchBanList();
         setUnbanForm({
-          server_id: server._id,
+          server_id: serverInfomation._id,
           target_user_dehive_id: "",
           reason: "",
         });

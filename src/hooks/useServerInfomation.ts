@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import {
   createServer,
   updateServer,
+  updateServerNFT,
   updateSeverTags,
   selectServerInfomationState,
 } from "@/store/slices/serverInfomationSlice";
@@ -33,10 +34,18 @@ export const useServerInfomation = () => {
     [dispatch]
   );
 
+  const updateServerNFTInformation = useCallback(
+    (server: ServerProps) => {
+      dispatch(updateServerNFT(server));
+    },
+    [dispatch]
+  );
+
   return {
     serverInfomation,
     setServerInfomation,
     updateServerInfomation,
     updateServerTag,
+    updateServerNFTInformation,
   };
 };
