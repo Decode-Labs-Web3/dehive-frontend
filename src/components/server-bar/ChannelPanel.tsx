@@ -30,7 +30,7 @@ interface ChannelPanelProps {
   channel: ChannelProps;
   handleDeleteChannel: (channelId: string) => void;
   setChannelPanel: React.Dispatch<
-    React.SetStateAction<Record<string, boolean>>
+    React.SetStateAction<boolean>
   >;
 }
 
@@ -81,10 +81,6 @@ export default function ChannelPanel({
         response.message === "Operation successful"
       ) {
         editChannelRoot(channelId, editChannelForm.name);
-        setChannelPanel((prev) => ({
-          ...prev,
-          [channel._id]: true,
-        }));
       }
     } catch (error) {
       console.error(error);
@@ -186,10 +182,7 @@ export default function ChannelPanel({
                 disabled={channelNameChange}
                 onClick={() => {
                   if (channelNameChange) return;
-                  setChannelPanel((prev) => ({
-                    ...prev,
-                    [channel._id]: false,
-                  }));
+                  setChannelPanel((prev) => (false));
                 }}
                 className="flex flex-col items-center gap-1 text-xs uppercase bg-background text-foreground hover:bg-accent"
               >

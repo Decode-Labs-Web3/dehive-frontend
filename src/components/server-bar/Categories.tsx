@@ -44,15 +44,14 @@ interface CategoriesProps {
 
 export default function Categories({ server }: CategoriesProps) {
   const { user } = useUser();
-  const { serverRoot, createChannelRoot ,deleteCategoryRoot, moveChannelRoot } = useServerRoot();
+  const { serverRoot, createChannelRoot, deleteCategoryRoot, moveChannelRoot } =
+    useServerRoot();
   const { serverId } = useParams();
   const { fingerprintHash } = useFingerprint();
   const { deleteCategory, moveChannel, createChannel } = useChannelMember();
   const [loading, setLoading] = useState(false);
   const [isPrivileged, setIsPrivileged] = useState(false);
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  // const [categories, setCategories] = useState<CategoryProps[]>([]);
-  const [channelPanel, setChannelPanel] = useState<Record<string, boolean>>({});
   const [createChannelModal, setCreateChannelModal] = useState<
     Record<string, boolean>
   >({});
@@ -66,8 +65,6 @@ export default function Categories({ server }: CategoriesProps) {
   const [editCategoryModal, setEditCategoryModal] = useState<
     Record<string, boolean>
   >({});
-  // const [ channelModal, setChannelModal ] = useState<Record<string, boolean>>({})
-  // console.log(category);
 
   const fetchMember = useCallback(async () => {
     try {
@@ -141,17 +138,6 @@ export default function Categories({ server }: CategoriesProps) {
           category._id,
           prev[category._id] ?? false,
         ])
-      )
-    );
-
-    setChannelPanel((prev) =>
-      Object.fromEntries(
-        serverRoot.flatMap((category: CategoryProps) =>
-          category.channels.map((channel) => [
-            channel._id,
-            prev[channel._id] ?? false,
-          ])
-        )
       )
     );
   }, [serverRoot]);
@@ -274,7 +260,6 @@ export default function Categories({ server }: CategoriesProps) {
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        // fetchCategoryInfo();
         moveChannel(channelId, targetCategoryId);
         console.log("moving channel successfully, slient move");
       }
@@ -297,36 +282,7 @@ export default function Categories({ server }: CategoriesProps) {
     )
       return;
 
-    moveChannelRoot(channelId, sourceCategoryId, targetCategoryId);
-
-    // setCategories((prev: CategoryProps[]) =>
-    //   prev.map((category: CategoryProps) => {
-    //     if (category._id === sourceCategoryId) {
-    //       return {
-    //         ...category,
-    //         channels: category.channels.filter(
-    //           (prevChannel) => prevChannel._id !== channelId
-    //         ),
-    //       };
-    //     }
-    //     if (category._id === targetCategoryId) {
-    //       const moved = prev
-    //         .find((prevCategory) => prevCategory._id === sourceCategoryId)
-    //         ?.channels.find((prevChannel) => prevChannel._id === channelId);
-    //       return moved
-    //         ? {
-    //             ...category,
-    //             channels: [
-    //               ...category.channels,
-    //               { ...moved, category_id: targetCategoryId },
-    //             ],
-    //           }
-    //         : category;
-    //     }
-    //     return category;
-    //   })
-    // );
-
+    moveChannelRoot(sourceCategoryId, targetCategoryId, channelId);
     try {
       await handleChannelMove(channelId, targetCategoryId);
     } catch (error) {
@@ -524,7 +480,7 @@ export default function Categories({ server }: CategoriesProps) {
               </DialogContent>
             </Dialog>
 
-            {/* create channal */}
+            {/* create channel */}
             {open[category._id] && (
               <ServerBarItems.CategoryDroppable
                 category={category}
@@ -532,21 +488,10 @@ export default function Categories({ server }: CategoriesProps) {
               >
                 {category.channels.length > 0 &&
                   category.channels.map((channel) => (
-                    // <div key={channel._id}>
-                    //   <ServerBarItems.Channels
-                    //     channel={channel}
-                    //     channelPanel={channelPanel}
-                    //     setChannelPanel={setChannelPanel}
-                    //     fetchCategoryInfo={fetchCategoryInfo}
-                    //     isPrivileged={isPrivileged}
-                    //   />
-                    // </div>
                     <ServerBarItems.ChannelDraggable
                       key={channel._id}
                       categoryId={category._id}
                       channel={channel}
-                      channelPanel={channelPanel}
-                      setChannelPanel={setChannelPanel}
                       isPrivileged={isPrivileged}
                     />
                   ))}

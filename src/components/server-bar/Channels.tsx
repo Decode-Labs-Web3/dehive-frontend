@@ -38,20 +38,15 @@ import {
 interface ChannelPageProps {
   channel: ChannelProps;
   isPrivileged: boolean;
-  channelPanel: Record<string, boolean>;
-  setChannelPanel: React.Dispatch<
-    React.SetStateAction<Record<string, boolean>>
-  >;
 }
 
 export default function Channels({
   channel,
-  channelPanel,
   isPrivileged,
-  setChannelPanel,
 }: ChannelPageProps) {
   const router = useRouter();
-  const { serverRoot, deleteChannelRoot } = useServerRoot();
+  const { deleteChannelRoot } = useServerRoot();
+    const [channelPanel, setChannelPanel] = useState<boolean>(false);
   const { fingerprintHash } = useFingerprint();
   const { serverId } = useParams<{ serverId: string }>();
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
@@ -96,10 +91,7 @@ export default function Channels({
         response.message === "Operation successful"
       ) {
         setDeleteChannelModal(false);
-        setChannelPanel((prev) => ({
-          ...prev,
-          [channel._id]: false,
-        }));
+        setChannelPanel(false);
         deleteChannel(channelId);
         deleteChannelRoot(channelId);
       }
@@ -202,10 +194,7 @@ export default function Channels({
               <ContextMenuItem
                 onClick={() => {
                   console.log("edit channel click trigger channel panel");
-                  setChannelPanel((prev) => ({
-                    ...prev,
-                    [channel._id]: true,
-                  }));
+                  setChannelPanel(true);
                 }}
                 className="w-full text-left px-3 py-2 hover:bg-accent"
               >
@@ -277,7 +266,7 @@ export default function Channels({
         </DialogContent>
       </Dialog>
 
-      {channelPanel[channel._id] && (
+      {channelPanel && (
         <>
           <ServerBarItems.ChannelPanel
             channel={channel}

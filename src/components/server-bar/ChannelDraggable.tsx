@@ -9,18 +9,12 @@ interface ChannelDraggableProps {
   channel: ChannelProps;
   categoryId: string;
   isPrivileged: boolean;
-  channelPanel: Record<string, boolean>;
-  setChannelPanel: React.Dispatch<
-    React.SetStateAction<Record<string, boolean>>
-  >;
 }
 
 export default function ChannelDraggable({
   channel,
   categoryId,
   isPrivileged,
-  channelPanel,
-  setChannelPanel,
 }: ChannelDraggableProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: channel._id,
@@ -64,8 +58,6 @@ export default function ChannelDraggable({
     >
       <ServerBarItems.Channels
         channel={channel}
-        channelPanel={channelPanel}
-        setChannelPanel={setChannelPanel}
         isPrivileged={isPrivileged}
       />
     </div>
