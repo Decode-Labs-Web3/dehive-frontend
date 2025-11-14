@@ -132,15 +132,15 @@
           ]
         }
       ],
-      "icon": "public/images/logos/tokens/dehive-logo.png"
+      "icon": "public/images/logos/dehive.png"
     },
     "win": {
       "target": "nsis",
-      "icon": "public/images/logos/tokens/dehive-logo.png"
+      "icon": "public/images/logos/dehive.png"
     },
     "linux": {
       "target": "AppImage",
-      "icon": "public/images/logos/tokens/dehive-logo.png"
+      "icon": "public/images/logos/dehive.png"
     },
     "afterPack": "./electron/after-pack.js"
   }

@@ -14,7 +14,7 @@ function createWindow(): void {
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
     },
-    icon: path.join(__dirname, "../public/images/logos/tokens/dehive-logo.png"),
+    icon: path.join(__dirname, "../public/images/logos/dehive.png"),
   });
 
   // Load the Next.js app

@@ -8,6 +8,10 @@
 
 ---
 
+_Built with Next.js 16, React 19, TypeScript 5.0, and cutting-edge Web3 technologies for the Final Project at University of Greenwich_
+
+---
+
 ## 📋 About The Project
 
 Dehive is a cutting-edge, blockchain-integrated real-time messaging platform that combines Discord-like functionality with Web3 features including token airdrops, smart contract messaging, and decentralized authentication. Built with Next.js 16 and optimized for maximum performance, it delivers secure, scalable communication through servers, channels, and direct messaging with advanced features like voice channels, file sharing, and blockchain-based rewards.
