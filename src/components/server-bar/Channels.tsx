@@ -7,7 +7,6 @@ import ServerBarItems from "@/components/server-bar";
 import { useServerRoot } from "@/hooks/useServerRoot";
 import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
-import { useChannelMember } from "@/hooks/useChannelMember";
 import { ChannelProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -40,24 +39,14 @@ interface ChannelPageProps {
   isPrivileged: boolean;
 }
 
-export default function Channels({
-  channel,
-  isPrivileged,
-}: ChannelPageProps) {
+export default function Channels({ channel, isPrivileged }: ChannelPageProps) {
   const router = useRouter();
   const { deleteChannelRoot } = useServerRoot();
-    const [channelPanel, setChannelPanel] = useState<boolean>(false);
+  const [channelPanel, setChannelPanel] = useState<boolean>(false);
   const { fingerprintHash } = useFingerprint();
   const { serverId } = useParams<{ serverId: string }>();
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
-  const { channelMembers, deleteChannel } = useChannelMember();
-  const userChannel = useMemo(() => {
-    return channelMembers.find(
-      (channelMember) => channelMember._id === channel._id
-    )?.participants;
-  }, [channelMembers, channel._id]);
-  // console.log("dewhdjwedjkwehdwkedhwedhewdiwedu",userChannel);
-
+  const { serverRoot } = useServerRoot();
   const handleChannelClick = () => {
     console.log("Channel clicked:", channel._id, channel.type);
     if (channel.type === "VOICE") {
@@ -68,6 +57,13 @@ export default function Channels({
   };
 
   const [loading, setLoading] = useState(false);
+  const userChannel = useMemo(() => {
+    const currentChannel = serverRoot
+      .flatMap((category) => category.channels)
+      .find((ch) => ch._id === channel._id);
+
+    return currentChannel?.participants || [];
+  }, [serverRoot, channel._id]);
 
   const handleDeleteChannel = async (channelId: string) => {
     setLoading(true);
@@ -92,7 +88,6 @@ export default function Channels({
       ) {
         setDeleteChannelModal(false);
         setChannelPanel(false);
-        deleteChannel(channelId);
         deleteChannelRoot(channelId);
       }
     } catch (error) {

@@ -10,7 +10,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useCallback, useEffect, useState } from "react";
 import { useServerMember } from "@/hooks/useServerMember";
-import { useChannelMember } from "@/hooks/useChannelMember";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelCallProvider from "@/providers/socketChannelCallProvider";
@@ -22,6 +21,7 @@ import {
   UserStatusChangedPayload,
   UserLeftChannelPayload,
 } from "@/interfaces/websocketChannelCall.interface";
+import Server from "@/app/app/channels/[serverId]/page";
 
 export default function ServerLayout({
   children,
@@ -35,40 +35,40 @@ export default function ServerLayout({
   const { serverId } = useParams<{
     serverId: string;
   }>();
-  const {
-    setChannelMember,
-    serverChannelMember,
-    joinChannelMember,
-    statusChannelMember,
-    leftChannelMember,
-  } = useChannelMember();
   const { setServerMember, updateServerStatus } = useServerMember();
-  const { serverRoot, createServerRoot } = useServerRoot();
+  const {
+    serverRoot,
+    createServerRoot,
+    userJoinServerRoot,
+    userJoinChannelRoot,
+    userLeftChannelRoot,
+    userStatusChangeRoot,
+  } = useServerRoot();
 
-  console.log("eewdwbhedjhwdbwed", serverRoot)
+  console.log("eewdwbhedjhwdbwed", serverRoot);
 
   const fetchCategoryInfo = useCallback(async () => {
-      try {
-        const apiResponse = await fetch("/api/servers/category/get", {
-          method: "POST",
-          headers: getApiHeaders(fingerprintHash, {
-            "Content-Type": "application/json",
-          }),
-          body: JSON.stringify({ serverId }),
-          cache: "no-store",
-          signal: AbortSignal.timeout(10000),
-        });
+    try {
+      const apiResponse = await fetch("/api/servers/category/get", {
+        method: "POST",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ serverId }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
 
-        if (!apiResponse.ok) {
-          console.log(apiResponse);
-          return;
-        }
-        const response = await apiResponse.json();
-        createServerRoot(response.data);
-      } catch (error) {
-        console.log(error);
+      if (!apiResponse.ok) {
+        console.log(apiResponse);
+        return;
       }
-    }, [serverId, fingerprintHash, createServerRoot]);
+      const response = await apiResponse.json();
+      createServerRoot(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [serverId, fingerprintHash, createServerRoot]);
 
   const fetchServerUsers = useCallback(async () => {
     if (!fingerprintHash || !serverId) return;
@@ -106,45 +106,10 @@ export default function ServerLayout({
     }
   }, [serverId, fingerprintHash, setServerMember]);
 
-  const fetchChannelList = useCallback(async () => {
-    if (!fingerprintHash || !serverId) return;
-    try {
-      const apiResponse = await fetch("/api/servers/channel-list", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ serverId }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (apiResponse.status === 404) {
-        setServerNotFound(true);
-        return;
-      }
-      if (!apiResponse.ok) {
-        console.error(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      if (
-        response.statusCode === 200 &&
-        response.message === "Operation successful"
-      ) {
-        // console.log("channelMembers in server layout hai:", response);
-        setChannelMember(response.data);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Server deleted channel fail");
-    }
-  }, [serverId, fingerprintHash, setChannelMember]);
-
   useEffect(() => {
-    fetchChannelList();
     fetchServerUsers();
     fetchCategoryInfo();
-  }, [fetchServerUsers, fetchChannelList, fetchCategoryInfo ]);
+  }, [fetchServerUsers, fetchCategoryInfo]);
 
   useEffect(() => {
     const socket = getStatusSocketIO();
@@ -164,49 +129,50 @@ export default function ServerLayout({
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onServerJoined = (p: JoinedServer) => {
-      serverChannelMember(p.channels);
+      console.log("serverJoined quang minh", p);
+      userJoinServerRoot(p.channels);
     };
     socket.on("serverJoined", onServerJoined);
     return () => {
       socket.off("serverJoined", onServerJoined);
     };
-  }, [serverChannelMember]);
+  }, [userJoinServerRoot]);
 
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
       console.log("userJoinedChannel quang minh", p);
-      joinChannelMember(p);
+      userJoinChannelRoot(p);
     };
     socket.on("userJoinedChannel", onUserJoinedChannel);
     return () => {
       socket.off("userJoinedChannel", onUserJoinedChannel);
     };
-  }, [joinChannelMember]);
+  }, [userJoinChannelRoot]);
 
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserStatusChanged = (p: UserStatusChangedPayload) => {
       console.log("userStatusChanged quang minh", p);
-      statusChannelMember(p);
+      userStatusChangeRoot(p);
     };
     socket.on("userStatusChanged", onUserStatusChanged);
     return () => {
       socket.off("userStatusChanged", onUserStatusChanged);
     };
-  }, [statusChannelMember]);
+  }, [userStatusChangeRoot]);
 
   useEffect(() => {
     const socket = getChannelCallSocketIO();
     const onUserLeftChannel = (p: UserLeftChannelPayload) => {
       console.log("userLeftChannel quang minh", p);
-      leftChannelMember(p);
+      userLeftChannelRoot(p);
     };
     socket.on("userLeftChannel", onUserLeftChannel);
     return () => {
       socket.off("userLeftChannel", onUserLeftChannel);
     };
-  }, [leftChannelMember]);
+  }, [userLeftChannelRoot]);
 
   if (serverNotFound) {
     return (

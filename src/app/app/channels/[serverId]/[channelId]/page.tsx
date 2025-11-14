@@ -12,7 +12,6 @@ import { useServerMember } from "@/hooks/useServerMember";
 import FilePreview from "@/components/common/FilePreview";
 import LinkPreview from "@/components/common/LinkPreview";
 import { useSoundContext } from "@/contexts/SoundContext";
-import { useChannelMember } from "@/hooks/useChannelMember";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -69,10 +68,6 @@ export default function ChannelMessagePage() {
     serverId: string;
     channelId: string;
   }>();
-  const { channelMembers } = useChannelMember();
-  const channelInfo = useMemo(() => {
-    return channelMembers.find((channel) => channel._id === channelId);
-  }, [channelId, channelMembers]);
   const [messageReply, setMessageReply] = useState<MessageChannel | null>(null);
   const [newMessage, setNewMessage] = useState<NewMessageProps>({
     content: "",
@@ -319,7 +314,7 @@ export default function ChannelMessagePage() {
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-foreground">
-                {channelInfo?.name}
+                {/* {channelInfo?.name} */}
               </h1>
             </div>
           </div>

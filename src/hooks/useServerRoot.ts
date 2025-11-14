@@ -1,6 +1,12 @@
 import { useCallback } from "react";
-import { CategoryProps, ChannelProps } from "@/interfaces/server.interface";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { CategoryProps, ChannelProps } from "@/interfaces/server.interface";
+import {
+  Channels,
+  UserStatusChangedPayload,
+  UserJoinedChannelPayload,
+  UserLeftChannelPayload,
+} from "@/interfaces/websocketChannelCall.interface";
 import {
   selectServerRoot,
   setServerRoot,
@@ -8,9 +14,13 @@ import {
   setCategoryUpdate,
   setCategoryDelete,
   setChannelMove,
-  setChannelDeleteRoot,
+  setChannelDelete,
   setChannelEdit,
   setChannelCreate,
+  userJoinServer,
+  userJoinChannel,
+  userLeftChannel,
+  userStatusChanged,
 } from "@/store/slices/serverRootSlice";
 interface UseServerRootResult {
   serverRoot: CategoryProps[];
@@ -26,6 +36,10 @@ interface UseServerRootResult {
   createCategory: (category: CategoryProps) => void;
   updateCategory: (categoryId: string, name: string) => void;
   createServerRoot: (categories: CategoryProps[]) => void;
+  userJoinServerRoot: (channelList: Channels[]) => void;
+  userJoinChannelRoot: (payload: UserJoinedChannelPayload) => void;
+  userLeftChannelRoot: (payload: UserLeftChannelPayload) => void;
+  userStatusChangeRoot: (payload: UserStatusChangedPayload) => void;
 }
 
 export const useServerRoot = (): UseServerRootResult => {
@@ -85,7 +99,35 @@ export const useServerRoot = (): UseServerRootResult => {
 
   const deleteChannelRoot = useCallback(
     (channelId: string) => {
-      dispatch(setChannelDeleteRoot({ channelId }));
+      dispatch(setChannelDelete({ channelId }));
+    },
+    [dispatch]
+  );
+
+  const userJoinServerRoot = useCallback(
+    (channelList: Channels[]) => {
+      dispatch(userJoinServer(channelList));
+    },
+    [dispatch]
+  );
+
+  const userJoinChannelRoot = useCallback(
+    (payload: UserJoinedChannelPayload) => {
+      dispatch(userJoinChannel(payload));
+    },
+    [dispatch]
+  );
+
+  const userLeftChannelRoot = useCallback(
+    (payload: UserLeftChannelPayload) => {
+      dispatch(userLeftChannel(payload));
+    },
+    [dispatch]
+  );
+
+  const userStatusChangeRoot = useCallback(
+    (payload: UserStatusChangedPayload) => {
+      dispatch(userStatusChanged(payload));
     },
     [dispatch]
   );
@@ -100,5 +142,9 @@ export const useServerRoot = (): UseServerRootResult => {
     deleteChannelRoot,
     editChannelRoot,
     createChannelRoot,
+    userJoinServerRoot,
+    userJoinChannelRoot,
+    userLeftChannelRoot,
+    userStatusChangeRoot,
   };
 };

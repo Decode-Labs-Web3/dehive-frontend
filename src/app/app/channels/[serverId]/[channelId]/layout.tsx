@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useParams, useRouter } from "next/navigation";
-import { useChannelMember } from "@/hooks/useChannelMember";
 
 export default function ChannelLayout({
   children,
@@ -15,21 +14,7 @@ export default function ChannelLayout({
     serverId: string;
     channelId: string;
   }>();
-  const { channelMembers } = useChannelMember();
   const [channelNotFound, setChannelNotFound] = useState(false);
-
-  useEffect(() => {
-    if (channelId && channelMembers) {
-      const channelExists = channelMembers.some(
-        (channel) => channel._id === channelId
-      );
-      if (!channelExists) {
-        setChannelNotFound(true);
-      } else {
-        setChannelNotFound(false);
-      }
-    }
-  }, [channelId, channelMembers]);
 
   if (channelNotFound) {
     return (

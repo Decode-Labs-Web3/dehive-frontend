@@ -12,7 +12,6 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import LinkPreview from "@/components/common/LinkPreview";
 import FilePreview from "@/components/common/FilePreview";
-import { useChannelMember } from "@/hooks/useChannelMember";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -74,10 +73,6 @@ export default function ChannelHistoryView({
   setMessageSearchId,
 }: ChannelHistoryViewProps) {
   const { user } = useUser();
-  const { channelMembers } = useChannelMember();
-  const channelInfo = useMemo(() => {
-    return channelMembers.find((channel) => channel._id === channelId);
-  }, [channelId, channelMembers]);
   const { fingerprintHash } = useFingerprint();
   const [fristLoad, setfirstLoad] = useState(0);
   const [isEndUp, setIsEndUp] = useState(false);
@@ -410,7 +405,7 @@ export default function ChannelHistoryView({
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-foreground">
-                {channelInfo?.name}
+                {/* {channelInfo?.name} */}
               </h1>
             </div>
           </div>
