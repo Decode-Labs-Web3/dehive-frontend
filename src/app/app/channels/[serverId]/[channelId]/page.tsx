@@ -346,9 +346,26 @@ export default function ChannelMessagePage() {
         <div className="flex flex-col gap-4">
           {loadingMore && (
             <>
-              <Skeleton className="h-20 w-full bg-muted" />
-              <Skeleton className="h-20 w-full bg-muted" />
-              <Skeleton className="h-20 w-full bg-muted" />
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
+                >
+                  <div className="flex w-full">
+                    <Skeleton className="w-8 h-8 rounded-full shrink-0 bg-muted" />
+                    <div className="flex w-full flex-col items-start gap-1 ml-3">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-4 w-20 bg-muted" />
+                        <Skeleton className="h-3 w-16 bg-muted" />
+                      </div>
+                      <div className="w-full px-2 py-1 rounded">
+                        <Skeleton className="h-4 w-full bg-muted mb-1" />
+                        <Skeleton className="h-4 w-3/4 bg-muted" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </>
           )}
           {messages

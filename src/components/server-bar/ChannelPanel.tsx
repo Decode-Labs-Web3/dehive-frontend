@@ -53,8 +53,9 @@ export default function ChannelPanel({
   };
 
   const channelNameChange = editChannelForm.name !== channel.name;
-
+  const [loading, setLoading] = useState(false);
   const handleEditChannel = async (channelId: string) => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/channel/patch", {
         method: "PATCH",
@@ -88,6 +89,8 @@ export default function ChannelPanel({
     } catch (error) {
       console.error(error);
       console.log("Server edit channel error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -213,6 +216,7 @@ export default function ChannelPanel({
                       value={editChannelForm.name}
                       onChange={handleEditChannelChange}
                       autoFocus
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -261,6 +265,7 @@ export default function ChannelPanel({
                         size="sm"
                         className="bg-success text-success-foreground hover:opacity-90"
                         onClick={() => handleEditChannel(channel._id)}
+                        disabled={loading}
                       >
                         Save Changes
                       </Button>

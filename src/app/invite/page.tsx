@@ -56,11 +56,11 @@ function InvitePageContent() {
           <div className="mb-6">
             <FontAwesomeIcon
               icon={faEnvelope}
-              className="text-indigo-400 text-6xl mb-4"
+              className="text-indigo-400 text-4xl md:text-6xl mb-4"
             />
           </div>
 
-          <CardTitle className="text-3xl font-bold text-gray-200 mb-4">
+          <CardTitle className="text-2xl md:text-3xl font-bold text-gray-200 mb-4">
             Processing Invite
           </CardTitle>
         </CardHeader>
@@ -69,7 +69,7 @@ function InvitePageContent() {
           <div className="mb-6">
             <FontAwesomeIcon
               icon={faSpinner}
-              className="text-indigo-400 text-4xl animate-spin"
+              className="text-indigo-400 text-3xl md:text-4xl animate-spin"
             />
           </div>
 
@@ -101,11 +101,11 @@ export default function InvitePage() {
               <div className="mb-6">
                 <FontAwesomeIcon
                   icon={faEnvelope}
-                  className="text-indigo-400 text-6xl mb-4"
+                  className="text-indigo-400 text-4xl md:text-6xl mb-4"
                 />
               </div>
 
-              <CardTitle className="text-3xl font-bold text-gray-200 mb-4">
+              <CardTitle className="text-2xl md:text-3xl font-bold text-gray-200 mb-4">
                 Loading...
               </CardTitle>
             </CardHeader>
@@ -114,7 +114,7 @@ export default function InvitePage() {
               <div className="mb-6">
                 <FontAwesomeIcon
                   icon={faSpinner}
-                  className="text-indigo-400 text-4xl animate-spin"
+                  className="text-indigo-400 text-3xl md:text-4xl animate-spin"
                 />
               </div>
 

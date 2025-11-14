@@ -29,10 +29,8 @@ export default function Login() {
         throw new Error(response.message || "Cannot start SSO");
 
       if (isElectron()) {
-        // In Electron, open external URL in default browser
         openExternal(response.data);
       } else {
-        // In browser, navigate normally
         router.push(response.data);
       }
     } catch (error) {
@@ -46,24 +44,26 @@ export default function Login() {
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
-          <Avatar className="w-40 h-20 mb-4 rounded-none">
+          <Avatar className="w-20 h-10 md:w-40 md:h-20 mb-4 rounded-none">
             <AvatarImage src="/images/logos/dehive.png" alt="Dehive Logo" />
             <AvatarFallback>DeHive logo</AvatarFallback>
           </Avatar>
-          <h1 className="text-gray-200 text-2xl font-bold">
+          <h1 className="text-gray-200 text-xl md:text-2xl font-bold">
             Welcome to Dehive
           </h1>
         </div>
 
         <Card className="shadow-lg bg-gray-800 border-gray-700">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-gray-200">Sign In</CardTitle>
+            <CardTitle className="text-xl md:text-2xl text-gray-200">
+              Sign In
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <Button
               onClick={handleLogin}
               disabled={loading}
-              className="w-full h-12 text-base font-semibold bg-gray-700 hover:bg-gray-600"
+              className="w-full h-10 md:h-12 text-sm md:text-base font-semibold bg-gray-700 hover:bg-gray-600"
             >
               <div className="flex items-center justify-center space-x-3">
                 {loading ? (

@@ -11,10 +11,6 @@ import { faRobot, faFaceSmile } from "@fortawesome/free-solid-svg-icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function AuthorizePageContent() {
-  // Ensure the first client render matches the server HTML to avoid hydration mismatches
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   const searchParams = useSearchParams();
   const router = useRouter();
   const ssoToken = searchParams.get("sso_token");
@@ -57,20 +53,22 @@ function AuthorizePageContent() {
   }, [handleAuthorize, fingerprintHash]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
-      <Card className="w-full max-w-xl bg-card border-border shadow-xl">
+    <div className="min-h-screen bg-gray-900 text-gray-200 flex items-center justify-center p-4 md:p-6">
+      <Card className="w-full max-w-md md:max-w-xl bg-gray-800 border-gray-700 shadow-xl">
         <CardHeader>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-lg">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 text-sm md:text-lg">
               <FontAwesomeIcon
                 icon={faRobot}
-                className="w-6 h-6 text-muted-foreground"
+                className="w-5 h-5 md:w-6 md:h-6 text-gray-400"
                 aria-hidden
               />
             </div>
             <div>
-              <CardTitle className="text-lg">Authorizing</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-base md:text-lg">
+                Authorizing
+              </CardTitle>
+              <p className="text-xs md:text-sm text-gray-400">
                 Finishing SSO flow — please wait
               </p>
             </div>
@@ -79,12 +77,12 @@ function AuthorizePageContent() {
 
         <CardContent>
           <div className="flex items-center gap-3">
-            <Spinner className="text-muted-foreground w-5 h-5" />
-            <div className="text-sm text-card-foreground flex items-center gap-2">
+            <Spinner className="text-gray-400 w-4 h-4 md:w-5 md:h-5" />
+            <div className="text-xs md:text-sm text-gray-200 flex items-center gap-2">
               <span>Waiting for authorization from the SSO server...</span>
               <FontAwesomeIcon
                 icon={faFaceSmile}
-                className="text-muted-foreground w-4 h-4"
+                className="text-gray-400 w-3 h-3 md:w-4 md:h-4"
               />
             </div>
           </div>
@@ -104,20 +102,22 @@ export default function AuthorizePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
-          <Card className="w-full max-w-xl bg-card border-border shadow-xl">
+        <div className="min-h-screen bg-gray-900 text-gray-200 flex items-center justify-center p-4 md:p-6">
+          <Card className="w-full max-w-md md:max-w-xl bg-gray-800 border-gray-700 shadow-xl">
             <CardHeader>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-lg">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 text-sm md:text-lg">
                   <FontAwesomeIcon
                     icon={faRobot}
-                    className="w-6 h-6 text-muted-foreground"
+                    className="w-5 h-5 md:w-6 md:h-6 text-gray-400"
                     aria-hidden
                   />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Loading...</CardTitle>
-                  <p className="text-sm text-muted-foreground">
+                  <CardTitle className="text-base md:text-lg">
+                    Loading...
+                  </CardTitle>
+                  <p className="text-xs md:text-sm text-gray-400">
                     Preparing SSO authorization
                   </p>
                 </div>
@@ -125,8 +125,8 @@ export default function AuthorizePage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3">
-                <Spinner className="text-muted-foreground w-5 h-5" />
-                <div className="text-sm text-card-foreground">
+                <Spinner className="text-gray-400 w-4 h-4 md:w-5 md:h-5" />
+                <div className="text-xs md:text-sm text-gray-200">
                   <span>Loading authorization page...</span>
                 </div>
               </div>

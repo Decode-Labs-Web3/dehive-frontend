@@ -7,7 +7,7 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect, useCallback } from "react";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import {  ServerProps } from "@/interfaces/server.interface";
+import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useInviteSuggestions } from "@/hooks/useInviteSuggestions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -69,7 +69,6 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
         response.message === "Operation successful"
       ) {
         setCode(response.data.code);
-        setLoading(false);
       }
     } catch (error) {
       console.log(error);
@@ -208,7 +207,7 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
               <Button
                 size="sm"
                 className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
-                disabled={isSended[suggestion.user_id]}
+                disabled={isSended[suggestion.user_id] || loading}
                 onClick={() => handleSendInvite(suggestion.user_id)}
               >
                 {isSended[suggestion.user_id] ? (
@@ -229,7 +228,7 @@ export default function ServerInvite({ server, setModal }: ServerInviteProps) {
             Or, send a server invite link to a friend
           </div>
           <Button
-            disabled={!code}
+            disabled={!code || loading}
             onClick={async (e) => {
               if (!code) return;
               const btn = e.currentTarget;

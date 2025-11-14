@@ -124,6 +124,7 @@ export default function ServerBans({ server }: ServerBansProps) {
       unbanForm.reason.trim() === ""
     )
       return;
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/members/unban", {
         method: "POST",
@@ -155,6 +156,8 @@ export default function ServerBans({ server }: ServerBansProps) {
     } catch (error) {
       console.error(error);
       console.log("Server error unban user");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -363,7 +366,8 @@ export default function ServerBans({ server }: ServerBansProps) {
                   type="text"
                   value={unbanForm.reason}
                   onChange={handleUnbanFormChange}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                  disabled={loading}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <div className="mt-4 flex flex-row gap-2">
                   <button
@@ -384,7 +388,7 @@ export default function ServerBans({ server }: ServerBansProps) {
                     Cancel
                   </button>
                   <button
-                    disabled={unbanForm.reason.trim() === ""}
+                    disabled={unbanForm.reason.trim() === "" || loading}
                     onClick={handleUnbanUser}
                     className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                   >

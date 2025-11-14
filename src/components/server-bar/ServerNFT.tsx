@@ -9,9 +9,9 @@ import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useState, useEffect, useCallback } from "react";
 import { ServerProps } from "@/interfaces/server.interface";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCoins,
   faNetworkWired,

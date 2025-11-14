@@ -46,8 +46,9 @@ export default function CategoryPanel({
   };
 
   const categoryNameChange = editCategoryForm.name !== category.name;
-
+  const [loading, setLoading] = useState(false);
   const handleEditCategory = async (categoryId: string) => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/category/patch", {
         method: "PATCH",
@@ -81,6 +82,8 @@ export default function CategoryPanel({
     } catch (error) {
       console.error(error);
       console.log("Server edit category error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -196,6 +199,7 @@ export default function CategoryPanel({
                         value={editCategoryForm.name}
                         onChange={handleEditCategoryChange}
                         autoFocus
+                        disabled={loading}
                         className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                       <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted-foreground">
@@ -239,6 +243,7 @@ export default function CategoryPanel({
                         size="sm"
                         className="bg-success text-success-foreground hover:opacity-90"
                         onClick={() => handleEditCategory(category._id)}
+                        disabled={loading}
                       >
                         Save Changes
                       </Button>

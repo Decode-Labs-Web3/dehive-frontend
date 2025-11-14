@@ -72,7 +72,10 @@ export default function Channels({
     }
   };
 
+  const [loading, setLoading] = useState(false);
+
   const handleDeleteChannel = async (channelId: string) => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/servers/channel/delete", {
         method: "DELETE",
@@ -97,12 +100,14 @@ export default function Channels({
           ...prev,
           [channel._id]: false,
         }));
-        deleteChannel(channelId)
+        deleteChannel(channelId);
         fetchCategoryInfo?.();
       }
     } catch (error) {
       console.error(error);
       console.log("Server deleted channel fail");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -264,6 +269,7 @@ export default function Channels({
                 console.log("confirm delete channel");
                 handleDeleteChannel(channel._id);
               }}
+              disabled={loading}
             >
               Delete
             </Button>
