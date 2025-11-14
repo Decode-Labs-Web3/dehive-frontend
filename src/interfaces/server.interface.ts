@@ -16,6 +16,18 @@ export interface ChannelProps {
   createdAt: string;
   updatedAt: string;
   __v: number;
+  participants?: UserInfoCall[];
+}
+
+interface UserInfoCall {
+  _id: string;
+  username: string;
+  display_name: string;
+  avatar_ipfs_hash: string;
+  isCamera: boolean;
+  isMic: boolean;
+  isHeadphone: boolean;
+  isLive: boolean;
 }
 
 export interface ServerProps {
@@ -28,7 +40,7 @@ export interface ServerProps {
   tags: string[];
   createdAt: string;
   updatedAt: string;
-  _v: boolean;
+  __v: number;
   nft_gated?: {
     enabled: boolean;
     network: string;

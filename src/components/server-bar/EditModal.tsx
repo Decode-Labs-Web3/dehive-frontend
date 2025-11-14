@@ -7,6 +7,7 @@ import { getApiHeaders } from "@/utils/api.utils";
 import ServerBarItems from "@/components/server-bar";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { ServerProps } from "@/interfaces/server.interface";
+const { useServerRoot } = await import("@/hooks/useServerRoot");
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import {
@@ -48,6 +49,7 @@ export default function EditModal({
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const { triggerRefeshServer } = useServerRefresh();
+  const { createCategory } = useServerRoot();
   // const [server, setServer] = useState<ServerProps>(server)
   const allFalse = {
     edit: false,
@@ -249,6 +251,7 @@ export default function EditModal({
         response.statusCode === 201 &&
         response.message === "Operation successful"
       ) {
+        createCategory(response.data);
         setModal({ ...allFalse });
         fetchServerInfo();
       }

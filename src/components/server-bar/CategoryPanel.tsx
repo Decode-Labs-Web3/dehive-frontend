@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
+import { useServerRoot } from "@/hooks/useServerRoot";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import { CategoryProps } from "@/interfaces/server.interface";
@@ -38,7 +39,7 @@ export default function CategoryPanel({
   const [editCategoryForm, setEditCategoryForm] = useState({
     name: category.name,
   });
-
+  const { updateCategory } = useServerRoot();
   const handleEditCategoryChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -73,6 +74,7 @@ export default function CategoryPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
+        updateCategory(categoryId, editCategoryForm.name);
         fetchCategoryInfo?.();
         setEditCategoryModal((prev) => ({
           ...prev,

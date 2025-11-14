@@ -5,6 +5,7 @@ import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useServerRoot } from "@/hooks/useServerRoot";
 import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useCallback, useEffect, useState } from "react";
@@ -42,6 +43,32 @@ export default function ServerLayout({
     leftChannelMember,
   } = useChannelMember();
   const { setServerMember, updateServerStatus } = useServerMember();
+  const { serverRoot, createServerRoot } = useServerRoot();
+
+  console.log("eewdwbhedjhwdbwed", serverRoot)
+
+  const fetchCategoryInfo = useCallback(async () => {
+      try {
+        const apiResponse = await fetch("/api/servers/category/get", {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ serverId }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (!apiResponse.ok) {
+          console.log(apiResponse);
+          return;
+        }
+        const response = await apiResponse.json();
+        createServerRoot(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }, [serverId, fingerprintHash, createServerRoot]);
 
   const fetchServerUsers = useCallback(async () => {
     if (!fingerprintHash || !serverId) return;
@@ -116,7 +143,8 @@ export default function ServerLayout({
   useEffect(() => {
     fetchChannelList();
     fetchServerUsers();
-  }, [fetchServerUsers, fetchChannelList]);
+    fetchCategoryInfo();
+  }, [fetchServerUsers, fetchChannelList, fetchCategoryInfo ]);
 
   useEffect(() => {
     const socket = getStatusSocketIO();
