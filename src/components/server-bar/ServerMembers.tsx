@@ -14,13 +14,11 @@ import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerMembersProps {
   server: ServerProps;
-  fetchServerInfo: () => void;
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function ServerMembers({
   server,
-  fetchServerInfo,
   setServerPanel,
 }: ServerMembersProps) {
   const { user } = useUser();
@@ -274,7 +272,6 @@ export default function ServerMembers({
           [memberId]: false,
         }));
         triggerRefeshServer?.();
-        fetchServerInfo?.();
         setServerPanel(false);
       }
     } catch (error) {

@@ -11,6 +11,7 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { SERVER_TAGS } from "@/constants/index.constants";
 import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,22 +46,21 @@ const tagIcon: Record<string, IconDefinition> = {
 
 interface ServerPanelProps {
   server: ServerProps;
-  fetchServerInfo: () => void;
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
   setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function ServerPanel({
   server,
-  fetchServerInfo,
   setServerPanel,
   setServerSettingModal,
 }: ServerPanelProps) {
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
-  const { triggerRefeshServer } = useServerRefresh();
-  const tabsListContainerRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(false);
+  const { triggerRefeshServer } = useServerRefresh();
+  const { updateServerInfomation, updateServerTag } = useServerInfomation();
+  const tabsListContainerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const element = tabsListContainerRef.current;
     if (element) {
@@ -139,7 +139,7 @@ export default function ServerPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        fetchServerInfo?.();
+        updateServerTag(nextTag ?? "");
       }
     } catch (error) {
       console.error(error);
@@ -185,13 +185,13 @@ export default function ServerPanel({
       }
 
       const response = await apiResponse.json();
-      console.log("this is response from edit server", response);
+      // console.log("this is response from edit server", response);
 
       if (
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        fetchServerInfo?.();
+        updateServerInfomation(editServerForm.name, editServerForm.description);
         setServerPanel(true);
       }
     } catch (error) {
@@ -358,7 +358,6 @@ export default function ServerPanel({
               <TabsContent value="members" className="mt-0">
                 <ServerBarItems.ServerMembers
                   server={server}
-                  fetchServerInfo={fetchServerInfo}
                   setServerPanel={setServerPanel}
                 />
               </TabsContent>

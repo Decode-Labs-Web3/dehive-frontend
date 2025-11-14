@@ -10,6 +10,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useCallback, useEffect, useState } from "react";
 import { useServerMember } from "@/hooks/useServerMember";
+import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelCallProvider from "@/providers/socketChannelCallProvider";
@@ -21,7 +22,6 @@ import {
   UserStatusChangedPayload,
   UserLeftChannelPayload,
 } from "@/interfaces/websocketChannelCall.interface";
-import Server from "@/app/app/channels/[serverId]/page";
 
 export default function ServerLayout({
   children,
@@ -31,6 +31,7 @@ export default function ServerLayout({
   const { user } = useUser();
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
+  const { serverInfomation, setServerInfomation } = useServerInfomation();
   const [serverNotFound, setServerNotFound] = useState(false);
   const { serverId } = useParams<{
     serverId: string;
@@ -45,7 +46,33 @@ export default function ServerLayout({
     userStatusChangeRoot,
   } = useServerRoot();
 
-  console.log("eewdwbhedjhwdbwed", serverRoot);
+  console.log(
+    "eewdwbhedjhwdbwededgwegdwejhdgekwudgweuiydkwgduywegduwekdgweud",
+    serverInfomation
+  );
+
+  const fetchServerInfo = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/servers/server-info", {
+        method: "POST",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ serverId }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        console.log(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      setServerInfomation(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [serverId, fingerprintHash, setServerInfomation]);
 
   const fetchCategoryInfo = useCallback(async () => {
     try {
@@ -107,9 +134,10 @@ export default function ServerLayout({
   }, [serverId, fingerprintHash, setServerMember]);
 
   useEffect(() => {
+    fetchServerInfo();
     fetchServerUsers();
     fetchCategoryInfo();
-  }, [fetchServerUsers, fetchCategoryInfo]);
+  }, [fetchServerUsers, fetchCategoryInfo, fetchServerInfo]);
 
   useEffect(() => {
     const socket = getStatusSocketIO();

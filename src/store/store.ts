@@ -1,9 +1,10 @@
-import { configureStore } from '@reduxjs/toolkit';
-import userReducer from './slices/userSlice';
-import serverRoot from './slices/serverRootSlice';
-import fingerprintReducer from './slices/fingerprintSlice';
-import directMemberReducer from './slices/directMemberSlice';
-import serverMemberReducer from './slices/serverMemberSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import userReducer from "./slices/userSlice";
+import serverRoot from "./slices/serverRootSlice";
+import fingerprintReducer from "./slices/fingerprintSlice";
+import directMemberReducer from "./slices/directMemberSlice";
+import serverMemberReducer from "./slices/serverMemberSlice";
+import serverInfomation from "./slices/serverInfomationSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     fingerprint: fingerprintReducer,
     directMembers: directMemberReducer,
     serverMembers: serverMemberReducer,
+    serverInfomation: serverInfomation,
   },
 });
 

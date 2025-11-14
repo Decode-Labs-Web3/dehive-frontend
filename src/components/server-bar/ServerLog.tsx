@@ -79,7 +79,6 @@ export default function ServerLog() {
   const prevScrollHeightRef = useRef(0);
 
   const handleScroll = () => {
-    console.log("scrolling");
     const element = logsRef.current;
     if (!element || isLastPage || loadingMore) return;
     if (element.scrollTop + element.clientHeight === element.scrollHeight) {

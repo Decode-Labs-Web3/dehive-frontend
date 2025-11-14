@@ -5,10 +5,11 @@ import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
 import { getApiHeaders } from "@/utils/api.utils";
 import ServerBarItems from "@/components/server-bar";
+import { useServerRoot } from "@/hooks/useServerRoot";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { ServerProps } from "@/interfaces/server.interface";
-const { useServerRoot } = await import("@/hooks/useServerRoot");
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import {
   faPen,
@@ -33,19 +34,18 @@ import { Label } from "@/components/ui/label";
 
 interface EditModalProps {
   server: ServerProps;
-  fetchServerInfo: () => void;
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
   setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function EditModal({
   server,
-  fetchServerInfo,
   setServerPanel,
   setServerSettingModal,
 }: EditModalProps) {
   const { user } = useUser();
   const router = useRouter();
+  const { updateServerInfomation } = useServerInfomation();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const { triggerRefeshServer } = useServerRefresh();
@@ -130,7 +130,7 @@ export default function EditModal({
       }
 
       const response = await apiResponse.json();
-      console.log("this is response from edit server", response);
+      // console.log("this is response from edit server", response);
 
       if (
         response.statusCode === 200 &&
@@ -139,7 +139,7 @@ export default function EditModal({
         setModal({
           ...allFalse,
         });
-        fetchServerInfo?.();
+        updateServerInfomation(editServerForm.name, editServerForm.description);
       }
     } catch (error) {
       console.error(error);

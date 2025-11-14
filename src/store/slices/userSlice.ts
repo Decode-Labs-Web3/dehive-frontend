@@ -1,6 +1,6 @@
 import type { RootState } from "@/store/store";
 import { UserDataProps } from "@/interfaces/user.interface";
-import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: UserDataProps = {
   _id: "",

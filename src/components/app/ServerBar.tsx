@@ -17,39 +17,6 @@ export default function ServerBar() {
   const { serverId } = useParams<{ serverId: string }>();
   const [server, setServer] = useState<ServerProps | null>(null);
   const [serverSettingModal, setServerSettingModal] = useState(false);
-
-  const fetchServerInfo = useCallback(async () => {
-    setLoading(true);
-    setServerSettingModal(false);
-
-    try {
-      const apiResponse = await fetch("/api/servers/server-info", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ serverId }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-
-      if (!apiResponse.ok) {
-        console.log(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      setServer(response.data);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [serverId, fingerprintHash]);
-
-  useEffect(() => {
-    fetchServerInfo();
-  }, [fetchServerInfo]);
-
   if (loading) {
     return (
       <div className="w-full h-full bg-background border border-border">
@@ -97,7 +64,6 @@ export default function ServerBar() {
               {server && (
                 <ServerBarItems.EditModal
                   server={server}
-                  fetchServerInfo={fetchServerInfo}
                   setServerPanel={setServerPanel}
                   setServerSettingModal={setServerSettingModal}
                 />
@@ -112,7 +78,6 @@ export default function ServerBar() {
       {serverPanel && server && (
         <ServerBarItems.ServerPanel
           server={server}
-          fetchServerInfo={fetchServerInfo}
           setServerPanel={setServerPanel}
           setServerSettingModal={setServerSettingModal}
         />
