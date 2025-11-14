@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
+import { useServerRoot } from "@/hooks/useServerRoot";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChannelProps } from "@/interfaces/server.interface";
@@ -27,7 +28,6 @@ import {
 
 interface ChannelPanelProps {
   channel: ChannelProps;
-  fetchCategoryInfo: () => void;
   handleDeleteChannel: (channelId: string) => void;
   setChannelPanel: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
@@ -37,7 +37,6 @@ interface ChannelPanelProps {
 export default function ChannelPanel({
   channel,
   setChannelPanel,
-  fetchCategoryInfo,
   handleDeleteChannel,
 }: ChannelPanelProps) {
   const { fingerprintHash } = useFingerprint();
@@ -54,6 +53,7 @@ export default function ChannelPanel({
 
   const channelNameChange = editChannelForm.name !== channel.name;
   const [loading, setLoading] = useState(false);
+  const { editChannelRoot } = useServerRoot();
   const handleEditChannel = async (channelId: string) => {
     setLoading(true);
     try {
@@ -80,7 +80,7 @@ export default function ChannelPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        fetchCategoryInfo?.();
+        editChannelRoot(channelId, editChannelForm.name);
         setChannelPanel((prev) => ({
           ...prev,
           [channel._id]: true,

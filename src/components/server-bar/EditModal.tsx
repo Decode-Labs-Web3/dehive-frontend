@@ -253,7 +253,7 @@ export default function EditModal({
       ) {
         createCategory(response.data);
         setModal({ ...allFalse });
-        fetchServerInfo();
+        setServerSettingModal(false);
       }
     } catch (error) {
       console.log(error);

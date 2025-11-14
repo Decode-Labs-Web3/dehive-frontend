@@ -8,7 +8,6 @@ import { ChannelProps } from "@/interfaces/server.interface";
 interface ChannelDraggableProps {
   channel: ChannelProps;
   categoryId: string;
-  fetchCategoryInfo: () => void;
   isPrivileged: boolean;
   channelPanel: Record<string, boolean>;
   setChannelPanel: React.Dispatch<
@@ -19,7 +18,6 @@ interface ChannelDraggableProps {
 export default function ChannelDraggable({
   channel,
   categoryId,
-  fetchCategoryInfo,
   isPrivileged,
   channelPanel,
   setChannelPanel,
@@ -68,7 +66,6 @@ export default function ChannelDraggable({
         channel={channel}
         channelPanel={channelPanel}
         setChannelPanel={setChannelPanel}
-        fetchCategoryInfo={fetchCategoryInfo}
         isPrivileged={isPrivileged}
       />
     </div>

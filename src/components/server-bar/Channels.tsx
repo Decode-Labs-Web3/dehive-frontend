@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import ServerBarItems from "@/components/server-bar";
+import { useServerRoot } from "@/hooks/useServerRoot";
 import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useChannelMember } from "@/hooks/useChannelMember";
@@ -36,7 +37,6 @@ import {
 
 interface ChannelPageProps {
   channel: ChannelProps;
-  fetchCategoryInfo: () => void;
   isPrivileged: boolean;
   channelPanel: Record<string, boolean>;
   setChannelPanel: React.Dispatch<
@@ -49,9 +49,9 @@ export default function Channels({
   channelPanel,
   isPrivileged,
   setChannelPanel,
-  fetchCategoryInfo,
 }: ChannelPageProps) {
   const router = useRouter();
+  const { serverRoot, deleteChannelRoot } = useServerRoot();
   const { fingerprintHash } = useFingerprint();
   const { serverId } = useParams<{ serverId: string }>();
   const [deleteChannelModal, setDeleteChannelModal] = useState(false);
@@ -101,7 +101,7 @@ export default function Channels({
           [channel._id]: false,
         }));
         deleteChannel(channelId);
-        fetchCategoryInfo?.();
+        deleteChannelRoot(channelId);
       }
     } catch (error) {
       console.error(error);
@@ -282,7 +282,6 @@ export default function Channels({
           <ServerBarItems.ChannelPanel
             channel={channel}
             setChannelPanel={setChannelPanel}
-            fetchCategoryInfo={fetchCategoryInfo}
             handleDeleteChannel={handleDeleteChannel}
           />
         </>

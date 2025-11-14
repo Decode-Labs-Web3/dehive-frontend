@@ -25,14 +25,12 @@ interface CategoryPanelProps {
     React.SetStateAction<Record<string, boolean>>
   >;
   handleDeleteCategory: (categoryId: string) => void;
-  fetchCategoryInfo: () => void;
 }
 
 export default function CategoryPanel({
   category,
   setEditCategoryModal,
   handleDeleteCategory,
-  fetchCategoryInfo,
 }: CategoryPanelProps) {
   const { fingerprintHash } = useFingerprint();
   const [panelValue, setPanelValue] = useState<string>("overview");
@@ -75,7 +73,6 @@ export default function CategoryPanel({
         response.message === "Operation successful"
       ) {
         updateCategory(categoryId, editCategoryForm.name);
-        fetchCategoryInfo?.();
         setEditCategoryModal((prev) => ({
           ...prev,
           [categoryId]: true,

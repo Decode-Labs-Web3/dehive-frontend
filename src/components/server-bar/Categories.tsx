@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import ServerBarItems from "@/components/server-bar";
+import { useServerRoot } from "@/hooks/useServerRoot";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useState, useCallback, useEffect } from "react";
@@ -43,14 +44,14 @@ interface CategoriesProps {
 
 export default function Categories({ server }: CategoriesProps) {
   const { user } = useUser();
+  const { serverRoot, createChannelRoot ,deleteCategoryRoot, moveChannelRoot } = useServerRoot();
   const { serverId } = useParams();
   const { fingerprintHash } = useFingerprint();
-  const { deleteCategory, moveChannel, createChannel } =
-    useChannelMember();
+  const { deleteCategory, moveChannel, createChannel } = useChannelMember();
   const [loading, setLoading] = useState(false);
   const [isPrivileged, setIsPrivileged] = useState(false);
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  const [categories, setCategories] = useState<CategoryProps[]>([]);
+  // const [categories, setCategories] = useState<CategoryProps[]>([]);
   const [channelPanel, setChannelPanel] = useState<Record<string, boolean>>({});
   const [createChannelModal, setCreateChannelModal] = useState<
     Record<string, boolean>
@@ -106,81 +107,54 @@ export default function Categories({ server }: CategoriesProps) {
     fetchMember();
   }, [user._id, fetchMember]);
 
-  const fetchCategoryInfo = useCallback(async () => {
-    setLoading(true);
-    try {
-      const apiResponse = await fetch("/api/servers/category/get", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ serverId }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-
-      if (!apiResponse.ok) {
-        console.log(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      setCategories(response.data);
-      setOpen((prev) =>
-        Object.fromEntries(
-          response.data.map((category: CategoryProps) => [
-            category._id,
-            prev[category._id] ?? true,
-          ])
-        )
-      );
-
-      setCreateChannelModal((prev) =>
-        Object.fromEntries(
-          response.data.map((category: CategoryProps) => [
-            category._id,
-            prev[category._id] ?? false,
-          ])
-        )
-      );
-
-      setDeleteCategoryModal((prev) =>
-        Object.fromEntries(
-          response.data.map((category: CategoryProps) => [
-            category._id,
-            prev[category._id] ?? false,
-          ])
-        )
-      );
-
-      setEditCategoryModal((prev) =>
-        Object.fromEntries(
-          response.data.map((category: CategoryProps) => [
-            category._id,
-            prev[category._id] ?? false,
-          ])
-        )
-      );
-
-      setChannelPanel((prev) =>
-        Object.fromEntries(
-          response.data.flatMap((category: CategoryProps) =>
-            category.channels.map((channel) => [
-              channel._id,
-              prev[channel._id] ?? false,
-            ])
-          )
-        )
-      );
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [serverId, fingerprintHash]);
-
   useEffect(() => {
-    fetchCategoryInfo();
-  }, [fetchCategoryInfo]);
+    setOpen((prev) =>
+      Object.fromEntries(
+        serverRoot.map((category: CategoryProps) => [
+          category._id,
+          prev[category._id] ?? true,
+        ])
+      )
+    );
+
+    setCreateChannelModal((prev) =>
+      Object.fromEntries(
+        serverRoot.map((category: CategoryProps) => [
+          category._id,
+          prev[category._id] ?? false,
+        ])
+      )
+    );
+
+    setDeleteCategoryModal((prev) =>
+      Object.fromEntries(
+        serverRoot.map((category: CategoryProps) => [
+          category._id,
+          prev[category._id] ?? false,
+        ])
+      )
+    );
+
+    setEditCategoryModal((prev) =>
+      Object.fromEntries(
+        serverRoot.map((category: CategoryProps) => [
+          category._id,
+          prev[category._id] ?? false,
+        ])
+      )
+    );
+
+    setChannelPanel((prev) =>
+      Object.fromEntries(
+        serverRoot.flatMap((category: CategoryProps) =>
+          category.channels.map((channel) => [
+            channel._id,
+            prev[channel._id] ?? false,
+          ])
+        )
+      )
+    );
+  }, [serverRoot]);
 
   const handleChannelForm = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChannelForm((prev) => ({
@@ -216,8 +190,8 @@ export default function Categories({ server }: CategoriesProps) {
         response.statusCode === 201 &&
         response.message === "Operation successful"
       ) {
-        createChannel(response.date);
-        fetchCategoryInfo();
+        createChannelRoot(response.data);
+        // createChannel(response.date);
         setCreateChannelModal((prev) => ({
           ...prev,
           [categoryId]: false,
@@ -266,10 +240,8 @@ export default function Categories({ server }: CategoriesProps) {
           ...prev,
           [categoryId]: false,
         }));
-
+        deleteCategoryRoot(categoryId);
         deleteCategory(categoryId);
-
-        fetchCategoryInfo();
       }
     } catch (error) {
       console.error(error);
@@ -325,39 +297,40 @@ export default function Categories({ server }: CategoriesProps) {
     )
       return;
 
-    setCategories((prev: CategoryProps[]) =>
-      prev.map((category: CategoryProps) => {
-        if (category._id === sourceCategoryId) {
-          return {
-            ...category,
-            channels: category.channels.filter(
-              (prevChannel) => prevChannel._id !== channelId
-            ),
-          };
-        }
-        if (category._id === targetCategoryId) {
-          const moved = prev
-            .find((prevCategory) => prevCategory._id === sourceCategoryId)
-            ?.channels.find((prevChannel) => prevChannel._id === channelId);
-          return moved
-            ? {
-                ...category,
-                channels: [
-                  ...category.channels,
-                  { ...moved, category_id: targetCategoryId },
-                ],
-              }
-            : category;
-        }
-        return category;
-      })
-    );
+    moveChannelRoot(channelId, sourceCategoryId, targetCategoryId);
+
+    // setCategories((prev: CategoryProps[]) =>
+    //   prev.map((category: CategoryProps) => {
+    //     if (category._id === sourceCategoryId) {
+    //       return {
+    //         ...category,
+    //         channels: category.channels.filter(
+    //           (prevChannel) => prevChannel._id !== channelId
+    //         ),
+    //       };
+    //     }
+    //     if (category._id === targetCategoryId) {
+    //       const moved = prev
+    //         .find((prevCategory) => prevCategory._id === sourceCategoryId)
+    //         ?.channels.find((prevChannel) => prevChannel._id === channelId);
+    //       return moved
+    //         ? {
+    //             ...category,
+    //             channels: [
+    //               ...category.channels,
+    //               { ...moved, category_id: targetCategoryId },
+    //             ],
+    //           }
+    //         : category;
+    //     }
+    //     return category;
+    //   })
+    // );
 
     try {
       await handleChannelMove(channelId, targetCategoryId);
     } catch (error) {
       console.error(error);
-      fetchCategoryInfo();
     }
   };
 
@@ -396,8 +369,8 @@ export default function Categories({ server }: CategoriesProps) {
 
   return (
     <DndContext onDragEnd={OnDragEnd}>
-      {categories.length > 0 &&
-        categories.map((category) => (
+      {serverRoot.length > 0 &&
+        serverRoot.map((category) => (
           <div key={category._id}>
             <ContextMenu>
               <ContextMenuTrigger asChild>
@@ -451,7 +424,7 @@ export default function Categories({ server }: CategoriesProps) {
                   onClick={() => {
                     setOpen(
                       Object.fromEntries(
-                        categories.map((category) => [category._id, false])
+                        serverRoot.map((category) => [category._id, false])
                       )
                     );
                   }}
@@ -503,7 +476,6 @@ export default function Categories({ server }: CategoriesProps) {
             {editCategoryModal[category._id] && (
               <ServerBarItems.CategoryPanel
                 category={category}
-                fetchCategoryInfo={fetchCategoryInfo}
                 setEditCategoryModal={setEditCategoryModal}
                 handleDeleteCategory={handleDeleteCategory}
               />
@@ -575,7 +547,6 @@ export default function Categories({ server }: CategoriesProps) {
                       channel={channel}
                       channelPanel={channelPanel}
                       setChannelPanel={setChannelPanel}
-                      fetchCategoryInfo={fetchCategoryInfo}
                       isPrivileged={isPrivileged}
                     />
                   ))}
