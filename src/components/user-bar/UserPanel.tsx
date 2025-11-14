@@ -15,10 +15,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRightFromBracket, faX } from "@fortawesome/free-solid-svg-icons";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CameraCaptureDialog } from "@/components/common/CameraCaptureDialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  faRightFromBracket,
+  faX,
+  faCamera,
+  faUpload,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   Card,
   CardContent,
@@ -66,6 +72,7 @@ export default function UserPanel({
     loading: false,
     new: false,
   });
+  const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
 
   const [updateUserInfo, setUpdateUserInfo] = useState({
     avatar_ipfs_hash: user.avatar_ipfs_hash,
@@ -109,29 +116,15 @@ export default function UserPanel({
 
   const openFilePicker = () => fileInputRef.current?.click();
 
-  const handleAvartarUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setLoadingAvartar((prev) => ({
-      ...prev,
-      loading: true,
-    }));
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      console.error("Invalid file type");
-      event.target.value = "";
-      return;
-    }
-    const formData = new FormData();
-    formData.append("file", file);
-
+  const uploadAvatarFile = async (file: File) => {
+    setLoadingAvartar((prev) => ({ ...prev, loading: true }));
     try {
+      const formData = new FormData();
+      formData.append("file", file);
+
       const apiResponse = await fetch("/api/user/avartar", {
         method: "POST",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: { "X-Frontend-Internal-Request": "true" },
         body: formData,
         cache: "no-store",
         signal: AbortSignal.timeout(20000),
@@ -143,19 +136,31 @@ export default function UserPanel({
       }
 
       const response = await apiResponse.json();
-
       setUpdateUserInfo((prev) => ({
         ...prev,
         avatar_ipfs_hash: response.ipfsHash,
       }));
+      console.log("avatar ipfs hash:", response.ipfsHash);
     } catch (error) {
       console.error("Avatar upload request error:", error);
-      return;
     } finally {
-      setLoadingAvartar({
-        new: true,
-        loading: false,
-      });
+      setLoadingAvartar({ new: true, loading: false });
+    }
+  };
+
+  const handleAvartarUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    try {
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        console.error("Invalid file type");
+        return;
+      }
+      await uploadAvatarFile(file);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -460,42 +465,58 @@ export default function UserPanel({
                     <Label className="block text-xs uppercase text-muted-foreground mb-3">
                       Avatar
                     </Label>
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      onClick={openFilePicker}
-                      className="w-32 h-32 rounded-xl border-2 border-border overflow-hidden relative cursor-pointer group flex items-center justify-center"
-                      aria-label="Change avatar"
-                      title="Click to change avatar"
-                    >
-                      {loadingAvatar.loading ? (
-                        <Skeleton className="w-32 h-32 rounded-xl" />
-                      ) : (
-                        <Avatar>
-                          <AvatarImage
-                            src={`https://ipfs.de-id.xyz/ipfs/${updateUserInfo.avatar_ipfs_hash}`}
-                          />
-                          <AvatarFallback>
-                            {user.display_name} Avatar
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors grid place-items-center text-white text-sm font-medium">
-                        <span className="opacity-0 group-hover:opacity-100 transition-opacity text-center">
-                          Click to upload
-                        </span>
+                    <div className="flex items-start gap-4">
+                      <div className="w-32 h-32 rounded-xl border-2 border-border overflow-hidden relative flex items-center justify-center">
+                        {loadingAvatar.loading ? (
+                          <Skeleton className="w-32 h-32 rounded-xl" />
+                        ) : (
+                          <Avatar>
+                            <AvatarImage
+                              src={`https://ipfs.de-id.xyz/ipfs/${updateUserInfo.avatar_ipfs_hash}`}
+                            />
+                            <AvatarFallback>
+                              {user.display_name} Avatar
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
                       </div>
-
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleAvartarUpload}
-                      />
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          variant="secondary"
+                          onClick={openFilePicker}
+                          disabled={loading || loadingAvatar.loading}
+                          className="justify-start"
+                        >
+                          <FontAwesomeIcon icon={faUpload} className="mr-2" />
+                          Upload image
+                        </Button>
+                        <Button
+                          onClick={() => setCameraDialogOpen(true)}
+                          disabled={loading || loadingAvatar.loading}
+                          className="justify-start"
+                        >
+                          <FontAwesomeIcon icon={faCamera} className="mr-2" />
+                          Take a photo
+                        </Button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleAvartarUpload}
+                        />
+                      </div>
                     </div>
                   </div>
+
+                  <CameraCaptureDialog
+                    open={cameraDialogOpen}
+                    onOpenChange={setCameraDialogOpen}
+                    onUpload={async (file) => {
+                      await uploadAvatarFile(file);
+                    }}
+                    loading={loading || loadingAvatar.loading}
+                  />
 
                   <div className="bg-secondary rounded-lg p-4 mb-4">
                     <Label

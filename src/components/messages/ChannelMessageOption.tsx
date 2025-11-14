@@ -1,18 +1,11 @@
 "use client";
 
-import Image from "next/image";
-import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
-import {FileUploadProps} from "@/interfaces/message.interface";
+import { FileUploadProps } from "@/interfaces/message.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  useCallback,
-  useRef,
-  useState,
-  useEffect,
-} from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import {
   faUpload,
   faCamera,
@@ -24,13 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Dialog,
-  DialogTitle,
-  DialogHeader,
-  DialogContent,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { CameraCaptureDialog } from "@/components/common/CameraCaptureDialog";
 
 interface ChannelMessageOptionProps {
   serverId: string;
@@ -41,51 +28,10 @@ export default function ChannelMessageOption({
   serverId,
   setListUploadFile,
 }: ChannelMessageOptionProps) {
-  const webcamRef = useRef<Webcam>(null);
   const [open, setOpen] = useState(false);
   const { fingerprintHash } = useFingerprint();
-  const [isReady, setIsReady] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [, setCapturedFile] = useState<File | null>(null);
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
-  const [hasCamError, setHasCamError] = useState<string | null>(null);
-
-  const handleUserMedia = useCallback(() => {
-    setHasCamError(null);
-    setIsReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (dialogOpen) {
-      setImgSrc(null);
-      setCapturedFile(null);
-    }
-  }, [dialogOpen]);
-
-  const capture = useCallback(() => {
-    if (!webcamRef.current) return;
-    const imageSrc = webcamRef.current.getScreenshot();
-    if (imageSrc) setImgSrc(imageSrc);
-  }, []);
-
-  const dataURLtoFile = (dataUrl: string, filename: string) => {
-    const arr = dataUrl.split(",");
-    const mime = arr[0].match(/:(.*?);/)?.[1] || "image/jpeg";
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) u8arr[n] = bstr.charCodeAt(n);
-    return new File([u8arr], filename, { type: mime });
-  };
-
-  const handleUploadPhoto = async () => {
-    if (!imgSrc) return;
-    const file = dataURLtoFile(imgSrc, `snapshot_${Date.now()}.jpg`);
-    setCapturedFile(file);
-    setDialogOpen(false);
-    await uploadFile(file);
-  };
+  const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadFile = useCallback(
@@ -122,7 +68,7 @@ export default function ChannelMessageOption({
         setLoading(false);
       }
     },
-    [ serverId, setListUploadFile, fingerprintHash ]
+    [serverId, setListUploadFile, fingerprintHash]
   );
 
   const handleUploadClick = useCallback(() => {
@@ -169,9 +115,10 @@ export default function ChannelMessageOption({
 
             <Button
               onClick={() => {
-                setDialogOpen(true);
+                setCameraDialogOpen(true);
                 setOpen(false);
               }}
+              disabled={loading}
             >
               <FontAwesomeIcon icon={faCamera} className="mr-2" />
               Take a photo
@@ -179,77 +126,14 @@ export default function ChannelMessageOption({
           </div>
         </PopoverContent>
       </Popover>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[640px]">
-          <DialogHeader>
-            <DialogTitle>Take a photo</DialogTitle>
-            <DialogDescription>
-              Take a photo using your device camera. Please grant camera access
-              when prompted.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="w-full flex flex-col items-center gap-3">
-            {hasCamError && (
-              <div className="text-sm text-red-600 w-full">{hasCamError}</div>
-            )}
-
-            {!imgSrc ? (
-              <div className="w-full rounded-xl overflow-hidden bg-black/70">
-                <Webcam
-                  ref={webcamRef}
-                  audio={false}
-                  screenshotFormat="image/jpeg"
-                  onUserMedia={handleUserMedia}
-                  onUserMediaError={(err) => {
-                    const msg = typeof err === "string" ? err : err?.message;
-                    setHasCamError(msg || "Cannot access camera");
-                  }}
-                  className="w-full h-[360px] object-cover"
-                />
-              </div>
-            ) : (
-              <div className="w-full rounded-xl overflow-hidden bg-black/70">
-                <Image
-                  src={imgSrc}
-                  alt="Captured"
-                  width={640}
-                  height={360}
-                  unoptimized
-                  className="w-full h-[360px] object-contain bg-black"
-                />
-              </div>
-            )}
-
-            <div className="flex items-center gap-2">
-              {!imgSrc ? (
-                <Button onClick={capture} disabled={!isReady}>
-                  <FontAwesomeIcon icon={faCamera} className="mr-2" />
-                  Capture
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setImgSrc(null);
-                      setCapturedFile(null);
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faRepeat} className="mr-2" />
-                    Retake picture
-                  </Button>
-                  <Button onClick={handleUploadPhoto}>
-                    <FontAwesomeIcon icon={faUpload} className="mr-2" />
-                    Upload this picture
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CameraCaptureDialog
+        open={cameraDialogOpen}
+        onOpenChange={setCameraDialogOpen}
+        onUpload={async (file) => {
+          await uploadFile(file);
+        }}
+        loading={loading}
+      />
     </>
   );
 }
