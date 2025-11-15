@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
+import { useServersList } from "@/hooks/useServersList";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -38,6 +39,7 @@ export default function ServerNFT() {
   const [isNFT, setIsNFT] = useState<boolean>(false);
   const { serverId } = useParams<{ serverId: string }>();
   const [statusNFT, setStatusNFT] = useState<boolean>(false);
+  const { updateServerNFTGating } = useServersList();
   const { serverInfomation, updateServerNFTInformation } =
     useServerInfomation();
   const [originalNftInfo, setOriginalNftInfo] = useState<NFTInfoProps | null>(
@@ -88,6 +90,7 @@ export default function ServerNFT() {
           response.statusCode === 200 &&
           response.message === "Operation successful"
         ) {
+          updateServerNFTGating(serverId, response.data);
           updateServerNFTInformation(response.data);
           setOriginalNftInfo(info);
           setIsNFT(true);
@@ -99,7 +102,12 @@ export default function ServerNFT() {
         setLoading(false);
       }
     },
-    [fingerprintHash, serverId, updateServerNFTInformation]
+    [
+      fingerprintHash,
+      serverId,
+      updateServerNFTInformation,
+      updateServerNFTGating,
+    ]
   );
 
   return (

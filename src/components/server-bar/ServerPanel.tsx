@@ -8,11 +8,11 @@ import { getApiHeaders } from "@/utils/api.utils";
 import { useEffect, useRef, useState } from "react";
 import ServerBarItems from "@/components/server-bar";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import { useServersList } from "@/hooks/useServersList";
 import { SERVER_TAGS } from "@/constants/index.constants";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -55,9 +55,9 @@ export default function ServerPanel({
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
-  const { triggerRefeshServer } = useServerRefresh();
+  const { removeServer, updateServerInfo, updateServerTags } = useServersList();
   const tabsListContainerRef = useRef<HTMLDivElement | null>(null);
-  const { serverInfomation ,updateServerInfomation, updateServerTag } = useServerInfomation();
+  const { serverInfomation ,updateServerInfomation, updateServerTag, removeServerInfomation } = useServerInfomation();
   useEffect(() => {
     const element = tabsListContainerRef.current;
     if (element) {
@@ -136,6 +136,7 @@ export default function ServerPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
+        updateServerTags(serverInfomation._id, nextTag ?? "");
         updateServerTag(nextTag ?? "");
       }
     } catch (error) {
@@ -188,6 +189,11 @@ export default function ServerPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
+        updateServerInfo(
+          serverInfomation._id,
+          editServerForm.name,
+          editServerForm.description
+        );
         updateServerInfomation(editServerForm.name, editServerForm.description);
         setServerPanel(true);
       }
@@ -227,8 +233,9 @@ export default function ServerPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
+        removeServer(serverInfomation._id)
+        removeServerInfomation();
         router.push("/app/channels/me");
-        triggerRefeshServer?.();
       }
     } catch (error) {
       console.error(error);

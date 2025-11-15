@@ -1,15 +1,12 @@
 "use client";
 
+import { useState} from "react";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
-import { getApiHeaders } from "@/utils/api.utils";
 import GuideBarItems from "@/components/guilde-bar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { useFingerprint } from "@/hooks/useFingerprint";
+import { useServersList } from "@/hooks/useServersList";
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
-import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { faCopy, faMessage } from "@fortawesome/free-solid-svg-icons";
@@ -27,18 +24,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export default function GuildBar({
-  refreshVersion,
-}: {
-  refreshVersion: number;
-}) {
+export default function GuildBar() {
   const { user } = useUser();
   const router = useRouter();
   const pathname = usePathname();
-  const { fingerprintHash } = useFingerprint();
-  const [loading, setLoading] = useState(false);
+  const { serversList, removeServer } = useServersList();
   const [isLeaving, setIsLeaving] = useState(false);
-  const [servers, setServers] = useState<ServerProps[]>([]);
 
   const getActiveId = () => {
     if (pathname.includes("/me")) return "me";
@@ -48,33 +39,6 @@ export default function GuildBar({
 
   const activeId = getActiveId();
   // console.log("This is activeId from Guide bar",activeId);
-
-  const handleGetServer = useCallback(async () => {
-    setLoading(true);
-    try {
-      const apiResponse = await fetch("/api/servers/server/get", {
-        method: "GET",
-        headers: getApiHeaders(fingerprintHash),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!apiResponse.ok) {
-        console.log(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      setServers(response.data);
-      // console.log("This is server data", response.data);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [fingerprintHash]);
-
-  useEffect(() => {
-    handleGetServer();
-  }, [handleGetServer, refreshVersion]);
 
   const handleLeaveServer = async (serverId: string) => {
     setIsLeaving(true);
@@ -101,7 +65,7 @@ export default function GuildBar({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        handleGetServer();
+        removeServer(serverId);
         router.push("/app/channels/me");
       }
     } catch (error) {
@@ -145,22 +109,9 @@ export default function GuildBar({
         <Separator className="mx-auto my-1 w-8 h-1 bg-border" />
 
         <ScrollArea className="-mx-3">
-          {loading && (
-            <>
-              {Array.from({ length: 20 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="relative mb-2 group w-10 h-10 rounded-md ml-3"
-                >
-                  <Skeleton className="w-10 h-10 rounded-md bg-muted" />
-                  <span className="absolute top-1/2 -translate-y-1/2 w-1 rounded-r-full -left-3 h-4 bg-blue-500" />
-                </div>
-              ))}
-            </>
-          )}
 
-          {servers.length > 0 &&
-            servers.map((server) => (
+          {serversList.length > 0 &&
+            serversList.map((server) => (
               <Tooltip key={server._id}>
                 <ContextMenu>
                   <ContextMenuTrigger asChild>
@@ -230,7 +181,7 @@ export default function GuildBar({
           <ScrollBar orientation="vertical" />
         </ScrollArea>
 
-        <GuideBarItems.AddServer handleGetServer={handleGetServer} />
+        <GuideBarItems.AddServer />
       </aside>
     </TooltipProvider>
   );

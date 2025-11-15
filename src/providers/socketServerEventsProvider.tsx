@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import { getServerEventsSocketIO } from "@/lib/socketioServerEventsSingleton";
 import type {
   ServerToClientServerEvents,
-  ClientToServerServerEvents,
   IdentityConfirmedEvent,
   ServerJoinedEvent,
   ServerDeletedEvent,
@@ -213,7 +212,6 @@ export default function SocketServerEventsProvider({
     };
   }, [socket, userId, serverId]);
 
-  // re-identify and re-join when inputs change while connected
   useEffect(() => {
     if (userId && socket.connected) socket.emit("identity", userId);
   }, [userId, socket]);

@@ -5,22 +5,19 @@ import { useUser } from "@/hooks/useUser";
 import { getApiHeaders } from "@/utils/api.utils";
 import { SoundContext } from "@/contexts/SoundContext";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import { useServersList } from "@/hooks/useServersList";
 import SkeletonApp from "@/components/common/SkeletonApp";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { fingerprintService } from "@/services/fingerprint.services";
 import { Web3Providers } from "@/components/message-onchain/wallet";
 import SocketStatusProvider from "@/providers/socketStatusProvider";
 import DirectCallProvider from "@/providers/socketDirectCallProvider";
-import { ServerRefreshContext } from "@/contexts/ServerRefreshContext.contexts";
 import SocketServerEventsProvider from "@/providers/socketServerEventsProvider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sound, setSound] = useState(true);
   const { user, setUser } = useUser();
-  const [refreshVersion, setRefreshVersion] = useState(0);
-  const triggerRefeshServer = useCallback(() => {
-    setRefreshVersion((prev) => prev + 1);
-  }, []);
+  const { setServerList } = useServersList();
   const { fingerprintHash, updateFingerprint } = useFingerprint();
 
   useEffect(() => {
@@ -77,11 +74,31 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [fingerprintHash, setUser]);
 
+  const handleGetServer = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/servers/server/get", {
+        method: "GET",
+        headers: getApiHeaders(fingerprintHash),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.log(apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      setServerList(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [fingerprintHash, setServerList]);
+
   useEffect(() => {
     if (fingerprintHash) {
       fetchUser();
+      handleGetServer();
     }
-  }, [fetchUser, fingerprintHash]);
+  }, [fetchUser, handleGetServer, fingerprintHash]);
 
   if (!user._id || !fingerprintHash) {
     return <SkeletonApp />;
@@ -92,10 +109,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SocketStatusProvider userId={user._id} fingerprintHash={fingerprintHash}>
         <SocketServerEventsProvider userId={user._id}>
           <SoundContext.Provider value={soundValue}>
-            <ServerRefreshContext.Provider value={{ triggerRefeshServer }}>
               <div className="relative flex h-screen overflow-hidden">
                 <div className="flex w-15 relative ">
-                  <App.GuildBar refreshVersion={refreshVersion} />
+                  <App.GuildBar />
                 </div>
 
                 <DirectCallProvider userId={user._id}>
@@ -108,7 +124,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <App.UserBar />
                 </div>
               </div>
-            </ServerRefreshContext.Provider>
           </SoundContext.Provider>
         </SocketServerEventsProvider>
       </SocketStatusProvider>

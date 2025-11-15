@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./slices/userSlice";
 import serverRoot from "./slices/serverRootSlice";
+import serverList from "./slices/serverListSlice";
 import fingerprintReducer from "./slices/fingerprintSlice";
 import directMemberReducer from "./slices/directMemberSlice";
 import serverMemberReducer from "./slices/serverMemberSlice";
@@ -14,6 +15,7 @@ export const store = configureStore({
     directMembers: directMemberReducer,
     serverMembers: serverMemberReducer,
     serverInfomation: serverInfomation,
+    serverList: serverList,
   },
 });
 

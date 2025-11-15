@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import { getApiHeaders } from "@/utils/api.utils";
 import ServerBarItems from "@/components/server-bar";
 import { useServerRoot } from "@/hooks/useServerRoot";
+import { useServersList } from "@/hooks/useServersList";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerInfomation } from "@/hooks/useServerInfomation";
-import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import {
   faPen,
   faGear,
@@ -42,11 +42,12 @@ export default function EditModal({
 }: EditModalProps) {
   const { user } = useUser();
   const router = useRouter();
+  const { removeServer, updateServerInfo } = useServersList();
   const { createCategory } = useServerRoot();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
-  const { triggerRefeshServer } = useServerRefresh();
-  const { serverInfomation, updateServerInfomation } = useServerInfomation();
+  const { serverInfomation, updateServerInfomation, removeServerInfomation } =
+    useServerInfomation();
   const allFalse = {
     edit: false,
     leave: false,
@@ -100,7 +101,8 @@ export default function EditModal({
 
     const missing = name === "" || description === "";
     const nothingChanged =
-      name === serverInfomation.name && description === serverInfomation.description;
+      name === serverInfomation.name &&
+      description === serverInfomation.description;
 
     if (missing || nothingChanged) return;
 
@@ -135,6 +137,11 @@ export default function EditModal({
         setModal({
           ...allFalse,
         });
+        updateServerInfo(
+          serverInfomation._id,
+          editServerForm.name,
+          editServerForm.description
+        );
         updateServerInfomation(editServerForm.name, editServerForm.description);
       }
     } catch (error) {
@@ -172,9 +179,10 @@ export default function EditModal({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
+        removeServer(serverInfomation._id);
+        removeServerInfomation();
         setModal({ ...allFalse });
         router.push("/app/channels/me");
-        triggerRefeshServer?.();
       }
     } catch (error) {
       console.error(error);
@@ -209,8 +217,9 @@ export default function EditModal({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
+        removeServer(serverInfomation._id);
+        removeServerInfomation();
         setModal({ ...allFalse });
-        triggerRefeshServer?.();
         router.push("/app/channels/me");
       }
     } catch (error) {
@@ -469,7 +478,8 @@ export default function EditModal({
           <DialogHeader>
             <DialogTitle>Delete Server</DialogTitle>
             <DialogDescription>
-              Please type the name of &quot;{serverInfomation.name}&quot; to confirm.
+              Please type the name of &quot;{serverInfomation.name}&quot; to
+              confirm.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -517,8 +527,9 @@ export default function EditModal({
           <DialogHeader>
             <DialogTitle>Leave {serverInfomation.name}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to leave {serverInfomation.name}? You won&apos;t be
-              able to rejoin this server unless you are re-invited.
+              Are you sure you want to leave {serverInfomation.name}? You
+              won&apos;t be able to rejoin this server unless you are
+              re-invited.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

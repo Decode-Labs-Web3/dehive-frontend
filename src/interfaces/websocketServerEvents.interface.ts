@@ -100,9 +100,8 @@ export interface CategoryCreatedEvent {
 }
 
 export interface CategoryUpdatedEvent {
-  serverId: string;
-  category: CategoryUpdated;
-  timestamp: string | Date;
+  categoryId: string;
+  name: string;
 }
 
 export interface Channel {
@@ -129,22 +128,22 @@ export interface ChannelMoved {
 }
 
 export interface ChannelCreatedEvent {
-  serverId: string;
-  channel: Channel;
-  timestamp: string | Date;
+  _id: string;
+  name: string;
+  type: string;
+  category_id: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface ChannelUpdatedEvent {
-  serverId: string;
-  channel: ChannelUpdated;
-  timestamp: string | Date;
+  _id: string;
+  name: string;
 }
 
 export interface ChannelDeletedEvent {
-  serverId: string;
   channelId: string;
-  channelName: string;
-  timestamp: string | Date;
 }
 
 export interface ChannelMovedEvent {

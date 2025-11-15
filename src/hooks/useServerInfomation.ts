@@ -7,6 +7,7 @@ import {
   updateServerNFT,
   updateSeverTags,
   selectServerInfomationState,
+  deleteServer,
 } from "@/store/slices/serverInfomationSlice";
 
 export const useServerInfomation = () => {
@@ -41,11 +42,16 @@ export const useServerInfomation = () => {
     [dispatch]
   );
 
+  const removeServerInfomation = useCallback(() => {
+    dispatch(deleteServer());
+  }, [dispatch]);
+
   return {
     serverInfomation,
     setServerInfomation,
     updateServerInfomation,
     updateServerTag,
     updateServerNFTInformation,
+    removeServerInfomation,
   };
 };

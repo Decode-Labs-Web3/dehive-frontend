@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Separator } from "@/components/ui/separator";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import { useServersList } from "@/hooks/useServersList";
 import { SERVER_TAGS } from "@/constants/index.constants";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -55,8 +56,9 @@ const tagIcon: Record<string, IconDefinition> = {
   "Artist & Creators": faPalette,
 };
 
-export default function AddServer({ handleGetServer }: AddServerProps) {
+export default function AddServer() {
   const router = useRouter();
+  const { addServer } = useServersList();
   const { fingerprintHash } = useFingerprint();
   const [modalOpen, setModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
@@ -105,7 +107,7 @@ export default function AddServer({ handleGetServer }: AddServerProps) {
         name: "",
         description: "",
       });
-      handleGetServer();
+      addServer(response.data);
       router.push(`/app/channels/${response.data._id}`);
     } catch (error) {
       console.error(error);
@@ -142,10 +144,10 @@ export default function AddServer({ handleGetServer }: AddServerProps) {
         response.statusCode === 201 &&
         response.message === "Operation successful"
       ) {
+        addServer(response.data.server);
         setModalOpen(false);
         setTab({ ...allFalse, tag: true });
         setInviteLink("");
-        handleGetServer();
         const serverId = String(response.data.server_id);
         router.push(`/app/channels/${serverId}`);
       }

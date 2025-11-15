@@ -48,4 +48,5 @@ export interface ServerProps {
     contract_address: string;
     required_balance: number;
   };
+  avatar_hash?: string;
 }
