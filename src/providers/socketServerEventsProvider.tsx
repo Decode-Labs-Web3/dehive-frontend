@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useServerRoot } from "@/hooks/useServerRoot";
 import { useServersList } from "@/hooks/useServersList";
+import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { getServerEventsSocketIO } from "@/lib/socketioServerEventsSingleton";
 import type {
   ServerToClientServerEvents,
@@ -50,7 +51,19 @@ export default function SocketServerEventsProvider({
     editChannelRoot,
     deleteChannelRoot,
   } = useServerRoot();
-  const { removeServer } = useServersList();
+  const {
+    removeServerList,
+    updateServerInfomationList,
+    updateServerTagsList,
+    updateServerAvatarList,
+    updateServerNFTGatingList,
+  } = useServersList();
+  const { updateServerInfomation,
+    updateServerTagInfomation,
+    updateServerNFTInformation,
+    removeServerInfomation,
+    updateServerAvatarInfomation,
+  } = useServerInfomation();
   const socket = useRef(getServerEventsSocketIO()).current;
 
   useEffect(() => {
@@ -114,9 +127,10 @@ export default function SocketServerEventsProvider({
     // Level 1: user-level events
     const onServerDeleted = (p: ServerDeletedEvent) => {
       console.log("[server-events server:deleted]", p);
-      removeServer(p.serverId);
+      removeServerList(p.serverId);
       if (serverId === p.serverId) {
         deleteServerRoot();
+        removeServerInfomation();
         router.push("/app/channels/me");
       }
     };
@@ -127,18 +141,34 @@ export default function SocketServerEventsProvider({
     // New server granular updates (user-level)
     const onServerInfoUpdated = (p: ServerInfoUpdatedEvent) => {
       console.log("[server-events server:info-updated]", p);
+      updateServerInfomationList(p.server_id, p.name, p.description);
+      if (serverId === p.server_id) {
+        updateServerInfomation(p.name, p.description);
+      }
     };
 
     const onServerAvatarUpdated = (p: ServerAvatarUpdatedEvent) => {
       console.log("[server-events server:avatar-updated]", p);
+      updateServerAvatarList(p.server_id, p.avatar_hash);
+      if (serverId === p.server_id) {
+        updateServerAvatarInfomation(p.avatar_hash);
+      }
     };
 
     const onServerTagsUpdated = (p: ServerTagsUpdatedEvent) => {
       console.log("[server-events server:tags-updated]", p);
+      updateServerTagsList(p.server_id, p.tags[0]);
+      if (serverId === p.server_id) {
+        updateServerTagInfomation(p.tags[0]);
+      }
     };
 
     const onServerNFTUpdated = (p: ServerNFTUpdatedEvent) => {
       console.log("[server-events server:nft-updated]", p);
+      updateServerNFTGatingList(p.server_id, p.server);
+      if (serverId === p.server_id) {
+        updateServerNFTInformation(p.server);
+      }
     };
 
     const onUserBanned = (p: UserBannedEvent) => {
@@ -282,16 +312,25 @@ export default function SocketServerEventsProvider({
     socket,
     userId,
     serverId,
-    removeServer,
-    deleteServerRoot,
     router,
+    editChannelRoot,
+    moveChannelRoot,
+    deleteServerRoot,
+    deleteChannelRoot,
+    createChannelRoot,
     createCategoryRoot,
     updateCategoryRoot,
     deleteCategoryRoot,
-    createChannelRoot,
-    editChannelRoot,
-    deleteChannelRoot,
-    moveChannelRoot,
+    removeServerList,
+    updateServerTagsList,
+    updateServerAvatarList,
+    updateServerNFTGatingList,
+    updateServerInfomationList,
+    removeServerInfomation,
+    updateServerInfomation,
+    updateServerTagInfomation,
+    updateServerNFTInformation,
+    updateServerAvatarInfomation,
   ]);
 
   useEffect(() => {

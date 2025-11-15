@@ -55,9 +55,9 @@ export default function ServerPanel({
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
-  const { removeServer, updateServerInfo, updateServerTags } = useServersList();
+  const { removeServerList, updateServerInfomationList, updateServerTagsList } = useServersList();
   const tabsListContainerRef = useRef<HTMLDivElement | null>(null);
-  const { serverInfomation ,updateServerInfomation, updateServerTag, removeServerInfomation } = useServerInfomation();
+  const { serverInfomation ,updateServerInfomation, updateServerTagInfomation, removeServerInfomation } = useServerInfomation();
   useEffect(() => {
     const element = tabsListContainerRef.current;
     if (element) {
@@ -136,8 +136,8 @@ export default function ServerPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        updateServerTags(serverInfomation._id, nextTag ?? "");
-        updateServerTag(nextTag ?? "");
+        updateServerTagsList(serverInfomation._id, nextTag ?? "");
+        updateServerTagInfomation(nextTag ?? "");
       }
     } catch (error) {
       console.error(error);
@@ -189,7 +189,7 @@ export default function ServerPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        updateServerInfo(
+        updateServerInfomationList(
           serverInfomation._id,
           editServerForm.name,
           editServerForm.description
@@ -233,7 +233,7 @@ export default function ServerPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        removeServer(serverInfomation._id)
+        removeServerList(serverInfomation._id)
         removeServerInfomation();
         router.push("/app/channels/me");
       }

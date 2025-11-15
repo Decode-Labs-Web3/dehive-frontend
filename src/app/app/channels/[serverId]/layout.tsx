@@ -37,7 +37,7 @@ export default function ServerLayout({
   const { serverId } = useParams<{
     serverId: string;
   }>();
-  const { setServerMember, updateServerStatus } = useServerMember();
+  const { setServerMember, updateServerStatusMember } = useServerMember();
   const {
     createServerRoot,
     userJoinServerRoot,
@@ -141,13 +141,13 @@ export default function ServerLayout({
     ) => {
       console.log("[ws me bar userStatusChanged] quang minh", p);
       if (typeof p === "string") return;
-      updateServerStatus(p.userId, p.status);
+      updateServerStatusMember(p.userId, p.status);
     };
     socket.on("userStatusChanged", onUserStatusChanged);
     return () => {
       socket.off("userStatusChanged", onUserStatusChanged);
     };
-  }, [updateServerStatus]);
+  }, [updateServerStatusMember]);
 
   useEffect(() => {
     const socket = getChannelCallSocketIO();

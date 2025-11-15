@@ -9,6 +9,7 @@ import {
   selectServerInfomationState,
   deleteServer,
   updateOwnership,
+  updateServerAvatar,
 } from "@/store/slices/serverInfomationSlice";
 
 export const useServerInfomation = () => {
@@ -29,7 +30,7 @@ export const useServerInfomation = () => {
     [dispatch]
   );
 
-  const updateServerTag = useCallback(
+  const updateServerTagInfomation = useCallback(
     (tag: string) => {
       dispatch(updateSeverTags({ tag }));
     },
@@ -47,6 +48,13 @@ export const useServerInfomation = () => {
     dispatch(deleteServer());
   }, [dispatch]);
 
+  const updateServerAvatarInfomation = useCallback(
+    (avatar_hash: string) => {
+      dispatch(updateServerAvatar({ avatar_hash }));
+    },
+    [dispatch]
+  );
+
   const updateServerOwnershipInfomation = useCallback(
     (newOwnerId: string) => {
       dispatch(updateOwnership({ newOwnerId }));
@@ -58,9 +66,10 @@ export const useServerInfomation = () => {
     serverInfomation,
     setServerInfomation,
     updateServerInfomation,
-    updateServerTag,
+    updateServerTagInfomation,
     updateServerNFTInformation,
     removeServerInfomation,
     updateServerOwnershipInfomation,
+    updateServerAvatarInfomation,
   };
 };

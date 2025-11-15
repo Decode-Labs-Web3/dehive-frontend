@@ -10,7 +10,7 @@ import {
 interface UseServerMemberResult {
   serverMembers: ServerMemberListProps[];
   setServerMember: (memberList: ServerMemberListProps[]) => void;
-  updateServerStatus: (userId: string, status: string) => void;
+  updateServerStatusMember: (userId: string, status: string) => void;
 }
 
 export const useServerMember = (): UseServerMemberResult => {
@@ -25,7 +25,7 @@ export const useServerMember = (): UseServerMemberResult => {
     [dispatch]
   );
 
-  const updateServerStatus = useCallback(
+  const updateServerStatusMember = useCallback(
     (userId: string, status: string) => {
       dispatch(updateMemberStatus({ userId, status }));
     },
@@ -35,6 +35,6 @@ export const useServerMember = (): UseServerMemberResult => {
   return {
     serverMembers,
     setServerMember,
-    updateServerStatus,
+    updateServerStatusMember,
   };
 };

@@ -37,6 +37,10 @@ const serverInfoSlice = createSlice({
     updateServerNFT(_state, action: PayloadAction<ServerProps>) {
       return action.payload;
     },
+    updateServerAvatar(state, action: PayloadAction<{ avatar_hash: string }>) {
+      const { avatar_hash } = action.payload;
+      state.avatar_hash = avatar_hash;
+    },
     updateOwnership(state, action: PayloadAction<{ newOwnerId: string }>) {
       const { newOwnerId } = action.payload;
       state.owner_id = newOwnerId;
@@ -54,6 +58,7 @@ export const {
   updateServerNFT,
   deleteServer,
   updateOwnership,
+  updateServerAvatar,
 } = serverInfoSlice.actions;
 export default serverInfoSlice.reducer;
 

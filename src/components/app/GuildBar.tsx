@@ -28,7 +28,7 @@ export default function GuildBar() {
   const { user } = useUser();
   const router = useRouter();
   const pathname = usePathname();
-  const { serversList, removeServer } = useServersList();
+  const { serversList, removeServerList } = useServersList();
   const [isLeaving, setIsLeaving] = useState(false);
 
   const getActiveId = () => {
@@ -65,7 +65,7 @@ export default function GuildBar() {
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        removeServer(serverId);
+        removeServerList(serverId);
         router.push("/app/channels/me");
       }
     } catch (error) {

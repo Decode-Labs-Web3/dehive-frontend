@@ -24,49 +24,49 @@ export const useServersList = () => {
     [dispatch]
   );
 
-  const addServer = useCallback(
+  const addServerList = useCallback(
     (server: ServerProps) => {
       dispatch(createServer(server));
     },
     [dispatch]
   );
 
-  const removeServer = useCallback(
+  const removeServerList = useCallback(
     (serverId: string) => {
       dispatch(deleteServer({ serverId }));
     },
     [dispatch]
   );
 
-  const updateServerInfo = useCallback(
+  const updateServerInfomationList = useCallback(
     (serverId: string, name: string, description: string) => {
       dispatch(editServerInfo({ serverId, name, description }));
     },
     [dispatch]
   );
 
-  const updateServerTags = useCallback(
+  const updateServerTagsList = useCallback(
     (serverId: string, tags: string) => {
       dispatch(editSereverTags({ serverId, tags }));
     },
     [dispatch]
   );
 
-  const updateServerAvatar = useCallback(
+  const updateServerAvatarList = useCallback(
     (serverId: string, avatar_hash: string) => {
       dispatch(editServerAvatar({ serverId, avatar_hash }));
     },
     [dispatch]
   );
 
-  const updateServerNFTGating = useCallback(
+  const updateServerNFTGatingList = useCallback(
     (serverId: string, server: ServerProps) => {
       dispatch(editServerNFTGating({ serverId, server }));
     },
     [dispatch]
   );
 
-  const updateServerOwnership = useCallback(
+  const updateServerOwnershipList = useCallback(
     (serverId: string, newOwnerId: string) => {
       dispatch(editOwnership({ serverId, newOwnerId }));
     },
@@ -76,12 +76,12 @@ export const useServersList = () => {
   return {
     serversList,
     setServerList,
-    addServer,
-    removeServer,
-    updateServerInfo,
-    updateServerTags,
-    updateServerAvatar,
-    updateServerNFTGating,
-    updateServerOwnership,
+    addServerList,
+    removeServerList,
+    updateServerInfomationList,
+    updateServerTagsList,
+    updateServerAvatarList,
+    updateServerNFTGatingList,
+    updateServerOwnershipList,
   };
 };

@@ -1,3 +1,4 @@
+import { ServerProps } from "./server.interface";
 // ===== Server -> Client =====
 export interface DebugEvent {
   message: string;
@@ -47,7 +48,7 @@ export interface ServerTagsUpdatedEvent {
 
 export interface ServerNFTUpdatedEvent {
   server_id: string;
-  server: unknown;
+  server: ServerProps;
   timestamp: string | Date;
 }
 
