@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useUser } from "@/hooks/useUser";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useServersList } from "@/hooks/useServersList";
 import { useState, useEffect, useCallback } from "react";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MemberInServerProps } from "@/interfaces/user.interface";
 import { useServerInfomation } from "@/hooks/useServerInfomation";
-import { useServerRefresh } from "@/contexts/ServerRefreshContext.contexts";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
@@ -16,13 +16,12 @@ interface ServerMembersProps {
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function ServerMembers({
-  setServerPanel,
-}: ServerMembersProps) {
+export default function ServerMembers({ setServerPanel }: ServerMembersProps) {
   const { user } = useUser();
-  const { serverInfomation } = useServerInfomation();
-  const { triggerRefeshServer } = useServerRefresh();
   const [loading, setLoading] = useState(false);
+  const { updateServerOwnership } = useServersList();
+  const { serverInfomation, updateServerOwnershipInfomation } =
+    useServerInfomation();
   const [kickForm, setKickForm] = useState({
     server_id: serverInfomation._id,
     target_user_dehive_id: "",
@@ -270,7 +269,8 @@ export default function ServerMembers({
           ...prev,
           [memberId]: false,
         }));
-        triggerRefeshServer?.();
+        updateServerOwnershipInfomation(memberId);
+        updateServerOwnership(serverInfomation._id, memberId);
         setServerPanel(false);
       }
     } catch (error) {
@@ -840,8 +840,8 @@ export default function ServerMembers({
                 <div className="px-6 py-4 border-b border-border">
                   <h2 className="text-lg font-semibold">Transfer Ownership</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    This will transfer ownership of {serverInfomation.name} server to @
-                    {membership.username}. This cannot be undone!
+                    This will transfer ownership of {serverInfomation.name}{" "}
+                    server to @{membership.username}. This cannot be undone!
                   </p>
                 </div>
 

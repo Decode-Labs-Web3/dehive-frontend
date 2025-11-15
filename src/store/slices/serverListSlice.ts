@@ -62,6 +62,16 @@ const serverListSlice = createSlice({
         };
       }
     },
+    editOwnership(
+      state,
+      actions: PayloadAction<{ serverId: string; newOwnerId: string }>
+    ) {
+      const { serverId, newOwnerId } = actions.payload;
+      const server = state.find((server) => server._id === serverId);
+      if (server) {
+        server.owner_id = newOwnerId;
+      }
+    },
     deleteServer(state, actions: PayloadAction<{ serverId: string }>) {
       const { serverId } = actions.payload;
       return state.filter((server) => server._id !== serverId);
@@ -76,6 +86,7 @@ export const {
   editSereverTags,
   editServerAvatar,
   editServerNFTGating,
+  editOwnership,
   deleteServer,
 } = serverListSlice.actions;
 export default serverListSlice.reducer;

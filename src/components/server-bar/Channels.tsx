@@ -221,7 +221,7 @@ export default function Channels({ channel, isPrivileged }: ChannelPageProps) {
       </ContextMenu>
 
       <Dialog open={deleteChannelModal} onOpenChange={setDeleteChannelModal}>
-        <DialogContent className="z-[1000] max-w-md">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Delete Channel</DialogTitle>
             <DialogDescription className="mt-1">

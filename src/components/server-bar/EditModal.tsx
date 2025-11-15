@@ -43,7 +43,7 @@ export default function EditModal({
   const { user } = useUser();
   const router = useRouter();
   const { removeServer, updateServerInfo } = useServersList();
-  const { createCategory } = useServerRoot();
+  const { createCategoryRoot } = useServerRoot();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const { serverInfomation, updateServerInfomation, removeServerInfomation } =
@@ -256,7 +256,7 @@ export default function EditModal({
         response.statusCode === 201 &&
         response.message === "Operation successful"
       ) {
-        createCategory(response.data);
+        createCategoryRoot(response.data);
         setModal({ ...allFalse });
         setServerSettingModal(false);
       }

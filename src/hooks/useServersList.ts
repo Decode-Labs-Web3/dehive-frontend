@@ -10,6 +10,7 @@ import {
   editSereverTags,
   editServerAvatar,
   editServerNFTGating,
+  editOwnership,
 } from "@/store/slices/serverListSlice";
 
 export const useServersList = () => {
@@ -65,6 +66,13 @@ export const useServersList = () => {
     [dispatch]
   );
 
+  const updateServerOwnership = useCallback(
+    (serverId: string, newOwnerId: string) => {
+      dispatch(editOwnership({ serverId, newOwnerId }));
+    },
+    [dispatch]
+  );
+
   return {
     serversList,
     setServerList,
@@ -74,5 +82,6 @@ export const useServersList = () => {
     updateServerTags,
     updateServerAvatar,
     updateServerNFTGating,
+    updateServerOwnership,
   };
 };

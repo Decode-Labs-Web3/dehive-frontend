@@ -37,7 +37,7 @@ export default function CategoryPanel({
   const [editCategoryForm, setEditCategoryForm] = useState({
     name: category.name,
   });
-  const { updateCategory } = useServerRoot();
+  const { updateCategoryRoot } = useServerRoot();
   const handleEditCategoryChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -72,7 +72,7 @@ export default function CategoryPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        updateCategory(categoryId, editCategoryForm.name);
+        updateCategoryRoot(categoryId, editCategoryForm.name);
         setEditCategoryModal((prev) => ({
           ...prev,
           [categoryId]: true,

@@ -37,14 +37,24 @@ const serverInfoSlice = createSlice({
     updateServerNFT(_state, action: PayloadAction<ServerProps>) {
       return action.payload;
     },
+    updateOwnership(state, action: PayloadAction<{ newOwnerId: string }>) {
+      const { newOwnerId } = action.payload;
+      state.owner_id = newOwnerId;
+    },
     deleteServer() {
       return initialState;
     },
   },
 });
 
-export const { createServer, updateServer, updateSeverTags, updateServerNFT, deleteServer } =
-  serverInfoSlice.actions;
+export const {
+  createServer,
+  updateServer,
+  updateSeverTags,
+  updateServerNFT,
+  deleteServer,
+  updateOwnership,
+} = serverInfoSlice.actions;
 export default serverInfoSlice.reducer;
 
 const selectServerInfomation = (state: RootState) => state.serverInfomation;

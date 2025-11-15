@@ -25,14 +25,29 @@ export interface ServerDeletedEvent {
   timestamp: string | Date;
 }
 
-export interface ServerUpdatedEvent {
-  serverId: string;
-  updates: {
-    name?: string;
-    description?: string;
-    avatar?: string | null;
-    [key: string]: unknown;
-  };
+// New granular server update events
+export interface ServerInfoUpdatedEvent {
+  server_id: string;
+  name: string;
+  description: string;
+  timestamp: string | Date;
+}
+
+export interface ServerAvatarUpdatedEvent {
+  server_id: string;
+  avatar_hash: string;
+  timestamp: string | Date;
+}
+
+export interface ServerTagsUpdatedEvent {
+  server_id: string;
+  tags: string[];
+  timestamp: string | Date;
+}
+
+export interface ServerNFTUpdatedEvent {
+  server_id: string;
+  server: unknown;
   timestamp: string | Date;
 }
 
@@ -75,28 +90,18 @@ export interface MemberLeftEvent {
   timestamp: string | Date;
 }
 
-export interface Category {
-  _id: string;
-  name: string;
-  position?: number;
-}
-
-export interface CategoryUpdated extends Partial<Category> {
-  _id: string;
-  [key: string]: unknown;
-}
-
 export interface CategoryDeletedEvent {
-  serverId: string;
   categoryId: string;
-  categoryName: string;
-  timestamp: string | Date;
 }
 
 export interface CategoryCreatedEvent {
-  serverId: string;
-  category: Category;
-  timestamp: string | Date;
+  _id: string;
+  name: string;
+  server_id: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  channels: unknown[];
 }
 
 export interface CategoryUpdatedEvent {
@@ -110,14 +115,6 @@ export interface Channel {
   type: string;
   categoryId: string;
   position?: number;
-}
-
-export interface ChannelUpdated {
-  _id: string;
-  name?: string;
-  type?: string;
-  topic?: string;
-  [key: string]: unknown;
 }
 
 export interface ChannelMoved {
@@ -160,7 +157,10 @@ export interface ServerToClientServerEvents {
 
   // Level 1: user-level
   "server:deleted": (p: ServerDeletedEvent) => void;
-  "server:updated": (p: ServerUpdatedEvent) => void;
+  "server:info-updated": (p: ServerInfoUpdatedEvent) => void;
+  "server:avatar-updated": (p: ServerAvatarUpdatedEvent) => void;
+  "server:tags-updated": (p: ServerTagsUpdatedEvent) => void;
+  "server:nft-updated": (p: ServerNFTUpdatedEvent) => void;
   "server:kicked": (p: UserKickedEvent) => void;
   "server:banned": (p: UserBannedEvent) => void;
 

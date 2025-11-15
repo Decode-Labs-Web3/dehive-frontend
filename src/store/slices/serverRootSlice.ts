@@ -18,7 +18,12 @@ const serverRootSlice = createSlice({
       return action.payload;
     },
     setCategoryCreate(state, action: PayloadAction<CategoryProps>) {
-      state.push(action.payload);
+      const newCategory = action.payload;
+      const isExist = state.some(
+        (category) => category._id === newCategory._id
+      );
+      if (isExist) return;
+      state.push(newCategory);
     },
     setCategoryUpdate(
       state,
@@ -30,7 +35,9 @@ const serverRootSlice = createSlice({
     },
     setCategoryDelete(state, action: PayloadAction<{ categoryId: string }>) {
       const { categoryId } = action.payload;
-      return state.filter((category) => category._id !== categoryId);
+      const index = state.findIndex((category) => category._id === categoryId);
+      if (index === -1) return;
+      state.splice(index, 1);
     },
     setChannelMove(
       state,
@@ -41,16 +48,13 @@ const serverRootSlice = createSlice({
       }>
     ) {
       const { sourceCategoryId, targetCategoryId, channelId } = action.payload;
-
       const sourceCategory = state.find(
         (category) => category._id === sourceCategoryId
       );
       const targetCategory = state.find(
         (category) => category._id === targetCategoryId
       );
-
       if (!sourceCategory || !targetCategory) return;
-
       const index = sourceCategory.channels.findIndex(
         (channel) => channel._id === channelId
       );
@@ -64,9 +68,12 @@ const serverRootSlice = createSlice({
       const category = state.find(
         (category) => category._id === channel.category_id
       );
-      if (category) {
-        category.channels.push(channel);
-      }
+      if (!category) return;
+      const isExist = category.channels.some(
+        (oldChannel) => oldChannel._id === channel._id
+      );
+      if (isExist) return;
+      category.channels.push(channel);
     },
     setChannelEdit(
       state,
@@ -84,6 +91,12 @@ const serverRootSlice = createSlice({
     },
     setChannelDelete(state, action: PayloadAction<{ channelId: string }>) {
       const { channelId } = action.payload;
+      const hasChannel = state.some((category) =>
+        category.channels.some((channel) => channel._id === channelId)
+      );
+      if (!hasChannel) {
+        return;
+      }
       state.forEach((category) => {
         category.channels = category.channels.filter(
           (channel) => channel._id !== channelId
@@ -143,6 +156,9 @@ const serverRootSlice = createSlice({
         }
       });
     },
+    deleteServer() {
+      return initialState;
+    },
   },
 });
 
@@ -159,6 +175,7 @@ export const {
   userJoinChannel,
   userLeftChannel,
   userStatusChanged,
+  deleteServer,
 } = serverRootSlice.actions;
 export default serverRootSlice.reducer;
 

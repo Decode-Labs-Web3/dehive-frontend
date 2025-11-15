@@ -8,6 +8,7 @@ import {
   updateSeverTags,
   selectServerInfomationState,
   deleteServer,
+  updateOwnership,
 } from "@/store/slices/serverInfomationSlice";
 
 export const useServerInfomation = () => {
@@ -46,6 +47,13 @@ export const useServerInfomation = () => {
     dispatch(deleteServer());
   }, [dispatch]);
 
+  const updateServerOwnershipInfomation = useCallback(
+    (newOwnerId: string) => {
+      dispatch(updateOwnership({ newOwnerId }));
+    },
+    [dispatch]
+  );
+
   return {
     serverInfomation,
     setServerInfomation,
@@ -53,5 +61,6 @@ export const useServerInfomation = () => {
     updateServerTag,
     updateServerNFTInformation,
     removeServerInfomation,
+    updateServerOwnershipInfomation,
   };
 };

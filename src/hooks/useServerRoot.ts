@@ -21,6 +21,7 @@ import {
   userJoinChannel,
   userLeftChannel,
   userStatusChanged,
+  deleteServer,
 } from "@/store/slices/serverRootSlice";
 interface UseServerRootResult {
   serverRoot: CategoryProps[];
@@ -29,12 +30,13 @@ interface UseServerRootResult {
     targetCategoryId: string,
     channelId: string
   ) => void;
+  deleteServerRoot: () => void;
   createChannelRoot: (channel: ChannelProps) => void;
   editChannelRoot: (channelId: string, name: string) => void;
   deleteChannelRoot: (channelId: string) => void;
   deleteCategoryRoot: (categoryId: string) => void;
-  createCategory: (category: CategoryProps) => void;
-  updateCategory: (categoryId: string, name: string) => void;
+  createCategoryRoot: (category: CategoryProps) => void;
+  updateCategoryRoot: (categoryId: string, name: string) => void;
   createServerRoot: (categories: CategoryProps[]) => void;
   userJoinServerRoot: (channelList: Channels[]) => void;
   userJoinChannelRoot: (payload: UserJoinedChannelPayload) => void;
@@ -53,14 +55,14 @@ export const useServerRoot = (): UseServerRootResult => {
     [dispatch]
   );
 
-  const createCategory = useCallback(
+  const createCategoryRoot = useCallback(
     (category: CategoryProps) => {
       dispatch(setCategoryCreate(category));
     },
     [dispatch]
   );
 
-  const updateCategory = useCallback(
+  const updateCategoryRoot = useCallback(
     (categoryId: string, name: string) => {
       dispatch(setCategoryUpdate({ categoryId, name }));
     },
@@ -132,11 +134,15 @@ export const useServerRoot = (): UseServerRootResult => {
     [dispatch]
   );
 
+  const deleteServerRoot = useCallback(() => {
+    dispatch(deleteServer());
+  }, [dispatch]);
+
   return {
     serverRoot,
-    updateCategory,
+    updateCategoryRoot,
     moveChannelRoot,
-    createCategory,
+    createCategoryRoot,
     createServerRoot,
     deleteCategoryRoot,
     deleteChannelRoot,
@@ -146,5 +152,6 @@ export const useServerRoot = (): UseServerRootResult => {
     userJoinChannelRoot,
     userLeftChannelRoot,
     userStatusChangeRoot,
+    deleteServerRoot,
   };
 };

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -29,9 +30,7 @@ import {
 interface ChannelPanelProps {
   channel: ChannelProps;
   handleDeleteChannel: (channelId: string) => void;
-  setChannelPanel: React.Dispatch<
-    React.SetStateAction<boolean>
-  >;
+  setChannelPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function ChannelPanel({
@@ -90,9 +89,19 @@ export default function ChannelPanel({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      <div className="relative z-[101] flex h-full w-full border border-border bg-background text-foreground">
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  const content = (
+    <div
+      className="fixed inset-0 z-[10990] flex items-center justify-center"
+      onKeyDownCapture={(e) => {
+        // Keep keyboard events within the panel; don't let siblings intercept.
+        e.stopPropagation();
+      }}
+    >
+      <div className="relative z-[10991] flex h-full w-full border border-border bg-background text-foreground">
         <Tabs
           value={channelPanelSetting}
           onValueChange={setChannelPanelSetting}
@@ -182,7 +191,7 @@ export default function ChannelPanel({
                 disabled={channelNameChange}
                 onClick={() => {
                   if (channelNameChange) return;
-                  setChannelPanel((prev) => (false));
+                  setChannelPanel((prev) => false);
                 }}
                 className="flex flex-col items-center gap-1 text-xs uppercase bg-background text-foreground hover:bg-accent"
               >
@@ -204,10 +213,15 @@ export default function ChannelPanel({
                       Channel Name
                     </Label>
                     <Input
+                      type="text"
                       id="name"
                       name="name"
                       value={editChannelForm.name}
                       onChange={handleEditChannelChange}
+                      onKeyDown={(e) => {
+                        // Ensure space and other keys are not intercepted by outer listeners
+                        e.stopPropagation();
+                      }}
                       autoFocus
                       disabled={loading}
                     />
@@ -303,4 +317,6 @@ export default function ChannelPanel({
       </Dialog>
     </div>
   );
+
+  return createPortal(content, document.body);
 }
