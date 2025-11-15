@@ -13,7 +13,23 @@ import {
   editOwnership,
 } from "@/store/slices/serverListSlice";
 
-export const useServersList = () => {
+interface UseServersListResult {
+  serversList: ServerProps[];
+  setServerList: (servers: ServerProps[]) => void;
+  addServerList: (server: ServerProps) => void;
+  removeServerList: (serverId: string) => void;
+  updateServerInfomationList: (
+    serverId: string,
+    name: string,
+    description: string
+  ) => void;
+  updateServerTagsList: (serverId: string, tags: string) => void;
+  updateServerAvatarList: (serverId: string, avatar_hash: string) => void;
+  updateServerNFTGatingList: (serverId: string, server: ServerProps) => void;
+  updateServerOwnershipList: (serverId: string, newOwnerId: string) => void;
+}
+
+export const useServersList = (): UseServersListResult => {
   const dispatch = useAppDispatch();
   const serversList = useAppSelector(selectServerList);
 

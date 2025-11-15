@@ -19,7 +19,7 @@ interface ServerMembersProps {
 export default function ServerMembers({ setServerPanel }: ServerMembersProps) {
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
-  const { updateServerOwnership } = useServersList();
+  const { updateServerOwnershipList } = useServersList();
   const { serverInfomation, updateServerOwnershipInfomation } =
     useServerInfomation();
   const [kickForm, setKickForm] = useState({
@@ -270,7 +270,7 @@ export default function ServerMembers({ setServerPanel }: ServerMembersProps) {
           [memberId]: false,
         }));
         updateServerOwnershipInfomation(memberId);
-        updateServerOwnership(serverInfomation._id, memberId);
+        updateServerOwnershipList(serverInfomation._id, memberId);
         setServerPanel(false);
       }
     } catch (error) {

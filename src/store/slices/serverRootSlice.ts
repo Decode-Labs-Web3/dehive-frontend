@@ -1,6 +1,6 @@
 import { RootState } from "@/store/store";
 import { CategoryProps, ChannelProps } from "@/interfaces/server.interface";
-import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   Channels,
   UserStatusChangedPayload,
@@ -181,7 +181,4 @@ export default serverRootSlice.reducer;
 
 export const selectServerRoot = (state: RootState) => state.serverRoot;
 
-export const selectAllCategories = createSelector(
-  [selectServerRoot],
-  (categories) => categories
-);
+export const selectAllCategories = (state: RootState) => state.serverRoot;

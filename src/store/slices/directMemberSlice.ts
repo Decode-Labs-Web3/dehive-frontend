@@ -1,6 +1,6 @@
 import { RootState } from "@/store/store";
 import { DirectMemberListProps } from "@/interfaces/user.interface";
-import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: DirectMemberListProps[] = [];
 
@@ -39,9 +39,14 @@ const directMemberSlice = createSlice({
       }
     },
 
-    updateMemberConversation(state, action: PayloadAction<UpdateMemberConversationPayload>) {
+    updateMemberConversation(
+      state,
+      action: PayloadAction<UpdateMemberConversationPayload>
+    ) {
       const { conversationId, status, isCall, lastMessageAt } = action.payload;
-      const member = state.find((member) => member.conversationid === conversationId);
+      const member = state.find(
+        (member) => member.conversationid === conversationId
+      );
 
       if (!member) {
         console.warn(
@@ -59,16 +64,8 @@ const directMemberSlice = createSlice({
   },
 });
 
-export const {
-  setMemberList,
-  updateMemberStatus,
-  updateMemberConversation,
-} = directMemberSlice.actions;
+export const { setMemberList, updateMemberStatus, updateMemberConversation } =
+  directMemberSlice.actions;
 export default directMemberSlice.reducer;
 
-const selectDirectMembersState = (state: RootState) => state.directMembers;
-
-export const selectDirectMembers = createSelector(
-  [selectDirectMembersState],
-  (members) => members
-);
+export const selectDirectMembers = (state: RootState) => state.directMembers;

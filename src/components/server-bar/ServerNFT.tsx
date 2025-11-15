@@ -39,7 +39,7 @@ export default function ServerNFT() {
   const [isNFT, setIsNFT] = useState<boolean>(false);
   const { serverId } = useParams<{ serverId: string }>();
   const [statusNFT, setStatusNFT] = useState<boolean>(false);
-  const { updateServerNFTGating } = useServersList();
+  const { updateServerNFTGatingList } = useServersList();
   const { serverInfomation, updateServerNFTInformation } =
     useServerInfomation();
   const [originalNftInfo, setOriginalNftInfo] = useState<NFTInfoProps | null>(
@@ -90,7 +90,7 @@ export default function ServerNFT() {
           response.statusCode === 200 &&
           response.message === "Operation successful"
         ) {
-          updateServerNFTGating(serverId, response.data);
+          updateServerNFTGatingList(serverId, response.data);
           updateServerNFTInformation(response.data);
           setOriginalNftInfo(info);
           setIsNFT(true);
@@ -106,7 +106,7 @@ export default function ServerNFT() {
       fingerprintHash,
       serverId,
       updateServerNFTInformation,
-      updateServerNFTGating,
+      updateServerNFTGatingList,
     ]
   );
 

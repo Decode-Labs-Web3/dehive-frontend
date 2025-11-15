@@ -12,7 +12,18 @@ import {
   updateServerAvatar,
 } from "@/store/slices/serverInfomationSlice";
 
-export const useServerInfomation = () => {
+interface UseServerInfomationResult {
+  serverInfomation: ServerProps;
+  setServerInfomation: (server: ServerProps) => void;
+  updateServerInfomation: (name: string, description: string) => void;
+  updateServerTagInfomation: (tag: string) => void;
+  updateServerNFTInformation: (server: ServerProps) => void;
+  removeServerInfomation: () => void;
+  updateServerOwnershipInfomation: (newOwnerId: string) => void;
+  updateServerAvatarInfomation: (avatar_hash: string) => void;
+}
+
+export const useServerInfomation = (): UseServerInfomationResult => {
   const dispatch = useAppDispatch();
   const serverInfomation = useAppSelector(selectServerInfomationState);
 

@@ -58,7 +58,7 @@ const tagIcon: Record<string, IconDefinition> = {
 
 export default function AddServer() {
   const router = useRouter();
-  const { addServer } = useServersList();
+  const { addServerList } = useServersList();
   const { fingerprintHash } = useFingerprint();
   const [modalOpen, setModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
@@ -107,7 +107,7 @@ export default function AddServer() {
         name: "",
         description: "",
       });
-      addServer(response.data);
+      addServerList(response.data);
       router.push(`/app/channels/${response.data._id}`);
     } catch (error) {
       console.error(error);
@@ -144,7 +144,7 @@ export default function AddServer() {
         response.statusCode === 201 &&
         response.message === "Operation successful"
       ) {
-        addServer(response.data.server);
+        addServerList(response.data.server);
         setModalOpen(false);
         setTab({ ...allFalse, tag: true });
         setInviteLink("");

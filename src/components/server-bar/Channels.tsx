@@ -262,13 +262,11 @@ export default function Channels({ channel, isPrivileged }: ChannelPageProps) {
       </Dialog>
 
       {channelPanel && (
-        <>
-          <ServerBarItems.ChannelPanel
-            channel={channel}
-            setChannelPanel={setChannelPanel}
-            handleDeleteChannel={handleDeleteChannel}
-          />
-        </>
+        <ServerBarItems.ChannelPanel
+          channel={channel}
+          setChannelPanel={setChannelPanel}
+          handleDeleteChannel={handleDeleteChannel}
+        />
       )}
     </>
   );

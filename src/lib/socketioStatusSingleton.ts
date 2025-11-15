@@ -2,7 +2,7 @@ import { Socket } from "socket.io-client";
 import type {
   ServerToClientStatus,
   ClientToServerStatus,
-} from "@/interfaces/websocketStatus";
+} from "@/interfaces/websocketStatus.interface";
 import { getSocket, SocketType } from "./socketFactory";
 
 export function getStatusSocketIO(): Socket<

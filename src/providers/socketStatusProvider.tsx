@@ -6,7 +6,7 @@ import {
   IdentityConfirmed,
   WsErrorPayload,
   UserStatusChanged,
-} from "@/interfaces/websocketStatus";
+} from "@/interfaces/websocketStatus.interface";
 
 interface SocketStatusProviderProps {
   userId: string;

@@ -1,6 +1,6 @@
 import type { RootState } from "@/store/store";
 import { ServerProps } from "@/interfaces/server.interface";
-import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: ServerProps[] = [];
 
@@ -91,9 +91,4 @@ export const {
 } = serverListSlice.actions;
 export default serverListSlice.reducer;
 
-const selectServerListState = (state: RootState) => state.serverList;
-
-export const selectServerList = createSelector(
-  [selectServerListState],
-  (servers) => servers
-);
+export const selectServerList = (state: RootState) => state.serverList;

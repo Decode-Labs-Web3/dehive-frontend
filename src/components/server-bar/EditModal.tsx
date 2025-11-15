@@ -42,7 +42,7 @@ export default function EditModal({
 }: EditModalProps) {
   const { user } = useUser();
   const router = useRouter();
-  const { removeServer, updateServerInfo } = useServersList();
+  const { removeServerList, updateServerInfomationList } = useServersList();
   const { createCategoryRoot } = useServerRoot();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
@@ -137,7 +137,7 @@ export default function EditModal({
         setModal({
           ...allFalse,
         });
-        updateServerInfo(
+        updateServerInfomationList(
           serverInfomation._id,
           editServerForm.name,
           editServerForm.description
@@ -179,7 +179,7 @@ export default function EditModal({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        removeServer(serverInfomation._id);
+        removeServerList(serverInfomation._id);
         removeServerInfomation();
         setModal({ ...allFalse });
         router.push("/app/channels/me");
@@ -217,7 +217,7 @@ export default function EditModal({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        removeServer(serverInfomation._id);
+        removeServerList(serverInfomation._id);
         removeServerInfomation();
         setModal({ ...allFalse });
         router.push("/app/channels/me");

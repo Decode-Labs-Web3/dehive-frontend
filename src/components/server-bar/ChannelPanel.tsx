@@ -96,10 +96,6 @@ export default function ChannelPanel({
   const content = (
     <div
       className="fixed inset-0 z-[10990] flex items-center justify-center"
-      onKeyDownCapture={(e) => {
-        // Keep keyboard events within the panel; don't let siblings intercept.
-        e.stopPropagation();
-      }}
     >
       <div className="relative z-[10991] flex h-full w-full border border-border bg-background text-foreground">
         <Tabs

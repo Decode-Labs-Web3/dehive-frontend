@@ -3,7 +3,17 @@ import { createUser, updateUser, selectUser } from "@/store/slices/userSlice";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useCallback } from "react";
 
-export const useUser = () => {
+interface UseUserResult {
+  user: UserDataProps;
+  setUser: (fullUser: UserDataProps) => void;
+  updateUserDetail: (
+    avatar_ipfs_hash: string,
+    display_name: string,
+    bio: string
+  ) => void;
+}
+
+export const useUser = (): UseUserResult => {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
 
