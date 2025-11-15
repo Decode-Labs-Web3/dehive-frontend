@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,9 +56,15 @@ export default function ServerPanel({
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
-  const { removeServerList, updateServerInfomationList, updateServerTagsList } = useServersList();
+  const { removeServerList, updateServerInfomationList, updateServerTagsList } =
+    useServersList();
   const tabsListContainerRef = useRef<HTMLDivElement | null>(null);
-  const { serverInfomation ,updateServerInfomation, updateServerTagInfomation, removeServerInfomation } = useServerInfomation();
+  const {
+    serverInfomation,
+    updateServerInfomation,
+    updateServerTagInfomation,
+    removeServerInfomation,
+  } = useServerInfomation();
   useEffect(() => {
     const element = tabsListContainerRef.current;
     if (element) {
@@ -157,7 +164,8 @@ export default function ServerPanel({
 
     const missing = name === "" || description === "";
     const nothingChanged =
-      name === serverInfomation.name && description === serverInfomation.description;
+      name === serverInfomation.name &&
+      description === serverInfomation.description;
 
     if (missing || nothingChanged) return;
 
@@ -233,7 +241,7 @@ export default function ServerPanel({
         response.statusCode === 200 &&
         response.message === "Operation successful"
       ) {
-        removeServerList(serverInfomation._id)
+        removeServerList(serverInfomation._id);
         removeServerInfomation();
         router.push("/app/channels/me");
       }
@@ -245,7 +253,11 @@ export default function ServerPanel({
     }
   };
 
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  const content = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="relative z-[101] flex h-full w-full border border-border bg-background text-foreground">
         <Tabs
@@ -360,9 +372,7 @@ export default function ServerPanel({
 
             <div className="flex-1 overflow-y-auto px-10 py-8">
               <TabsContent value="members" className="mt-0">
-                <ServerBarItems.ServerMembers
-                  setServerPanel={setServerPanel}
-                />
+                <ServerBarItems.ServerMembers setServerPanel={setServerPanel} />
               </TabsContent>
 
               <TabsContent value="bans" className="mt-0">
@@ -512,7 +522,8 @@ export default function ServerPanel({
           <DialogHeader>
             <DialogTitle>Delete Server</DialogTitle>
             <DialogDescription>
-              Please type the name of &quot;{serverInfomation.name}&quot; to confirm.
+              Please type the name of &quot;{serverInfomation.name}&quot; to
+              confirm.
             </DialogDescription>
           </DialogHeader>
           <Input
@@ -540,4 +551,6 @@ export default function ServerPanel({
       </Dialog>
     </div>
   );
+
+  return createPortal(content, document.body);
 }

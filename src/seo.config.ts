@@ -8,6 +8,8 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_FRONTEND_URL || "https://dehive.decodenetwork.app";
 
 const SITE_ICON = "/images/logos/dehive.png";
+const OG_IMAGE_PATH = "/opengraph-image";
+const TW_IMAGE_PATH = "/twitter-image";
 
 const IS_PROD = process.env.NODE_ENV === "production";
 
@@ -42,7 +44,7 @@ export const defaultMetadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: new URL("/images/tokens/3d_token_nobg.png", SITE_URL).toString(),
+        url: new URL(OG_IMAGE_PATH, SITE_URL).toString(),
         width: 1200,
         height: 630,
         alt: SITE_NAME,
@@ -53,7 +55,7 @@ export const defaultMetadata: Metadata = {
     card: "summary_large_image",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: [new URL("/images/tokens/3d_token_nobg.png", SITE_URL).toString()],
+    images: [new URL(TW_IMAGE_PATH, SITE_URL).toString()],
   },
   robots: {
     index: IS_PROD,

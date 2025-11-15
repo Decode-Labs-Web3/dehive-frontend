@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useServerRoot } from "@/hooks/useServerRoot";
@@ -86,7 +87,11 @@ export default function CategoryPanel({
     }
   };
 
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  const content = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="relative z-[101] flex h-full w-full border border-border bg-background text-foreground">
         <Tabs
@@ -285,4 +290,6 @@ export default function CategoryPanel({
       </Dialog>
     </div>
   );
+
+  return createPortal(content, document.body);
 }
