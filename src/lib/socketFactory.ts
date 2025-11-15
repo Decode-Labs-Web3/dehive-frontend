@@ -6,6 +6,7 @@ export enum SocketType {
   DirectChat = "directChat",
   ChannelChat = "channelChat",
   ChannelCall = "channelCall",
+  ServerEvents = "serverEvents",
 }
 
 const socketConfigs: Record<SocketType, { url: string }> = {
@@ -21,6 +22,9 @@ const socketConfigs: Record<SocketType, { url: string }> = {
   [SocketType.Status]: { url: process.env.NEXT_PUBLIC_STATUS_ONLINE_SIO_URL! },
   [SocketType.DirectCall]: {
     url: process.env.NEXT_PUBLIC_DIRECT_CALL_SIO_URL!,
+  },
+  [SocketType.ServerEvents]: {
+    url: process.env.NEXT_PUBLIC_DEHIVE_SERVER!,
   },
 };
 
