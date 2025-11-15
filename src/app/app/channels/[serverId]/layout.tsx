@@ -15,6 +15,7 @@ import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelCallProvider from "@/providers/socketChannelCallProvider";
 import ChannelChatProvider from "@/providers/socketChannelChatProvider";
+import SocketServerEventsProvider from "@/providers/socketServerEventsProvider";
 import { getChannelCallSocketIO } from "@/lib/socketioChannelCallSingleton";
 import {
   JoinedServer,
@@ -261,17 +262,19 @@ export default function ServerLayout({
   }
 
   return (
-    <ChannelChatProvider userId={user._id} serverId={serverId}>
-      <ChannelCallProvider userId={user._id} serverId={serverId}>
-        <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
-          <aside className="h-full overflow-y-auto border-r border-black/20">
-            <App.ServerBar />
-          </aside>
-          <section className="min-w-0 min-h-0 overflow-hidden">
-            <div className="h-full min-h-0">{children}</div>
-          </section>
-        </div>
-      </ChannelCallProvider>
-    </ChannelChatProvider>
+    <SocketServerEventsProvider userId={user._id} serverId={serverId}>
+      <ChannelChatProvider userId={user._id} serverId={serverId}>
+        <ChannelCallProvider userId={user._id} serverId={serverId}>
+          <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
+            <aside className="h-full overflow-y-auto border-r border-black/20">
+              <App.ServerBar />
+            </aside>
+            <section className="min-w-0 min-h-0 overflow-hidden">
+              <div className="h-full min-h-0">{children}</div>
+            </section>
+          </div>
+        </ChannelCallProvider>
+      </ChannelChatProvider>
+    </SocketServerEventsProvider>
   );
 }

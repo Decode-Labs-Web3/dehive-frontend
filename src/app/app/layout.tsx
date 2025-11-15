@@ -12,6 +12,7 @@ import { Web3Providers } from "@/components/message-onchain/wallet";
 import SocketStatusProvider from "@/providers/socketStatusProvider";
 import DirectCallProvider from "@/providers/socketDirectCallProvider";
 import { ServerRefreshContext } from "@/contexts/ServerRefreshContext.contexts";
+import SocketServerEventsProvider from "@/providers/socketServerEventsProvider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sound, setSound] = useState(true);
@@ -89,23 +90,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <Web3Providers>
       <SocketStatusProvider userId={user._id} fingerprintHash={fingerprintHash}>
-        <SoundContext.Provider value={soundValue}>
-          <ServerRefreshContext.Provider value={{ triggerRefeshServer }}>
-            <div className="relative flex h-screen overflow-hidden">
-              <div className="flex w-15 relative ">
-                <App.GuildBar refreshVersion={refreshVersion} />
-              </div>
+        <SocketServerEventsProvider userId={user._id}>
+          <SoundContext.Provider value={soundValue}>
+            <ServerRefreshContext.Provider value={{ triggerRefeshServer }}>
+              <div className="relative flex h-screen overflow-hidden">
+                <div className="flex w-15 relative ">
+                  <App.GuildBar refreshVersion={refreshVersion} />
+                </div>
 
-              <DirectCallProvider userId={user._id}>
-                <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
-              </DirectCallProvider>
+                <DirectCallProvider userId={user._id}>
+                  <div className="flex-1 min-h-0 overflow-hidden">
+                    {children}
+                  </div>
+                </DirectCallProvider>
 
-              <div className="absolute bottom-5 left-5 w-60 h-30 z-10 overflow-visible">
-                <App.UserBar />
+                <div className="absolute bottom-5 left-5 w-60 h-30 z-10 overflow-visible">
+                  <App.UserBar />
+                </div>
               </div>
-            </div>
-          </ServerRefreshContext.Provider>
-        </SoundContext.Provider>
+            </ServerRefreshContext.Provider>
+          </SoundContext.Provider>
+        </SocketServerEventsProvider>
       </SocketStatusProvider>
     </Web3Providers>
   );
