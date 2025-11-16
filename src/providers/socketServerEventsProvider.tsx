@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useServerRoot } from "@/hooks/useServerRoot";
 import { useServersList } from "@/hooks/useServersList";
+import { useServerMember } from "@/hooks/useServerMember";
 import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { getServerEventsSocketIO } from "@/lib/socketioServerEventsSingleton";
 import type {
@@ -27,6 +28,7 @@ import type {
   ServerAvatarUpdatedEvent,
   ServerTagsUpdatedEvent,
   ServerNFTUpdatedEvent,
+  ServerOwnershipUpdatedEvent,
 } from "@/interfaces/websocketServerEvents.interface";
 
 interface SocketServerEventsProviderProps {
@@ -57,13 +59,17 @@ export default function SocketServerEventsProvider({
     updateServerTagsList,
     updateServerAvatarList,
     updateServerNFTGatingList,
+    updateServerOwnershipList,
   } = useServersList();
-  const { updateServerInfomation,
+  const {
+    updateServerInfomation,
     updateServerTagInfomation,
     updateServerNFTInformation,
     removeServerInfomation,
     updateServerAvatarInfomation,
+    updateServerOwnershipInfomation,
   } = useServerInfomation();
+  const { updateUserLeaveMember, updateUserJoinMember } = useServerMember();
   const socket = useRef(getServerEventsSocketIO()).current;
 
   useEffect(() => {
@@ -137,8 +143,16 @@ export default function SocketServerEventsProvider({
 
     const onUserKicked = (p: UserKickedEvent) => {
       console.log("[server-events server:kicked]", p);
+      if (userId === p.userId) {
+        removeServerList(p.serverId);
+        if (serverId === p.serverId) {
+          deleteServerRoot();
+          removeServerInfomation();
+          router.push("/app/channels/me");
+        }
+      }
     };
-    // New server granular updates (user-level)
+
     const onServerInfoUpdated = (p: ServerInfoUpdatedEvent) => {
       console.log("[server-events server:info-updated]", p);
       updateServerInfomationList(p.server_id, p.name, p.description);
@@ -173,15 +187,25 @@ export default function SocketServerEventsProvider({
 
     const onUserBanned = (p: UserBannedEvent) => {
       console.log("[server-events server:banned]", p);
+      if (userId === p.userId) {
+        removeServerList(p.serverId);
+        if (serverId === p.serverId) {
+          deleteServerRoot();
+          removeServerInfomation();
+          router.push("/app/channels/me");
+        }
+      }
     };
 
     // Level 2: server-level events
     const onMemberJoined = (p: MemberJoinedEvent) => {
       console.log("[server-events member:joined]", p);
+      updateUserJoinMember(p.member);
     };
 
     const onMemberLeft = (p: MemberLeftEvent) => {
       console.log("[server-events member:left]", p);
+      updateUserLeaveMember(p.member.userId);
     };
 
     const onCategoryCreated = (p: CategoryCreatedEvent) => {
@@ -239,6 +263,14 @@ export default function SocketServerEventsProvider({
       );
     };
 
+    const onServerOwnershipUpdated = (p: ServerOwnershipUpdatedEvent) => {
+      console.log("[server-events server:updated-ownership]", p);
+      updateServerOwnershipList(p.server_id, p.owner_id);
+      if (serverId === p.server_id) {
+        updateServerOwnershipInfomation(p.owner_id);
+      }
+    };
+
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("connect_error", onConnectError);
@@ -261,6 +293,7 @@ export default function SocketServerEventsProvider({
     socket.on("server:nft-updated", onServerNFTUpdated);
     socket.on("server:kicked", onUserKicked);
     socket.on("server:banned", onUserBanned);
+    socket.on("server:updated-ownership", onServerOwnershipUpdated);
 
     // Level 2
     socket.on("member:joined", onMemberJoined);
@@ -297,6 +330,7 @@ export default function SocketServerEventsProvider({
       socket.off("server:nft-updated", onServerNFTUpdated);
       socket.off("server:kicked", onUserKicked);
       socket.off("server:banned", onUserBanned);
+      socket.off("server:updated-ownership", onServerOwnershipUpdated);
 
       socket.off("member:joined", onMemberJoined);
       socket.off("member:left", onMemberLeft);
@@ -313,6 +347,8 @@ export default function SocketServerEventsProvider({
     userId,
     serverId,
     router,
+    updateUserJoinMember,
+    updateUserLeaveMember,
     editChannelRoot,
     moveChannelRoot,
     deleteServerRoot,
@@ -331,6 +367,8 @@ export default function SocketServerEventsProvider({
     updateServerTagInfomation,
     updateServerNFTInformation,
     updateServerAvatarInfomation,
+    updateServerOwnershipList,
+    updateServerOwnershipInfomation,
   ]);
 
   useEffect(() => {

@@ -23,10 +23,22 @@ const serverMemberSlice = createSlice({
         state[memberIndex].status = status;
       }
     },
+    updateUserJoin(state, action: PayloadAction<ServerMemberListProps>) {
+      const newMember = action.payload;
+      const isExist = state.some(
+        (member) => member.user_id === newMember.user_id
+      );
+      if (isExist) return;
+      state.push(newMember);
+    },
+    updateUserLeave(state, action: PayloadAction<{ userId: string }>) {
+      const { userId } = action.payload;
+      return state.filter((member) => member.user_id !== userId);
+    },
   },
 });
 
-export const { setMemberList, updateMemberStatus } = serverMemberSlice.actions;
+export const { setMemberList, updateMemberStatus, updateUserLeave, updateUserJoin } = serverMemberSlice.actions;
 export default serverMemberSlice.reducer;
 
 export const selectServerMembers = (state: RootState) => state.serverMembers;

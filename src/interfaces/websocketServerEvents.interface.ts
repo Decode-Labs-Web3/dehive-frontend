@@ -1,4 +1,5 @@
 import { ServerProps } from "./server.interface";
+import { ServerMemberListProps } from "./user.interface";
 // ===== Server -> Client =====
 export interface DebugEvent {
   message: string;
@@ -26,7 +27,6 @@ export interface ServerDeletedEvent {
   timestamp: string | Date;
 }
 
-// New granular server update events
 export interface ServerInfoUpdatedEvent {
   server_id: string;
   name: string;
@@ -54,29 +54,24 @@ export interface ServerNFTUpdatedEvent {
 
 export interface UserKickedEvent {
   serverId: string;
-  serverName: string;
+  userId: string;
+  serverName?: string;
   reason?: string;
-  timestamp: string | Date;
+  timestamp?: string | Date;
 }
 
 export interface UserBannedEvent {
   serverId: string;
-  serverName: string;
+  userId: string;
+  serverName?: string;
   reason?: string;
-  timestamp: string | Date;
+  timestamp?: string | Date;
 }
 
-export interface MemberInfoJoined {
-  userId: string;
-  username: string;
-  displayName: string;
-  avatar: string | null;
-}
+export type MemberInfoJoined = ServerMemberListProps;
 
 export interface MemberInfoLeft {
   userId: string;
-  username: string;
-  displayName: string;
 }
 
 export interface MemberJoinedEvent {
@@ -150,6 +145,12 @@ export interface ChannelMovedEvent {
   timestamp: string | Date;
 }
 
+export interface ServerOwnershipUpdatedEvent {
+  server_id: string;
+  owner_id: string;
+  timestamp: string | Date;
+}
+
 export interface ServerToClientServerEvents {
   debug: (d: DebugEvent) => void;
   error: (e: WsErrorPayload | string) => void;
@@ -164,6 +165,7 @@ export interface ServerToClientServerEvents {
   "server:nft-updated": (p: ServerNFTUpdatedEvent) => void;
   "server:kicked": (p: UserKickedEvent) => void;
   "server:banned": (p: UserBannedEvent) => void;
+  "server:updated-ownership": (p: ServerOwnershipUpdatedEvent) => void;
 
   // Level 2: server-level
   "member:joined": (p: MemberJoinedEvent) => void;
