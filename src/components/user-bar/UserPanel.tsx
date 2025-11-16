@@ -317,7 +317,7 @@ export default function UserPanel({
               </Button>
             </header>
 
-            <div className="px-10 py-8">
+            <div className="flex-1 overflow-y-auto px-10 py-8 pb-32">
               <TabsContent value="account">
                 <div className="max-w-2xl space-y-5">
                   <h2 className="text-xl font-semibold text-foreground mb-5">

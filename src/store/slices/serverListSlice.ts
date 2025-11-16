@@ -12,6 +12,9 @@ const serverListSlice = createSlice({
       return action.payload;
     },
     createServer(state, actions: PayloadAction<ServerProps>) {
+      const newServer = actions.payload;
+      const isExist = state.some((server) => server._id === newServer._id);
+      if (isExist) return;
       state.push(actions.payload);
     },
     editServerInfo(
