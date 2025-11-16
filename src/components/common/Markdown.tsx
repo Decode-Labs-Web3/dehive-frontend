@@ -73,14 +73,17 @@ export default function Markdown({ children, className }: MarkdownProps) {
         {children}
       </a>
     ),
-    img: ({ src, alt, ...rest }) => (
-      <img
-        src={src || ""}
-        alt={alt || "image"}
-        className="my-2 max-h-64 rounded border border-border"
-        {...rest}
-      />
-    ),
+    img: ({ src, alt, ...rest }) => {
+      if (!src) return null;
+      return (
+        <img
+          src={src}
+          alt={alt || "image"}
+          className="my-2 max-h-64 rounded border border-border"
+          {...rest}
+        />
+      );
+    },
   };
 
   return (

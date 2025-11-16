@@ -44,6 +44,9 @@ function AttachmentItem({ att }: { att: Attachment }) {
   const isVid = mime.startsWith("video/");
   const isAud = mime.startsWith("audio/");
 
+  // If we cannot resolve a valid media URL, don't render the element
+  if (!href) return null;
+
   if (isImg) {
     return (
       <a
@@ -125,6 +128,7 @@ function ipfsToGateway(ipfsUrl: string): string {
   if (ipfsUrl.startsWith("http://") || ipfsUrl.startsWith("https://"))
     return ipfsUrl;
   const cid = ipfsUrl.replace("ipfs://", "").replace(/^\/+/, "");
+  if (!cid) return "";
   return `http://35.247.142.76:8080/ipfs/${cid}`;
 }
 
