@@ -1,15 +1,21 @@
 "use client";
 
-import { Suspense, useEffect, useCallback } from "react";
+import { Suspense, useEffect, useCallback, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEnvelope,
+  faSpinner,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 function InvitePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
+  const [notFound, setNotFound] = useState(false);
 
   const handleInvite = useCallback(async () => {
     try {
@@ -26,6 +32,10 @@ function InvitePageContent() {
       });
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
+        if (apiResponse.status === 404) {
+          setNotFound(true);
+          return;
+        }
         console.error(response.message);
         router.push("/");
         return;
@@ -48,6 +58,38 @@ function InvitePageContent() {
   useEffect(() => {
     handleInvite();
   }, [handleInvite]);
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center shadow-xl bg-gray-800 border-gray-700">
+          <CardHeader>
+            <div className="mb-6">
+              <FontAwesomeIcon
+                icon={faTriangleExclamation}
+                className="text-yellow-400 text-4xl md:text-6xl mb-4"
+              />
+            </div>
+            <CardTitle className="text-2xl md:text-3xl font-bold text-gray-200 mb-2">
+              Invite Not Available
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-400">
+              The invite was not found, you don&#39;t have permission, or the
+              server was deleted.
+            </p>
+            <Button
+              onClick={() => router.push("/app/channels/me")}
+              className="mt-6"
+            >
+              Go to Direct Messages
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">

@@ -8,22 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-export interface AuditLogItem {
-  _id: string;
-  server_id: string;
-  actor: {
-    _id: string;
-    username: string;
-    display_name: string;
-    avatar: string;
-  };
-  action: string;
-  message: string;
-  reason?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { AuditLogItem } from "@/interfaces/server-log.interface";
 
 export default function ServerLog() {
   const { serverId } = useParams<{ serverId: string }>();

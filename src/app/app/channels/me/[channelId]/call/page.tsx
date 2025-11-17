@@ -10,31 +10,13 @@ import { useSoundContext } from "@/contexts/SoundContext";
 import { useEffect, useCallback, useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
-
-interface UserChatWith {
-  id: string;
-  displayname: string;
-  username: string;
-  wallets: WalletProps[];
-  avatar_ipfs_hash: string;
-}
-
-interface WalletProps {
-  _id: string;
-  address: string;
-  user_id: string;
-  name_service: null;
-  is_primary: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
+import { DirectUserChatWith } from "@/interfaces/direct-chat.interface";
 
 export default function DirectCallPage() {
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
   const { channelId } = useParams<{ channelId: string }>();
-  const [userChatWith, setUserChatWith] = useState<UserChatWith>({
+  const [userChatWith, setUserChatWith] = useState<DirectUserChatWith>({
     id: "",
     displayname: "",
     username: "",
@@ -51,7 +33,9 @@ export default function DirectCallPage() {
     try {
       const apiResponse = await fetch("/api/user/chat-with", {
         method: "POST",
-        headers: getApiHeaders(fingerprintHash, {"Content-Type": "application/json"}),
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
         body: JSON.stringify({ conversationId: channelId }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),

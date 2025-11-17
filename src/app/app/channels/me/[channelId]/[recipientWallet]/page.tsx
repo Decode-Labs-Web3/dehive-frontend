@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import SmartContractOption from "@/components/messages/SmartContractOption";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DirectUserChatWith } from "@/interfaces/direct-chat.interface";
 
 const PROXY_ADDRESS = process.env.NEXT_PUBLIC_PROXY_ADDRESS as
   | `0x${string}`
@@ -337,25 +338,7 @@ export default function SmartContractMessagePage() {
   }, [publicClient, proxy]);
 
   // UI sibling data (chat partner info), mirroring DirectMessagePage
-  interface WalletProps {
-    _id: string;
-    address: string;
-    user_id: string;
-    name_service: null | string;
-    is_primary: boolean;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-  }
-  interface UserChatWith {
-    id: string;
-    displayname: string;
-    username: string;
-    avatar_ipfs_hash: string;
-    wallets: WalletProps[];
-    status: string;
-  }
-  const [userChatWith, setUserChatWith] = useState<UserChatWith>({
+  const [userChatWith, setUserChatWith] = useState<DirectUserChatWith>({
     id: "",
     displayname: "",
     username: "",
@@ -407,7 +390,7 @@ export default function SmartContractMessagePage() {
       if (!apiResponse.ok) return;
       const response = await apiResponse.json();
       if (response.statusCode === 200 && response.message === "OK") {
-        setUserChatWith(response.data as UserChatWith);
+        setUserChatWith(response.data as DirectUserChatWith);
       }
     } catch (err) {
       console.error("fetchUserChatWith error", err);

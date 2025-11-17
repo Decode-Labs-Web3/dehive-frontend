@@ -8,28 +8,13 @@ import { useEffect, useState, useCallback } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useConversationRefresh } from "@/contexts/ConversationRefreshContext";
-
-interface UserDataProps {
-  followers_number: number;
-  avatar_ipfs_hash: string;
-  role: string;
-  user_id: string;
-  display_name: string;
-  username: string;
-  following_number: number;
-  is_following: boolean;
-  is_follower: boolean;
-  is_blocked: boolean;
-  is_blocked_by: boolean;
-  mutual_followers_list: [];
-  mutual_followers_number: number;
-}
+import { FollowingUserItem } from "@/interfaces/following.interface";
 
 export default function Me() {
   const router = useRouter();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
-  const [userData, setUserData] = useState<UserDataProps[]>([]);
+  const [userData, setUserData] = useState<FollowingUserItem[]>([]);
   const { triggerRefreshConversation } = useConversationRefresh();
 
   const fetchUserData = useCallback(async () => {

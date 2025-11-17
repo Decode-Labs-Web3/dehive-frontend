@@ -18,58 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-interface UserDataProps {
-  _id: string;
-  username: string;
-  display_name: string;
-  avatar: string;
-  avatar_ipfs_hash: string;
-  status: string;
-  server_count: number;
-  bio: string;
-  is_banned: boolean;
-  last_login: string;
-  following_number: number;
-  followers_number: number;
-  is_following: boolean;
-  is_follower: boolean;
-  is_blocked: boolean;
-  is_blocked_by: boolean;
-  mutual_followers_number: number;
-  mutual_followers_list: MutualFollowers[];
-  is_active: boolean;
-  wallets: Wallets[];
-  __v: number;
-  mutual_servers_count: number;
-  mutual_servers: MutualServers[];
-}
-
-interface MutualServers {
-  server_id: string;
-  server_name: string;
-}
-
-interface MutualFollowers {
-  followers_number: number;
-  avatar_ipfs_hash: string;
-  role: string;
-  user_id: string;
-  display_name: string;
-  username: string;
-  following_number: number;
-}
-
-interface Wallets {
-  _id: string;
-  address: string;
-  user_id: string;
-  name_service: string | null;
-  is_primary: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
+import { UserProfileData } from "@/interfaces/user-profile.interface";
 
 interface UserInfoModalProps {
   userId: string;
@@ -86,7 +35,7 @@ export default function UserInfoModal({
   const { fingerprintHash } = useFingerprint();
   const [activeUserId, setActiveUserId] = useState(userId);
   const [tab, setTab] = useState<"activity" | "mutual" | "servers">("mutual");
-  const [userInfo, setUserInfo] = useState<UserDataProps | null>(null);
+  const [userInfo, setUserInfo] = useState<UserProfileData | null>(null);
 
   const fetchUserInfo = useCallback(async () => {
     try {
