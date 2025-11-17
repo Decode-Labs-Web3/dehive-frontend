@@ -152,6 +152,8 @@ export default function ChannelMessagePage() {
 
   const [listUploadFile, setListUploadFile] = useState<FileUploadProps[]>([]);
 
+  const newMessageRenderRef = useRef(false);
+
   const handleNewMessageKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
   ) => {
@@ -167,6 +169,7 @@ export default function ChannelMessagePage() {
         });
         setListUploadFile([]);
         setMessageReply(null);
+        newMessageRenderRef.current = true;
         return;
       }
     }
@@ -202,7 +205,6 @@ export default function ChannelMessagePage() {
     setEditMessageField(
       Object.fromEntries(messages.map((message) => [message._id, false]))
     );
-
     newMessageRef.current?.focus();
   };
 
@@ -223,10 +225,6 @@ export default function ChannelMessagePage() {
     resizeNew();
   }, [newMessage, resizeNew]);
 
-  useLayoutEffect(() => {
-    resizeNew();
-  }, [newMessage, resizeNew]);
-
   const prevScrollHeightRef = useRef(0);
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -240,18 +238,6 @@ export default function ChannelMessagePage() {
   const handleScroll = () => {
     const element = listRef.current;
     if (!element || isLastPage || loadingMore) return;
-    // const total = element?.scrollTop + element?.clientHeight;
-    // console.log(
-    //   "ScrollHeight:",
-    //   element?.scrollHeight,
-    //   "total:",
-    //   total,
-    //   "ScrollTop:",
-    //   element?.scrollTop,
-    //   "clientHeight:",
-    //   element?.clientHeight
-    // );
-
     if (element.scrollTop === 0) {
       console.log("Trigger load more");
       prevScrollHeightRef.current = element?.scrollHeight;
@@ -263,21 +249,17 @@ export default function ChannelMessagePage() {
   useEffect(() => {
     setLoadingMore(false);
     const element = listRef.current;
-    if (element) {
-      const newScrollHeightRef = element.scrollHeight;
-      element.scrollTop = newScrollHeightRef - prevScrollHeightRef.current;
-      prevScrollHeightRef.current = newScrollHeightRef;
+    if (!element) return;
+    if (newMessageRenderRef.current) {
+      element.scrollTop = element.scrollHeight - element.clientHeight;
+      newMessageRenderRef.current = false;
+      return;
     }
+    const newScrollHeightRef = element.scrollHeight;
+    element.scrollTop = newScrollHeightRef - prevScrollHeightRef.current;
+    prevScrollHeightRef.current = newScrollHeightRef;
   }, [messages]);
 
-  // useEffect(() => {
-  //   if (!loadingMore) {
-  //     const element = listRef.current;
-  //     if (element) {
-  //       element.scrollTop = element.scrollHeight;
-  //     }
-  //   }
-  // }, [messages.length, loadingMore]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -344,9 +326,9 @@ export default function ChannelMessagePage() {
       <ScrollArea
         ref={listRef}
         onScrollViewport={handleScroll}
-        className="flex-1 px-6 py-6 bg-background"
+        className="flex-1 bg-background"
       >
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 px-6 py-6">
           {loadingMore && (
             <>
               {Array.from({ length: 3 }).map((_, index) => (

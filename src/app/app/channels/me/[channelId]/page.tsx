@@ -141,6 +141,8 @@ export default function DirectMessagePage() {
     }
   };
 
+  const newMessageRenderRef = useRef(false);
+
   const handleNewMessageKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
   ) => {
@@ -148,6 +150,7 @@ export default function DirectMessagePage() {
       event.preventDefault();
       const message = newMessage.content.trim();
       if (message && !sending) {
+        newMessageRenderRef.current = true;
         send(message, newMessage.uploadIds, newMessage.replyTo);
         setNewMessage({ content: "", uploadIds: [], replyTo: null });
         setListUploadFile([]);
@@ -228,11 +231,15 @@ export default function DirectMessagePage() {
   useEffect(() => {
     setLoadingMore(false);
     const element = listRef.current;
-    if (element) {
-      const newScrollHeightRef = element.scrollHeight;
-      element.scrollTop = newScrollHeightRef - prevScrollHeightRef.current;
-      prevScrollHeightRef.current = newScrollHeightRef;
+    if (!element) return;
+    if (newMessageRenderRef.current) {
+      element.scrollTop = element.scrollHeight;
+      newMessageRenderRef.current = false;
+      return;
     }
+    const newScrollHeightRef = element.scrollHeight;
+    element.scrollTop = newScrollHeightRef - prevScrollHeightRef.current;
+    prevScrollHeightRef.current = newScrollHeightRef;
   }, [messages]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);

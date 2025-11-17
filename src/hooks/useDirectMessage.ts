@@ -6,6 +6,17 @@ import { Message } from "@/interfaces/websocketDirectChat.interface";
 import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 
+// function mergeMessages(prev: Message[], incoming: Message[]): Message[] {
+//   const map = new Map<string, Message>();
+//   prev.forEach(message => map.set(message._id, message));
+//   // console.log("edwedhjbwehdjewbdhjwedjhwedwed", map)
+//   incoming.forEach(message => {
+//     const existing = map.get(message._id);
+//     map.set(message._id, existing ? { ...existing, ...message } : message);
+//   });
+//   return Array.from(map.values());
+// }
+
 export function useDirectMessage(conversationId: string) {
   const { fingerprintHash } = useFingerprint();
   const [page, setPage] = useState<number>(0);
@@ -40,11 +51,17 @@ export function useDirectMessage(conversationId: string) {
         String(latestConversationId.current)
       )
         return;
-      setMessages((prev) =>
-        prev.some((oldMessage) => oldMessage._id === newMessage._id)
-          ? prev
-          : [...prev, newMessage]
-      );
+      setMessages((prev) => {
+        const existing = prev.find((message) => message._id === newMessage._id);
+        if (existing) {
+          return prev.map((message) =>
+            message._id === newMessage._id
+              ? { ...message, ...newMessage }
+              : message
+          );
+        }
+        return [...prev, newMessage];
+      });
     };
 
     const onMessageEdited = (editMessage: Message & { isEdited?: boolean }) => {
@@ -78,13 +95,6 @@ export function useDirectMessage(conversationId: string) {
       setMessages((prev) =>
         prev.filter((oldMessage) => oldMessage._id !== deleteMessage._id)
       );
-      // setMessages((prev) =>
-      //   prev.map((oldMessage) =>
-      //     oldMessage._id === deleteMessage._id
-      //       ? ({ ...oldMessage, isDeleted: oldMessage.isDeleted } as Message)
-      //       : oldMessage
-      //   )
-      // );
     };
 
     const onWebsocketError = (error: { message: string }) =>
@@ -126,9 +136,28 @@ export function useDirectMessage(conversationId: string) {
       }
       const response = await apiResponse.json();
       if (response.statusCode === 200 && response.message === "OK") {
+        // setMessages(prev => mergeMessages(prev, response.data.items || []));
         setMessages((prev) =>
           page === 0 ? response.data.items : [...response.data.items, ...prev]
         );
+        // setMessages((prev) => {
+        //   const incoming: Message[] = response.data.items || [];
+        //   if (page === 0) {
+        //     const map = new Map<string, Message>();
+        //     incoming.forEach((message) => map.set(message._id, message));
+        //     prev.forEach((message) => {
+        //       if (map.has(message._id)) {
+        //         map.set(message._id, { ...message, ...map.get(message._id)! });
+        //       } else {
+        //         map.set(message._id, message);
+        //       }
+        //     });
+        //     return Array.from(map.values());
+        //   }
+        //   const existingIds = new Set(prev.map((m) => m._id));
+        //   const older = incoming.filter((m) => !existingIds.has(m._id));
+        //   return [...older, ...prev];
+        // });
         setIsLastPage(response.data.metadata.is_last_page);
       }
     } catch (error) {
