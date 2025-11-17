@@ -5,14 +5,15 @@ import ServerBarItems from "@/components/server-bar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function ServerBar() {
   const { serverInfomation } = useServerInfomation();
   const [serverPanel, setServerPanel] = useState(false);
   const [serverSettingModal, setServerSettingModal] = useState(false);
   return (
-    <div className="w-full h-full bg-background border border-border">
-      <div className="relative bg-secondary border border-border p-2 font-bold z-20">
+    <div className="w-full h-full bg-background border border-border flex flex-col">
+      <div className="relative bg-secondary border border-border p-2 font-bold z-20 shrink-0">
         <button
           onClick={() => setServerSettingModal(true)}
           className="flex w-full items-center justify-between text-foreground"
@@ -35,16 +36,23 @@ export default function ServerBar() {
             />
 
             <div>
-                <ServerBarItems.EditModal
-                  setServerPanel={setServerPanel}
-                  setServerSettingModal={setServerSettingModal}
-                />
+              <ServerBarItems.EditModal
+                setServerPanel={setServerPanel}
+                setServerSettingModal={setServerSettingModal}
+              />
             </div>
           </>
         )}
       </div>
 
-      <ServerBarItems.Categories />
+      <ScrollArea className="flex-1">
+        <ServerBarItems.Categories />
+        <div
+          className="h-[180px] shrink-0 pointer-events-none"
+          aria-hidden="true"
+        />
+        <ScrollBar orientation="vertical" />
+      </ScrollArea>
 
       {serverPanel && (
         <ServerBarItems.ServerPanel

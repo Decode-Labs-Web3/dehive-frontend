@@ -1,6 +1,6 @@
 "use client";
 
-import { useState} from "react";
+import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
 import GuideBarItems from "@/components/guilde-bar";
@@ -108,8 +108,7 @@ export default function GuildBar() {
 
         <Separator className="mx-auto my-1 w-8 h-1 bg-border" />
 
-        <ScrollArea className="-mx-3">
-
+        <ScrollArea className="-mx-3 flex-1">
           {serversList.length > 0 &&
             serversList.map((server) => (
               <Tooltip key={server._id}>
@@ -178,10 +177,15 @@ export default function GuildBar() {
                 </TooltipContent>
               </Tooltip>
             ))}
+          <div className="ml-3">
+            <GuideBarItems.AddServer />
+          </div>
+          <div
+            className="h-[180px] shrink-0 pointer-events-none"
+            aria-hidden="true"
+          />
           <ScrollBar orientation="vertical" />
         </ScrollArea>
-
-        <GuideBarItems.AddServer />
       </aside>
     </TooltipProvider>
   );

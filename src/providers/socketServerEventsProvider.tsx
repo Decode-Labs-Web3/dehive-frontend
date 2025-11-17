@@ -265,6 +265,7 @@ export default function SocketServerEventsProvider({
 
     const onServerOwnershipUpdated = (p: ServerOwnershipUpdatedEvent) => {
       console.log("[server-events server:updated-ownership]", p);
+      console.log("ewkdnwednweidknwejkdnewjdkwendkjwejndkwejd", p)
       updateServerOwnershipList(p.server_id, p.owner_id);
       if (serverId === p.server_id) {
         updateServerOwnershipInfomation(p.owner_id);

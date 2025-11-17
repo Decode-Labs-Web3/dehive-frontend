@@ -60,19 +60,7 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
       </Link>
       <ScrollArea>
         {directMembers.map((user) => (
-          <div
-            key={user.user_id}
-            // onContextMenuCapture={(event) => {
-            //   event.preventDefault();
-            //   event.stopPropagation();
-            // console.log("Test Mouse Right click");
-            //   setUserModal((prev) => ({
-            //     ...prev,
-            //     [user.id]: !prev[user.id],
-            //   }));
-            // }}
-            className="relative"
-          >
+          <div key={user.user_id} className="relative">
             <DropdownMenu
               modal={false}
               open={userDropdown[user.user_id] ?? false}
@@ -181,6 +169,10 @@ export default function MeBar({ refreshVersion }: MeBarProps) {
             )}
           </div>
         ))}
+        <div
+          className="h-[180px] shrink-0 pointer-events-none"
+          aria-hidden="true"
+        />
         <ScrollBar orientation="vertical" />
       </ScrollArea>
     </div>
