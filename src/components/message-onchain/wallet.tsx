@@ -4,7 +4,8 @@
 import { sepolia } from "wagmi/chains";
 import "@rainbow-me/rainbowkit/styles.css";
 import { injected, walletConnect } from "wagmi/connectors";
-import { WagmiProvider, http, createConfig } from "wagmi";
+import { WagmiProvider, createConfig } from "wagmi";
+import { http, fallback as viemFallback } from "viem";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 
@@ -40,12 +41,30 @@ const connectors = wcProjectId
     ]
   : [injected()];
 
+// Build robust fallback transports to avoid single RPC quota limits
+const sepoliaRpcUrls = (process.env.NEXT_PUBLIC_SEPOLIA_RPC_URLS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+// Sensible public defaults (ordered by reliability); override via env when possible
+const defaultSepoliaRpcUrls = [
+  "https://ethereum-sepolia-rpc.publicnode.com",
+  "https://rpc.ankr.com/eth_sepolia",
+  "https://1rpc.io/sepolia",
+];
+const sepoliaTransports = viemFallback(
+  (sepoliaRpcUrls.length ? sepoliaRpcUrls : defaultSepoliaRpcUrls).map((u) =>
+    http(u)
+  )
+);
+
 const config = createConfig({
   chains: [sepolia],
   connectors,
   transports: {
-    [sepolia.id]: http("https://1rpc.io/sepolia"),
+    [sepolia.id]: sepoliaTransports,
   },
+  batch: { multicall: false },
   ssr: true,
 });
 

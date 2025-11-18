@@ -19,6 +19,7 @@ import {
   type Abi,
   createPublicClient,
   http,
+  fallback as viemFallback,
 } from "viem";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import SmartContractOption from "@/components/messages/SmartContractOption";
@@ -55,9 +56,21 @@ export default function SmartContractMessagePage() {
   useEffect(() => {
     if (!fallbackPublicClientRef.current) {
       try {
+        const urls = (process.env.NEXT_PUBLIC_SEPOLIA_RPC_URLS || "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const defaults = [
+          "https://ethereum-sepolia-rpc.publicnode.com",
+          "https://rpc.ankr.com/eth_sepolia",
+          "https://1rpc.io/sepolia",
+        ];
         fallbackPublicClientRef.current = createPublicClient({
           chain: sepolia,
-          transport: http(),
+          transport: viemFallback(
+            (urls.length ? urls : defaults).map((u) => http(u))
+          ),
+          batch: { multicall: false },
         });
       } catch {}
     }

@@ -100,15 +100,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [fetchUser, handleGetServer, fingerprintHash]);
 
-  if (!user._id || !fingerprintHash) {
-    return <SkeletonApp />;
-  }
-
   return (
     <Web3Providers>
-      <SocketStatusProvider userId={user._id} fingerprintHash={fingerprintHash}>
-        <SocketServerEventsProvider userId={user._id}>
-          <SoundContext.Provider value={soundValue}>
+      {!user._id || !fingerprintHash ? (
+        <SkeletonApp />
+      ) : (
+        <SocketStatusProvider
+          userId={user._id}
+          fingerprintHash={fingerprintHash}
+        >
+          <SocketServerEventsProvider userId={user._id}>
+            <SoundContext.Provider value={soundValue}>
               <div className="relative flex h-screen overflow-hidden">
                 <div className="flex w-15 relative ">
                   <App.GuildBar />
@@ -124,9 +126,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <App.UserBar />
                 </div>
               </div>
-          </SoundContext.Provider>
-        </SocketServerEventsProvider>
-      </SocketStatusProvider>
+            </SoundContext.Provider>
+          </SocketServerEventsProvider>
+        </SocketStatusProvider>
+      )}
     </Web3Providers>
   );
 }

@@ -132,6 +132,7 @@ type ReadContract = (opts: {
   abi: unknown;
   functionName: string;
   args?: unknown[];
+  account?: `0x${string}`; // ensure msg.sender for view calls when needed
 }) => Promise<unknown>;
 
 export async function getMyConversationKey(
@@ -148,6 +149,7 @@ export async function getMyConversationKey(
       abi: messageAbi,
       functionName: "getMyEncryptedConversationKeys",
       args: [conversationId],
+      account: getAddress(myAddress),
     })) as string;
     const encHex = encKey.startsWith("0x") ? encKey.slice(2) : encKey;
     if (encHex)
