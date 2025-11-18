@@ -70,9 +70,7 @@ export interface UserBannedEvent {
 
 export type MemberInfoJoined = ServerMemberListProps;
 
-export interface MemberInfoLeft {
-  userId: string;
-}
+export type MemberInfoLeft = { userId: string } | { user_id: string };
 
 export interface MemberJoinedEvent {
   serverId: string;

@@ -58,7 +58,7 @@ export const messageAbi = [
     stateMutability: "view",
     name: "getMyEncryptedConversationKeys",
     inputs: [{ name: "conversationId", type: "uint256" }],
-    outputs: [{ name: "", type: "string" }],
+    outputs: [{ name: "", type: "bytes" }],
   },
   // writes
   {

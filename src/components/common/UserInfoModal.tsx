@@ -13,12 +13,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  UserProfileData,
+  MutualServer,
+  MutualFollower,
+} from "@/interfaces/user-profile.interface";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UserProfileData } from "@/interfaces/user-profile.interface";
 
 interface UserInfoModalProps {
   userId: string;
@@ -249,7 +253,7 @@ export default function UserInfoModal({
                         <ScrollArea className="h-[48vh] pr-2">
                           <div className="space-y-4">
                             {userInfo.mutual_followers_list.map(
-                              (mutual: MutualFollowers) => (
+                              (mutual: MutualFollower) => (
                                 <Card
                                   key={mutual.user_id}
                                   className="cursor-pointer hover:bg-muted/50 transition-colors"
@@ -308,7 +312,7 @@ export default function UserInfoModal({
                         <ScrollArea className="h-[48vh] pr-2">
                           <div className="space-y-3">
                             {userInfo.mutual_servers.map(
-                              (server: MutualServers) => (
+                              (server: MutualServer) => (
                                 <Card key={server.server_id}>
                                   <CardContent className="p-4">
                                     <p className="font-medium">

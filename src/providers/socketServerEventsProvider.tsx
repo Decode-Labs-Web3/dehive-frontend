@@ -97,7 +97,17 @@ export default function SocketServerEventsProvider({
     };
 
     const onError = (e: WsErrorPayload | string) => {
-      console.warn("[server-events ws error]", e);
+      let payload: WsErrorPayload;
+      if (typeof e === "string") {
+        try {
+          payload = JSON.parse(e) as WsErrorPayload;
+        } catch {
+          payload = { message: e };
+        }
+      } else {
+        payload = e;
+      }
+      console.warn("[server-events ws error]", payload);
     };
 
     const onManagerReconnect = (n: number) => {
@@ -122,7 +132,17 @@ export default function SocketServerEventsProvider({
     };
 
     const onIdentityConfirmed = (p: IdentityConfirmedEvent | string) => {
-      console.log("[server-events identityConfirmed]", p);
+      let payload: IdentityConfirmedEvent;
+      if (typeof p === "string") {
+        try {
+          payload = JSON.parse(p) as IdentityConfirmedEvent;
+        } catch {
+          payload = { message: String(p), userId: "" };
+        }
+      } else {
+        payload = p;
+      }
+      console.log("[server-events identityConfirmed]", payload);
       tryJoinServer();
     };
 
@@ -197,6 +217,14 @@ export default function SocketServerEventsProvider({
       }
     };
 
+    const onServerOwnershipUpdated = (p: ServerOwnershipUpdatedEvent) => {
+      console.log("[server-events server:updated-ownership]", p);
+      updateServerOwnershipList(p.server_id, p.owner_id);
+      if (serverId === p.server_id) {
+        updateServerOwnershipInfomation(p.owner_id);
+      }
+    };
+
     // Level 2: server-level events
     const onMemberJoined = (p: MemberJoinedEvent) => {
       console.log("[server-events member:joined]", p);
@@ -205,7 +233,8 @@ export default function SocketServerEventsProvider({
 
     const onMemberLeft = (p: MemberLeftEvent) => {
       console.log("[server-events member:left]", p);
-      updateUserLeaveMember(p.member.userId);
+      const leftUserId = (p.member as any).userId ?? (p.member as any).user_id;
+      if (leftUserId) updateUserLeaveMember(leftUserId);
     };
 
     const onCategoryCreated = (p: CategoryCreatedEvent) => {
@@ -261,15 +290,6 @@ export default function SocketServerEventsProvider({
         p.channel.newCategoryId,
         p.channel._id
       );
-    };
-
-    const onServerOwnershipUpdated = (p: ServerOwnershipUpdatedEvent) => {
-      console.log("[server-events server:updated-ownership]", p);
-      console.log("ewkdnwednweidknwejkdnewjdkwendkjwejndkwejd", p)
-      updateServerOwnershipList(p.server_id, p.owner_id);
-      if (serverId === p.server_id) {
-        updateServerOwnershipInfomation(p.owner_id);
-      }
     };
 
     socket.on("connect", onConnect);
