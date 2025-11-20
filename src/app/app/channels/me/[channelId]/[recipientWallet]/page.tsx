@@ -1,14 +1,13 @@
 "use client";
 
 import { sepolia } from "wagmi/chains";
+import { useUser } from "@/hooks/useUser";
 import { useParams } from "next/navigation";
 import { messageAbi } from "@/abi/messageAbi";
-import { getApiHeaders } from "@/utils/api.utils";
 import Markdown from "@/components/common/Markdown";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { useFingerprint } from "@/hooks/useFingerprint";
-import { useUser } from "@/hooks/useUser";
+import { useDirectMember } from "@/hooks/useDirectMember";
 import { isAddress, getAddress, parseEther, type Abi } from "viem";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -37,11 +36,12 @@ import {
 } from "@/lib/scMessage";
 
 export default function SmartContractMessagePage() {
-  const { channelId, recipientWallet } = useParams<{
-    channelId: string;
+  const { user } = useUser();
+  const { directMembers } = useDirectMember();
+  const { channelId,recipientWallet } = useParams<{
+    channelId: string,
     recipientWallet: string;
   }>();
-  const { fingerprintHash } = useFingerprint();
   const [newMessage, setNewMessage] = useState<string>("");
   const [conversationId, setConversationId] = useState<bigint | null>(null);
   const [first, setFirst] = useState(20);
@@ -159,7 +159,6 @@ export default function SmartContractMessagePage() {
   const contractUnwatchRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     if (!publicClient || !proxy) return;
-    // Avoid duplicate watchers in dev strict mode
     if (contractUnwatchRef.current) return;
 
     const unwatch = publicClient.watchContractEvent({
@@ -216,8 +215,12 @@ export default function SmartContractMessagePage() {
               }
             }
 
-            const block = await publicClient.getBlock({ blockNumber: log.blockNumber });
-            const createdAt = new Date(Number(block.timestamp) * 1000).toISOString();
+            const block = await publicClient.getBlock({
+              blockNumber: log.blockNumber,
+            });
+            const createdAt = new Date(
+              Number(block.timestamp) * 1000
+            ).toISOString();
 
             const isCounterpart =
               !!counterpart && getAddress(from) === counterpart;
@@ -257,44 +260,10 @@ export default function SmartContractMessagePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicClient, proxy]);
 
-  // UI sibling data (chat partner info), mirroring DirectMessagePage
-  interface WalletProps {
-    _id: string;
-    address: string;
-    user_id: string;
-    name_service: null | string;
-    is_primary: boolean;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-  }
-  interface UserChatWith {
-    id: string;
-    displayname: string;
-    username: string;
-    avatar_ipfs_hash: string;
-    wallets: WalletProps[];
-    status: string;
-  }
-  const [userChatWith, setUserChatWith] = useState<UserChatWith>({
-    id: "",
-    displayname: "",
-    username: "",
-    avatar_ipfs_hash: "",
-    wallets: [],
-    status: "offline",
-  });
-  const counterpartPrimaryWallet = useMemo(() => {
-    const w = userChatWith.wallets.find((w) => w.is_primary);
-    return w?.address ?? recipientWallet;
-  }, [userChatWith.wallets, recipientWallet]);
-
   const ensureSepolia = async () => {
     if (chainId === sepolia.id) return;
     await switchChainAsync({ chainId: sepolia.id });
   };
-
-  // (Removed createConversation UI; sending will auto-create if missing)
 
   // Auto-compute deterministic conversationId whenever address/recipient is valid
   useEffect(() => {
@@ -312,31 +281,6 @@ export default function SmartContractMessagePage() {
       setConversationId(null);
     }
   }, [address, recipientWallet]);
-
-  // Fetch user chat-with info to populate header avatar/name (same API as DirectMessagePage)
-  const fetchUserChatWith = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/user/chat-with", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ conversationId: channelId }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!apiResponse.ok) return;
-      const response = await apiResponse.json();
-      if (response.statusCode === 200 && response.message === "OK") {
-        setUserChatWith(response.data as UserChatWith);
-      }
-    } catch (err) {
-      console.error("fetchUserChatWith error", err);
-    }
-  }, [channelId, fingerprintHash]);
-  useEffect(() => {
-    fetchUserChatWith();
-  }, [fetchUserChatWith]);
 
   const sendPayAsYouGo = async () => {
     if (!proxy) return alert("Proxy address missing");
@@ -743,14 +687,7 @@ export default function SmartContractMessagePage() {
       // Ensure loading-more UI is cleared even if no new messages were added
       setLoadingMore(false);
     }
-  }, [
-    first,
-    proxy,
-    address,
-    publicClient,
-    conversationId,
-    recipientWallet,
-  ]);
+  }, [first, proxy, address, publicClient, conversationId, recipientWallet]);
 
   // Fetch once when entering a conversation (per recipientWallet). Do not refetch afterward.
   const initialFetchForRecipientRef = useRef<string | null>(null);
@@ -833,15 +770,19 @@ export default function SmartContractMessagePage() {
     }
   }, [messages]);
 
+    const userChatWith = useMemo(() => {
+    return directMembers.find((member) => member.conversationid === channelId);
+  }, [directMembers, channelId]);
+
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
           <Avatar className="w-8 h-8">
             <AvatarImage
-              src={`https://ipfs.de-id.xyz/ipfs/${userChatWith.avatar_ipfs_hash}`}
+              src={`https://ipfs.de-id.xyz/ipfs/${userChatWith?.avatar_ipfs_hash}`}
             />
-            <AvatarFallback>{userChatWith.displayname} Avatar</AvatarFallback>
+            <AvatarFallback>{userChatWith?.displayname} Avatar</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
@@ -885,31 +826,42 @@ export default function SmartContractMessagePage() {
                   key={message.id}
                   className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
                 >
-                <div className="flex w-full">
-                  <Avatar className="w-8 h-8 shrink-0">
-                    <AvatarFallback>
-                      {isMe ? "You" : `${message.sender.slice(0, 6)}...${message.sender.slice(-4)}`}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="flex w-full">
+                    <Avatar className="w-8 h-8 shrink-0">
+                      <AvatarFallback>
+                        {isMe
+                          ? "You"
+                          : `${message.sender.slice(
+                              0,
+                              6
+                            )}...${message.sender.slice(-4)}`}
+                      </AvatarFallback>
+                    </Avatar>
 
-                  <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
-                    <div className="w-full">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-sm font-semibold text-foreground">
-                          {isMe ? "You" : `${message.sender.slice(0, 6)}...${message.sender.slice(-4)}`}
-                        </h2>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(message.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
-                        <Markdown>{message.content}</Markdown>
+                    <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
+                      <div className="w-full">
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-sm font-semibold text-foreground">
+                            {isMe
+                              ? "You"
+                              : `${message.sender.slice(
+                                  0,
+                                  6
+                                )}...${message.sender.slice(-4)}`}
+                          </h2>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(message.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
+                          <Markdown>{message.content}</Markdown>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )})
+              );
+            })
           )}
         </div>
         <ScrollBar orientation="vertical" />

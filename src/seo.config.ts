@@ -76,16 +76,11 @@ export const defaultMetadata: Metadata = {
   other: {},
 };
 
-/**
- * Build page-level metadata:
- * - Create canonical and og:url accurately according to `path`
- */
 export function buildPageMetadata(
   title?: string,
   description?: string,
   path?: string
 ): Metadata {
-  // Ensure path always has leading slash when passed to URL()
   const normalizedPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
   const url = normalizedPath
     ? new URL(normalizedPath, SITE_URL).toString()

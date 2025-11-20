@@ -108,6 +108,7 @@ export interface Channel {
   name: string;
   type: string;
   categoryId: string;
+  category_id?: string;
   position?: number;
 }
 
@@ -123,6 +124,7 @@ export interface ChannelCreatedEvent {
   name: string;
   type: string;
   category_id: string;
+  categoryId?: string;
   createdAt: string;
   updatedAt: string;
   __v: number;
