@@ -3,11 +3,10 @@
 
 import { sepolia } from "wagmi/chains";
 import "@rainbow-me/rainbowkit/styles.css";
-import { injected, walletConnect } from "wagmi/connectors";
-import { WagmiProvider, createConfig } from "wagmi";
-import { http, fallback as viemFallback } from "viem";
+import { injected } from "wagmi/connectors";
+import { WagmiProvider, http, createConfig } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, getDefaultConfig } from "@rainbow-me/rainbowkit";
 
 const queryClient = new QueryClient();
 
@@ -21,52 +20,36 @@ if (!wcProjectId && typeof window !== "undefined") {
   //   "WalletConnect projectId missing. Injected wallets still work, but some WC features will be disabled. Set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID to remove this warning."
   // );
 }
-// Build connectors explicitly to avoid bundling MetaMask SDK via RainbowKit defaults
-const connectors = wcProjectId
-  ? [
-      injected(),
-      walletConnect({
-        projectId: wcProjectId,
-        metadata: {
-          name: "Dehive Chat",
-          description: "Dehive Chat dApp",
-          url:
-            typeof window !== "undefined"
-              ? window.location.origin
-              : "https://dehive.app",
-          icons: ["https://dehive.app/icon.png"],
-        },
-        showQrModal: true,
-      }),
-    ]
-  : [injected()];
+// Prefer a configurable RPC with sane retry/timeouts to avoid rate-limit spam
+const SEPOLIA_RPC_URL =
+  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ||
+  "https://ethereum-sepolia.gateway.tatum.io";
 
-// Build robust fallback transports to avoid single RPC quota limits
-const sepoliaRpcUrls = (process.env.NEXT_PUBLIC_SEPOLIA_RPC_URLS || "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
-// Sensible public defaults (ordered by reliability); override via env when possible
-const defaultSepoliaRpcUrls = [
-  "https://ethereum-sepolia-rpc.publicnode.com",
-  "https://rpc.ankr.com/eth_sepolia",
-  "https://1rpc.io/sepolia",
-];
-const sepoliaTransports = viemFallback(
-  (sepoliaRpcUrls.length ? sepoliaRpcUrls : defaultSepoliaRpcUrls).map((u) =>
-    http(u)
-  )
-);
-
-const config = createConfig({
-  chains: [sepolia],
-  connectors,
-  transports: {
-    [sepolia.id]: sepoliaTransports,
-  },
-  batch: { multicall: false },
-  ssr: true,
-});
+// If projectId available: use RainbowKit default (WalletConnect enabled)
+// Else: fall back to a minimal wagmi config with only injected connector (no calls to web3modal API)
+const config = wcProjectId
+  ? getDefaultConfig({
+      appName: "Dehive Chat",
+      projectId: wcProjectId,
+      chains: [sepolia],
+      transports: {
+        [sepolia.id]: http(SEPOLIA_RPC_URL, {
+          retryCount: 1,
+          timeout: 15_000,
+        }),
+      },
+    })
+  : createConfig({
+      chains: [sepolia],
+      connectors: [injected()],
+      transports: {
+        [sepolia.id]: http(SEPOLIA_RPC_URL, {
+          retryCount: 1,
+          timeout: 15_000,
+        }),
+      },
+      ssr: true,
+    });
 
 export function Web3Providers({ children }: { children: React.ReactNode }) {
   return (
