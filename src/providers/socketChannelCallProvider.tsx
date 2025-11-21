@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useServerRoot } from "@/hooks/useServerRoot";
 import { getChannelCallSocketIO } from "@/lib/socketioChannelCallSingleton";
 import type {
   JoinedServer,
@@ -23,6 +24,13 @@ export default function ChannelCallProvider({
   children,
 }: ChannelCallProviderProps) {
   const socket = useRef(getChannelCallSocketIO()).current;
+
+  const {
+    userJoinServerRoot,
+    userJoinChannelRoot,
+    userLeftChannelRoot,
+    userStatusChangeRoot,
+  } = useServerRoot();
 
   useEffect(() => {
     const identify = () => {
@@ -75,18 +83,22 @@ export default function ChannelCallProvider({
 
     const onServerJoined = (p: JoinedServer) => {
       console.log("[channel call serverJoined]", p);
+      userJoinServerRoot(p.channels);
     };
 
     const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
       console.log("[channel call userJoinedChannel]", p);
+      userJoinChannelRoot(p);
     };
 
     const onUserLeftChannel = (p: UserLeftChannelPayload) => {
       console.log("[channel call userLeftChannel]", p);
+      userLeftChannelRoot(p);
     };
 
     const onUserStatusChanged = (p: UserStatusChangedPayload) => {
       console.log("[channel call userStatusChanged]", p);
+      userStatusChangeRoot(p);
     };
 
     socket.on("connect", onConnect);
@@ -124,7 +136,7 @@ export default function ChannelCallProvider({
       socket.off("userStatusChanged", onUserStatusChanged);
       socket.off("userLeftChannel", onUserLeftChannel);
     };
-  }, [socket, userId, serverId]);
+  }, [socket, userId, serverId, userJoinServerRoot, userJoinChannelRoot, userLeftChannelRoot, userStatusChangeRoot]);
 
   useEffect(() => {
     if (userId && socket.connected)

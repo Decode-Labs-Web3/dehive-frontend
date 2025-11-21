@@ -8,8 +8,8 @@ import ServerBarItems from "@/components/server-bar";
 import { useServerRoot } from "@/hooks/useServerRoot";
 import { useServersList } from "@/hooks/useServersList";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useServerInfomation } from "@/hooks/useServerInfomation";
 import {
   faPen,
   faGear,
@@ -32,12 +32,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface EditModalProps {
+  serverInfomation: ServerProps;
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
   setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function EditModal({
   setServerPanel,
+  serverInfomation,
   setServerSettingModal,
 }: EditModalProps) {
   const { user } = useUser();
@@ -46,8 +48,6 @@ export default function EditModal({
   const { createCategoryRoot } = useServerRoot();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
-  const { serverInfomation, updateServerInfomation, removeServerInfomation } =
-    useServerInfomation();
   const allFalse = {
     edit: false,
     leave: false,
@@ -142,7 +142,6 @@ export default function EditModal({
           editServerForm.name,
           editServerForm.description
         );
-        updateServerInfomation(editServerForm.name, editServerForm.description);
       }
     } catch (error) {
       console.error(error);
@@ -180,7 +179,6 @@ export default function EditModal({
         response.message === "Operation successful"
       ) {
         removeServerList(serverInfomation._id);
-        removeServerInfomation();
         setModal({ ...allFalse });
         router.push("/app/channels/me");
       }
@@ -218,7 +216,6 @@ export default function EditModal({
         response.message === "Operation successful"
       ) {
         removeServerList(serverInfomation._id);
-        removeServerInfomation();
         setModal({ ...allFalse });
         router.push("/app/channels/me");
       }
@@ -596,7 +593,7 @@ export default function EditModal({
 
       {modal.invite && (
         <>
-          <ServerBarItems.ServerInvite setModal={setModal} />
+          <ServerBarItems.ServerInvite setModal={setModal} serverInfomation={serverInfomation}/>
         </>
       )}
     </>

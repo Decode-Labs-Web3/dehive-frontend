@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useServerRoot } from "@/hooks/useServerRoot";
 import { useServersList } from "@/hooks/useServersList";
 import { useServerMember } from "@/hooks/useServerMember";
-import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { getServerEventsSocketIO } from "@/lib/socketioServerEventsSingleton";
 import type {
   ServerToClientServerEvents,
@@ -61,14 +60,6 @@ export default function SocketServerEventsProvider({
     updateServerNFTGatingList,
     updateServerOwnershipList,
   } = useServersList();
-  const {
-    updateServerInfomation,
-    updateServerTagInfomation,
-    updateServerNFTInformation,
-    removeServerInfomation,
-    updateServerAvatarInfomation,
-    updateServerOwnershipInfomation,
-  } = useServerInfomation();
   const { updateUserLeaveMember, updateUserJoinMember } = useServerMember();
   const socket = useRef(getServerEventsSocketIO()).current;
 
@@ -156,7 +147,6 @@ export default function SocketServerEventsProvider({
       removeServerList(p.serverId);
       if (serverId === p.serverId) {
         deleteServerRoot();
-        removeServerInfomation();
         router.push("/app/channels/me");
       }
     };
@@ -167,7 +157,6 @@ export default function SocketServerEventsProvider({
         removeServerList(p.serverId);
         if (serverId === p.serverId) {
           deleteServerRoot();
-          removeServerInfomation();
           router.push("/app/channels/me");
         }
       }
@@ -176,33 +165,21 @@ export default function SocketServerEventsProvider({
     const onServerInfoUpdated = (p: ServerInfoUpdatedEvent) => {
       console.log("[server-events server:info-updated]", p);
       updateServerInfomationList(p.server_id, p.name, p.description);
-      if (serverId === p.server_id) {
-        updateServerInfomation(p.name, p.description);
-      }
     };
 
     const onServerAvatarUpdated = (p: ServerAvatarUpdatedEvent) => {
       console.log("[server-events server:avatar-updated]", p);
       updateServerAvatarList(p.server_id, p.avatar_hash);
-      if (serverId === p.server_id) {
-        updateServerAvatarInfomation(p.avatar_hash);
-      }
     };
 
     const onServerTagsUpdated = (p: ServerTagsUpdatedEvent) => {
       console.log("[server-events server:tags-updated]", p);
       updateServerTagsList(p.server_id, p.tags[0]);
-      if (serverId === p.server_id) {
-        updateServerTagInfomation(p.tags[0]);
-      }
     };
 
     const onServerNFTUpdated = (p: ServerNFTUpdatedEvent) => {
       console.log("[server-events server:nft-updated]", p);
       updateServerNFTGatingList(p.server_id, p.server);
-      if (serverId === p.server_id) {
-        updateServerNFTInformation(p.server);
-      }
     };
 
     const onUserBanned = (p: UserBannedEvent) => {
@@ -211,7 +188,6 @@ export default function SocketServerEventsProvider({
         removeServerList(p.serverId);
         if (serverId === p.serverId) {
           deleteServerRoot();
-          removeServerInfomation();
           router.push("/app/channels/me");
         }
       }
@@ -220,9 +196,6 @@ export default function SocketServerEventsProvider({
     const onServerOwnershipUpdated = (p: ServerOwnershipUpdatedEvent) => {
       console.log("[server-events server:updated-ownership]", p);
       updateServerOwnershipList(p.server_id, p.owner_id);
-      if (serverId === p.server_id) {
-        updateServerOwnershipInfomation(p.owner_id);
-      }
     };
 
     // Level 2: server-level events
@@ -383,13 +356,7 @@ export default function SocketServerEventsProvider({
     updateServerAvatarList,
     updateServerNFTGatingList,
     updateServerInfomationList,
-    removeServerInfomation,
-    updateServerInfomation,
-    updateServerTagInfomation,
-    updateServerNFTInformation,
-    updateServerAvatarInfomation,
     updateServerOwnershipList,
-    updateServerOwnershipInfomation,
   ]);
 
   useEffect(() => {

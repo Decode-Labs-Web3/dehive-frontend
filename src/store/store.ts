@@ -5,17 +5,15 @@ import serverList from "./slices/serverListSlice";
 import fingerprintReducer from "./slices/fingerprintSlice";
 import directMemberReducer from "./slices/directMemberSlice";
 import serverMemberReducer from "./slices/serverMemberSlice";
-import serverInfomation from "./slices/serverInfomationSlice";
 
 export const store = configureStore({
   reducer: {
     user: userReducer,
+    serverList: serverList,
     serverRoot: serverRoot,
     fingerprint: fingerprintReducer,
     directMembers: directMemberReducer,
     serverMembers: serverMemberReducer,
-    serverInfomation: serverInfomation,
-    serverList: serverList,
   },
 });
 

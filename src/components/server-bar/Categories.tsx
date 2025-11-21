@@ -12,9 +12,9 @@ import { useServerRoot } from "@/hooks/useServerRoot";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useState, useCallback, useEffect } from "react";
+import { ServerProps } from "@/interfaces/server.interface";
 import { CategoryProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { MemberInServerProps } from "@/interfaces/user.interface";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -38,10 +38,13 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 
-export default function Categories() {
+interface CategoriesProps {
+  serverInfomation: ServerProps;
+}
+
+export default function Categories({serverInfomation}: CategoriesProps) {
   const { user } = useUser();
   const { serverId } = useParams();
-  const { serverInfomation } = useServerInfomation();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [isPrivileged, setIsPrivileged] = useState(false);
@@ -69,7 +72,7 @@ export default function Categories() {
         headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
         }),
-        body: JSON.stringify({ serverId: serverInfomation._id }),
+        body: JSON.stringify({ serverId: serverInfomation?._id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -93,7 +96,7 @@ export default function Categories() {
       console.error(error);
       console.log("Server fetch server member error");
     }
-  }, [serverInfomation._id, user._id, fingerprintHash]);
+  }, [serverInfomation?._id, user._id, fingerprintHash]);
 
   useEffect(() => {
     if (!user._id) return;
@@ -382,7 +385,7 @@ export default function Categories() {
                 >
                   Collapse All Categories
                 </ContextMenuItem>
-                {serverInfomation.owner_id === user._id && (
+                {serverInfomation?.owner_id === user._id && (
                   <>
                     <ContextMenuItem
                       onClick={() => {

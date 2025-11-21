@@ -50,7 +50,7 @@ This document summarizes the capabilities and technologies implemented in this r
   - Middleware‑style proxy (`src/proxy.ts`) for security and routing (enforces `X-Frontend-Internal-Request`, redirects `/` when session exists).
 - State Management
   - Redux Toolkit slices for user, servers, members, categories/channels, etc.
-  - Lightweight, typed hooks (`useServerRoot`, `useServersList`, `useServerInfomation`, `useDirectMember`, `useServerMember`, `useUser`).
+  - Lightweight, typed hooks (`useServerRoot`, `useServersList`, `useDirectMember`, `useServerMember`, `useUser`).
 - Real‑time
   - Socket factory/registry (`src/lib/socketFactory.ts`) keyed by logical channel: status, direct call/chat, channel call/chat, server events.
   - Providers wrapping sockets per domain (`src/providers/*Provider.tsx`).

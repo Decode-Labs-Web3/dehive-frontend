@@ -1,16 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useParams } from "next/navigation";
 import ServerBarItems from "@/components/server-bar";
+import { useServersList } from "@/hooks/useServersList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useServerInfomation } from "@/hooks/useServerInfomation";
-import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { faX, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 
 export default function ServerBar() {
-  const { serverInfomation } = useServerInfomation();
+  const { serversList } = useServersList();
+  const { serverId } = useParams<{
+    serverId: string;
+  }>();
+  const serverInfomation = useMemo(() => {
+    return serversList.find((server) => server._id === serverId);
+  }, [ serversList, serverId]);
   const [serverPanel, setServerPanel] = useState(false);
   const [serverSettingModal, setServerSettingModal] = useState(false);
+  if (!serverInfomation) {
+    return null;
+  }
   return (
     <div className="w-full h-full bg-background border border-border flex flex-col">
       <div className="relative bg-secondary border border-border p-2 font-bold z-20 shrink-0">
@@ -38,6 +48,7 @@ export default function ServerBar() {
             <div>
               <ServerBarItems.EditModal
                 setServerPanel={setServerPanel}
+                serverInfomation={serverInfomation}
                 setServerSettingModal={setServerSettingModal}
               />
             </div>
@@ -46,7 +57,7 @@ export default function ServerBar() {
       </div>
 
       <ScrollArea className="flex-1">
-        <ServerBarItems.Categories />
+        <ServerBarItems.Categories serverInfomation={serverInfomation}/>
         <div
           className="h-[180px] shrink-0 pointer-events-none"
           aria-hidden="true"
@@ -57,6 +68,7 @@ export default function ServerBar() {
       {serverPanel && (
         <ServerBarItems.ServerPanel
           setServerPanel={setServerPanel}
+          serverInfomation={serverInfomation}
           setServerSettingModal={setServerSettingModal}
         />
       )}

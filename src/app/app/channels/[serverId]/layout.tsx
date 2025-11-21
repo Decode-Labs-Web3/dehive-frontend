@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import App from "@/components/app";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
@@ -8,21 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useServerRoot } from "@/hooks/useServerRoot";
 import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import { useServersList } from "@/hooks/useServersList";
 import { useCallback, useEffect, useState } from "react";
 import { useServerMember } from "@/hooks/useServerMember";
-import { useServerInfomation } from "@/hooks/useServerInfomation";
-import { getStatusSocketIO } from "@/lib/socketioStatusSingleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ChannelCallProvider from "@/providers/socketChannelCallProvider";
 import ChannelChatProvider from "@/providers/socketChannelChatProvider";
 import SocketServerEventsProvider from "@/providers/socketServerEventsProvider";
-import { getChannelCallSocketIO } from "@/lib/socketioChannelCallSingleton";
-import {
-  JoinedServer,
-  UserJoinedChannelPayload,
-  UserStatusChangedPayload,
-  UserLeftChannelPayload,
-} from "@/interfaces/websocketChannelCall.interface";
 
 export default function ServerLayout({
   children,
@@ -31,13 +24,13 @@ export default function ServerLayout({
 }) {
   const { user } = useUser();
   const router = useRouter();
+  const { serversList } = useServersList();
   const { fingerprintHash } = useFingerprint();
-  const { serverInfomation, setServerInfomation } = useServerInfomation();
   const [serverNotFound, setServerNotFound] = useState(false);
+  const { setServerMember, updateServerStatusMember } = useServerMember();
   const { serverId } = useParams<{
     serverId: string;
   }>();
-  const { setServerMember, updateServerStatusMember } = useServerMember();
   const {
     createServerRoot,
     userJoinServerRoot,
@@ -46,28 +39,15 @@ export default function ServerLayout({
     userStatusChangeRoot,
   } = useServerRoot();
 
-  const fetchServerInfo = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/servers/server-info", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ serverId }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
+  const serverInfomation = useMemo(() => {
+    return serversList.find((server) => server._id === serverId);
+  }, [serversList, serverId]);
 
-      if (!apiResponse.ok) {
-        console.log(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      setServerInfomation(response.data);
-    } catch (error) {
-      console.log(error);
+  useEffect(() => {
+    if (serverInfomation === undefined) {
+      setServerNotFound(true);
     }
-  }, [serverId, fingerprintHash, setServerInfomation]);
+  }, [serverInfomation]);
 
   const fetchCategoryInfo = useCallback(async () => {
     try {
@@ -129,73 +109,9 @@ export default function ServerLayout({
   }, [serverId, fingerprintHash, setServerMember]);
 
   useEffect(() => {
-    fetchServerInfo();
     fetchServerUsers();
     fetchCategoryInfo();
-  }, [fetchServerUsers, fetchCategoryInfo, fetchServerInfo]);
-
-  useEffect(() => {
-    const socket = getStatusSocketIO();
-    const onUserStatusChanged = (
-      p: string | { userId: string; status: string }
-    ) => {
-      console.log("[ws me bar userStatusChanged] quang minh", p);
-      if (typeof p === "string") return;
-      updateServerStatusMember(p.userId, p.status);
-    };
-    socket.on("userStatusChanged", onUserStatusChanged);
-    return () => {
-      socket.off("userStatusChanged", onUserStatusChanged);
-    };
-  }, [updateServerStatusMember]);
-
-  useEffect(() => {
-    const socket = getChannelCallSocketIO();
-    const onServerJoined = (p: JoinedServer) => {
-      console.log("serverJoined quang minh", p);
-      userJoinServerRoot(p.channels);
-    };
-    socket.on("serverJoined", onServerJoined);
-    return () => {
-      socket.off("serverJoined", onServerJoined);
-    };
-  }, [userJoinServerRoot]);
-
-  useEffect(() => {
-    const socket = getChannelCallSocketIO();
-    const onUserJoinedChannel = (p: UserJoinedChannelPayload) => {
-      console.log("userJoinedChannel quang minh", p);
-      userJoinChannelRoot(p);
-    };
-    socket.on("userJoinedChannel", onUserJoinedChannel);
-    return () => {
-      socket.off("userJoinedChannel", onUserJoinedChannel);
-    };
-  }, [userJoinChannelRoot]);
-
-  useEffect(() => {
-    const socket = getChannelCallSocketIO();
-    const onUserStatusChanged = (p: UserStatusChangedPayload) => {
-      console.log("userStatusChanged quang minh", p);
-      userStatusChangeRoot(p);
-    };
-    socket.on("userStatusChanged", onUserStatusChanged);
-    return () => {
-      socket.off("userStatusChanged", onUserStatusChanged);
-    };
-  }, [userStatusChangeRoot]);
-
-  useEffect(() => {
-    const socket = getChannelCallSocketIO();
-    const onUserLeftChannel = (p: UserLeftChannelPayload) => {
-      console.log("userLeftChannel quang minh", p);
-      userLeftChannelRoot(p);
-    };
-    socket.on("userLeftChannel", onUserLeftChannel);
-    return () => {
-      socket.off("userLeftChannel", onUserLeftChannel);
-    };
-  }, [userLeftChannelRoot]);
+  }, [fetchServerUsers, fetchCategoryInfo]);
 
   if (serverNotFound) {
     return (
@@ -220,7 +136,7 @@ export default function ServerLayout({
     );
   }
 
-  if (!user._id || !serverId || !serverInfomation._id) {
+  if (!user._id || !serverId) {
     return (
       <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
         <aside className="h-full overflow-y-auto border-r border-black/20">

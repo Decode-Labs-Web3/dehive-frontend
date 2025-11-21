@@ -5,23 +5,26 @@ import { useUser } from "@/hooks/useUser";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useServersList } from "@/hooks/useServersList";
 import { useState, useEffect, useCallback } from "react";
+import { ServerProps } from "@/interfaces/server.interface";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MemberInServerProps } from "@/interfaces/user.interface";
-import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerMembersProps {
+  serverInfomation: ServerProps;
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function ServerMembers({ setServerPanel }: ServerMembersProps) {
+export default function ServerMembers({
+  serverInfomation,
+  setServerPanel,
+}: ServerMembersProps) {
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const { updateServerOwnershipList } = useServersList();
-  const { serverInfomation, updateServerOwnershipInfomation } =
-    useServerInfomation();
+
   const [kickForm, setKickForm] = useState({
     server_id: serverInfomation._id,
     target_user_dehive_id: "",
@@ -269,7 +272,6 @@ export default function ServerMembers({ setServerPanel }: ServerMembersProps) {
           ...prev,
           [memberId]: false,
         }));
-        updateServerOwnershipInfomation(memberId);
         updateServerOwnershipList(serverInfomation._id, memberId);
         setServerPanel(false);
       }

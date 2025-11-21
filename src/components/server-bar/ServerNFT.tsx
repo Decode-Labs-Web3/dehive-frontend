@@ -9,8 +9,8 @@ import { getApiHeaders } from "@/utils/api.utils";
 import { useServersList } from "@/hooks/useServersList";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useState, useEffect, useCallback } from "react";
+import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -32,16 +32,17 @@ interface NFTInfoProps {
   contract_address: string;
   required_balance: number;
 }
+interface ServerNFTProps {
+  serverInfomation: ServerProps;
+}
 
-export default function ServerNFT() {
+export default function ServerNFT( { serverInfomation }: ServerNFTProps) {
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [isNFT, setIsNFT] = useState<boolean>(false);
   const { serverId } = useParams<{ serverId: string }>();
-  const [statusNFT, setStatusNFT] = useState<boolean>(false);
   const { updateServerNFTGatingList } = useServersList();
-  const { serverInfomation, updateServerNFTInformation } =
-    useServerInfomation();
+  const [statusNFT, setStatusNFT] = useState<boolean>(false);
   const [originalNftInfo, setOriginalNftInfo] = useState<NFTInfoProps | null>(
     null
   );
@@ -91,7 +92,6 @@ export default function ServerNFT() {
           response.message === "Operation successful"
         ) {
           updateServerNFTGatingList(serverId, response.data);
-          updateServerNFTInformation(response.data);
           setOriginalNftInfo(info);
           setIsNFT(true);
           setIsDialogOpen(false);
@@ -105,7 +105,6 @@ export default function ServerNFT() {
     [
       fingerprintHash,
       serverId,
-      updateServerNFTInformation,
       updateServerNFTGatingList,
     ]
   );

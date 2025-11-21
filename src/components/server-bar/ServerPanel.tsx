@@ -11,8 +11,8 @@ import ServerBarItems from "@/components/server-bar";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useServersList } from "@/hooks/useServersList";
 import { SERVER_TAGS } from "@/constants/index.constants";
+import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -45,12 +45,14 @@ const tagIcon: Record<string, IconDefinition> = {
 };
 
 interface ServerPanelProps {
+  serverInfomation: ServerProps;
   setServerPanel: React.Dispatch<React.SetStateAction<boolean>>;
   setServerSettingModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function ServerPanel({
   setServerPanel,
+  serverInfomation,
   setServerSettingModal,
 }: ServerPanelProps) {
   const router = useRouter();
@@ -59,12 +61,6 @@ export default function ServerPanel({
   const { removeServerList, updateServerInfomationList, updateServerTagsList } =
     useServersList();
   const tabsListContainerRef = useRef<HTMLDivElement | null>(null);
-  const {
-    serverInfomation,
-    updateServerInfomation,
-    updateServerTagInfomation,
-    removeServerInfomation,
-  } = useServerInfomation();
   useEffect(() => {
     const element = tabsListContainerRef.current;
     if (element) {
@@ -144,7 +140,6 @@ export default function ServerPanel({
         response.message === "Operation successful"
       ) {
         updateServerTagsList(serverInfomation._id, nextTag ?? "");
-        updateServerTagInfomation(nextTag ?? "");
       }
     } catch (error) {
       console.error(error);
@@ -202,7 +197,6 @@ export default function ServerPanel({
           editServerForm.name,
           editServerForm.description
         );
-        updateServerInfomation(editServerForm.name, editServerForm.description);
         setServerPanel(true);
       }
     } catch (error) {
@@ -242,7 +236,6 @@ export default function ServerPanel({
         response.message === "Operation successful"
       ) {
         removeServerList(serverInfomation._id);
-        removeServerInfomation();
         router.push("/app/channels/me");
       }
     } catch (error) {
@@ -372,15 +365,17 @@ export default function ServerPanel({
 
             <div className="flex-1 overflow-y-auto px-10 py-8">
               <TabsContent value="members" className="mt-0">
-                <ServerBarItems.ServerMembers setServerPanel={setServerPanel} />
+                <ServerBarItems.ServerMembers setServerPanel={setServerPanel} serverInfomation={serverInfomation}/>
               </TabsContent>
 
               <TabsContent value="bans" className="mt-0">
-                <ServerBarItems.ServerBans />
+                <ServerBarItems.ServerBans
+                  serverInfomation={serverInfomation}
+                />
               </TabsContent>
 
               <TabsContent value="nft" className="mt-0">
-                <ServerBarItems.ServerNFT />
+                <ServerBarItems.ServerNFT serverInfomation={serverInfomation} />
               </TabsContent>
 
               <TabsContent value="logs" className="mt-0">

@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect, useCallback } from "react";
+import { ServerProps } from "@/interfaces/server.interface";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useServerInfomation } from "@/hooks/useServerInfomation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
@@ -42,9 +42,12 @@ interface UserProfile {
   mutual_followers_list: [];
 }
 
-export default function ServerBans() {
+interface ServerBansProps {
+  serverInfomation: ServerProps;
+}
+
+export default function ServerBans({ serverInfomation }: ServerBansProps) {
   const [loading, setLoading] = useState(false);
-  const { serverInfomation } = useServerInfomation();
   const [banSettingModal, setBanSettingModal] = useState<
     Record<string, boolean>
   >({});
