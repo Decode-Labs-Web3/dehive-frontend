@@ -36,80 +36,162 @@ Dehive is a cutting-edge, blockchain-integrated real-time messaging platform tha
 
 ## 🛠️ Tech Stack
 
-### Core Framework
+### Programming Languages
 
-- **Next.js 16.0.1** - Latest App Router with Turbopack for ultra-fast builds and React Compiler for automatic optimization
-- **React 19.1.0** - Latest React with concurrent features and automatic memoization
-- **TypeScript 5.0** - Advanced type safety with latest language features
+- **TypeScript 5.0** - Primary language for type-safe development
+- **JavaScript (ES2017+)** - For dynamic scripting and compatibility
 
-### Blockchain & Web3
+### Frameworks
+
+- **Next.js 16.0.1** - React framework with App Router, Turbopack, and React Compiler for optimized performance
+- **React 19.1.0** - UI library with concurrent features and automatic memoization
+
+### Libraries
+
+#### Blockchain & Web3
 
 - **wagmi 2.12.4** - React hooks for Ethereum wallet connections
-- **viem 2.21.7** - TypeScript interface for Ethereum
+- **viem 2.21.7** - TypeScript interface for Ethereum interactions
 - **MerkleTreeJS 1.2.4** - Merkle tree generation for airdrop verification
 - **@wagmi/core** - Core Web3 functionality
+- **@rainbow-me/rainbowkit 2.2.9** - Wallet connection UI components
 
-### Real-time Communication
+#### Real-time Communication
 
 - **Socket.IO Client 4.8.1** - WebSocket library for real-time messaging and voice channel updates
-- **Stream.io SDK** - Enterprise video client for voice calls (@stream-io/video-client, @stream-io/video-react-sdk)
+- **@stream-io/video-client 1.34.1** - Video client for voice calls
+- **@stream-io/video-react-sdk 1.24.1** - React SDK for Stream.io video functionality
+- **@stream-io/node-sdk 0.7.12** - Node.js SDK for Stream.io
 
-### Styling & UI
+#### State Management & Data Fetching
 
-- **Tailwind CSS 3.4.17** - Utility-first CSS framework with responsive design
-- **shadcn/ui** - Modern component library built on Radix UI primitives
-  - Radix UI components (@radix-ui/react-avatar, @radix-ui/react-dialog, @radix-ui/react-dropdown-menu, etc.)
-- **@radix-ui/react-slot** - Component composition utilities
-- **FontAwesome** - Icon library (@fortawesome/react-fontawesome)
-- **Lucide React** - Additional icon set
-- **Class Variance Authority (CVA)** - Component variant utilities
-- **Tailwind Merge** - Conditional class merging
-- **clsx** - Utility for constructing className strings
-
-### State Management & Data Fetching
-
+- **@reduxjs/toolkit 2.10.1** - Redux toolkit for predictable state management
 - **Valtio 1.13.2** - Lightweight proxy-based state management
-- **@tanstack/react-query 5.59.0** - Powerful data synchronization for React
+- **@tanstack/react-query 5.90.7** - Powerful data synchronization for React
+- **react-redux 9.2.0** - React bindings for Redux
 
-### Drag & Drop
+#### Drag & Drop
 
 - **@dnd-kit/core 6.3.1** - Modern drag-and-drop library for channel reordering
 - **@dnd-kit/sortable 8.0.0** - Sortable functionality
 - **@dnd-kit/utilities 3.2.2** - Utility functions for dnd-kit
 
-### File Storage & Media
+#### File Storage & Media
 
 - **IPFS/Pinata** - Decentralized file storage for user avatars and attachments
 - **@pinata/sdk** - Pinata SDK for IPFS interactions
 
-### Development & Build Tools
-
-- **Turbopack** - Next.js 16's ultra-fast bundler
-- **React Compiler** - Automatic React optimization
-- **ESLint** - Code linting with TypeScript support
-- **PostCSS** - CSS processing with Autoprefixer
-- **TypeScript Compiler** - Advanced type checking
-
-### Performance & Analytics
-
-- **@vercel/analytics 1.4.1** - Web analytics and performance monitoring
-- **web-vitals 4.2.4** - Core Web Vitals measurement
-- **@next/bundle-analyzer 15.0.0** - Bundle size analysis
-
-### SEO & Discovery
-
-- **next-sitemap 6.6.0** - Automated sitemap generation
-- **@next/env 15.0.1** - Environment variable validation
-
-### Utilities
+#### Utilities
 
 - **date-fns 4.1.0** - Modern JavaScript date utility library
 - **framer-motion 11.11.17** - Animation library for React
 - **react-hot-toast 2.4.1** - Toast notifications
-- **react-markdown 9.0.1** - Markdown rendering
-- **remark-gfm 4.0.0** - GitHub Flavored Markdown support
+- **react-markdown 10.1.0** - Markdown rendering
+- **remark-gfm 4.0.1** - GitHub Flavored Markdown support
 - **uuid 11.0.3** - UUID generation
 - **zod 3.23.8** - TypeScript-first schema validation
+- **crypto-js 4.2.0** - Cryptographic utilities
+- **cheerio 1.1.2** - jQuery-like library for server-side HTML parsing
+- **class-variance-authority 0.7.1** - Component variant utilities
+- **clsx 2.1.1** - Utility for constructing className strings
+- **tailwind-merge 3.3.1** - Conditional class merging
+- **autoprefixer 10.4.21** - CSS vendor prefixing
+- **babel-plugin-react-compiler 1.0.0** - React compiler plugin
+
+#### Icons & Fonts
+
+- **@fortawesome/fontawesome-svg-core 7.0.0** - FontAwesome core
+- **@fortawesome/free-solid-svg-icons 7.0.0** - Solid icons
+- **@fortawesome/react-fontawesome 3.0.1** - React FontAwesome components
+- **lucide-react 0.546.0** - Additional icon set
+- **Geist Sans & Geist Mono** - Custom fonts via Next.js
+
+### Tools
+
+#### Development & Build Tools
+
+- **Turbopack** - Next.js 16's ultra-fast bundler
+- **React Compiler** - Automatic React optimization
+- **ESLint 9.39.1** - Code linting with TypeScript support
+- **PostCSS 8.4.49** - CSS processing with Autoprefixer
+- **TypeScript Compiler 5.0** - Advanced type checking
+- **@next/bundle-analyzer 16.0.1** - Bundle size analysis
+- **lightningcss 1.30.2** - Fast CSS processing
+- **critters 0.0.23** - CSS inlining for performance
+- **ts-node 10.9.2** - TypeScript execution in Node.js
+
+#### Testing & Quality
+
+- **@eslint/eslintrc 3** - ESLint configuration
+- **eslint-config-next 16.0.1** - Next.js ESLint config
+
+#### Packaging & Deployment
+
+- **Electron 39.1.1** - Cross-platform desktop app framework
+- **electron-builder 26.0.12** - Electron app packaging
+- **next-sitemap 4.2.3** - Automated sitemap generation
+- **@next/env 15.0.1** - Environment variable validation
+- **@vercel/analytics 1.5.0** - Web analytics
+- **web-vitals 5.1.0** - Core Web Vitals measurement
+
+#### Version Control & Collaboration
+
+- **Git** - Version control system
+- **GitHub** - Repository hosting and collaboration
+
+### Data Storage and Management
+
+- **IPFS (InterPlanetary File System)** - Decentralized storage for user avatars, attachments, and media files
+- **Pinata SDK** - IPFS pinning service for reliable file storage
+- **Local Storage** - Browser local storage for user preferences (e.g., sound settings)
+- **Redux Store** - Centralized state management for user data, server lists, and application state
+- **Valtio** - Reactive state management for real-time UI updates
+- **TanStack Query** - Server state management with caching, synchronization, and background updates
+- **Fingerprinting Service** - Device fingerprinting for user identification and security
+- **Backend API** - RESTful API for user, server, message, and authentication data
+- **WebSocket Connections** - Real-time data synchronization via Socket.IO
+
+### User Interface Development
+
+- **Tailwind CSS 3.4.17** - Utility-first CSS framework for responsive and customizable styling
+- **shadcn/ui** - High-quality, accessible UI components built on Radix UI
+- **Radix UI Primitives** - Low-level UI primitives for building custom components:
+  - @radix-ui/react-avatar 1.1.10
+  - @radix-ui/react-context-menu 2.2.16
+  - @radix-ui/react-dialog 1.1.15
+  - @radix-ui/react-dropdown-menu 2.1.16
+  - @radix-ui/react-hover-card 1.1.15
+  - @radix-ui/react-label 2.1.7
+  - @radix-ui/react-popover 1.1.15
+  - @radix-ui/react-radio-group 1.3.8
+  - @radix-ui/react-scroll-area 1.2.10
+  - @radix-ui/react-separator 1.1.7
+  - @radix-ui/react-switch 1.2.6
+  - @radix-ui/react-tabs 1.1.13
+  - @radix-ui/react-toggle 1.1.10
+  - @radix-ui/react-toggle-group 1.1.11
+  - @radix-ui/react-tooltip 1.2.8
+- **@radix-ui/react-slot 1.2.3** - Component composition utilities
+- **next-themes 0.4.6** - Theme switching (light/dark mode)
+- **Framer Motion 11.11.17** - Animation library for smooth transitions
+- **React Webcam 7.2.0** - Webcam integration for user interactions
+- **React Markdown 10.1.0** - Markdown rendering in messages
+- **Remark GFM 4.0.1** - GitHub Flavored Markdown support
+
+### Technology and Tools Overview
+
+- **Frontend Architecture**: Next.js with App Router for server-side rendering, static generation, and API routes
+- **Build System**: Turbopack for fast development builds, with production optimization via React Compiler
+- **Styling Approach**: Tailwind CSS with CSS variables for theming, shadcn/ui for component consistency
+- **State Management**: Hybrid approach using Redux for global state and Valtio for reactive local state
+- **Data Fetching**: TanStack Query for server state, with WebSocket for real-time updates
+- **Web3 Integration**: wagmi and viem for Ethereum interactions, RainbowKit for wallet UI
+- **Real-time Features**: Socket.IO for messaging, Stream.io for voice/video calls
+- **File Handling**: IPFS for decentralized storage, with Pinata for pinning
+- **Performance Monitoring**: Web Vitals for metrics, Vercel Analytics for user insights
+- **Development Workflow**: ESLint for code quality, TypeScript for type safety, bundle analyzer for optimization
+- **Cross-platform**: Electron for desktop app, with web deployment via Vercel/Next.js
+- **Security**: Fingerprinting for device identification, Web3 for decentralized auth, secure cookie management
 
 ---
 
