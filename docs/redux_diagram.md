@@ -10,7 +10,6 @@ classDiagram
         +serverRoot: CategoryProps[]
         +directMembers: DirectMemberListProps[]
         +fingerprint: FingerprintState
-        +serverInfomation: ServerProps
         +serverMembers: ServerMemberListProps[]
     }
 
@@ -112,7 +111,6 @@ classDiagram
     RootState --> CategoryProps : serverRoot
     RootState --> DirectMemberListProps : directMembers
     RootState --> FingerprintState : fingerprint
-    RootState --> ServerProps : serverInfomation
     RootState --> ServerMemberListProps : serverMembers
 
     ServerProps *-- NFTGated
