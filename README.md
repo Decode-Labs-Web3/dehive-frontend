@@ -1,4 +1,4 @@
-# Dehive - Blockchain-Powered Real-Time Chat Platform
+# Dehive - Web3-Powered Decentralized Communication Platform
 
 **Final Project - University of Greenwich**
 **Student:** Vũ Trần Quang Minh
@@ -8,43 +8,75 @@
 
 ---
 
-_Built with Next.js 16, React 19, TypeScript 5.0, and cutting-edge Web3 technologies for the Final Project at University of Greenwich_
+_A production-grade Discord-like platform with blockchain integration, built with Next.js 14 App Router, React 19, TypeScript 5, and enterprise Web3 technologies_
 
 ---
 
 ## 📋 About The Project
 
-Dehive is a cutting-edge, blockchain-integrated real-time messaging platform that combines Discord-like functionality with Web3 features including token airdrops, smart contract messaging, and decentralized authentication. Built with Next.js 16 and optimized for maximum performance, it delivers secure, scalable communication through servers, channels, and direct messaging with advanced features like voice channels, file sharing, and blockchain-based rewards.
+Dehive is an enterprise-grade, blockchain-integrated real-time communication platform that reimagines Discord with Web3 capabilities. It combines traditional chat functionality with cutting-edge blockchain features including **on-chain encrypted messaging**, **token airdrops**, **NFT-gated servers**, and **decentralized authentication**.
+
+Built on Next.js 14 with App Router and powered by 6 separate Socket.IO connections for optimal real-time performance, Dehive delivers a seamless communication experience across servers, channels, and direct messages with advanced features like voice/video calls, IPFS file storage, and smart contract interactions.
 
 ### Key Features
 
-- 🔐 **Web3 Authentication** - Decentralized SSO integration with blockchain wallets (wagmi/viem)
-- 💰 **Token Airdrops** - Smart contract-powered token distribution campaigns with Merkle tree verification
-- 💬 **Real-time Messaging** - WebSocket-powered instant communication with message history, edits, deletes, replies, and file attachments
-- 🏰 **Server Management** - Create and manage community servers with roles (Owner, Admin, Member) and invite codes
-- 📁 **Organized Channels** - Categories and channels (text/voice) for structured conversations, with drag-and-drop reordering
-- 👥 **User Management** - Profiles with IPFS-hosted avatars, status tracking, following system, and member controls
-- 🎨 **Modern UI** - Responsive three-column layout with dark theme using Tailwind CSS and shadcn/ui components
-- 📞 **Voice Channels** - Real-time voice calls powered by Stream.io SDK, with participant management via Socket.IO
-- 🎯 **Role-Based Permissions** - Privileged users (Owner/Moderator) can manage servers, channels, and members
-- ⚡ **Performance Optimized** - Next.js 16 with Turbopack, React Compiler, and advanced caching strategies
-- 📊 **Analytics & Monitoring** - Vercel Analytics and Web Vitals performance tracking
-- 🔍 **Advanced Search** - Full-text search across messages and users
-- 📱 **Responsive Design** - Mobile-first approach with adaptive layouts
+#### 🔗 Blockchain Integration
+- **On-Chain Encrypted Messaging** - Smart contract-based private messaging with end-to-end encryption and conversation key management
+- **Dual Payment Modes** - Pay-as-you-go (direct transactions) or relayer-based (prepaid) message sending
+- **Token Airdrops** - Merkle tree-verified token distribution campaigns with smart contract integration
+- **NFT-Gated Servers** - Token-based access control for exclusive communities
+- **Web3 Wallet Integration** - Wagmi + RainbowKit for seamless wallet connections (MetaMask, WalletConnect, etc.)
+- **Crypto Payments** - In-app token transfers between users via Payment Hub smart contracts
+
+#### 💬 Real-Time Communication (6 Socket.IO Connections)
+- **Channel Chat** - Server-based text messaging with real-time updates
+- **Direct Messages** - Private 1-on-1 conversations with typing indicators
+- **Voice/Video Calls** - Stream.io-powered calls in both channels and DMs
+- **User Status** - Real-time online/offline/away status tracking
+- **Server Events** - Live updates for server/channel CRUD operations
+- **Call Management** - Incoming call notifications, accept/decline, call state
+
+#### 🏰 Discord-Like Server System
+- **Server Management** - Create, customize, and manage community servers
+- **Category Organization** - Hierarchical channel structure with drag-and-drop reordering (@dnd-kit)
+- **Role-Based Permissions** - Owner, Admin, Member roles with granular permissions
+- **Invite System** - Generate and manage server invite codes
+- **Member Management** - Kick, ban, and moderate server members
+- **Server Logs** - Audit trail for all server activities
+
+#### 📁 Advanced Features
+- **IPFS File Storage** - Decentralized file hosting via Pinata for avatars and attachments
+- **Message Search** - Full-text search with pagination and history view
+- **File Attachments** - Upload and preview images, videos, documents, and audio
+- **Message Reactions** - Reply, edit, delete messages with real-time sync
+- **User Profiles** - Follow/unfollow system, mutual followers, bio, wallet connections
+- **Device Fingerprinting** - Secure session management with device identification
+
+#### 🎨 Modern UI/UX
+- **3-Column Layout** - GuildBar (servers) | ServerBar/DirectBar (channels/DMs) | Main Content
+- **Persistent Shell** - Always-visible navigation with conditional sidebars
+- **Dark Theme** - Optimized for long sessions with Tailwind CSS + shadcn/ui
+- **Responsive Design** - Mobile-first approach with adaptive layouts
+- **Smooth Animations** - Framer Motion for polished transitions
+- **Accessibility** - Radix UI primitives for WCAG compliance
+
+#### ⚡ Performance & Optimization
+- **Next.js 14 App Router** - Server-side rendering, static generation, and API routes
+- **React 19** - Concurrent features and automatic memoization
+- **Redux Toolkit** - Predictable state management with 6 slices
+- **Infinite Scroll** - Paginated message history with scroll position restoration
+- **Socket Deduplication** - Prevent duplicate real-time events
+- **Bundle Optimization** - Code splitting and tree shaking for minimal bundle size
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Programming Languages
+### Core Technologies
 
-- **TypeScript 5.0** - Primary language for type-safe development
-- **JavaScript (ES2017+)** - For dynamic scripting and compatibility
-
-### Frameworks
-
-- **Next.js 16.0.1** - React framework with App Router, Turbopack, and React Compiler for optimized performance
-- **React 19.1.0** - UI library with concurrent features and automatic memoization
+- **TypeScript 5.0** - Type-safe development with strict mode enabled
+- **Next.js 14.0** - React framework with App Router for SSR, SSG, and API routes
+- **React 19.0** - UI library with concurrent rendering and automatic batching
 
 ### Libraries
 
@@ -56,19 +88,30 @@ Dehive is a cutting-edge, blockchain-integrated real-time messaging platform tha
 - **@wagmi/core** - Core Web3 functionality
 - **@rainbow-me/rainbowkit 2.2.9** - Wallet connection UI components
 
-#### Real-time Communication
+#### Real-time Communication (6 Socket.IO Connections)
 
-- **Socket.IO Client 4.8.1** - WebSocket library for real-time messaging and voice channel updates
-- **@stream-io/video-client 1.34.1** - Video client for voice calls
-- **@stream-io/video-react-sdk 1.24.1** - React SDK for Stream.io video functionality
-- **@stream-io/node-sdk 0.7.12** - Node.js SDK for Stream.io
+- **Socket.IO Client 4.8.1** - WebSocket library with singleton pattern for connection management
+  - **Status Socket** - User online/offline status updates
+  - **Server Events Socket** - Server/channel CRUD, member join/leave
+  - **Channel Chat Socket** - Server channel messages (send, edit, delete)
+  - **Channel Call Socket** - Voice/video call in server channels
+  - **Direct Chat Socket** - DM messages (send, edit, delete)
+  - **Direct Call Socket** - 1-on-1 voice/video calls
+- **@stream-io/video-react-sdk 1.24.1** - Enterprise video/voice SDK for calls
+- **@stream-io/node-sdk 0.7.12** - Backend Stream.io integration
 
 #### State Management & Data Fetching
 
-- **@reduxjs/toolkit 2.10.1** - Redux toolkit for predictable state management
-- **Valtio 1.13.2** - Lightweight proxy-based state management
-- **@tanstack/react-query 5.90.7** - Powerful data synchronization for React
+- **@reduxjs/toolkit 2.10.1** - Global state management with 6 slices:
+  - `user` - User profile, bio, avatar, role
+  - `serverList` - List of joined servers
+  - `serverRoot` - Server categories, channels, voice participants
+  - `fingerprint` - Device fingerprint hash
+  - `directMembers` - DM conversation list with status
+  - `serverMembers` - Server member list with online status
 - **react-redux 9.2.0** - React bindings for Redux
+- **@tanstack/react-query 5.90.7** - Server state synchronization with caching
+- **React Context API** - Feature-specific state (Sound, DirectCall, ConversationRefresh)
 
 #### Drag & Drop
 
@@ -199,10 +242,13 @@ Dehive is a cutting-edge, blockchain-integrated real-time messaging platform tha
 
 ### Prerequisites
 
-- Node.js 20.x or higher
-- npm or yarn package manager
-- Backend API server running (ports 3000, 3001, 3002 for API and WebSockets)
-- Ethereum wallet (MetaMask, etc.) for Web3 features
+- **Node.js 20.x or higher** - Required for Next.js 14
+- **npm or yarn** - Package manager
+- **Backend API Server** - Running on configured ports:
+  - Main API (REST endpoints)
+  - 6 Socket.IO servers (Status, Server Events, Channel Chat/Call, Direct Chat/Call)
+- **Ethereum Wallet** - MetaMask or WalletConnect-compatible wallet for Web3 features
+- **IPFS/Pinata Account** - For decentralized file storage (optional for development)
 
 ### Installation
 
@@ -222,21 +268,42 @@ Dehive is a cutting-edge, blockchain-integrated real-time messaging platform tha
 3. Create `.env.local` file with required environment variables:
 
    ```env
-   # API Configuration
-   NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
-   NEXT_PUBLIC_DIRECT_CHAT_SIO_URL=http://localhost:3001
-   NEXT_PUBLIC_CHANNEL_CHAT_SIO_URL=http://localhost:3002
+   # Backend API Configuration
+   NEXT_PUBLIC_DEHIVE_SERVER=http://localhost:3000
 
-   # Web3 Configuration
+   # Socket.IO Servers (6 connections)
+   NEXT_PUBLIC_STATUS_ONLINE_SIO_URL=http://localhost:3001
+   NEXT_PUBLIC_DIRECT_CHAT_SIO_URL=http://localhost:3002
+   NEXT_PUBLIC_CHANNEL_CHAT_SIO_URL=http://localhost:3003
+   NEXT_PUBLIC_CHANNEL_CALL_SIO_URL=http://localhost:3004
+   NEXT_PUBLIC_DIRECT_CALL_SIO_URL=http://localhost:3005
+
+   # Web3 Configuration (Sepolia Testnet)
    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
+   NEXT_PUBLIC_SEPOLIA_RPC_URL=https://ethereum-sepolia.gateway.tatum.io
+   NEXT_PUBLIC_PROXY_ADDRESS=0x_your_smart_contract_proxy_address
 
-   # External Services
+   # Smart Contract Addresses (Airdrop System)
+   NEXT_PUBLIC_REGISTRY_ADDRESS=0x_registry_contract_address
+   NEXT_PUBLIC_FACTORY_ADDRESS=0x_factory_contract_address
+   NEXT_PUBLIC_MERKLE_AIRDROP_ADDRESS=0x_merkle_airdrop_contract_address
+
+   # SSO Authentication (Decode Protocol)
    DECODE_BASE_URL=https://decode.protocol.url
    DEHIVE_APP_ID=dehive
    PUBLIC_FRONTEND_URL=http://localhost:9000
 
+   # IPFS Storage (Pinata)
+   PINATA_API_KEY=your_pinata_api_key
+   PINATA_SECRET_KEY=your_pinata_secret_key
+
+   # Stream.io (Voice/Video Calls)
+   STREAM_API_KEY=your_stream_api_key
+   STREAM_API_SECRET=your_stream_api_secret
+
    # Development
    NODE_ENV=development
+   PORT=9000
 
    # Optional: Analytics and Monitoring
    NEXT_PUBLIC_VERCEL_ANALYTICS=true
@@ -278,222 +345,508 @@ The application includes several performance optimizations:
 
 ```
 src/
-├── abi/                          # Smart contract ABIs
-│   ├── airdropAbi.ts            # Airdrop contract interface
-│   └── messageAbi.ts            # Message contract interface
-├── app/                          # Next.js App Router
-│   ├── globals.css              # Global styles and Tailwind imports
-│   ├── layout.tsx               # Root layout with providers
-│   ├── page.tsx                 # Landing page
-│   ├── api/                     # API routes
-│   │   ├── airdrop/             # Airdrop campaign endpoints
-│   │   ├── auth/                # Authentication endpoints
-│   │   ├── invite/              # Server invite endpoints
-│   │   ├── me/                  # User profile endpoints
-│   │   ├── sc-message/          # Smart contract messaging
-│   │   ├── search/              # Search functionality
-│   │   ├── servers/             # Server management
-│   │   ├── stream/              # Voice stream endpoints
-│   │   └── user/                # User management
-│   ├── app/                     # Main application pages
-│   │   ├── layout.tsx           # App layout with navigation
-│   │   ├── page.tsx             # Dashboard/home page
-│   │   └── channels/            # Channel pages
-│   ├── invite/                  # Server invite pages
-│   │   └── page.tsx
-│   └── sso/                     # Single sign-on pages
-│       └── page.tsx
-├── components/                   # React components
-│   ├── airdrop/                 # Airdrop-related components
-│   │   ├── AirdropCampaignList.tsx
-│   │   ├── AirdropDropdown.tsx
-│   │   └── CreateAirdropModal.tsx
-│   ├── app/                     # Main app components
-│   │   ├── GuildBar.tsx         # Server List sidebar
-│   │   ├── DirectBar.tsx        # Direct sidebar
-│   │   ├── ServerBar.tsx        # Server sidebar
-│   │   └── UserBar.tsx          # User list
-│   ├── common/                  # Shared components
-│   │   ├── AttachmentList.tsx   # File attachments
-│   │   ├── AutoLink.tsx         # URL auto-linking
-│   │   ├── CallPage.tsx         # Voice call interface
-│   │   ├── ChannelCall.tsx      # Channel voice calls
-│   │   ├── FilePreview.tsx      # File preview component
-│   │   ├── UserInfoModal.tsx    # User profile modal
-│   │   └── Wallet.tsx           # Web3 wallet component
-│   ├── guildeBaritem/           # Guild bar items
-│   ├── message-onchain/         # Blockchain message components
-│   ├── messages/                # Message components
-│   ├── search/                  # Search components
-│   ├── serverBarItem/           # Server bar items
-│   ├── ui/                      # shadcn/ui components
-│   └── userBarItem/             # User bar items
-├── constants/                   # Application constants
-│   ├── airdrop.constants.ts     # Airdrop configuration
-│   └── index.constants.ts       # General constants
-├── contexts/                    # React contexts
-│   ├── ConversationRefreshContext.tsx
-│   ├── DirectCallConetext.contexts.tsx
-│   ├── ServerRefreshContext.contexts.tsx
-│   └── SoundContext.tsx
-├── hooks/                       # Custom React hooks
-│   ├── useChannelCall.ts        # Channel voice call hooks
-│   ├── useChannelMessage.ts     # Channel message hooks
-│   ├── useDirectCall.ts         # Direct call hooks
-│   ├── useDirectMessage.ts      # Direct message hooks
-│   ├── useInviteSuggestions.ts  # Invite suggestion hooks
-│   └── useTokenInfo.ts          # Token information hooks
-├── interfaces/                  # TypeScript interfaces
-│   ├── call.interface.ts        # Call-related types
-│   ├── services.interface.ts    # Service types
-│   ├── user.interface.ts        # User types
-│   ├── websocketChannelCall.interface.ts
-│   ├── websocketChannelChat.interface.ts
-│   ├── websocketDirectCall.interface.ts
-│   ├── websocketDirectChat.interface.ts
-│   └── websocketStatus.ts       # WebSocket event types
-├── lib/                         # Utility libraries
-│   ├── airdropHelpers.ts        # Airdrop utility functions
-│   ├── scMessage.ts             # Smart contract messaging
-│   ├── socketioChannelCallSingleton.ts
-│   ├── socketioChannelChatSingleton.ts
-│   ├── socketioDirectChatSingleton.ts
-│   ├── socketioStatusSingleton.ts
-│   ├── sooketioDirectCallSingleton.ts
-│   ├── utils.ts                 # General utilities
-│   └── socketio*.ts             # WebSocket singletons
-├── providers/                   # Context providers
-│   ├── socketChannelCallProvider.tsx
-│   ├── socketChannelChatProvider.tsx
-│   ├── socketDirectCallProvider.tsx
-│   ├── socketDirectChatProvider.tsx
-│   └── socketStatusProvider.tsx
-├── services/                    # External services
-│   └── fingerprint.services.ts  # Device fingerprinting
-└── utils/                       # Utility functions
-    ├── auth.utils.ts            # Authentication utilities
-    ├── cookie.utils.ts          # Cookie management
-    ├── index.utils.ts           # General utilities
-    └── route.utils.ts           # Route utilities
-├── middleware.ts                # Next.js middleware
-├── seo.config.ts                # SEO configuration
-└── next-env.d.ts                # Next.js TypeScript declarations
+├── abi/                                    # Smart Contract ABIs
+│   ├── airdropAbi.ts                      # Merkle airdrop contract
+│   ├── messageAbi.ts                      # On-chain messaging contract
+│   ├── paymentHubAbi.ts                   # Payment hub contract
+│   └── erc20Permit.ts                     # ERC20 permit interface
+│
+├── app/                                    # Next.js 14 App Router
+│   ├── layout.tsx                         # Root layout (Redux, fonts, metadata)
+│   ├── page.tsx                           # Login page (SSO initiation)
+│   ├── globals.css                        # Global styles + Tailwind
+│   ├── manifest.ts                        # PWA manifest
+│   │
+│   ├── api/                               # Backend API Routes
+│   │   ├── airdrop/                       # Airdrop campaign management
+│   │   ├── auth/                          # SSO authentication
+│   │   ├── invite/                        # Server invite handling
+│   │   ├── ipfs/                          # IPFS file upload
+│   │   ├── link-preview/                  # URL metadata fetching
+│   │   ├── me/                            # DM conversation endpoints
+│   │   ├── sc-message/                    # Smart contract messaging
+│   │   ├── search/                        # Message search
+│   │   ├── servers/                       # Server/channel management
+│   │   ├── stream/                        # Stream.io token generation
+│   │   ├── tokens/                        # Token balance queries
+│   │   └── user/                          # User profile management
+│   │
+│   ├── sso/                               # SSO Callback
+│   │   └── page.tsx                       # Token exchange & redirect
+│   │
+│   ├── invite/                            # Server Invite Handler
+│   │   └── page.tsx                       # Join server via code
+│   │
+│   └── app/                               # Main Application
+│       ├── layout.tsx                     # App shell (providers, UI shell)
+│       ├── page.tsx                       # Redirect to /app/channels/me
+│       │
+│       └── channels/                      # Channel Routes
+│           ├── layout.tsx                 # Channels wrapper
+│           ├── page.tsx                   # Channels home
+│           │
+│           ├── [serverId]/                # Server Channels
+│           │   ├── layout.tsx             # Server layout (ServerBar)
+│           │   ├── page.tsx               # Server member list
+│           │   │
+│           │   └── [channelId]/           # Channel Pages
+│           │       ├── layout.tsx         # Channel validation
+│           │       ├── page.tsx           # Channel messages
+│           │       │
+│           │       └── call/              # Voice/Video Call
+│           │           └── page.tsx       # Channel call interface
+│           │
+│           └── me/                        # Direct Messages
+│               ├── layout.tsx             # DM layout (DirectBar)
+│               ├── page.tsx               # Friends list
+│               │
+│               └── [channelId]/           # DM Conversation
+│                   ├── layout.tsx         # Conversation validation
+│                   ├── page.tsx           # DM messages
+│                   │
+│                   ├── call/              # 1-on-1 Call
+│                   │   └── page.tsx       # Direct call interface
+│                   │
+│                   └── [recipientWallet]/ # 🔐 Blockchain Private Chat
+│                       └── page.tsx       # On-chain encrypted messages
+│
+├── components/                             # React Components
+│   ├── app/                               # Persistent UI Shell
+│   │   ├── GuildBar.tsx                   # Left sidebar (server list)
+│   │   ├── ServerBar.tsx                  # Server channels sidebar
+│   │   ├── DirectBar.tsx                  # DM conversations sidebar
+│   │   ├── UserBar.tsx                    # Bottom-left user controls
+│   │   └── index.ts                       # Shell exports
+│   │
+│   ├── airdrop/                           # Airdrop Features
+│   │   ├── AirdropCampaignList.tsx        # List campaigns
+│   │   ├── AirdropDropdown.tsx            # Airdrop menu
+│   │   └── CreateAirdropModal.tsx         # Create campaign modal
+│   │
+│   ├── common/                            # Shared Components
+│   │   ├── AttachmentList.tsx             # File attachment display
+│   │   ├── CallPage.tsx                   # Voice/video call UI
+│   │   ├── ChannelCall.tsx                # Channel call wrapper
+│   │   ├── FilePreview.tsx                # File upload preview
+│   │   ├── LinkPreview.tsx                # URL preview cards
+│   │   ├── Markdown.tsx                   # Markdown renderer
+│   │   ├── MoneyTransfer.tsx              # Crypto payment UI
+│   │   ├── UserInfoModal.tsx              # User profile modal
+│   │   └── Wallet.tsx                     # Web3 wallet button
+│   │
+│   ├── guilde-bar/                        # Guild Bar Items
+│   │   ├── AddServer.tsx                  # Create/join server
+│   │   └── index.ts
+│   │
+│   ├── server-bar/                        # Server Bar Items
+│   │   ├── Categories.tsx                 # Category list
+│   │   ├── Channels.tsx                   # Channel list
+│   │   ├── ChannelDraggable.tsx           # Drag-and-drop channels
+│   │   ├── CategoryDroppable.tsx          # Drop zones
+│   │   ├── EditModal.tsx                  # Server settings
+│   │   ├── ServerPanel.tsx                # Server management panel
+│   │   ├── ServerInvite.tsx               # Invite generation
+│   │   ├── ServerMembers.tsx              # Member list
+│   │   ├── ServerBans.tsx                 # Ban management
+│   │   ├── ServerNFT.tsx                  # NFT gating config
+│   │   └── ServerLog.tsx                  # Audit logs
+│   │
+│   ├── messages/                          # Message Components
+│   │   ├── ChannelMessageOption.tsx       # Channel message actions
+│   │   ├── DirectMessageOption.tsx        # DM message actions
+│   │   ├── ChannelFileList.tsx            # Channel file browser
+│   │   ├── DirectFileList.tsx             # DM file browser
+│   │   ├── ServerMemberList.tsx           # Member sidebar
+│   │   └── SmartContractOption.tsx        # Blockchain message options
+│   │
+│   ├── search/                            # Search Components
+│   │   ├── ChannelSearchBar.tsx           # Channel search
+│   │   ├── DirectSearchBar.tsx            # DM search
+│   │   ├── ChannelHistoryView.tsx         # Channel search results
+│   │   └── DirectHistoryView.tsx          # DM search results
+│   │
+│   ├── message-onchain/                   # Blockchain Components
+│   │   └── wallet.tsx                     # Wagmi + RainbowKit provider
+│   │
+│   ├── user-bar/                          # User Bar Items
+│   │   └── UserPanel.tsx                  # User settings panel
+│   │
+│   └── ui/                                # shadcn/ui Primitives
+│       ├── avatar.tsx                     # Avatar component
+│       ├── button.tsx                     # Button variants
+│       ├── dialog.tsx                     # Modal dialogs
+│       ├── dropdown-menu.tsx              # Dropdown menus
+│       ├── scroll-area.tsx                # Scrollable areas
+│       ├── tooltip.tsx                    # Tooltips
+│       └── [20+ more components]          # Full shadcn/ui suite
+│
+├── store/                                  # Redux State Management
+│   ├── store.ts                           # Store configuration
+│   ├── hooks.ts                           # Typed Redux hooks
+│   ├── ReduxProvider.tsx                  # Redux provider wrapper
+│   │
+│   └── slices/                            # Redux Slices (6 slices)
+│       ├── userSlice.ts                   # User profile state
+│       ├── serverListSlice.ts             # Joined servers list
+│       ├── serverRootSlice.ts             # Categories, channels, participants
+│       ├── fingerprintSlice.ts            # Device fingerprint
+│       ├── directMemberSlice.ts           # DM conversation list
+│       └── serverMemberSlice.ts           # Server member status
+│
+├── hooks/                                  # Custom React Hooks (13 hooks)
+│   ├── useUser.ts                         # User state management
+│   ├── useFingerprint.ts                  # Device fingerprint
+│   ├── useServerRoot.ts                   # Server categories/channels
+│   ├── useServersList.ts                  # Server list management
+│   ├── useServerMember.ts                 # Server member state
+│   ├── useDirectMember.ts                 # DM conversation state
+│   ├── useChannelMessage.ts               # Channel message CRUD
+│   ├── useDirectMessage.ts                # DM message CRUD
+│   ├── useChannelCall.ts                  # Channel voice/video
+│   ├── useDirectCall.ts                   # DM voice/video
+│   ├── useTokenInfo.ts                    # Token balance queries
+│   ├── useTransferMoney.ts                # Crypto payments
+│   └── useInviteSuggestions.ts            # Invite suggestions
+│
+├── providers/                              # Socket.IO Providers (6 providers)
+│   ├── socketStatusProvider.tsx           # User status socket
+│   ├── socketServerEventsProvider.tsx     # Server events socket
+│   ├── socketChannelChatProvider.tsx      # Channel chat socket
+│   ├── socketChannelCallProvider.tsx      # Channel call socket
+│   ├── socketDirectChatProvider.tsx       # Direct chat socket
+│   └── socketDirectCallProvider.tsx       # Direct call socket
+│
+├── lib/                                    # Utility Libraries
+│   ├── socketFactory.ts                   # Socket.IO factory pattern
+│   ├── socketioStatusSingleton.ts         # Status socket singleton
+│   ├── socketioServerEventsSingleton.ts   # Server events singleton
+│   ├── socketioChannelChatSingleton.ts    # Channel chat singleton
+│   ├── socketioChannelCallSingleton.ts    # Channel call singleton
+│   ├── socketioDirectChatSingleton.ts     # Direct chat singleton
+│   ├── sooketioDirectCallSingleton.ts     # Direct call singleton
+│   ├── scMessage.ts                       # Smart contract messaging utils
+│   ├── airdropHelpers.ts                  # Airdrop utility functions
+│   └── utils.ts                           # General utilities (cn, etc.)
+│
+├── contexts/                               # React Contexts (3 contexts)
+│   ├── SoundContext.tsx                   # Notification sound preferences
+│   ├── DirectCallConetext.contexts.tsx    # Direct call state
+│   └── ConversationRefreshContext.tsx     # Conversation refresh trigger
+│
+├── interfaces/                             # TypeScript Interfaces
+│   ├── user.interface.ts                  # User, member types
+│   ├── server.interface.ts                # Server, category, channel types
+│   ├── message.interface.ts               # Message, file upload types
+│   ├── call.interface.ts                  # Call state types
+│   ├── payment.interface.ts               # Payment types
+│   ├── websocketStatus.interface.ts       # Status socket events
+│   ├── websocketServerEvents.interface.ts # Server events socket
+│   ├── websocketChannelChat.interface.ts  # Channel chat socket
+│   ├── websocketChannelCall.interface.ts  # Channel call socket
+│   ├── websocketDirectChat.interface.ts   # Direct chat socket
+│   └── websocketDirectCall.interface.ts   # Direct call socket
+│
+├── services/                               # External Services
+│   └── fingerprint.services.ts            # Device fingerprinting
+│
+├── utils/                                  # Utility Functions
+│   ├── api.utils.ts                       # API request helpers
+│   ├── auth.utils.ts                      # Authentication utilities
+│   ├── cookie.utils.ts                    # Cookie management
+│   ├── route.utils.ts                     # Route utilities
+│   ├── electron.utils.ts                  # Electron helpers
+│   └── index.utils.ts                     # General utilities
+│
+├── constants/                              # Application Constants
+│   ├── airdrop.constants.ts               # Airdrop config (contracts, graph)
+│   ├── attachment.constant.ts             # File type constants
+│   ├── auth.constants.ts                  # Auth config
+│   ├── http.constants.ts                  # HTTP constants
+│   ├── tags.constants.ts                  # Server tags
+│   └── index.constants.ts                 # General constants
+│
+├── middleware.ts                           # Next.js middleware (auth guard)
+├── seo.config.ts                          # SEO metadata configuration
+└── proxy.ts                               # API proxy configuration
 ```
 
 ---
 
 ## 🔐 Security & Authentication
 
-### Web3 Authentication
+### Multi-Layer Authentication
 
-- Decentralized wallet authentication using wagmi/viem
-- Smart contract-based identity verification
-- Secure key management and transaction signing
+#### SSO Authentication (Decode Protocol)
+1. User clicks "Continue with SSO" on login page
+2. Frontend calls `/api/auth/create-sso` to generate SSO URL
+3. User redirects to Decode Protocol for authentication
+4. Decode redirects back to `/sso?sso_token=...&state=...`
+5. Frontend calls `/api/auth/get-sso` to exchange token
+6. Backend validates token and creates session
+7. User redirected to `/app/channels/me`
+
+#### Device Fingerprinting
+- **Fingerprint Service**: Generate unique device identifier
+- **Session Management**: Associate sessions with device fingerprints
+- **API Headers**: Include fingerprint in all API requests
+- **Security**: Prevent session hijacking across devices
+
+#### Web3 Wallet Authentication
+- **Wagmi + RainbowKit**: Connect MetaMask, WalletConnect, Coinbase Wallet
+- **Wallet Linking**: Link multiple wallets to user profile
+- **Primary Wallet**: Designate primary wallet for blockchain features
+- **Transaction Signing**: Sign messages and transactions securely
 
 ### API Security
 
-- Next.js middleware for route protection
-- HTTP-only secure cookies for session management
-- WebSocket identity verification and authorization
-- Role-based access control (RBAC) for server/channel management
+#### Route Protection
+- **Next.js Middleware** (`middleware.ts`): Auth guard for protected routes
+- **API Headers**: Custom headers for internal requests
+- **Fingerprint Validation**: Verify device fingerprint on API calls
+- **Session Cookies**: HTTP-only, secure cookies for session management
 
-### Smart Contract Security
+#### WebSocket Security
+- **Identity Verification**: All sockets require `identity` event with userId
+- **Room Authorization**: Verify user access to channels/servers before joining
+- **Event Validation**: Validate all incoming socket events
+- **Reconnection Handling**: Automatic re-authentication on reconnect
 
-- Merkle tree verification for airdrop claims
-- Gas-optimized contract interactions
-- Secure message encryption and signing
+### Blockchain Security
 
----
+#### Smart Contract Messaging
+- **End-to-End Encryption**: Messages encrypted with conversation-specific keys
+- **Key Management**: Encrypted conversation keys stored on-chain
+- **Access Control**: Only conversation participants can decrypt messages
+- **Gas Optimization**: Efficient contract design to minimize gas costs
 
-## 🌟 Core Features
+#### Airdrop Security
+- **Merkle Tree Verification**: Cryptographic proof of eligibility
+- **Claim Prevention**: Prevent double-claiming via smart contract
+- **Signature Verification**: Validate all blockchain transactions
 
-### Blockchain Integration
-
-**Token Airdrops**
-
-- Smart contract-powered token distribution
-- Merkle tree verification for claim validation
-- Campaign management with customizable rules
-- Web3 wallet integration for seamless claiming
-
-**On-Chain Messaging**
-
-- Smart contract-based message storage
-- Decentralized message history
-- Cryptographic message verification
-
-### Real-Time Communication
-
-**Messaging System**
-
-- Instant message delivery with WebSocket connections
-- Message history, editing, deletion, and replies
-- File attachments with IPFS storage
-- Full-text search across all messages
-- Message pagination and lazy loading
-
-**Voice Channels**
-
-- Real-time voice calls powered by Stream.io SDK
-- Participant management and audio controls
-- WebRTC-based peer-to-peer communication
-- Socket.IO integration for call state management
-
-### Server Management
-
-**Server System**
-
-- Create and manage community servers
-- Hierarchical role system (Owner → Admin → Member)
-- Invite code generation and management
-- Server customization and branding
-
-**Channel Organization**
-
-- Categorized channels (text/voice)
-- Drag-and-drop channel reordering
-- Permission-based channel access
-- Channel archiving and management
-
-### User Experience
-
-**Modern UI/UX**
-
-- Responsive three-column layout
-- Dark theme optimized for long sessions
-- Smooth animations and transitions
-- Mobile-first responsive design
-
-**User Management**
-
-- IPFS-hosted user avatars
-- Real-time status tracking
-- Following/follower system
-- Profile customization and privacy controls
+### Data Privacy
+- **IPFS Storage**: Decentralized file storage (avatars, attachments)
+- **No PII Leakage**: Sensitive data never logged or exposed
+- **Secure Cookies**: HTTP-only, SameSite=Strict cookies
+- **CORS Protection**: Strict CORS policies for API routes
 
 ---
 
-## 📊 Performance & Monitoring
+## 🌟 Core Features Deep Dive
 
-### Build Optimizations
+### 🔗 Blockchain Integration
 
-- **Turbopack**: 10x faster development builds
-- **React Compiler**: Automatic component memoization
-- **Tree Shaking**: Optimized bundle sizes
-- **Code Splitting**: Lazy-loaded routes and components
+#### On-Chain Encrypted Messaging (`/me/[channelId]/[wallet]`)
+- **End-to-End Encryption**: Messages encrypted with conversation-specific keys
+- **Smart Contract Storage**: Messages stored on Sepolia testnet
+- **Conversation Key Management**: Encrypted keys for each participant
+- **Dual Payment Modes**:
+  - **Pay-as-you-go**: Direct ETH payment per message
+  - **Relayer Mode**: Prepaid balance for gasless transactions
+- **Real-time Sync**: Watch `MessageSent` events for instant updates
+- **Conversation Creation**: Automatic on-chain conversation initialization
+- **Key Derivation**: Deterministic conversation IDs from participant addresses
 
-### Runtime Performance
+#### Token Airdrop System
+- **Merkle Tree Verification**: Gas-efficient claim validation
+- **Campaign Management**: Create, list, and manage airdrop campaigns
+- **Smart Contract Integration**: Factory pattern for campaign deployment
+- **The Graph Integration**: Query campaign data and claim history
+- **Multi-token Support**: ERC20 token distribution
+- **Claim UI**: User-friendly interface for claiming tokens
 
-- **Web Vitals**: Core Web Vitals monitoring
-- **Bundle Analysis**: Size optimization and monitoring
-- **Caching Strategies**: Aggressive caching with Next.js
-- **Image Optimization**: Automatic image optimization and WebP conversion
+#### NFT-Gated Servers
+- **Token-Based Access**: Require NFT ownership for server access
+- **Configurable Requirements**: Set contract address and minimum balance
+- **Real-time Verification**: Check ownership on server join
+- **Multi-chain Support**: Support for various EVM chains
 
-### Analytics
+### 💬 Real-Time Communication Architecture
 
+#### 6 Separate Socket.IO Connections
+Each connection is managed via singleton pattern for optimal performance:
+
+1. **Status Socket** (`socketioStatusSingleton.ts`)
+   - User online/offline/away status
+   - Real-time presence updates
+   - Cross-server status synchronization
+
+2. **Server Events Socket** (`socketioServerEventsSingleton.ts`)
+   - Server CRUD operations (create, update, delete)
+   - Category and channel management
+   - Member join/leave events
+   - Server ownership transfers
+   - NFT gating updates
+
+3. **Channel Chat Socket** (`socketioChannelChatSingleton.ts`)
+   - Server channel messages (send, edit, delete)
+   - Message replies and reactions
+   - Typing indicators
+   - Message history pagination
+
+4. **Channel Call Socket** (`socketioChannelCallSingleton.ts`)
+   - Voice/video call participant tracking
+   - User status in calls (camera, mic, headphone)
+   - Join/leave channel voice events
+
+5. **Direct Chat Socket** (`socketioDirectChatSingleton.ts`)
+   - 1-on-1 DM messages (send, edit, delete)
+   - Conversation updates
+   - Read receipts
+   - Message history pagination
+
+6. **Direct Call Socket** (`sooketioDirectCallSingleton.ts`)
+   - Incoming call notifications
+   - Call accept/decline/end
+   - Call state management (idle, ringing, calling, connected)
+   - 1-on-1 voice/video calls
+
+#### Message Features
+- **Real-time Delivery**: Instant message sync across all clients
+- **Message CRUD**: Create, edit, delete with optimistic updates
+- **Reply System**: Thread-like message replies
+- **File Attachments**: IPFS-hosted images, videos, documents
+- **Link Previews**: Automatic URL metadata fetching
+- **Markdown Support**: GitHub Flavored Markdown rendering
+- **Search**: Full-text search with pagination
+- **Infinite Scroll**: Load older messages on scroll with position restoration
+
+#### Voice/Video Calls (Stream.io SDK)
+- **Channel Calls**: Multi-participant voice channels
+- **Direct Calls**: 1-on-1 voice/video calls
+- **Call Controls**: Mute, camera toggle, headphone settings
+- **Participant Management**: Real-time participant list
+- **Call State**: Idle, ringing, calling, connected, ended, declined
+- **Audio Notifications**: Ring tones for incoming calls
+
+### 🏰 Discord-Like Server System
+
+#### Server Management
+- **Server Creation**: Create community servers with custom names and descriptions
+- **Role System**: Owner → Admin → Member hierarchy
+- **Invite System**: Generate and manage invite codes with expiration
+- **Server Settings**:
+  - Server info (name, description, avatar)
+  - Tags for discoverability
+  - NFT gating configuration
+  - Member management (kick, ban)
+  - Audit logs for all actions
+- **Server Ownership**: Transfer ownership to other members
+
+#### Category & Channel Organization
+- **Categories**: Group channels into collapsible categories
+- **Channel Types**: Text channels and voice channels
+- **Drag-and-Drop**: Reorder channels within and across categories (@dnd-kit)
+- **Channel CRUD**: Create, rename, delete channels
+- **Category CRUD**: Create, rename, delete categories
+- **Real-time Sync**: All changes broadcast via Server Events Socket
+
+#### Member Management
+- **Member List**: View all server members with online status
+- **Member Roles**: Assign and manage member roles
+- **Kick/Ban**: Remove problematic members
+- **Member Search**: Find members by username or display name
+- **Join Events**: Welcome messages for new members
+
+### 🎨 User Experience & Interface
+
+#### 3-Column Discord-Like Layout
+```
+┌─────────────┬──────────────────┬────────────────────────────┐
+│  GuildBar   │  ServerBar/      │     Main Content Area      │
+│  (Servers)  │  DirectBar       │  (Messages/Calls/Settings) │
+│             │  (Channels/DMs)  │                            │
+│  - DM Btn   │                  │                            │
+│  - Server 1 │  Categories:     │  Channel: #general         │
+│  - Server 2 │  ├─ Text         │  ┌──────────────────────┐ │
+│  - Server 3 │  │  ├─ #general  │  │ Messages...          │ │
+│  - + Add    │  │  └─ #random   │  │                      │ │
+│             │  └─ Voice        │  │                      │ │
+│  UserBar    │     ├─ 🔊 Lounge │  └──────────────────────┘ │
+│  (Profile)  │     └─ 🔊 Gaming │  [Message Input]           │
+└─────────────┴──────────────────┴────────────────────────────┘
+```
+
+#### Persistent UI Shell
+- **GuildBar** (Left): Always visible, shows server list + DM button
+- **ServerBar/DirectBar** (Middle): Conditional sidebar based on route
+  - ServerBar: Shows categories and channels for servers
+  - DirectBar: Shows conversation list for DMs
+- **UserBar** (Bottom-Left): User profile, mic/sound controls, settings
+- **Main Content** (Right): Dynamic content area for messages, calls, settings
+
+#### User Profiles & Social
+- **IPFS Avatars**: Decentralized avatar storage via Pinata
+- **User Profiles**: Display name, username, bio, role, followers/following
+- **Follow System**: Follow/unfollow users, mutual followers
+- **Wallet Connections**: Link multiple Ethereum wallets
+- **Status Tracking**: Online, offline, away status with real-time updates
+- **Profile Modal**: View user profiles with mutual servers and followers
+
+#### Theme & Styling
+- **Dark Theme**: Optimized for long sessions with reduced eye strain
+- **Tailwind CSS**: Utility-first styling with CSS variables
+- **shadcn/ui**: Accessible, customizable component library
+- **Radix UI**: Unstyled, accessible primitives
+- **Framer Motion**: Smooth animations and transitions
+- **Responsive**: Mobile-first design with adaptive layouts
+
+---
+
+## 📊 Performance & Architecture
+
+### State Management Strategy
+
+#### Redux Store (6 Slices)
+```typescript
+store/
+├── userSlice.ts           // User profile, bio, avatar, role
+├── serverListSlice.ts     // List of joined servers
+├── serverRootSlice.ts     // Categories, channels, voice participants
+├── fingerprintSlice.ts    // Device fingerprint hash
+├── directMemberSlice.ts   // DM conversation list with status
+└── serverMemberSlice.ts   // Server member list with online status
+```
+
+#### Custom Hooks (13 Hooks)
+Business logic abstraction layer:
+- `useUser`, `useFingerprint`: User state management
+- `useServerRoot`, `useServersList`, `useServerMember`: Server state
+- `useDirectMember`: DM conversation state
+- `useChannelMessage`, `useDirectMessage`: Message CRUD operations
+- `useChannelCall`, `useDirectCall`: Voice/video call operations
+- `useTokenInfo`, `useTransferMoney`: Crypto payment operations
+- `useInviteSuggestions`: Server invite suggestions
+
+### Performance Optimizations
+
+#### Build-Time
+- **Next.js 14 App Router**: SSR, SSG, and ISR for optimal performance
+- **React 19**: Concurrent rendering and automatic batching
+- **Code Splitting**: Route-based and component-based splitting
+- **Tree Shaking**: Remove unused code from bundles
+- **Bundle Analysis**: Monitor and optimize bundle sizes
+
+#### Runtime
+- **Socket Singletons**: Prevent duplicate WebSocket connections
+- **Event Deduplication**: Prevent duplicate real-time messages
+- **Infinite Scroll**: Paginated message history (20 messages/page)
+- **Scroll Position Restoration**: Maintain scroll position on pagination
+- **Optimistic Updates**: Instant UI feedback before server confirmation
+- **Lazy Loading**: Dynamic imports for heavy components (Popover, etc.)
+- **Image Optimization**: Next.js automatic image optimization
+
+#### Caching Strategies
+- **Redux Persistence**: Cache user and server state
+- **TanStack Query**: Server state caching with background updates
+- **Local Storage**: User preferences (sound, theme)
+- **API Route Caching**: Next.js route cache with revalidation
+
+### Monitoring & Analytics
+- **Web Vitals**: Core Web Vitals measurement (LCP, FID, CLS)
 - **Vercel Analytics**: User behavior and performance tracking
-- **Error Monitoring**: Comprehensive error tracking and reporting
-- **Performance Metrics**: Real-time performance dashboards
+- **Error Boundaries**: Graceful error handling and reporting
+- **Console Logging**: Structured logging for debugging
 
 ---
 
@@ -502,26 +855,112 @@ src/
 ### Available Scripts
 
 ```bash
-npm run dev          # Start development server with Turbopack
+# Development
+npm run dev          # Start development server (port 9000)
 npm run build        # Build for production
 npm run start        # Start production server
+
+# Code Quality
 npm run lint         # Run ESLint
-npm run analyze      # Analyze bundle sizes
-npm run type-check   # Run TypeScript type checking
+npm run type-check   # TypeScript type checking
+
+# Analysis
+npm run analyze      # Analyze bundle sizes with @next/bundle-analyzer
+
+# Electron (Desktop App)
+npm run electron:dev # Start Electron in development
+npm run electron:build # Build Electron app for production
 ```
 
-### Environment Variables
+### Architecture Patterns
 
-See `.env.local` template above for all required environment variables.
+#### Singleton Pattern (Socket.IO)
+All 6 Socket.IO connections use singleton pattern to prevent duplicate connections:
+```typescript
+// lib/socketFactory.ts
+export function getSocket(type: SocketType): Socket {
+  if (socketRegistry.has(type)) {
+    return socketRegistry.get(type)!;
+  }
+  const socket = io(config.url, { autoConnect: false });
+  socketRegistry.set(type, socket);
+  return socket;
+}
+```
+
+#### Provider Pattern (Socket Lifecycle)
+Each socket has a dedicated provider for lifecycle management:
+```typescript
+// providers/socketStatusProvider.tsx
+export default function SocketStatusProvider({ userId, children }) {
+  const socket = useRef(getStatusSocketIO()).current;
+
+  useEffect(() => {
+    socket.on('connect', onConnect);
+    socket.on('userStatusChanged', onStatusChanged);
+    if (!socket.connected) socket.connect();
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('userStatusChanged', onStatusChanged);
+    };
+  }, [socket, userId]);
+
+  return <>{children}</>;
+}
+```
+
+#### Custom Hook Pattern (Business Logic)
+Hooks abstract Redux and socket operations:
+```typescript
+// hooks/useChannelMessage.ts
+export function useChannelMessage(channelId: string) {
+  const socket = useRef(getChannelChatSocketIO()).current;
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const send = useCallback((content: string) => {
+    socket.emit('sendMessage', { channelId, content });
+  }, [socket, channelId]);
+
+  useEffect(() => {
+    socket.on('newMessage', (msg) => {
+      if (msg.channelId === channelId) {
+        setMessages(prev => [...prev, msg]);
+      }
+    });
+  }, [socket, channelId]);
+
+  return { messages, send, edit, remove, loadHistory };
+}
+```
 
 ### API Architecture
 
-The application uses a comprehensive API architecture:
+#### RESTful API Routes (`/api/*`)
+- **Authentication**: `/api/auth/*` - SSO creation, token exchange
+- **User Management**: `/api/user/*` - Profile, following, status
+- **Server Management**: `/api/servers/*` - CRUD, members, categories, channels
+- **Messaging**: `/api/me/*` - DM conversations, message history
+- **Blockchain**: `/api/sc-message/*` - Smart contract message queries
+- **Airdrop**: `/api/airdrop/*` - Campaign management, claims
+- **File Storage**: `/api/ipfs/*` - IPFS upload via Pinata
+- **Search**: `/api/search/*` - Message and user search
+- **Stream.io**: `/api/stream/*` - Voice/video token generation
+- **Tokens**: `/api/tokens/*` - Token balance queries (Covalent API)
 
-- **RESTful Endpoints**: Server management, user profiles, authentication
-- **WebSocket Events**: Real-time messaging and voice channel updates
-- **Smart Contract APIs**: Blockchain interactions for airdrops and messaging
-- **External Integrations**: IPFS, Stream.io, and analytics services
+#### WebSocket Events
+Each socket has its own event schema defined in `interfaces/websocket*.interface.ts`
+
+### Data Flow Example: Sending a Message
+
+1. User types message in `ChannelMessagePage` component
+2. Presses Enter → calls `send()` from `useChannelMessage` hook
+3. Hook emits `sendMessage` event via `ChannelChatSocket` singleton
+4. Backend validates, stores, and broadcasts to all channel members
+5. All clients receive `newMessage` event via socket
+6. Hook updates local `messages` state via `setMessages`
+7. Component re-renders with new message (optimistic update)
+8. If send fails, error state triggers and message is removed
 
 ---
 
