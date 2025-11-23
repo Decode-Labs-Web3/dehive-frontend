@@ -1,13 +1,13 @@
 import UserBar from "./UserBar";
 import GuildBar from "./GuildBar";
 import ServerBar from "./ServerBar";
-import MeBar from "./MeBar";
+import DirectBar from "./DirectBar";
 
 const App = {
   UserBar,
   GuildBar,
   ServerBar,
-  MeBar,
+  DirectBar,
 };
 
 export default App;

@@ -155,7 +155,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
       >
         <div className="h-full grid grid-cols-[240px_1fr] overflow-hidden">
           <aside className="h-full overflow-y-auto border-r border-black/20">
-            <App.MeBar refreshVersion={refreshVersion} />
+            <App.DirectBar refreshVersion={refreshVersion} />
           </aside>
 
           <section className="min-w-0 min-h-0 overflow-hidden">

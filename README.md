@@ -309,9 +309,9 @@ src/
 │   │   ├── AirdropDropdown.tsx
 │   │   └── CreateAirdropModal.tsx
 │   ├── app/                     # Main app components
-│   │   ├── GuildBar.tsx         # Server sidebar
-│   │   ├── MeBar.tsx            # User profile bar
-│   │   ├── ServerBar.tsx        # Channel sidebar
+│   │   ├── GuildBar.tsx         # Server List sidebar
+│   │   ├── DirectBar.tsx        # Direct sidebar
+│   │   ├── ServerBar.tsx        # Server sidebar
 │   │   └── UserBar.tsx          # User list
 │   ├── common/                  # Shared components
 │   │   ├── AttachmentList.tsx   # File attachments

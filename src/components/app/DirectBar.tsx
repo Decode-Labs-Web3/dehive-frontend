@@ -17,11 +17,11 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-interface MeBarProps {
+interface DirectBarProps {
   refreshVersion: number;
 }
 
-export default function MeBar({ refreshVersion }: MeBarProps) {
+export default function DirectBar({ refreshVersion }: DirectBarProps) {
   const router = useRouter();
   const { directMembers } = useDirectMember();
   const [userProfileModal, setUserProfileModal] = useState<
