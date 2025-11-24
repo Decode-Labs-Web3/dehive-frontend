@@ -38,11 +38,12 @@ import {
 export default function SmartContractMessagePage() {
   const { user } = useUser();
   const { directMembers } = useDirectMember();
-  const { channelId,recipientWallet } = useParams<{
-    channelId: string,
+  const { channelId, recipientWallet } = useParams<{
+    channelId: string;
     recipientWallet: string;
   }>();
   const [newMessage, setNewMessage] = useState<string>("");
+  const [initialFetched, setInitialFetched] = useState(false);
   const [conversationId, setConversationId] = useState<bigint | null>(null);
   const [first, setFirst] = useState(20);
   const [messages, setMessages] = useState<
@@ -126,12 +127,90 @@ export default function SmartContractMessagePage() {
       }
     >
   >(new Map());
-  const conversationKeyRef = useRef<string | null>(null);
+  const [conversationKey, setConversationKey] = useState<string | null>(null);
   const processedTxsRef = useRef<Set<string>>(new Set());
   const sendSelectorRef = useRef<string>("0x");
   const sendViaRelayerSelectorRef = useRef<string>("0x");
-  // Count of new messages appended via RPC watcher (for backend or fetch tuning)
   const rpcNewCountRef = useRef<number>(0);
+
+    const ensureConversationAndKey = useCallback(async (): Promise<{
+    cid: bigint;
+    key: string;
+  }> => {
+    if (!proxy) throw new Error("Proxy address missing");
+    if (!address) throw new Error("No account");
+    if (!isAddress(recipientWallet)) throw new Error("Invalid recipient");
+    if (!publicClient) throw new Error("No public client");
+
+    // 1) always have cid local
+    const cid = computeConversationId(address, recipientWallet);
+    if (conversationId !== cid) setConversationId(cid);
+
+    // 2) read conversation
+    const [, , , , createdAt] = (await publicClient.readContract({
+      address: proxy,
+      abi: messageAbi,
+      functionName: "conversations",
+      args: [cid],
+    })) as readonly [
+      `0x${string}`,
+      `0x${string}`,
+      `0x${string}`,
+      `0x${string}`,
+      bigint
+    ];
+
+    let keyToUse = conversationKey;
+
+    if (!createdAt || createdAt === BigInt(0)) {
+      const convKey = generateConversationKey();
+      const encForSender = await encryptConversationKeyForAddress(
+        convKey,
+        address
+      );
+      const encForReceiver = await encryptConversationKeyForAddress(
+        convKey,
+        recipientWallet
+      );
+
+      const txHash = await writeContractAsync({
+        address: proxy,
+        abi: messageAbi,
+        functionName: "createConversation",
+        args: [
+          getAddress(recipientWallet),
+          `0x${encForSender}`,
+          `0x${encForReceiver}`,
+        ],
+        chainId: sepolia.id,
+      });
+
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
+      keyToUse = convKey;
+    }
+
+    if (!keyToUse) {
+      keyToUse = await getMyConversationKey(publicClient, proxy, cid, address);
+    }
+
+    if (!keyToUse) throw new Error("No conversation key available");
+
+    if (keyToUse !== conversationKey) setConversationKey(keyToUse);
+
+    return { cid, key: keyToUse };
+  }, [
+    proxy,
+    address,
+    publicClient,
+    conversationId,
+    conversationKey,
+    recipientWallet,
+    writeContractAsync,
+  ]);
+
+  useEffect(() => {
+    ensureConversationAndKey();
+  }, [ensureConversationAndKey]);
 
   // Derive function selectors for sendMessage and sendMessageViaRelayer from ABI (robust to type changes)
   useEffect(() => {
@@ -204,12 +283,9 @@ export default function SmartContractMessagePage() {
             if (!(participantsMatch || cidMatch)) continue;
 
             let content = "(no conv key)";
-            if (conversationKeyRef.current) {
+            if (conversationKey) {
               try {
-                content = mockDecryptMessage(
-                  encryptedMessage,
-                  conversationKeyRef.current
-                );
+                content = mockDecryptMessage(encryptedMessage, conversationKey);
               } catch {
                 content = "(failed to decrypt)";
               }
@@ -265,123 +341,23 @@ export default function SmartContractMessagePage() {
     await switchChainAsync({ chainId: sepolia.id });
   };
 
-  // Auto-compute deterministic conversationId whenever address/recipient is valid
-  useEffect(() => {
-    if (address && isAddress(recipientWallet)) {
-      try {
-        const computedConversationId = computeConversationId(
-          address,
-          recipientWallet
-        );
-        setConversationId(computedConversationId);
-      } catch {
-        setConversationId(null);
-      }
-    } else {
-      setConversationId(null);
-    }
-  }, [address, recipientWallet]);
-
   const sendPayAsYouGo = async () => {
     if (!proxy) return alert("Proxy address missing");
     if (!isConnected) return alert("Please connect recipientWallet");
     if (!address) return alert("No account");
     if (!newMessage.trim()) return alert("Message empty");
+    if (!conversationKey) return alert("No conversation key");
     try {
       setLoading(true);
       await ensureSepolia();
 
-      // Ensure we have a conversationId (compute deterministically if missing)
-      let conversationIdLocal = conversationId;
-      if (!conversationIdLocal) {
-        if (!isAddress(recipientWallet)) throw new Error("Invalid recipient");
-        conversationIdLocal = computeConversationId(address, recipientWallet);
-        setConversationId(conversationIdLocal);
-      }
-
-      // Try to obtain existing conversation key (if conversation already exists)
-      if (!conversationKeyRef.current && address) {
-        const key = await getMyConversationKey(
-          publicClient!,
-          proxy,
-          conversationIdLocal!,
-          address
-        );
-        if (key) conversationKeyRef.current = key;
-      }
-
-      // Check if conversation exists on-chain; if not, create it
-      type ConversationTuple = readonly [
-        `0x${string}`,
-        `0x${string}`,
-        `0x${string}`,
-        `0x${string}`,
-        bigint
-      ];
-      const convData = (await publicClient!.readContract({
-        address: proxy,
-        abi: messageAbi,
-        functionName: "conversations",
-        args: [conversationIdLocal!],
-      })) as ConversationTuple;
-      const [, , , , createdAt] = convData;
-
-      let localConvKey: string | null = null;
-      if (!createdAt || createdAt === BigInt(0)) {
-        // Create a new conversation with encrypted keys for both participants
-        const convKey = generateConversationKey(); // 64 hex chars
-        const encForSender = await encryptConversationKeyForAddress(
-          convKey,
-          address
-        );
-        const encForReceiver = await encryptConversationKeyForAddress(
-          convKey,
-          recipientWallet
-        );
-        const txHash = await writeContractAsync({
-          address: proxy,
-          abi: messageAbi,
-          functionName: "createConversation",
-          args: [
-            getAddress(recipientWallet),
-            `0x${encForSender}`,
-            `0x${encForReceiver}`,
-          ],
-          chainId: sepolia.id,
-        });
-        await publicClient!.waitForTransactionReceipt({ hash: txHash });
-        // Use the generated key immediately for the first message
-        localConvKey = convKey;
-      }
-
-      // Retrieve my conversation key (post-creation or existing)
-      if (!conversationKeyRef.current) {
-        const key = await getMyConversationKey(
-          publicClient!,
-          proxy,
-          conversationIdLocal!,
-          address
-        );
-        if (key) conversationKeyRef.current = key;
-      }
-
-      if (!conversationKeyRef.current && localConvKey) {
-        conversationKeyRef.current = localConvKey;
-      }
-      if (!conversationKeyRef.current) {
-        throw new Error("No conversation key available for this account");
-      }
-
       // Encrypt and send message (pay-as-you-go)
-      const ciphertext = mockEncryptMessage(
-        newMessage,
-        conversationKeyRef.current
-      );
+      const ciphertext = mockEncryptMessage(newMessage, conversationKey);
       const sendTxHash = await writeContractAsync({
         address: proxy,
         abi: messageAbi,
         functionName: "sendMessage",
-        args: [conversationIdLocal!, getAddress(recipientWallet), ciphertext],
+        args: [conversationId!, getAddress(recipientWallet), ciphertext],
         chainId: sepolia.id,
         value: (payAsYouGoFee as bigint | undefined) ?? BigInt(0),
       });
@@ -434,77 +410,10 @@ export default function SmartContractMessagePage() {
     if (!isConnected) return alert("Please connect wallet");
     if (!address) return alert("No account");
     if (!newMessage.trim()) return alert("Message empty");
+    if (!conversationKey) return alert("No conversation key");
     try {
       setLoading(true);
       await ensureSepolia();
-
-      // Ensure we have a conversationId
-      let conversationIdLocal = conversationId;
-      if (!conversationIdLocal) {
-        if (!isAddress(recipientWallet)) throw new Error("Invalid recipient");
-        conversationIdLocal = computeConversationId(address, recipientWallet);
-        setConversationId(conversationIdLocal);
-      }
-
-      // Ensure conversation exists; create if needed
-      type ConversationTuple = readonly [
-        `0x${string}`,
-        `0x${string}`,
-        `0x${string}`,
-        `0x${string}`,
-        bigint
-      ];
-      const convData = (await publicClient!.readContract({
-        address: proxy,
-        abi: messageAbi,
-        functionName: "conversations",
-        args: [conversationIdLocal!],
-      })) as ConversationTuple;
-      const [, , , , createdAt] = convData;
-
-      let localConvKey: string | null = null;
-      if (!createdAt || createdAt === BigInt(0)) {
-        const convKey = generateConversationKey();
-        const encForSender = await encryptConversationKeyForAddress(
-          convKey,
-          address
-        );
-        const encForReceiver = await encryptConversationKeyForAddress(
-          convKey,
-          recipientWallet
-        );
-        const txHash = await writeContractAsync({
-          address: proxy,
-          abi: messageAbi,
-          functionName: "createConversation",
-          args: [
-            getAddress(recipientWallet),
-            `0x${encForSender}`,
-            `0x${encForReceiver}`,
-          ],
-          chainId: sepolia.id,
-        });
-        await publicClient!.waitForTransactionReceipt({ hash: txHash });
-        localConvKey = convKey;
-      }
-
-      // Ensure conversation key available
-      if (!conversationKeyRef.current) {
-        const key = await getMyConversationKey(
-          publicClient!,
-          proxy,
-          conversationIdLocal!,
-          address
-        );
-        if (key) conversationKeyRef.current = key;
-      }
-      if (!conversationKeyRef.current && localConvKey) {
-        conversationKeyRef.current = localConvKey;
-      }
-      if (!conversationKeyRef.current) {
-        throw new Error("No conversation key available for this account");
-      }
-
       // Check deposited funds >= relayer fee
       const fee = (relayerFee as bigint | undefined) ?? BigInt(0);
       const fundsBal = (myFunds as bigint | undefined) ?? BigInt(0);
@@ -520,7 +429,7 @@ export default function SmartContractMessagePage() {
       // Encrypt and send via backend relayer
       const ciphertext = mockEncryptMessage(
         newMessage,
-        conversationKeyRef.current
+        conversationKey as string
       );
       const res = await fetch("/api/sc-message/relayer", {
         method: "POST",
@@ -529,7 +438,7 @@ export default function SmartContractMessagePage() {
           "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
-          conversationId: conversationIdLocal!.toString(),
+          conversationId: conversationId!.toString(),
           from: getAddress(address),
           to: getAddress(recipientWallet),
           encryptedMessage: ciphertext,
@@ -553,26 +462,16 @@ export default function SmartContractMessagePage() {
   const fetchMessages = useCallback(async () => {
     if (!proxy) return alert("Proxy address missing");
     if (isFetchingRef.current) return;
+    if (!conversationId) return;
     isFetchingRef.current = true;
     try {
-      let conversationIdLocal = conversationId;
-      if (!conversationIdLocal) {
-        if (!(address && isAddress(recipientWallet)))
-          return alert("No conversationId");
-        conversationIdLocal = computeConversationId(address, recipientWallet);
-        setConversationId(conversationIdLocal);
-      }
-
-      // Try to obtain conversation key early so decrypt works right after refresh
-      if (!conversationKeyRef.current && address) {
-        const key = await getMyConversationKey(
-          publicClient!,
-          proxy,
-          conversationIdLocal!,
-          address
-        );
-        if (key) conversationKeyRef.current = key;
-      }
+      // let conversationIdLocal = conversationId;
+      // if (!conversationIdLocal) {
+      //   if (!(address && isAddress(recipientWallet)))
+      //     return alert("No conversationId");
+      //   conversationIdLocal = computeConversationId(address, recipientWallet);
+      //   setConversationId(conversationIdLocal);
+      // }
 
       // Adjust paging to account for new messages appended via RPC so server-side offsets stay aligned
       const rpcNew = rpcNewCountRef.current;
@@ -586,7 +485,7 @@ export default function SmartContractMessagePage() {
           "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({
-          conversationId: conversationIdLocal.toString(),
+          conversationId: conversationId.toString(),
           first: firstForQuery,
           skip: skipForQuery,
           newCount: rpcNew,
@@ -611,16 +510,6 @@ export default function SmartContractMessagePage() {
 
       const events = json.messageSents ?? [];
       if (events.length > 0) {
-        // Ensure decrypted conversation key available for current user
-        if (!conversationKeyRef.current && address) {
-          const key = await getMyConversationKey(
-            publicClient!,
-            proxy,
-            conversationIdLocal!,
-            address
-          );
-          if (key) conversationKeyRef.current = key;
-        }
         // Build only the current fetched page as a batch and prepend to existing messages
         // API is orderDirection: desc (newest -> oldest). For ascending UI, reverse to (oldest -> newest)
         const batchAsc = await Promise.all(
@@ -629,11 +518,11 @@ export default function SmartContractMessagePage() {
               const eventId = `${e.blockNumber}:${e.from}:${e.to}:${e.encryptedMessage}`;
               // decrypt per item using current key if available
               let decText = "";
-              if (conversationKeyRef.current) {
+              if (conversationKey) {
                 try {
                   decText = mockDecryptMessage(
                     e.encryptedMessage,
-                    conversationKeyRef.current
+                    conversationKey
                   );
                 } catch {
                   decText = `(failed to decrypt)`;
@@ -687,32 +576,37 @@ export default function SmartContractMessagePage() {
       // Ensure loading-more UI is cleared even if no new messages were added
       setLoadingMore(false);
     }
-  }, [first, proxy, address, publicClient, conversationId, recipientWallet]);
+  }, [first, proxy, publicClient, conversationId, conversationKey]);
 
-  // Fetch once when entering a conversation (per recipientWallet). Do not refetch afterward.
-  const initialFetchForRecipientRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (initialFetchForRecipientRef.current !== recipientWallet) {
-      initialFetchForRecipientRef.current = recipientWallet;
-      // Reset paging & caches when switching conversation
+      setInitialFetched(false);
       setIsLastPage(false);
       setFirst(20);
       rpcNewCountRef.current = 0;
       messageOrderRef.current = [];
       messageMapRef.current.clear();
       setMessages([]);
-      void fetchMessages();
-    }
-    // We intentionally only depend on recipientWallet so this runs once per route.
+      void ensureConversationAndKey().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipientWallet]);
 
+  useEffect(() => {
+  if (initialFetched) return;
+  if (!conversationId || !conversationKey) return;
+  void fetchMessages().then(() => {
+    setInitialFetched(true);
+  }).catch(console.error);
+}, [conversationId, conversationKey, initialFetched, fetchMessages]);
+
   // When user scrolls to top and `first` increases, fetch the next (older) page
   useEffect(() => {
+    if (conversationId === null) return;
+    if (conversationKey === null) return;
     if (first > 20 && !isLastPage) {
       void fetchMessages();
     }
-  }, [first, isLastPage, fetchMessages]);
+  }, [first, isLastPage, fetchMessages, conversationId, conversationKey]);
 
   const handleComposerKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -735,7 +629,6 @@ export default function SmartContractMessagePage() {
 
   useEffect(() => {
     const element = listRef.current;
-    // Only auto-scroll on initial page load
     if (element && first === 20 && !loadingMore && messages.length > 0) {
       element.scrollTop = element.scrollHeight - element.clientHeight;
     }
@@ -770,7 +663,7 @@ export default function SmartContractMessagePage() {
     }
   }, [messages]);
 
-    const userChatWith = useMemo(() => {
+  const userChatWith = useMemo(() => {
     return directMembers.find((member) => member.conversationid === channelId);
   }, [directMembers, channelId]);
 

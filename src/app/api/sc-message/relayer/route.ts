@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       process.env.SEPOLIA_RPC_URL ||
       process.env.NEXT_PUBLIC_SEPOLIA_RPC ||
       "https://1rpc.io/sepolia";
-    const pkRaw = process.env.RELAYER_PRIVATE_KEY || process.env.PRIVATE_KEY; // allow fallback to PRIVATE_KEY
+    const pkRaw = process.env.RELAYER_PRIVATE_KEY;
     console.log("[Relayer API] Env:", {
       hasProxy: !!proxy,
       rpcUrl,
