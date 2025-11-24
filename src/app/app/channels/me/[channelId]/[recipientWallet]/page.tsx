@@ -114,39 +114,21 @@ export default function SmartContractMessagePage() {
   const { writeContractAsync } = useWriteContract();
 
   const isFetchingRef = useRef(false);
-  const messageOrderRef = useRef<string[]>([]);
-  const messageMapRef = useRef<
-    Map<
-      string,
-      {
-        blockNumber: string;
-        from: string;
-        to: string;
-        encryptedMessage: string;
-        dec: string;
-      }
-    >
-  >(new Map());
   const [conversationKey, setConversationKey] = useState<string | null>(null);
   const processedTxsRef = useRef<Set<string>>(new Set());
   const sendSelectorRef = useRef<string>("0x");
   const sendViaRelayerSelectorRef = useRef<string>("0x");
   const rpcNewCountRef = useRef<number>(0);
 
-    const ensureConversationAndKey = useCallback(async (): Promise<{
-    cid: bigint;
-    key: string;
-  }> => {
+  const ensureConversationAndKey = useCallback(async () => {
     if (!proxy) throw new Error("Proxy address missing");
     if (!address) throw new Error("No account");
     if (!isAddress(recipientWallet)) throw new Error("Invalid recipient");
     if (!publicClient) throw new Error("No public client");
 
-    // 1) always have cid local
     const cid = computeConversationId(address, recipientWallet);
     if (conversationId !== cid) setConversationId(cid);
 
-    // 2) read conversation
     const [, , , , createdAt] = (await publicClient.readContract({
       address: proxy,
       abi: messageAbi,
@@ -196,8 +178,6 @@ export default function SmartContractMessagePage() {
     if (!keyToUse) throw new Error("No conversation key available");
 
     if (keyToUse !== conversationKey) setConversationKey(keyToUse);
-
-    return { cid, key: keyToUse };
   }, [
     proxy,
     address,
@@ -207,10 +187,6 @@ export default function SmartContractMessagePage() {
     recipientWallet,
     writeContractAsync,
   ]);
-
-  useEffect(() => {
-    ensureConversationAndKey();
-  }, [ensureConversationAndKey]);
 
   // Derive function selectors for sendMessage and sendMessageViaRelayer from ABI (robust to type changes)
   useEffect(() => {
@@ -297,9 +273,6 @@ export default function SmartContractMessagePage() {
             const createdAt = new Date(
               Number(block.timestamp) * 1000
             ).toISOString();
-
-            const isCounterpart =
-              !!counterpart && getAddress(from) === counterpart;
             const id =
               txHash ||
               `${String(
@@ -350,8 +323,6 @@ export default function SmartContractMessagePage() {
     try {
       setLoading(true);
       await ensureSepolia();
-
-      // Encrypt and send message (pay-as-you-go)
       const ciphertext = mockEncryptMessage(newMessage, conversationKey);
       const sendTxHash = await writeContractAsync({
         address: proxy,
@@ -362,7 +333,6 @@ export default function SmartContractMessagePage() {
         value: (payAsYouGoFee as bigint | undefined) ?? BigInt(0),
       });
       await publicClient!.waitForTransactionReceipt({ hash: sendTxHash });
-      // Do not optimistically append; RPC watcher will detect the tx and append exactly once.
       setNewMessage("");
       setError(null);
     } catch (e: unknown) {
@@ -414,7 +384,6 @@ export default function SmartContractMessagePage() {
     try {
       setLoading(true);
       await ensureSepolia();
-      // Check deposited funds >= relayer fee
       const fee = (relayerFee as bigint | undefined) ?? BigInt(0);
       const fundsBal = (myFunds as bigint | undefined) ?? BigInt(0);
       if (fundsBal < fee) {
@@ -425,8 +394,6 @@ export default function SmartContractMessagePage() {
         );
         return;
       }
-
-      // Encrypt and send via backend relayer
       const ciphertext = mockEncryptMessage(
         newMessage,
         conversationKey as string
@@ -463,17 +430,9 @@ export default function SmartContractMessagePage() {
     if (!proxy) return alert("Proxy address missing");
     if (isFetchingRef.current) return;
     if (!conversationId) return;
+
     isFetchingRef.current = true;
     try {
-      // let conversationIdLocal = conversationId;
-      // if (!conversationIdLocal) {
-      //   if (!(address && isAddress(recipientWallet)))
-      //     return alert("No conversationId");
-      //   conversationIdLocal = computeConversationId(address, recipientWallet);
-      //   setConversationId(conversationIdLocal);
-      // }
-
-      // Adjust paging to account for new messages appended via RPC so server-side offsets stay aligned
       const rpcNew = rpcNewCountRef.current;
       const firstForQuery = first + rpcNew;
       const skipForQuery = firstForQuery - 20;
@@ -513,41 +472,40 @@ export default function SmartContractMessagePage() {
         // Build only the current fetched page as a batch and prepend to existing messages
         // API is orderDirection: desc (newest -> oldest). For ascending UI, reverse to (oldest -> newest)
         const batchAsc = await Promise.all(
-          events
-            .map(async (e) => {
-              const eventId = `${e.blockNumber}:${e.from}:${e.to}:${e.encryptedMessage}`;
-              // decrypt per item using current key if available
-              let decText = "";
-              if (conversationKey) {
-                try {
-                  decText = mockDecryptMessage(
-                    e.encryptedMessage,
-                    conversationKey
-                  );
-                } catch {
-                  decText = `(failed to decrypt)`;
-                }
-              } else {
-                decText = `(no conv key)`;
+          events.map(async (e) => {
+            const eventId = `${e.blockNumber}:${e.from}:${e.to}:${e.encryptedMessage}`;
+            // decrypt per item using current key if available
+            let decText = "";
+            if (conversationKey) {
+              try {
+                decText = mockDecryptMessage(
+                  e.encryptedMessage,
+                  conversationKey
+                );
+              } catch {
+                decText = `(failed to decrypt)`;
               }
-              // Fetch block for timestamp
-              const block = await publicClient!.getBlock({
-                blockNumber: BigInt(e.blockNumber),
-              });
-              const createdAt = new Date(
-                Number(block.timestamp) * 1000
-              ).toISOString();
-              return {
-                id: eventId,
-                blockNumber: e.blockNumber,
-                from: getAddress(e.from as `0x${string}`) as `0x${string}`,
-                to: getAddress(e.to as `0x${string}`) as `0x${string}`,
-                content: decText,
-                createdAt,
-                sender: getAddress(e.from as `0x${string}`) as `0x${string}`,
-              };
-            })
-            .reverse()
+            } else {
+              decText = `(no conv key)`;
+            }
+            // Fetch block for timestamp
+            const block = await publicClient!.getBlock({
+              blockNumber: BigInt(e.blockNumber),
+            });
+            const createdAt = new Date(
+              Number(block.timestamp) * 1000
+            ).toISOString();
+            return {
+              id: eventId,
+              blockNumber: e.blockNumber,
+              from: getAddress(e.from as `0x${string}`) as `0x${string}`,
+              to: getAddress(e.to as `0x${string}`) as `0x${string}`,
+              content: decText,
+              createdAt,
+              sender: getAddress(e.from as `0x${string}`) as `0x${string}`,
+            };
+          })
+          // .reverse()
         );
 
         // Prepend batch to current list while avoiding duplicates
@@ -562,9 +520,6 @@ export default function SmartContractMessagePage() {
         if (events.length < 20) setIsLastPage(true);
         return;
       }
-
-      // No events found for this conversation: do not treat as an error.
-      // Keep messages array empty so UI can render the "No messages yet" state.
       setError(null);
       setIsLastPage(true);
     } catch (e: unknown) {
@@ -573,33 +528,29 @@ export default function SmartContractMessagePage() {
       setError(`fetchMessages error: ${msg}`);
     } finally {
       isFetchingRef.current = false;
-      // Ensure loading-more UI is cleared even if no new messages were added
       setLoadingMore(false);
     }
   }, [first, proxy, publicClient, conversationId, conversationKey]);
 
+  useEffect(() => {
+    setInitialFetched(false);
+    setIsLastPage(false);
+    setFirst(20);
+    rpcNewCountRef.current = 0;
+    setMessages([]);
+    void ensureConversationAndKey().catch(console.error);
+  }, [recipientWallet, ensureConversationAndKey]);
 
   useEffect(() => {
-      setInitialFetched(false);
-      setIsLastPage(false);
-      setFirst(20);
-      rpcNewCountRef.current = 0;
-      messageOrderRef.current = [];
-      messageMapRef.current.clear();
-      setMessages([]);
-      void ensureConversationAndKey().catch(console.error);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recipientWallet]);
+    if (initialFetched) return;
+    if (!conversationId || !conversationKey) return;
+    void fetchMessages()
+      .then(() => {
+        setInitialFetched(true);
+      })
+      .catch(console.error);
+  }, [conversationId, conversationKey, initialFetched, fetchMessages]);
 
-  useEffect(() => {
-  if (initialFetched) return;
-  if (!conversationId || !conversationKey) return;
-  void fetchMessages().then(() => {
-    setInitialFetched(true);
-  }).catch(console.error);
-}, [conversationId, conversationKey, initialFetched, fetchMessages]);
-
-  // When user scrolls to top and `first` increases, fetch the next (older) page
   useEffect(() => {
     if (conversationId === null) return;
     if (conversationKey === null) return;
@@ -721,13 +672,15 @@ export default function SmartContractMessagePage() {
                 >
                   <div className="flex w-full">
                     <Avatar className="w-8 h-8 shrink-0">
+                      <AvatarImage
+                        src={
+                          isMe
+                            ? `https://ipfs.de-id.xyz/ipfs/${user?.avatar_ipfs_hash}`
+                            : `https://ipfs.de-id.xyz/ipfs/${userChatWith?.avatar_ipfs_hash}`
+                        }
+                      />
                       <AvatarFallback>
-                        {isMe
-                          ? "You"
-                          : `${message.sender.slice(
-                              0,
-                              6
-                            )}...${message.sender.slice(-4)}`}
+                        {isMe ? user.display_name : userChatWith?.displayname}
                       </AvatarFallback>
                     </Avatar>
 
@@ -736,11 +689,8 @@ export default function SmartContractMessagePage() {
                         <div className="flex items-center gap-2">
                           <h2 className="text-sm font-semibold text-foreground">
                             {isMe
-                              ? "You"
-                              : `${message.sender.slice(
-                                  0,
-                                  6
-                                )}...${message.sender.slice(-4)}`}
+                              ? user.display_name
+                              : userChatWith?.displayname}
                           </h2>
                           <span className="text-xs text-muted-foreground">
                             {new Date(message.createdAt).toLocaleString()}
