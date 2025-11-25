@@ -9,14 +9,12 @@ import {
   useCallback,
   useRef,
   useState,
-  useEffect,
   type ChangeEvent,
 } from "react";
 import {
   faUpload,
   faCamera,
   faPlus,
-  faRepeat,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   Popover,

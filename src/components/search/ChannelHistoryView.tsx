@@ -11,6 +11,8 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import LinkPreview from "@/components/common/LinkPreview";
 import FilePreview from "@/components/common/FilePreview";
+import AvatarComponent from "@/components/common/Avatar";
+import { ChannelProps } from "@/interfaces/server.interface";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,9 +22,7 @@ import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ServerMemberList from "@/components/messages/ServerMemberList";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
-import { ChannelProps } from "@/interfaces/server.interface";
 import {
   FileUploadProps,
   NewMessageProps,
@@ -52,7 +52,6 @@ import {
   faX,
   faPen,
   faTrash,
-  faCircle,
   faHashtag,
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
@@ -318,18 +317,6 @@ export default function ChannelHistoryView({
     const element = listRef.current;
     if (!element || loadingDown || loadingUp || lastLoadDirection !== "init")
       return;
-    // const total = element?.scrollTop + element?.clientHeight;
-    // console.log(
-    //   "ScrollHeight:",
-    //   element?.scrollHeight,
-    //   "total:",
-    //   total,
-    //   "ScrollTop:",
-    //   element?.scrollTop,
-    //   "clientHeight:",
-    //   element?.clientHeight
-    // );
-
     if (element.scrollTop === 0 && !isEndUp) {
       console.log("Trigger load up more");
       setLastLoadDirection("up");
@@ -506,22 +493,16 @@ export default function ChannelHistoryView({
                           message._id === messageSearchId ? "bg-red-500" : null
                         }`}
                       >
-                        <Avatar className="w-8 h-8 shrink-0">
-                          <AvatarImage
-                            src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
-                          />
-                          <AvatarFallback>
-                            {message.sender.display_name} Avatar
-                          </AvatarFallback>
-                        </Avatar>
-                        {serverMembers.find(
-                          (user) => user.user_id === message.sender.dehive_id
-                        )?.status === "online" && (
-                          <FontAwesomeIcon
-                            icon={faCircle}
-                            className="h-2 w-2 text-emerald-500"
-                          />
-                        )}
+                        <AvatarComponent
+                          avatar_ipfs_hash={message.sender.avatar_ipfs_hash!}
+                          displayname={message.sender.display_name}
+                          status={
+                            serverMembers?.find(
+                              (user) =>
+                                user.user_id === message.sender.dehive_id
+                            )?.status
+                          }
+                        />
                         <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
                           {!editMessageField[message._id] ? (
                             <div className="w-full">
@@ -702,14 +683,16 @@ export default function ChannelHistoryView({
               <Card className="mt-4 bg-card border-border">
                 <CardContent className="px-4 py-3">
                   <div className="flex items-start gap-3">
-                    <Avatar>
-                      <AvatarImage
-                        src={`https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`}
-                      />
-                      <AvatarFallback>
-                        {messageDelete.sender.display_name} Avatar
-                      </AvatarFallback>
-                    </Avatar>
+                    <AvatarComponent
+                      avatar_ipfs_hash={messageDelete.sender.avatar_ipfs_hash!}
+                      displayname={messageDelete.sender.display_name}
+                      status={
+                        serverMembers?.find(
+                          (user) =>
+                            user.user_id === messageDelete.sender.dehive_id
+                        )?.status
+                      }
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-baseline gap-2">
                         <span className="text-base font-semibold text-accent">

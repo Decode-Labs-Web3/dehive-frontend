@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import AvatarComponent from "@/components/common/Avatar";
 import { useDirectMember } from "@/hooks/useDirectMember";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -89,19 +90,10 @@ export default function DirectBar({ refreshVersion }: DirectBarProps) {
                     router.push(`/app/channels/me/${user.conversationid}`)
                   }
                 >
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage
-                      src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
-                    />
-                    <AvatarFallback>{user.displayname} Avatar</AvatarFallback>
-                  </Avatar>
-                  <FontAwesomeIcon
-                    icon={faCircle}
-                    className={`text-[8px] ${
-                      user.status === "online"
-                        ? "text-emerald-500"
-                        : "text-zinc-400"
-                    }`}
+                  <AvatarComponent
+                    avatar_ipfs_hash={user?.avatar_ipfs_hash!}
+                    displayname={user?.displayname}
+                    status={user?.status}
                   />
                   <div className="min-w-0 leading-tight">
                     <h1 className="font-medium text-[15px] truncate">

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useTransferMoney } from "@/hooks/useTransferMoney";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useMemo, useState, useCallback } from "react";
+import AvatarComponent from "@/components/common/Avatar";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { faMoneyBillTransfer } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -104,11 +105,12 @@ export default function MoneyTransferDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger >
         <Button size="lg" className="gap-2">
           <FontAwesomeIcon icon={faMoneyBillTransfer} />
           Transfer Money
         </Button>
+        <AvatarComponent />
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-xl">

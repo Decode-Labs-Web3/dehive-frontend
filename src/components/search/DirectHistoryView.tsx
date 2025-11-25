@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import Markdown from "@/components/common/Markdown";
 import { useFingerprint } from "@/hooks/useFingerprint";
+import AvatarComponent from "@/components/common/Avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import LinkPreview from "@/components/common/LinkPreview";
@@ -32,7 +33,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -51,7 +51,6 @@ import {
   faPen,
   faPhone,
   faTrash,
-  faCircle,
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -308,17 +307,6 @@ export default function DirectHistoryView({
     const element = listRef.current;
     if (!element || loadingDown || loadingUp || lastLoadDirection !== "init")
       return;
-    // const total = element?.scrollTop + element?.clientHeight;
-    // console.log(
-    //   "ScrollHeight:",
-    //   element?.scrollHeight,
-    //   "total:",
-    //   total,
-    //   "ScrollTop:",
-    //   element?.scrollTop,
-    //   "clientHeight:",
-    //   element?.clientHeight
-    // );
 
     if (element.scrollTop === 0 && !isEndUp) {
       console.log("Trigger load up more");
@@ -391,12 +379,11 @@ export default function DirectHistoryView({
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
-          <Avatar className="w-8 h-8">
-            <AvatarImage
-              src={`https://ipfs.de-id.xyz/ipfs/${userChatWith.avatar_ipfs_hash}`}
-            />
-            <AvatarFallback>{userChatWith.displayname} Avatar</AvatarFallback>
-          </Avatar>
+          <AvatarComponent
+            avatar_ipfs_hash={userChatWith?.avatar_ipfs_hash!}
+            displayname={userChatWith?.displayname}
+            status={userChatWith?.status}
+          />
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-foreground">
@@ -502,27 +489,15 @@ export default function DirectHistoryView({
                           message._id === messageSearchId ? "bg-red-500" : null
                         }`}
                       >
-                        <Avatar className="w-8 h-8 shrink-0">
-                          <AvatarImage
-                            src={`https://ipfs.de-id.xyz/ipfs/${message.sender.avatar_ipfs_hash}`}
-                          />
-                          <AvatarFallback>
-                            {message.sender.display_name} Avatar
-                          </AvatarFallback>
-                        </Avatar>
-                        {message.sender.dehive_id !== userChatWith.user_id && (
-                          <FontAwesomeIcon
-                            icon={faCircle}
-                            className="h-2 w-2 text-emerald-500"
-                          />
-                        )}
-                        {message.sender.dehive_id === userChatWith.user_id &&
-                          userChatWith.status === "online" && (
-                            <FontAwesomeIcon
-                              icon={faCircle}
-                              className="h-2 w-2 text-emerald-500"
-                            />
-                          )}
+                        <AvatarComponent
+                          avatar_ipfs_hash={message.sender.avatar_ipfs_hash!}
+                          displayname={message.sender.display_name}
+                          status={
+                            message.sender.dehive_id === userChatWith?.user_id
+                              ? userChatWith.status
+                              : "online"
+                          }
+                        />
                         <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
                           {!editMessageField[message._id] ? (
                             <div className="w-full">
@@ -701,14 +676,15 @@ export default function DirectHistoryView({
               <Card className="mt-4 bg-card border-border">
                 <CardContent className="px-4 py-3">
                   <div className="flex items-start gap-3">
-                    <Avatar>
-                      <AvatarImage
-                        src={`https://ipfs.de-id.xyz/ipfs/${messageDelete.sender.avatar_ipfs_hash}`}
-                      />
-                      <AvatarFallback>
-                        {messageDelete.sender.display_name} Avatar
-                      </AvatarFallback>
-                    </Avatar>
+                    <AvatarComponent
+                      avatar_ipfs_hash={messageDelete.sender.avatar_ipfs_hash!}
+                      displayname={messageDelete.sender.display_name}
+                      status={
+                        messageDelete.sender.dehive_id === userChatWith?.user_id
+                          ? userChatWith.status
+                          : "online"
+                      }
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-baseline gap-2">
                         <span className="text-base font-semibold text-accent">
