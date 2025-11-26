@@ -12,19 +12,16 @@ import { useServerMember } from "@/hooks/useServerMember";
 import LinkPreview from "@/components/common/LinkPreview";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
+import MessageInput from "@/components/messages/MessageInput";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
 import AvatarComponent from "@/components/common/AvatarComponent";
-import ChannelFileList from "@/components/messages/ChannelFileList";
-import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import ServerMemberList from "@/components/messages/ServerMemberList";
 import ChannelHistoryView from "@/components/search/ChannelHistoryView";
 import DeleteMessageDialog from "@/components/messages/DeleteMessageDialog";
-import MessageInput from "@/components/messages/MessageInput";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
+import ChannelMessageHeader from "@/components/messages/ChannelMessageHeader";
 import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
 import {
   FileUploadProps,
@@ -46,7 +43,6 @@ import {
 import {
   faPen,
   faTrash,
-  faHashtag,
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -284,34 +280,14 @@ export default function ChannelMessagePage() {
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
-        <audio ref={audioRef} src="/sounds/ting.wav" preload="auto" />
-
-        <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md bg-muted text-muted-foreground">
-            <FontAwesomeIcon icon={faHashtag} className="w-4 h-4" />
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold text-foreground">
-                {channel?.name}
-              </h1>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <ChannelSearchBar
-            channelId={channelId}
-            setMessageSearchId={setMessageSearchId}
-          />
-          <AirdropDropdown serverId={serverId} />
-          <ChannelFileList serverId={serverId} />
-          <ServerMemberList />
-          {/* <span className="text-xs text-muted-foreground">
-            Page {currentPage}
-          </span> */}
-        </div>
-      </div>
+      <ChannelMessageHeader
+        channel={channel || null}
+        serverId={serverId}
+        channelId={channelId}
+        setMessageSearchId={setMessageSearchId}
+        audioElement={<audio ref={audioRef} src="/sounds/ting.wav" preload="auto" />}
+        debugInfo={undefined}
+      />
 
       <ScrollArea
         ref={listRef}

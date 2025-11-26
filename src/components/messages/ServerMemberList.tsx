@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useServerMember } from "@/hooks/useServerMember";
+import { faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import AvartarComponent from "@/components/common/AvatarComponent";
 import {
   Sheet,
   SheetContent,
@@ -11,7 +13,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export default function ServerMemberList() {
   const [open, setOpen] = useState(false);
@@ -29,16 +30,21 @@ export default function ServerMemberList() {
         <SheetContent className="w-full sm:w-[400px]">
           <SheetHeader>
             <SheetTitle>Member List</SheetTitle>
-            <SheetDescription>Member list.</SheetDescription>
+            <SheetDescription>Server Member List.</SheetDescription>
           </SheetHeader>
           {serverMembers.map((member) => (
             <div
               key={member.user_id}
-              className="p-2 border-b border-border last:border-0"
+              className="p-2 border-b border-border last:border-0 flex flex-row gap-2"
             >
-              <div className="font-medium">{member.username}</div>
-              <div className="text-sm text-muted-foreground">
-                Status: {member.status}
+              <AvartarComponent
+                avatar_ipfs_hash={member.avatar_ipfs_hash}
+                displayname={member.displayname}
+                status={member.status}
+              />
+              <div className="flex flex-col">
+                <div className="font-medium">{member.displayname}</div>
+                <div className="font-medium">@{member.username}</div>
               </div>
             </div>
           ))}
