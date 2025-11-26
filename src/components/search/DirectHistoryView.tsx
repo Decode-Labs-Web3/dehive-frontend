@@ -7,9 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import Markdown from "@/components/common/Markdown";
 import { useFingerprint } from "@/hooks/useFingerprint";
-import FilePreview from "@/components/common/FilePreview";
 import LinkPreview from "@/components/common/LinkPreview";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
+import MessageInput from "@/components/messages/MessageInput";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AvatarComponent from "@/components/common/AvatarComponent";
@@ -39,7 +39,6 @@ import {
   useLayoutEffect,
 } from "react";
 import {
-  faX,
   faPen,
   faPhone,
   faTrash,
@@ -668,61 +667,31 @@ export default function DirectHistoryView({
         }
       />
 
-      <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
-        <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
+      <MessageInput
+        optionComponent={
           <DirectMessageOption
             channelId={channelId}
             setListUploadFile={setListUploadFile}
           />
-          <div className="flex-1">
-            <FilePreview
-              listUploadFile={listUploadFile}
-              setListUploadFile={setListUploadFile}
-            />
-            {messageReply && (
-              <div className="flex justify-between items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-muted border-l-4 border-accent">
-                <div>
-                  <span className="text-xs font-semibold text-accent">
-                    Replying to {messageReply.sender.display_name}
-                  </span>
-                  <span className="truncate text-xs text-foreground">
-                    {messageReply.content}
-                  </span>
-                </div>
-                <Button
-                  onClick={() => {
-                    setNewMessage((prev) => ({
-                      ...prev,
-                      replyTo: null,
-                    }));
-                    setMessageReply(null);
-                  }}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <FontAwesomeIcon icon={faX} />
-                </Button>
-              </div>
-            )}
-            <Textarea
-              ref={newMessageRef}
-              name="content"
-              value={newMessage.content}
-              onChange={handleNewMessageChange}
-              onKeyDown={handleNewMessageKeyDown}
-              onClick={() =>
-                setEditMessageField(
-                  Object.fromEntries(
-                    messages.map((message) => [message._id, false])
-                  )
-                )
-              }
-              placeholder="Message"
-              disabled={sending}
-              className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border placeholder-muted-foreground"
-            />
-          </div>
-        </div>
-      </div>
+        }
+        messageReply={messageReply}
+        onReplyCancel={() => {
+          setNewMessage((prev) => ({ ...prev, replyTo: null }));
+          setMessageReply(null);
+        }}
+        newMessage={newMessage}
+        onMessageChange={handleNewMessageChange}
+        onMessageKeyDown={handleNewMessageKeyDown}
+        onTextareaClick={() =>
+          setEditMessageField(
+            Object.fromEntries(messages.map((message) => [message._id, false]))
+          )
+        }
+        listUploadFile={listUploadFile}
+        setListUploadFile={setListUploadFile}
+        sending={sending}
+        newMessageRef={newMessageRef}
+      />
     </div>
   );
 }
