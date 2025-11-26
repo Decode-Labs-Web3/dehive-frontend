@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
-import { ATTACHMENT_TYPE, AttachmentType } from "@/constants/index.constants";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { DirectMessageFileListProps } from "@/interfaces/message.interface";
+import { ATTACHMENT_TYPE, AttachmentType } from "@/constants/index.constants";
 import {
   Sheet,
   SheetContent,
@@ -96,7 +96,7 @@ export default function DirectFileList({ channelId }: DirectFileListProps) {
         <FontAwesomeIcon icon={faFolderOpen} />
       </Button>
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent className="w-full sm:w-[400px]">
+        <SheetContent className="w-full">
           <SheetHeader>
             <SheetTitle>File List: Page {page}</SheetTitle>
             <ToggleGroup
@@ -145,13 +145,13 @@ export default function DirectFileList({ channelId }: DirectFileListProps) {
             <ScrollArea
               ref={listRef}
               onScrollViewport={handleScroll}
-              className="flex-1 bg-background h-full"
+              className="flex-1 bg-background h-full "
             >
-              <div className="space-y-4 p-4">
+              <div className="space-y-2 p-4">
                 {fileList.map((file) => (
                   <div
                     key={file._id}
-                    className="p-4 bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow border border-border"
+                    className="p-4 bg-card rounded-md hover:shadow-lg transition-shadow border border-border"
                   >
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0">

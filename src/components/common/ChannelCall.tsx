@@ -249,9 +249,6 @@ const MyUILayout = ({
       <SpeakerLayout participantsBarPosition="bottom" />
       <div className="flex justify-center items-center gap-4 p-4">
         <ReactionsButton />
-        {/* <ToggleAudioPublishingButton /> */}
-        {/* <ToggleVideoPublishingButton /> */}
-        {/* <ScreenShareButton /> */}
         <MicButton
           onAfter={(isMicOn) => updateUserStatus({ isMic: isMicOn })}
         />

@@ -56,6 +56,15 @@ export default function UserBar() {
     }
   }, []);
 
+  useEffect(() => {
+    const mediaEls =
+      document.querySelectorAll<HTMLMediaElement>("audio, video");
+
+    mediaEls.forEach((el) => {
+      el.muted = !sound;
+    });
+  }, [sound]);
+
   if (!user) {
     return (
       <TooltipProvider>
