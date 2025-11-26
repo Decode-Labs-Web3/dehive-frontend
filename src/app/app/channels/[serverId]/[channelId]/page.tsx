@@ -8,8 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import Markdown from "@/components/common/Markdown";
 import { useServerRoot } from "@/hooks/useServerRoot";
-import AvatarComponent from "@/components/common/AvatarComponent";
-import { Card, CardContent } from "@/components/ui/card";
 import { useServerMember } from "@/hooks/useServerMember";
 import FilePreview from "@/components/common/FilePreview";
 import LinkPreview from "@/components/common/LinkPreview";
@@ -18,11 +16,13 @@ import { useChannelMessage } from "@/hooks/useChannelMessage";
 import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AirdropDropdown from "@/components/airdrop/AirdropDropdown";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import ChannelFileList from "@/components/messages/ChannelFileList";
 import ChannelSearchBar from "@/components/search/ChannelSearchBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ServerMemberList from "@/components/messages/ServerMemberList";
 import ChannelHistoryView from "@/components/search/ChannelHistoryView";
+import DeleteMessageDialog from "@/components/messages/DeleteMessageDialog";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 import ChannelMessageOption from "@/components/messages/ChannelMessageOption";
@@ -30,14 +30,6 @@ import {
   FileUploadProps,
   NewMessageProps,
 } from "@/interfaces/message.interface";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -525,80 +517,24 @@ export default function ChannelMessagePage() {
         <ScrollBar orientation="vertical" />
       </ScrollArea>
 
-      <Dialog
+      <DeleteMessageDialog
         open={deleteMessageModal}
         onOpenChange={(open) => {
           setDeleteMessageModal(open);
           if (!open) setMessageDelete(null);
         }}
-      >
-        <DialogContent className="bg-popover border-border text-popover-foreground">
-          {messageDelete ? (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-popover-foreground">
-                  Delete Message
-                </DialogTitle>
-                <DialogDescription className="text-muted-foreground">
-                  Are you sure you want to delete this message?
-                </DialogDescription>
-              </DialogHeader>
-
-              <Card className="mt-4 bg-card border-border">
-                <CardContent className="px-4 py-3">
-                  <div className="flex items-start gap-3">
-                    <AvatarComponent
-                      avatar_ipfs_hash={messageDelete.sender.avatar_ipfs_hash!}
-                      displayname={messageDelete.sender.display_name}
-                      status={
-                        serverMembers?.find(
-                          (user) =>
-                            user.user_id === messageDelete.sender.dehive_id
-                        )?.status
-                      }
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-baseline gap-2">
-                        <span className="text-base font-semibold text-accent">
-                          {messageDelete.sender.username}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(messageDelete.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">
-                        {messageDelete.content}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <DialogFooter>
-                <Button
-                  onClick={() => {
-                    setDeleteMessageModal(false);
-                    setMessageDelete(null);
-                  }}
-                  className="h-12 w-full max-w-[240px] rounded-xl bg-secondary text-secondary-foreground shadow-sm transition hover:bg-accent"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => {
-                    remove(messageDelete._id);
-                    setDeleteMessageModal(false);
-                    setMessageDelete(null);
-                  }}
-                  className="h-12 w-full max-w-[240px] rounded-xl bg-destructive text-destructive-foreground shadow-sm transition hover:bg-destructive/80"
-                >
-                  Delete
-                </Button>
-              </DialogFooter>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+        message={messageDelete}
+        onDelete={(messageId) => {
+          remove(messageId);
+          setDeleteMessageModal(false);
+          setMessageDelete(null);
+        }}
+        getStatus={(message) =>
+          serverMembers?.find(
+            (user) => user.user_id === message.sender.dehive_id
+          )?.status
+        }
+      />
 
       <div className="sticky bottom-0 left-0 right-0 border-t border-border bg-card px-6 py-4 backdrop-blur">
         <div className="flex items-end gap-3 rounded-2xl bg-secondary p-3 shadow-lg">
