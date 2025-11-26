@@ -14,11 +14,10 @@ import AttachmentList from "@/components/common/AttachmentList";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AvatarComponent from "@/components/common/AvatarComponent";
 import MessageSkeleton from "@/components/search/MessageSkeleton";
-import DirectFileList from "@/components/messages/DirectFileList";
-import DirectSearchBar from "@/components/search/DirectSearchBar";
 import { DirectMemberListProps } from "@/interfaces/user.interface";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Message } from "@/interfaces/websocketDirectChat.interface";
+import DirectMessageHeader from "@/components/messages/DirectMessageHeader";
 import DeleteMessageDialog from "@/components/messages/DeleteMessageDialog";
 import DirectMessageOption from "@/components/messages/DirectMessageOption";
 import {
@@ -40,7 +39,6 @@ import {
 } from "react";
 import {
   faPen,
-  faPhone,
   faTrash,
   faArrowTurnUp,
 } from "@fortawesome/free-solid-svg-icons";
@@ -368,38 +366,13 @@ export default function DirectHistoryView({
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
-        <div className="flex items-center gap-3">
-          <AvatarComponent
-            avatar_ipfs_hash={userChatWith?.avatar_ipfs_hash!}
-            displayname={userChatWith?.displayname}
-            status={userChatWith?.status}
-          />
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold text-foreground">
-                {userChatWith?.displayname}
-              </h1>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={() => router.push(`/app/channels/me/${channelId}/call`)}
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-          >
-            <FontAwesomeIcon icon={faPhone} className="w-4 h-4" />
-          </Button>
-          <DirectSearchBar setMessageSearchId={setMessageSearchId} />
-          <DirectFileList channelId={channelId} />
-          {/* <span className="text-xs text-muted-foreground">
-            Page up: {pageUp} {isEndUp && "yes"} --- Page down: {pageDown}{" "}
-            {isEndDown && "yes"}
-          </span> */}
-        </div>
-      </div>
+      <DirectMessageHeader
+        userChatWith={userChatWith}
+        channelId={channelId}
+        setMessageSearchId={setMessageSearchId}
+        onCallClick={() => router.push(`/app/channels/me/${channelId}/call`)}
+        debugInfo={undefined}
+      />
 
       {fristLoad >= 2 ? (
         <ScrollArea

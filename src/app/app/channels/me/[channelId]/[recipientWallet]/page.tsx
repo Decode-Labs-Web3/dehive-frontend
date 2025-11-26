@@ -13,7 +13,6 @@ import { isAddress, getAddress, parseEther, type Abi } from "viem";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import SmartContractOption from "@/components/messages/SmartContractOption";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   useAccount,
   usePublicClient,
@@ -669,19 +668,6 @@ export default function SmartContractMessagePage() {
                   className="group relative flex flex-col w-full items-start gap-3 px-3 py-1 transition hover:bg-muted rounded-md"
                 >
                   <div className="flex w-full">
-                    <Avatar className="w-8 h-8 shrink-0">
-                      <AvatarImage
-                        src={
-                          isMe
-                            ? `https://ipfs.de-id.xyz/ipfs/${user?.avatar_ipfs_hash}`
-                            : `https://ipfs.de-id.xyz/ipfs/${userChatWith?.avatar_ipfs_hash}`
-                        }
-                      />
-                      <AvatarFallback>
-                        {isMe ? user.display_name : userChatWith?.displayname}
-                      </AvatarFallback>
-                    </Avatar>
-
                     <AvatarComponent
                       avatar_ipfs_hash={
                         isMe
