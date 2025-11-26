@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useUser } from "@/hooks/useUser";
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import UserPanel from "@/components/user-bar/UserPanel";
 import { Card, CardContent } from "@/components/ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AvatarComponent from "@/components/common/AvatarComponent";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   faGear,
   faMicrophone,
@@ -23,18 +27,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-const Popover = dynamic(
-  () => import("@/components/ui/popover").then((mod) => mod.Popover),
-  { ssr: false }
-);
-const PopoverContent = dynamic(
-  () => import("@/components/ui/popover").then((mod) => mod.PopoverContent),
-  { ssr: false }
-);
-const PopoverTrigger = dynamic(
-  () => import("@/components/ui/popover").then((mod) => mod.PopoverTrigger),
-  { ssr: false }
-);
 
 export default function UserBar() {
   const { user } = useUser();
@@ -102,15 +94,11 @@ export default function UserBar() {
                     className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors border-none bg-transparent w-full max-w-xs"
                     type="button"
                   >
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage
-                        src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
-                        alt="Avatar"
-                      />
-                      <AvatarFallback>
-                        {user.display_name} Avatar
-                      </AvatarFallback>
-                    </Avatar>
+                    <AvatarComponent
+                      avatar_ipfs_hash={user.avatar_ipfs_hash}
+                      displayname={user.display_name}
+                      status="online"
+                    />
                     <div className="min-w-0 flex-1 text-left">
                       <h3 className="text-sm font-semibold truncate">
                         {user.display_name}
@@ -125,13 +113,11 @@ export default function UserBar() {
                   <Card className="border-0 shadow-none">
                     <CardContent className="p-4">
                       <div className="flex flex-col items-center gap-4">
-                        <Avatar className="w-16 h-16">
-                          <AvatarImage
-                            src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
-                            alt="Avatar"
-                          />
-                          <AvatarFallback>{user.display_name}</AvatarFallback>
-                        </Avatar>
+                        <AvatarComponent
+                          avatar_ipfs_hash={user.avatar_ipfs_hash}
+                          displayname={user.display_name}
+                          status="online"
+                        />
 
                         <div className="text-center">
                           <h3 className="text-lg font-semibold truncate">

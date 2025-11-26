@@ -8,6 +8,7 @@ import Markdown from "@/components/common/Markdown";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useDirectMember } from "@/hooks/useDirectMember";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { isAddress, getAddress, parseEther, type Abi } from "viem";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -505,7 +506,6 @@ export default function SmartContractMessagePage() {
               sender: getAddress(e.from as `0x${string}`) as `0x${string}`,
             };
           })
-          // .reverse()
         );
 
         // Prepend batch to current list while avoiding duplicates
@@ -622,12 +622,10 @@ export default function SmartContractMessagePage() {
     <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-6 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
-          <Avatar className="w-8 h-8">
-            <AvatarImage
-              src={`https://ipfs.de-id.xyz/ipfs/${userChatWith?.avatar_ipfs_hash}`}
-            />
-            <AvatarFallback>{userChatWith?.displayname} Avatar</AvatarFallback>
-          </Avatar>
+          <AvatarComponent
+            avatar_ipfs_hash={userChatWith?.avatar_ipfs_hash}
+            displayname={userChatWith?.displayname}
+          />
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-foreground">
@@ -683,6 +681,17 @@ export default function SmartContractMessagePage() {
                         {isMe ? user.display_name : userChatWith?.displayname}
                       </AvatarFallback>
                     </Avatar>
+
+                    <AvatarComponent
+                      avatar_ipfs_hash={
+                        isMe
+                          ? user?.avatar_ipfs_hash
+                          : userChatWith?.avatar_ipfs_hash
+                      }
+                      displayname={
+                        isMe ? user?.display_name : userChatWith?.displayname
+                      }
+                    />
 
                     <div className="flex w-full flex-col items-start gap-1 ml-3 relative group">
                       <div className="w-full">

@@ -9,7 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { ChannelProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import {
   Dialog,
   DialogContent,
@@ -135,17 +135,10 @@ export default function Channels({ channel, isPrivileged }: ChannelPageProps) {
                       className="flex items-start justify-start gap-2"
                     >
                       <div className="flex flex-row gap-2">
-                        <Avatar className="w-6 h-6 ring-1 ring-background">
-                          <AvatarImage
-                            src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
-                            alt={user.display_name || user.username || "avatar"}
-                          />
-                          <AvatarFallback className="text-xs">
-                            {user.display_name?.[0] ??
-                              user.username?.[0] ??
-                              "U"}
-                          </AvatarFallback>
-                        </Avatar>
+                        <AvatarComponent
+                          avatar_ipfs_hash={user.avatar_ipfs_hash}
+                          displayname={user.display_name}
+                        />
                         <div className="flex flex-col min-w-0">
                           <p className="text-sm font-medium truncate max-w-[140px]">
                             {user.display_name}

@@ -187,9 +187,15 @@ export default function ChannelPanel({
                 disabled={channelNameChange}
                 onClick={() => {
                   if (channelNameChange) return;
-                  setChannelPanel((prev) => false);
+                  setChannelPanel(false);
                 }}
-                className="flex flex-col items-center gap-1 text-xs uppercase bg-background text-foreground hover:bg-accent"
+                className="
+                  flex h-auto flex-col items-center gap-1
+                  rounded-xl px-3 py-2
+                  text-[10px] uppercase
+                  bg-transparent text-foreground
+                  hover:bg-accent
+                "
               >
                 <span className="rounded-full border border-border p-2 ">
                   <FontAwesomeIcon icon={faX} />

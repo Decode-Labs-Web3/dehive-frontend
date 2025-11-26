@@ -6,8 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useCallback, useEffect, useState } from "react";
 import { MemberInServerProps } from "@/interfaces/user.interface";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Server() {
   const { fingerprintHash } = useFingerprint();
@@ -88,12 +88,10 @@ export default function Server() {
               key={member._id}
               className="group flex items-start gap-3 px-4 py-2 hover:bg-accent hover:text-accent-foreground"
             >
-              <Avatar className="w-10 h-10">
-                <AvatarImage
-                  src={`https://ipfs.de-id.xyz/ipfs/${member.avatar_ipfs_hash}`}
-                />
-                <AvatarFallback>{member.display_name} Avatar</AvatarFallback>
-              </Avatar>
+              <AvatarComponent
+                avatar_ipfs_hash={member.avatar_ipfs_hash}
+                displayname={member.display_name}
+              />
 
               <div className="min-w-0">
                 <div className="flex items-baseline gap-2">

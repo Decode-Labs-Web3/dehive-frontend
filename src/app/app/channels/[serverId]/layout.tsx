@@ -33,10 +33,6 @@ export default function ServerLayout({
   }>();
   const {
     createServerRoot,
-    userJoinServerRoot,
-    userJoinChannelRoot,
-    userLeftChannelRoot,
-    userStatusChangeRoot,
   } = useServerRoot();
 
   const serverInfomation = useMemo(() => {

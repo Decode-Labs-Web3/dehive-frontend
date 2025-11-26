@@ -8,9 +8,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useEffect, useCallback, useState, useRef } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { DirectUserChatWith } from "@/interfaces/direct-chat.interface";
+import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
 
 export default function DirectCallPage() {
   const router = useRouter();
@@ -98,14 +98,10 @@ export default function DirectCallPage() {
           <p className="text-muted-foreground text-sm mb-4">
             @{meCallState.user_info?.username}
           </p>
-          <Avatar className="mx-auto mb-4">
-            <AvatarImage
-              src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
-            />
-            <AvatarFallback>
-              {meCallState.user_info?.display_name?.[0] || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarComponent
+            avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
+            displayname={meCallState.user_info?.display_name}
+          />
           <Button
             onClick={() => {
               setMeCallState({
@@ -133,14 +129,10 @@ export default function DirectCallPage() {
           <p className="text-muted-foreground text-sm mb-4">
             @{meCallState.user_info?.username}
           </p>
-          <Avatar className="mx-auto mb-4">
-            <AvatarImage
-              src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
-            />
-            <AvatarFallback>
-              {meCallState.user_info?.display_name?.[0] || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarComponent
+            avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
+            displayname={meCallState.user_info?.display_name}
+          />
           <Button
             onClick={() => {
               setMeCallState({
@@ -168,14 +160,11 @@ export default function DirectCallPage() {
           <p className="text-muted-foreground text-sm mb-4">
             @{meCallState.user_info?.username}
           </p>
-          <Avatar className="mx-auto mb-4">
-            <AvatarImage
-              src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
-            />
-            <AvatarFallback>
-              {meCallState.user_info?.display_name?.[0] || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarComponent
+            avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
+            displayname={meCallState.user_info?.display_name}
+          />
+
           <div className="flex gap-4 justify-center">
             <Button
               className="bg-green-500 text-white hover:bg-green-600"
@@ -206,14 +195,10 @@ export default function DirectCallPage() {
           <p className="text-muted-foreground text-sm mb-4">
             @{meCallState.user_info?.username}
           </p>
-          <Avatar className="mx-auto mb-4">
-            <AvatarImage
-              src={`https://ipfs.de-id.xyz/ipfs/${meCallState.user_info?.avatar_ipfs_hash}`}
-            />
-            <AvatarFallback>
-              {meCallState.user_info?.display_name?.[0] || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarComponent
+            avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
+            displayname={meCallState.user_info?.display_name}
+          />
           <Button
             className="bg-red-500 text-white hover:bg-red-600"
             onClick={() => endCall()}

@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState, useEffect, useCallback, useRef } from "react";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AuditLogItem } from "@/interfaces/server-log.interface";
+import { useState, useEffect, useCallback, useRef } from "react";
+import AvatarComponent from "@/components/common/AvatarComponent";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function ServerLog() {
   const { serverId } = useParams<{ serverId: string }>();
@@ -99,15 +99,10 @@ export default function ServerLog() {
               <Card key={log._id} className="p-4">
                 <CardContent className="p-0">
                   <div className="flex items-start space-x-3">
-                    <Avatar>
-                      <AvatarImage
-                        src={`https://ipfs.de-id.xyz/ipfs/${log.actor.avatar}`}
-                        alt={log.actor.display_name}
-                      />
-                      <AvatarFallback>
-                        {log.actor.display_name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <AvatarComponent
+                      avatar_ipfs_hash={log.actor.avatar}
+                      displayname={log.actor.display_name}
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="font-medium text-sm">

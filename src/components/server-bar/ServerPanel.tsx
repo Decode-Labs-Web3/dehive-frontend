@@ -337,35 +337,41 @@ export default function ServerPanel({
             <header className="flex items-center justify-between border-b border-border px-10 py-7">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {true ? "Overview" : "Permissions"}
+                  Overview
                 </p>
                 <h2 className="text-2xl font-semibold text-foreground">
-                  {true
-                    ? "Customize your channel"
-                    : "Control who can access these channels"}
+                  Customize your server
                 </h2>
               </div>
 
               <Button
-                size="sm"
                 disabled={serverInfoChange}
                 onClick={() => {
                   if (serverInfoChange) return;
                   setServerPanel(false);
                   setServerSettingModal(false);
                 }}
-                className="flex flex-col items-center gap-1 text-xs uppercase bg-background text-foreground hover:bg-accent"
+                className="
+                  flex h-auto flex-col items-center gap-1
+                  rounded-xl px-3 py-2
+                  text-[10px] uppercase
+                  bg-transparent text-foreground
+                  hover:bg-accent
+                "
               >
-                <span className="rounded-full border border-border p-2 ">
+                <span className="rounded-full border border-border p-2">
                   <FontAwesomeIcon icon={faX} />
                 </span>
-                Esc
+                <span>ESC</span>
               </Button>
             </header>
 
             <div className="flex-1 overflow-y-auto px-10 py-8">
               <TabsContent value="members" className="mt-0">
-                <ServerBarItems.ServerMembers setServerPanel={setServerPanel} serverInfomation={serverInfomation}/>
+                <ServerBarItems.ServerMembers
+                  setServerPanel={setServerPanel}
+                  serverInfomation={serverInfomation}
+                />
               </TabsContent>
 
               <TabsContent value="bans" className="mt-0">

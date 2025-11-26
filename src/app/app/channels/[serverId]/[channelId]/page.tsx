@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import Markdown from "@/components/common/Markdown";
 import { useServerRoot } from "@/hooks/useServerRoot";
-import AvatarComponent from "@/components/common/Avatar";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { Card, CardContent } from "@/components/ui/card";
 import { useServerMember } from "@/hooks/useServerMember";
 import FilePreview from "@/components/common/FilePreview";

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import Markdown from "@/components/common/Markdown";
 import { useFingerprint } from "@/hooks/useFingerprint";
-import AvatarComponent from "@/components/common/Avatar";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { Card, CardContent } from "@/components/ui/card";
 import FilePreview from "@/components/common/FilePreview";
 import LinkPreview from "@/components/common/LinkPreview";

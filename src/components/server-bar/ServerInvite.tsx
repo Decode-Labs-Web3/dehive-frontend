@@ -10,7 +10,7 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { ServerProps } from "@/interfaces/server.interface";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useInviteSuggestions } from "@/hooks/useInviteSuggestions";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,10 @@ interface ServerInviteProps {
   setModal: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
 }
 
-export default function ServerInvite({ serverInfomation, setModal }: ServerInviteProps) {
+export default function ServerInvite({
+  serverInfomation,
+  setModal,
+}: ServerInviteProps) {
   const [isOpen, setIsOpen] = useState(true);
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
@@ -173,7 +176,9 @@ export default function ServerInvite({ serverInfomation, setModal }: ServerInvit
     >
       <DialogContent className="w-full max-w-md">
         <DialogHeader>
-          <DialogTitle>Invite friends to {serverInfomation.name} server</DialogTitle>
+          <DialogTitle>
+            Invite friends to {serverInfomation.name} server
+          </DialogTitle>
           <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
             <span>#</span>
             <span>general</span>
@@ -187,14 +192,10 @@ export default function ServerInvite({ serverInfomation, setModal }: ServerInvit
               className="flex items-center justify-between py-2 hover:bg-accent rounded px-2 -mx-2 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage
-                    src={`https://ipfs.de-id.xyz/ipfs/${suggestion.avatar_ipfs_hash}`}
-                  />
-                  <AvatarFallback>
-                    {suggestion?.display_name} Avatar
-                  </AvatarFallback>
-                </Avatar>
+                <AvatarComponent
+                  avatar_ipfs_hash={suggestion.avatar_ipfs_hash}
+                  displayname={suggestion?.display_name}
+                />
                 <div>
                   <div className="text-foreground text-sm font-medium">
                     {suggestion.display_name}

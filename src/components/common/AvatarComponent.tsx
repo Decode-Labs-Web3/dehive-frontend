@@ -21,12 +21,14 @@ export default function AvatarComponent({
         <AvatarImage src={`https://ipfs.de-id.xyz/ipfs/${avatar_ipfs_hash}`} />
         <AvatarFallback>{displayname} Avatar</AvatarFallback>
       </Avatar>
-      <FontAwesomeIcon
-        icon={faCircle}
-        className={`text-[8px] ${
-          status === "online" ? "text-emerald-500" : "text-gray-400"
-        } ml-[-6px] mb-[2px]`}
-      />
+      {status && (
+        <FontAwesomeIcon
+          icon={faCircle}
+          className={`text-[8px] ${
+            status === "online" ? "text-emerald-500" : "text-gray-400"
+          } ml-[-6px] mb-[2px]`}
+        />
+      )}
     </div>
   );
 }

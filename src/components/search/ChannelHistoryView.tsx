@@ -11,7 +11,7 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { Card, CardContent } from "@/components/ui/card";
 import LinkPreview from "@/components/common/LinkPreview";
 import FilePreview from "@/components/common/FilePreview";
-import AvatarComponent from "@/components/common/Avatar";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { ChannelProps } from "@/interfaces/server.interface";
 import { useChannelMessage } from "@/hooks/useChannelMessage";
 import AttachmentList from "@/components/common/AttachmentList";

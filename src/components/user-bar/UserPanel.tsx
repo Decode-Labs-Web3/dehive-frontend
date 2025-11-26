@@ -15,8 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CameraCaptureDialog } from "@/components/common/CameraCaptureDialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -306,9 +306,15 @@ export default function UserPanel({
               </div>
 
               <Button
+                size="sm"
                 onClick={() => setUserPanel(false)}
                 variant="ghost"
-                className="flex flex-col items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                className="flex h-auto flex-col items-center gap-1
+                  rounded-xl px-3 py-2
+                  text-[10px] uppercase
+                  bg-transparent text-foreground
+                  hover:bg-accent
+                "
               >
                 <span className="rounded-full border border-border p-2">
                   <FontAwesomeIcon icon={faX} />
@@ -327,14 +333,11 @@ export default function UserPanel({
                   <Card className="bg-secondary rounded-lg">
                     <CardHeader className="flex items-center gap-4 p-4">
                       <div className="relative">
-                        <Avatar>
-                          <AvatarImage
-                            src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
-                          />
-                          <AvatarFallback>
-                            {user.display_name} Avatar
-                          </AvatarFallback>
-                        </Avatar>
+                        <AvatarComponent
+                          avatar_ipfs_hash={user.avatar_ipfs_hash}
+                          displayname={user.display_name}
+                          status="online"
+                        />
                       </div>
                       <div className="flex-1">
                         <CardTitle className="text-xl">
@@ -470,14 +473,11 @@ export default function UserPanel({
                         {loadingAvatar.loading ? (
                           <Skeleton className="w-32 h-32 rounded-xl" />
                         ) : (
-                          <Avatar>
-                            <AvatarImage
-                              src={`https://ipfs.de-id.xyz/ipfs/${updateUserInfo.avatar_ipfs_hash}`}
-                            />
-                            <AvatarFallback>
-                              {user.display_name} Avatar
-                            </AvatarFallback>
-                          </Avatar>
+                          <AvatarComponent
+                            avatar_ipfs_hash={updateUserInfo.avatar_ipfs_hash}
+                            displayname={user.display_name}
+                            status="online"
+                          />
                         )}
                       </div>
                       <div className="flex flex-col gap-2">

@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import AvatarComponent from "@/components/common/Avatar";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { useDirectMember } from "@/hooks/useDirectMember";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { DirectMemberListProps } from "@/interfaces/user.interface";
-import { faCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import {
   DropdownMenu,
   DropdownMenuTrigger,

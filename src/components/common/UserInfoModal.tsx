@@ -10,7 +10,7 @@ import { useFingerprint } from "@/hooks/useFingerprint";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   UserProfileData,
@@ -128,15 +128,11 @@ export default function UserInfoModal({
             <Card className="w-full md:w-80 rounded-none border-0 border-r">
               <CardContent className="p-6">
                 <div className="flex items-end gap-4 mb-4">
-                  <Avatar className="w-20 h-20">
-                    <AvatarImage
-                      src={`https://ipfs.de-id.xyz/ipfs/${userInfo?.avatar_ipfs_hash}`}
-                      alt={userInfo.display_name}
-                    />
-                    <AvatarFallback>
-                      {userInfo.display_name?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
+                  <AvatarComponent
+                    avatar_ipfs_hash={userInfo.avatar_ipfs_hash}
+                    displayname={userInfo.display_name}
+                    status="online"
+                  />
                   <Badge variant="secondary" className="uppercase">
                     {userInfo.status}
                   </Badge>
@@ -263,16 +259,12 @@ export default function UserInfoModal({
                                 >
                                   <CardContent className="p-4">
                                     <div className="flex items-center gap-4">
-                                      <Avatar className="w-12 h-12">
-                                        <AvatarImage
-                                          src={`https://ipfs.de-id.xyz/ipfs/${mutual.avatar_ipfs_hash}`}
-                                          alt={mutual.display_name}
-                                        />
-                                        <AvatarFallback>
-                                          {mutual.display_name?.charAt(0) ||
-                                            "U"}
-                                        </AvatarFallback>
-                                      </Avatar>
+                                      <AvatarComponent
+                                        avatar_ipfs_hash={
+                                          mutual.avatar_ipfs_hash
+                                        }
+                                        displayname={mutual.display_name}
+                                      />
                                       <div className="flex-1 min-w-0">
                                         <p className="font-semibold truncate">
                                           {mutual.display_name}

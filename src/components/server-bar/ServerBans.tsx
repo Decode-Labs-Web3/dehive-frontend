@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ServerProps } from "@/interfaces/server.interface";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 interface MembersBanProps {
@@ -195,15 +195,10 @@ export default function ServerBans({ serverInfomation }: ServerBansProps) {
           key={member.user_dehive_id}
           className="relative grid grid-cols-5 items-center gap-4 rounded-xl border border-border bg-background px-4 py-4 shadow-sm"
         >
-          <Avatar>
-            <AvatarImage
-              src={`https://ipfs.de-id.xyz/ipfs/${member.user_profile.avatar_ipfs_hash}`}
-              alt={`${member.user_profile.display_name} avatar`}
-            />
-            <AvatarFallback>
-              {member.user_profile.display_name} Avatar
-            </AvatarFallback>
-          </Avatar>
+          <AvatarComponent
+            avatar_ipfs_hash={member.user_profile.avatar_ipfs_hash}
+            displayname={member.user_profile.display_name}
+          />
           <div className="flex flex-col gap-1 text-left">
             <h1 className="text-sm font-semibold text-foreground">
               {member.user_profile.display_name}

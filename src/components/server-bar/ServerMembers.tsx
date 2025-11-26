@@ -9,7 +9,7 @@ import { ServerProps } from "@/interfaces/server.interface";
 import UserInfoModal from "@/components/common/UserInfoModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MemberInServerProps } from "@/interfaces/user.interface";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { faCopy, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 interface ServerMembersProps {
@@ -380,14 +380,10 @@ export default function ServerMembers({
         <div key={membership._id}>
           <div className="grid grid-cols-2 items-center gap-3 px-2 py-2 rounded-md hover:bg-accent">
             <div className="justify-start grid grid-cols-[1fr_2fr_1fr_1fr]">
-              <Avatar className="w-10 h-10">
-                <AvatarImage
-                  src={`https://ipfs.de-id.xyz/ipfs/${membership.avatar}`}
-                />
-                <AvatarFallback>
-                  {membership.display_name} Avatar
-                </AvatarFallback>
-              </Avatar>
+              <AvatarComponent
+                avatar_ipfs_hash={membership.avatar}
+                displayname={membership.display_name}
+              />
 
               <div className="flex flex-col">
                 <span className="text-sm font-medium text-foreground truncate">

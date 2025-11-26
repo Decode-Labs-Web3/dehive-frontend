@@ -5,10 +5,10 @@ import { getApiHeaders } from "@/utils/api.utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useEffect, useState, useCallback } from "react";
+import AvatarComponent from "@/components/common/AvatarComponent";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useConversationRefresh } from "@/contexts/ConversationRefreshContext";
 import { FollowingUserItem } from "@/interfaces/following.interface";
+import { useConversationRefresh } from "@/contexts/ConversationRefreshContext";
 
 export default function Me() {
   const router = useRouter();
@@ -126,12 +126,10 @@ export default function Me() {
                 onClick={() => fetchConversation(user.user_id)}
                 className="group flex items-start gap-3 px-4 py-2 hover:bg-accent hover:text-accent-foreground"
               >
-                <Avatar className="w-10 h-10">
-                  <AvatarImage
-                    src={`https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`}
-                  />
-                  <AvatarFallback>{user.display_name} Avatar</AvatarFallback>
-                </Avatar>
+                <AvatarComponent
+                  avatar_ipfs_hash={user.avatar_ipfs_hash}
+                  displayname={user.display_name}
+                />
                 <div className="min-w-0">
                   <div className="flex items-baseline gap-2">
                     <h1 className="font-semibold text-muted-foreground cursor-pointer hover:underline break-all">
