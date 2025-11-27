@@ -104,7 +104,7 @@ export default function ChannelCall({
     return {
       id: user._id,
       name: user.display_name,
-      image: `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`,
+      image: `https://ipfs.io/ipfs/${user.avatar_ipfs_hash}`,
     } as User;
   }, [user]);
 

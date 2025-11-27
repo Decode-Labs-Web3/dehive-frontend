@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import useDebounce from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint";
@@ -46,6 +47,7 @@ export default function DirectSearchBar({
   const prevScrollHeightRef = useRef(0);
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState("");
+  const debouncedKeyword = useDebounce<string>(keyword, 1000);
   const { fingerprintHash } = useFingerprint();
   const [isLastPage, setIsLastPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -58,7 +60,7 @@ export default function DirectSearchBar({
   };
 
   const fetchSearchList = useCallback(async () => {
-    if (!keyword.trim()) return;
+    if (!debouncedKeyword.trim()) return;
     if (isLastPage) return;
     try {
       const apiResponse = await fetch("/api/search/direct", {
@@ -68,7 +70,7 @@ export default function DirectSearchBar({
         }),
         body: JSON.stringify({
           channelId,
-          keyword,
+          keyword: debouncedKeyword,
           page,
         }),
         cache: "no-cache",
@@ -99,27 +101,24 @@ export default function DirectSearchBar({
       console.log("server search message error");
       console.groupEnd();
     }
-  }, [channelId, keyword, page, isLastPage, fingerprintHash]);
+  }, [channelId, debouncedKeyword, page, isLastPage, fingerprintHash]);
 
   useEffect(() => {
     setPage(0);
     setIsLastPage(false);
     setSerachResult([]);
 
-    if (!keyword.trim()) return;
-    const id = setTimeout(() => {
-      fetchSearchList();
-    }, 1000);
+    if (!debouncedKeyword.trim()) return;
+    fetchSearchList();
 
-    return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyword]);
+  }, [debouncedKeyword]);
 
   useEffect(() => {
-    if (!keyword.trim()) return;
+    if (!debouncedKeyword.trim()) return;
     if (page === 0) return;
     fetchSearchList();
-  }, [page, keyword, fetchSearchList]);
+  }, [page, debouncedKeyword, fetchSearchList]);
 
   const searchRef = useRef<HTMLDivElement | null>(null);
   const handleScroll = () => {

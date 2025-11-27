@@ -129,7 +129,7 @@ function ipfsToGateway(ipfsUrl: string): string {
     return ipfsUrl;
   const cid = ipfsUrl.replace("ipfs://", "").replace(/^\/+/, "");
   if (!cid) return "";
-  return `http://35.247.142.76:8080/ipfs/${cid}`;
+  return `https://ipfs.io/ipfs/${cid}`;
 }
 
 function prettySize(bytes?: number) {

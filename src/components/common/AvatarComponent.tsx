@@ -18,7 +18,7 @@ export default function AvatarComponent({
   return (
     <div className="w-10 h-10 flex items-end">
       <Avatar className="w-8 h-8">
-        <AvatarImage src={`https://ipfs.de-id.xyz/ipfs/${avatar_ipfs_hash}`} />
+        <AvatarImage src={`https://ipfs.io/ipfs/${avatar_ipfs_hash}`} />
         <AvatarFallback>{displayname} Avatar</AvatarFallback>
       </Avatar>
       {status && (
