@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+process.env.BASELINE_BROWSER_MAPPING_SILENT = "1";
+
 const PROD = process.env.NODE_ENV === "production";
 
 const nextConfig: NextConfig = {
