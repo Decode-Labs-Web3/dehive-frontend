@@ -12,6 +12,7 @@ import { getApiHeaders } from "@/utils/api.utils";
 import { useEffect, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import UserDeid from "@/components/user-bar/UserDeid";
 import { useFingerprint } from "@/hooks/useFingerprint";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -274,6 +275,14 @@ export default function UserPanel({
                   className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
                 >
                   Theme
+                </TabsTrigger>
+
+                <TabsTrigger
+                  value="deid"
+                  vertical
+                  className="w-full justify-start text-left px-3 py-3 rounded-none border-b border-border/50"
+                >
+                  DEiD
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -587,6 +596,10 @@ export default function UserPanel({
                     </Label>
                   </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="deid">
+                  <UserDeid />
               </TabsContent>
             </div>
 
