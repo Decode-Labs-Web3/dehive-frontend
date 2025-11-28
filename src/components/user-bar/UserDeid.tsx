@@ -2,14 +2,26 @@
 
 import { useUser } from "@/hooks/useUser";
 import { useDeidProfile } from "@/hooks/useDeidProfile";
+import { useScore } from "@/hooks/useScore";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function UserDeid() {
   const { user } = useUser();
   const walletAddress = user.primary_wallet?.address || null;
-  const { profile, metadata, loading, error, refetch } =
-    useDeidProfile(walletAddress);
+  const {
+    profile,
+    metadata,
+    loading: profileLoading,
+    error: profileError,
+    refetch: refetchProfile,
+  } = useDeidProfile(walletAddress);
+  const {
+    score,
+    loading: scoreLoading,
+    error: scoreError,
+    refetch: refetchScore,
+  } = useScore(walletAddress);
 
   if (!walletAddress) {
     return (
@@ -24,14 +36,17 @@ export default function UserDeid() {
   }
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-semibold mb-4">DEiD Profile</h2>
+    <div className="p-6 space-y-6">
+      <h2 className="text-xl font-semibold">DEiD Profile</h2>
+
+      {/* DEiD Profile Section */}
       <Card className="p-4">
-        {loading && <p>Loading profile...</p>}
-        {error && (
+        <h3 className="text-lg font-semibold mb-4">Profile</h3>
+        {profileLoading && <p>Loading profile...</p>}
+        {profileError && (
           <div>
-            <p className="text-red-500">Error: {error}</p>
-            <Button onClick={refetch} className="mt-2">
+            <p className="text-red-500">Error: {profileError}</p>
+            <Button onClick={refetchProfile} className="mt-2">
               Retry
             </Button>
           </div>
@@ -61,7 +76,7 @@ export default function UserDeid() {
             </p>
             {metadata && (
               <div className="mt-4">
-                <h3 className="font-semibold">Metadata:</h3>
+                <h4 className="font-semibold">Metadata:</h4>
                 <pre className="bg-gray-100 p-2 rounded text-sm">
                   {JSON.stringify(metadata, null, 2)}
                 </pre>
@@ -69,8 +84,77 @@ export default function UserDeid() {
             )}
           </div>
         )}
-        {!loading && !error && !profile && (
+        {!profileLoading && !profileError && !profile && (
           <p>No DEiD profile found for this wallet.</p>
+        )}
+      </Card>
+
+      {/* Trust Score Section */}
+      <Card className="p-4">
+        <h3 className="text-lg font-semibold mb-4">Trust Score</h3>
+        {scoreLoading && <p>Loading score...</p>}
+        {scoreError && (
+          <div>
+            <p className="text-red-500">Error: {scoreError}</p>
+            <Button onClick={refetchScore} className="mt-2">
+              Retry
+            </Button>
+          </div>
+        )}
+        {score && (
+          <div>
+            <p>
+              <strong>Username:</strong> {score.username}
+            </p>
+            <p>
+              <strong>Total Score:</strong> {score.totalScore}
+            </p>
+            <p>
+              <strong>Rank:</strong> {score.rank}
+            </p>
+            <p>
+              <strong>Streak Days:</strong> {score.streakDays}
+            </p>
+            <p>
+              <strong>Last Updated:</strong>{" "}
+              {new Date(score.lastUpdated * 1000).toLocaleString()}
+            </p>
+            <div className="mt-4">
+              <h4 className="font-semibold">Score Breakdown:</h4>
+              <ul className="list-disc list-inside">
+                <li>Badge Score: {score.breakdown.badgeScore}</li>
+                <li>Social Score: {score.breakdown.socialScore}</li>
+                <li>Streak Score: {score.breakdown.streakScore}</li>
+                <li>Chain Score: {score.breakdown.chainScore}</li>
+                <li>Contribution Score: {score.breakdown.contributionScore}</li>
+              </ul>
+            </div>
+            {score.badges && score.badges.length > 0 && (
+              <div className="mt-4">
+                <h4 className="font-semibold">Badges:</h4>
+                <ul className="list-disc list-inside">
+                  {score.badges.map((badge, index) => (
+                    <li key={index}>Token ID: {badge.tokenId}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {score.socialAccounts && score.socialAccounts.length > 0 && (
+              <div className="mt-4">
+                <h4 className="font-semibold">Social Accounts:</h4>
+                <ul className="list-disc list-inside">
+                  {score.socialAccounts.map((account, index) => (
+                    <li key={index}>
+                      {account.platform}: {account.accountId}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+        {!scoreLoading && !scoreError && !score && (
+          <p>No trust score found for this wallet.</p>
         )}
       </Card>
     </div>
