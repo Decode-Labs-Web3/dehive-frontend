@@ -3,8 +3,10 @@
 import { useUser } from "@/hooks/useUser";
 import { useDeidProfile } from "@/hooks/useDeidProfile";
 import { useScore } from "@/hooks/useScore";
+import { useBadges } from "@/hooks/useBadges";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export default function UserDeid() {
   const { user } = useUser();
@@ -22,6 +24,12 @@ export default function UserDeid() {
     error: scoreError,
     refetch: refetchScore,
   } = useScore(walletAddress);
+  const {
+    badges,
+    loading: badgesLoading,
+    error: badgesError,
+    refetch: refetchBadges,
+  } = useBadges(walletAddress);
 
   if (!walletAddress) {
     return (
@@ -155,6 +163,58 @@ export default function UserDeid() {
         )}
         {!scoreLoading && !scoreError && !score && (
           <p>No trust score found for this wallet.</p>
+        )}
+      </Card>
+
+      {/* Badges Section */}
+      <Card className="p-4">
+        <h3 className="text-lg font-semibold mb-4">Badges</h3>
+        {badgesLoading && <p>Loading badges...</p>}
+        {badgesError && (
+          <div>
+            <p className="text-red-500">Error: {badgesError}</p>
+            <Button onClick={refetchBadges} className="mt-2">
+              Retry
+            </Button>
+          </div>
+        )}
+        {badges && badges.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {badges.map((badge) => (
+              <div key={badge.tokenId} className="border rounded-lg p-4">
+                <Image
+                  src={badge.imageUrl}
+                  alt={badge.metadata.name}
+                  width={128}
+                  height={128}
+                  className="w-full h-32 object-cover rounded mb-2"
+                />
+                <h4 className="font-semibold">{badge.metadata.name}</h4>
+                <p className="text-sm text-gray-600 mb-2">
+                  {badge.metadata.description}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Token ID: {badge.tokenId}
+                </p>
+                {badge.metadata.attributes &&
+                  badge.metadata.attributes.length > 0 && (
+                    <div className="mt-2">
+                      <h5 className="text-sm font-semibold">Attributes:</h5>
+                      <ul className="text-xs">
+                        {badge.metadata.attributes.map((attr, index) => (
+                          <li key={index}>
+                            {attr.trait_type}: {attr.value}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+              </div>
+            ))}
+          </div>
+        )}
+        {!badgesLoading && !badgesError && badges.length === 0 && (
+          <p>No badges found for this wallet.</p>
         )}
       </Card>
     </div>
