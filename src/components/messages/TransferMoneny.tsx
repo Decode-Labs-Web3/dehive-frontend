@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function MoneyTransferDialog() {
+export default function TransferMoney() {
   const userB = "0x3f1fc384bd71a64cb031983fac059c9e452ad247";
   const [open, setOpen] = useState(false);
   const [assetType, setAssetType] = useState<"native" | "erc20">("native");

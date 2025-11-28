@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import TransferMoneny from "@/components/messages/TransferMoneny";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faMoneyCheck } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -31,7 +32,7 @@ export default function SmartContractOption({
           <FontAwesomeIcon icon={faPlus} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto">
+      <PopoverContent className="w-auto flex flex-col gap-2">
         <div className="flex items-center space-x-2">
           <Switch
             id="relayer"
@@ -46,6 +47,7 @@ export default function SmartContractOption({
           <FontAwesomeIcon icon={faMoneyCheck} className="mr-2" />
           Deposit
         </Button>
+        <TransferMoneny />
       </PopoverContent>
     </Popover>
   );
