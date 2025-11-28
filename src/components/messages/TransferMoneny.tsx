@@ -1,5 +1,6 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAccount, useChainId } from "wagmi";
@@ -26,8 +27,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function TransferMoney() {
-  const userB = "0x3f1fc384bd71a64cb031983fac059c9e452ad247";
+export default function TransferMoney({
+  onTransferSuccess,
+}: {
+  onTransferSuccess?: (cid: string) => Promise<void>;
+}) {
+  const { recipientWallet } = useParams<{ recipientWallet: string }>();
   const [open, setOpen] = useState(false);
   const [assetType, setAssetType] = useState<"native" | "erc20">("native");
   const [recipient, setRecipient] = useState("");
@@ -84,8 +89,8 @@ export default function TransferMoney() {
   }, [fecthUserErc20]);
 
   useEffect(() => {
-    setRecipient(userB);
-  }, []);
+    setRecipient(recipientWallet);
+  }, [recipientWallet]);
 
   const selectedToken = useMemo(
     () =>
@@ -122,7 +127,7 @@ export default function TransferMoney() {
           <div className="space-y-2">
             <Label>Recipient</Label>
             <div className="px-3 py-2 rounded-md border font-mono text-sm bg-muted/30">
-              {shortAddr(userB)}
+              {shortAddr(recipientWallet)}
             </div>
             <p className="text-xs text-muted-foreground">
               Funds are sent directly to this address.
@@ -280,8 +285,9 @@ export default function TransferMoney() {
                   memo,
                 });
                 console.log("Transfer success", result);
-                if (typeof window !== "undefined")
-                  alert(`Sent!\nTx: ${result.txHash}\nCID: ${result.cid}`);
+                if (onTransferSuccess) {
+                  await onTransferSuccess(result.cid);
+                }
                 setOpen(false);
                 setRecipient("");
                 setAmount("");
@@ -289,8 +295,6 @@ export default function TransferMoney() {
                 setMemo("");
               } catch (e: any) {
                 console.error(e);
-                if (typeof window !== "undefined")
-                  alert(e.message || "Transfer failed");
               } finally {
                 setSending(false);
               }

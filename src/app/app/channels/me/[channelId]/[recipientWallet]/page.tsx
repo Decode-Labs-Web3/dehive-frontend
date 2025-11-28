@@ -5,6 +5,7 @@ import { useUser } from "@/hooks/useUser";
 import { useParams } from "next/navigation";
 import { messageAbi } from "@/abi/messageAbi";
 import Markdown from "@/components/common/Markdown";
+import PaymentCard from "@/components/messages/PaymentCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useDirectMember } from "@/hooks/useDirectMember";
@@ -257,7 +258,7 @@ export default function SmartContractMessagePage() {
                 (getAddress(from) === counterpart && getAddress(to) === me));
 
             if (!(participantsMatch || cidMatch)) continue;
-
+            console.log("hi");
             let content = "(no conv key)";
             if (conversationKey) {
               try {
@@ -289,7 +290,11 @@ export default function SmartContractMessagePage() {
             };
             setMessages((prev) => {
               if (prev.some((m) => m.id === id)) return prev;
-              return [...prev, newMsg];
+              return [...prev, newMsg].sort(
+                (a, b) =>
+                  new Date(a.createdAt).getTime() -
+                  new Date(b.createdAt).getTime()
+              );
             });
             rpcNewCountRef.current += 1;
             if (txHash) processedTxsRef.current.add(txHash);
@@ -314,16 +319,17 @@ export default function SmartContractMessagePage() {
     await switchChainAsync({ chainId: sepolia.id });
   };
 
-  const sendPayAsYouGo = async () => {
+  const sendPayAsYouGo = async (message?: string) => {
+    const msgToSend = message || newMessage;
     if (!proxy) return alert("Proxy address missing");
     if (!isConnected) return alert("Please connect recipientWallet");
     if (!address) return alert("No account");
-    if (!newMessage.trim()) return alert("Message empty");
+    if (!msgToSend.trim()) return alert("Message empty");
     if (!conversationKey) return alert("No conversation key");
     try {
       setLoading(true);
       await ensureSepolia();
-      const ciphertext = mockEncryptMessage(newMessage, conversationKey);
+      const ciphertext = mockEncryptMessage(msgToSend, conversationKey);
       const sendTxHash = await writeContractAsync({
         address: proxy,
         abi: messageAbi,
@@ -333,7 +339,7 @@ export default function SmartContractMessagePage() {
         value: (payAsYouGoFee as bigint | undefined) ?? BigInt(0),
       });
       await publicClient!.waitForTransactionReceipt({ hash: sendTxHash });
-      setNewMessage("");
+      if (!message) setNewMessage("");
       setError(null);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -461,6 +467,7 @@ export default function SmartContractMessagePage() {
           from: `0x${string}`;
           to: `0x${string}`;
           encryptedMessage: string;
+          blockTimestamp: string;
         }>;
         error?: string;
         details?: unknown;
@@ -469,12 +476,9 @@ export default function SmartContractMessagePage() {
 
       const events = json.messageSents ?? [];
       if (events.length > 0) {
-        // Build only the current fetched page as a batch and prepend to existing messages
-        // API is orderDirection: desc (newest -> oldest). For ascending UI, reverse to (oldest -> newest)
         const batchAsc = await Promise.all(
           events.map(async (e) => {
             const eventId = `${e.blockNumber}:${e.from}:${e.to}:${e.encryptedMessage}`;
-            // decrypt per item using current key if available
             let decText = "";
             if (conversationKey) {
               try {
@@ -489,11 +493,8 @@ export default function SmartContractMessagePage() {
               decText = `(no conv key)`;
             }
             // Fetch block for timestamp
-            const block = await publicClient!.getBlock({
-              blockNumber: BigInt(e.blockNumber),
-            });
             const createdAt = new Date(
-              Number(block.timestamp) * 1000
+              Number(e.blockTimestamp) * 1000
             ).toISOString();
             return {
               id: eventId,
@@ -507,15 +508,24 @@ export default function SmartContractMessagePage() {
           })
         );
 
-        // Prepend batch to current list while avoiding duplicates
         setMessages((prev) => {
-          if (prev.length === 0) return batchAsc;
+          if (prev.length === 0)
+            return batchAsc.sort(
+              (a, b) =>
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime()
+            );
           const existing = new Set(prev.map((m) => m.id));
           const dedupBatch = batchAsc.filter((m) => !existing.has(m.id));
-          return dedupBatch.length ? [...dedupBatch, ...prev] : prev;
+          const newMessages = dedupBatch.length
+            ? [...prev, ...dedupBatch]
+            : prev;
+          return newMessages.sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
         });
 
-        // If page returned fewer than a full batch, we've reached the beginning
         if (events.length < 20) setIsLastPage(true);
         return;
       }
@@ -529,7 +539,7 @@ export default function SmartContractMessagePage() {
       isFetchingRef.current = false;
       setLoadingMore(false);
     }
-  }, [first, proxy, publicClient, conversationId, conversationKey]);
+  }, [first, proxy, conversationId, conversationKey]);
 
   useEffect(() => {
     setInitialFetched(false);
@@ -692,7 +702,11 @@ export default function SmartContractMessagePage() {
                           </span>
                         </div>
                         <div className="w-full whitespace-pre-wrap break-words text-sm leading-6 text-left text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors">
-                          <Markdown>{message.content}</Markdown>
+                          {message.content.startsWith("payment://") ? (
+                            <PaymentCard cid={message.content.slice(10)} />
+                          ) : (
+                            <Markdown>{message.content}</Markdown>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -711,6 +725,9 @@ export default function SmartContractMessagePage() {
             isRelayerMode={isRelayerMode}
             setIsRelayerMode={setIsRelayerMode}
             onDeposit={depositForRelayer}
+            onTransferSuccess={async (cid: string) => {
+              await sendPayAsYouGo(`payment://${cid}`);
+            }}
           />
           <div className="flex-1">
             <Textarea

@@ -17,12 +17,14 @@ interface SmartContractOptionProps {
   isRelayerMode: boolean;
   setIsRelayerMode: React.Dispatch<React.SetStateAction<boolean>>;
   onDeposit?: () => void;
+  onTransferSuccess?: (cid: string) => Promise<void>;
 }
 
 export default function SmartContractOption({
   isRelayerMode,
   setIsRelayerMode,
   onDeposit,
+  onTransferSuccess,
 }: SmartContractOptionProps) {
   const [open, setOpen] = useState(false);
   return (
@@ -47,7 +49,7 @@ export default function SmartContractOption({
           <FontAwesomeIcon icon={faMoneyCheck} className="mr-2" />
           Deposit
         </Button>
-        <TransferMoneny />
+        <TransferMoneny onTransferSuccess={onTransferSuccess} />
       </PopoverContent>
     </Popover>
   );

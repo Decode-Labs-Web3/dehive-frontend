@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 					first: $first,
 					skip: $skip,
 					orderBy: blockTimestamp,
-					orderDirection: asc
+					orderDirection: desc
 				) {
 					id
 					conversationId
