@@ -168,9 +168,13 @@ export default function UserPanel({
   const handleUserInfoChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
+    let newValue = event.target.value;
+    if (event.target.name === "display_name") {
+      newValue = newValue.replace(/[^a-zA-Z0-9\s\-_]/g, "");
+    }
     setUpdateUserInfo((prev) => ({
       ...prev,
-      [event.target.name]: event.target.value,
+      [event.target.name]: newValue,
     }));
   };
 
@@ -414,7 +418,11 @@ export default function UserPanel({
                             {user.bio || "No bio yet"}
                           </p>
                         </div>
-                        <Button variant="secondary" size="sm">
+                        <Button
+                          onClick={() => setUserPanelSetting("profile")}
+                          variant="secondary"
+                          size="sm"
+                        >
                           Edit
                         </Button>
                       </div>
@@ -539,6 +547,7 @@ export default function UserPanel({
                       name="display_name"
                       value={updateUserInfo.display_name}
                       onChange={handleUserInfoChange}
+                      pattern="^[a-zA-Z0-9\s\-_]+$"
                       placeholder="Enter display name"
                     />
                   </div>
@@ -599,7 +608,7 @@ export default function UserPanel({
               </TabsContent>
 
               <TabsContent value="deid">
-                  <UserDeid />
+                <UserDeid />
               </TabsContent>
             </div>
 
