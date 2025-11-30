@@ -183,6 +183,16 @@ export default function DirectCallStreamIOPage({
     }
   }, [audioSetting.microphone, call]);
 
+  useEffect(() => {
+    if (call && call.speaker) {
+      if (audioSetting.speaker) {
+        call.speaker.setVolume(1);
+      } else {
+        call.speaker.setVolume(0);
+      }
+    }
+  }, [audioSetting.speaker, call]);
+
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">

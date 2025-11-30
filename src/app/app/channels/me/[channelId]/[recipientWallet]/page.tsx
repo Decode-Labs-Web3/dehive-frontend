@@ -2,13 +2,16 @@
 
 import { sepolia } from "wagmi/chains";
 import { useUser } from "@/hooks/useUser";
+import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
+import { Label } from "@/components/ui/label";
 import { messageAbi } from "@/abi/messageAbi";
+import { Switch } from "@/components/ui/switch";
 import Markdown from "@/components/common/Markdown";
-import PaymentCard from "@/components/messages/PaymentCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useDirectMember } from "@/hooks/useDirectMember";
+import PaymentCard from "@/components/messages/PaymentCard";
 import AvatarComponent from "@/components/common/AvatarComponent";
 import { isAddress, getAddress, parseEther, type Abi } from "viem";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -38,6 +41,7 @@ import {
 
 export default function SmartContractMessagePage() {
   const { user } = useUser();
+  const router = useRouter();
   const { directMembers } = useDirectMember();
   const { channelId, recipientWallet } = useParams<{
     channelId: string;
@@ -58,14 +62,21 @@ export default function SmartContractMessagePage() {
       sender: `0x${string}`;
     }>
   >([]);
+  const publicClient = usePublicClient();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [isLastPage, setIsLastPage] = useState(false);
   const { address, chainId, isConnected } = useAccount();
   const { switchChainAsync } = useSwitchChain();
-  const publicClient = usePublicClient();
   const [isRelayerMode, setIsRelayerMode] = useState(false);
+  const [privateMode, setPrivateMode] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (!privateMode) {
+      router.push(`/app/channels/me/${channelId}`);
+    }
+  }, [privateMode, router, channelId]);
 
   const proxy = PROXY_ADDRESS;
 
@@ -116,6 +127,7 @@ export default function SmartContractMessagePage() {
 
   const isFetchingRef = useRef(false);
   const [conversationKey, setConversationKey] = useState<string | null>(null);
+  const conversationKeyRef = useRef<string | null>(null);
   const processedTxsRef = useRef<Set<string>>(new Set());
   const sendSelectorRef = useRef<string>("0x");
   const sendViaRelayerSelectorRef = useRef<string>("0x");
@@ -178,7 +190,10 @@ export default function SmartContractMessagePage() {
 
     if (!keyToUse) throw new Error("No conversation key available");
 
-    if (keyToUse !== conversationKey) setConversationKey(keyToUse);
+    if (keyToUse !== conversationKey) {
+      setConversationKey(keyToUse);
+      conversationKeyRef.current = keyToUse;
+    }
   }, [
     proxy,
     address,
@@ -258,11 +273,13 @@ export default function SmartContractMessagePage() {
                 (getAddress(from) === counterpart && getAddress(to) === me));
 
             if (!(participantsMatch || cidMatch)) continue;
-            console.log("hi");
             let content = "(no conv key)";
-            if (conversationKey) {
+            if (conversationKeyRef.current) {
               try {
-                content = mockDecryptMessage(encryptedMessage, conversationKey);
+                content = mockDecryptMessage(
+                  encryptedMessage,
+                  conversationKeyRef.current
+                );
               } catch {
                 content = "(failed to decrypt)";
               }
@@ -643,8 +660,19 @@ export default function SmartContractMessagePage() {
             </div>
           </div>
         </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="private"
+            checked={privateMode}
+            onCheckedChange={setPrivateMode}
+          />
+          <Label htmlFor="private">
+            {privateMode ? "Private ON" : "Private OFF"}
+          </Label>
+        </div>
         <span className="text-xs text-muted-foreground">
           Network {chainId ?? "?"}{" "}
+          CoversationId {conversationId?.toString() ?? "N/A"}{" "}
           {chainId !== sepolia.id && "(switch to Sepolia)"}
           Proxy {proxy ? proxy : "N/A"}
         </span>
