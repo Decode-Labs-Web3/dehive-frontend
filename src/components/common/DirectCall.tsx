@@ -1,7 +1,9 @@
 "use client";
 
 import { useUser } from "@/hooks/useUser";
+import { useAudioSetting } from "@/hooks/useAudioSetting";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -23,18 +25,18 @@ import {
   ReactionsButton,
   CancelCallButton,
 } from "@stream-io/video-react-sdk";
-import { useEffect, useState, useCallback, useMemo } from "react";
 
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 function MicButton({ onAfter }: { onAfter?: () => void }) {
   const { useMicrophoneState } = useCallStateHooks();
   const { microphone, isMute } = useMicrophoneState();
-
+  const { updateMicrophone } = useAudioSetting();
   return (
     <button
       onClick={async () => {
         await microphone.toggle();
+        updateMicrophone(isMute);
         onAfter?.();
       }}
     >
@@ -83,8 +85,12 @@ interface CallPageProps {
   endCall: () => void;
 }
 
-export default function CallPage({ callId, endCall }: CallPageProps) {
+export default function DirectCallStreamIOPage({
+  callId,
+  endCall,
+}: CallPageProps) {
   const { user } = useUser();
+  const { audioSetting } = useAudioSetting();
   const userData = useMemo(() => {
     if (!user) return null;
     return {
@@ -167,6 +173,16 @@ export default function CallPage({ callId, endCall }: CallPageProps) {
     };
   }, [token, apiKey, callId, user, userData]);
 
+  useEffect(() => {
+    if (call && call.microphone) {
+      if (audioSetting.microphone) {
+        call.microphone.enable();
+      } else {
+        call.microphone.disable();
+      }
+    }
+  }, [audioSetting.microphone, call]);
+
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -224,9 +240,6 @@ const MyUILayout = ({ endCall }: { endCall: () => void }) => {
       <SpeakerLayout participantsBarPosition="bottom" />
       <div className="flex justify-center items-center gap-4 p-4">
         <ReactionsButton />
-        {/* <ToggleAudioPublishingButton /> */}
-        {/* <ToggleVideoPublishingButton /> */}
-        {/* <ScreenShareButton /> */}
         <MicButton onAfter={() => console.log("mic toggled")} />
         <CamButton onAfter={() => console.log("cam toggled")} />
         <ScreenShareBtn onAfter={() => console.log("screen toggled")} />

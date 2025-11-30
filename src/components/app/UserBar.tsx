@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import UserPanel from "@/components/user-bar/UserPanel";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAudioSetting } from "@/hooks/useAudioSetting";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AvatarComponent from "@/components/common/AvatarComponent";
 import {
@@ -30,10 +31,9 @@ import {
 
 export default function UserBar() {
   const { user } = useUser();
-  const [sound, setSound] = useState(false);
   const [userPanel, setUserPanel] = useState(false);
   const [theme, setTheme] = useState<string>("light");
-  const [microphone, setMicrophone] = useState(false);
+  const { audioSetting, updateMicrophone, updateSpeaker } = useAudioSetting();
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -61,9 +61,9 @@ export default function UserBar() {
       document.querySelectorAll<HTMLMediaElement>("audio, video");
 
     mediaEls.forEach((el) => {
-      el.muted = !sound;
+      el.muted = !audioSetting.speaker;
     });
-  }, [sound]);
+  }, [audioSetting.speaker]);
 
   if (!user) {
     return (
@@ -164,16 +164,24 @@ export default function UserBar() {
                 <TooltipTrigger asChild>
                   <Button
                     size="sm"
-                    onClick={() => setMicrophone((prev) => !prev)}
+                    onClick={() => updateMicrophone(!audioSetting.microphone)}
                     className="h-10 w-full bg-background text-foreground hover:bg-accent rounded-lg"
                   >
                     <FontAwesomeIcon
-                      icon={microphone ? faMicrophone : faMicrophoneSlash}
+                      icon={
+                        audioSetting.microphone
+                          ? faMicrophone
+                          : faMicrophoneSlash
+                      }
                     />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent className="bg-popover text-popover-foreground border border-border">
-                  <p>{microphone ? "Mute microphone" : "Unmute microphone"}</p>
+                  <p>
+                    {audioSetting.microphone
+                      ? "Mute microphone"
+                      : "Unmute microphone"}
+                  </p>
                 </TooltipContent>
               </Tooltip>
 
@@ -181,16 +189,16 @@ export default function UserBar() {
                 <TooltipTrigger asChild>
                   <Button
                     size="sm"
-                    onClick={() => setSound((prev) => !prev)}
+                    onClick={() => updateSpeaker(!audioSetting.speaker)}
                     className="h-10 w-full bg-background text-foreground hover:bg-accent rounded-lg"
                   >
                     <FontAwesomeIcon
-                      icon={sound ? faVolumeHigh : faVolumeXmark}
+                      icon={audioSetting.speaker ? faVolumeHigh : faVolumeXmark}
                     />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent className="bg-popover text-popover-foreground border border-border">
-                  <p>{sound ? "Mute sound" : "Unmute sound"}</p>
+                  <p>{audioSetting.speaker ? "Mute sound" : "Unmute sound"}</p>
                 </TooltipContent>
               </Tooltip>
 

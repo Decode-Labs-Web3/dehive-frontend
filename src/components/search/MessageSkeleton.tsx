@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useEffect, useRef } from "react";
 
 export default function MessageSkeleton() {
   const scrollRef = useRef<HTMLDivElement>(null);

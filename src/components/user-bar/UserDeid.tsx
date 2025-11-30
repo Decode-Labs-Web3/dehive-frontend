@@ -1,13 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { useUser } from "@/hooks/useUser";
-import { useDeidProfile } from "@/hooks/useDeidProfile";
+import { Card } from "@/components/ui/card";
 import { useScore } from "@/hooks/useScore";
 import { useBadges } from "@/hooks/useBadges";
-import { useSocialAccounts } from "@/hooks/useSocialAccounts";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { useDeidProfile } from "@/hooks/useDeidProfile";
+import { useSocialAccounts } from "@/hooks/useSocialAccounts";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
   faShield,
@@ -16,7 +17,6 @@ import {
   faGlobe,
   faRefresh,
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function UserDeid() {
   const { user } = useUser();

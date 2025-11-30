@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./slices/userSlice";
+import audioSetting from "./slices/audioSetting";
 import serverRoot from "./slices/serverRootSlice";
 import serverList from "./slices/serverListSlice";
 import fingerprintReducer from "./slices/fingerprintSlice";
@@ -11,6 +12,7 @@ export const store = configureStore({
     user: userReducer,
     serverList: serverList,
     serverRoot: serverRoot,
+    audioSetting: audioSetting,
     fingerprint: fingerprintReducer,
     directMembers: directMemberReducer,
     serverMembers: serverMemberReducer,

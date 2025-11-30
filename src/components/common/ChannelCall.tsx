@@ -1,8 +1,9 @@
 "use client";
 
 import { useUser } from "@/hooks/useUser";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useAudioSetting } from "@/hooks/useAudioSetting";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   faMicrophone,
   faMicrophoneSlash,
@@ -30,11 +31,13 @@ import "@stream-io/video-react-sdk/dist/css/styles.css";
 function MicButton({ onAfter }: { onAfter?: (isMicOn: boolean) => void }) {
   const { useMicrophoneState } = useCallStateHooks();
   const { microphone, isMute } = useMicrophoneState();
+  const { updateMicrophone } = useAudioSetting();
 
   return (
     <button
       onClick={async () => {
         await microphone.toggle();
+        updateMicrophone(isMute);
         onAfter?.(isMute);
       }}
     >
@@ -93,7 +96,7 @@ interface CallPageProps {
   }) => void;
 }
 
-export default function ChannelCall({
+export default function ChannelCallStreamIOPage({
   callId,
   endCall,
   updateUserStatus,
@@ -107,7 +110,7 @@ export default function ChannelCall({
       image: `https://ipfs.io/ipfs/${user.avatar_ipfs_hash}`,
     } as User;
   }, [user]);
-
+  const { audioSetting } = useAudioSetting();
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -181,6 +184,18 @@ export default function ChannelCall({
     };
   }, [token, apiKey, callId, user, userData]);
 
+  useEffect(() => {
+    if (call && call.microphone) {
+      if (audioSetting.microphone) {
+        call.microphone.enable();
+        updateUserStatus({ isMic: true });
+      } else {
+        call.microphone.disable();
+        updateUserStatus({ isMic: false });
+      }
+    }
+  }, [audioSetting.microphone, call, updateUserStatus]);
+
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -250,7 +265,9 @@ const MyUILayout = ({
       <div className="flex justify-center items-center gap-4 p-4">
         <ReactionsButton />
         <MicButton
-          onAfter={(isMicOn) => updateUserStatus({ isMic: isMicOn })}
+          onAfter={(isMicOn) => {
+            updateUserStatus({ isMic: isMicOn });
+          }}
         />
         <CamButton
           onAfter={(isCameraOn) => updateUserStatus({ isCamera: isCameraOn })}

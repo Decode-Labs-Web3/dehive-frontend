@@ -1,20 +1,22 @@
 "use client";
 
 import { useMemo } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import CallPage from "@/components/common/CallPage";
 import { useDirectCall } from "@/hooks/useDirectCall";
 import { useParams, useRouter } from "next/navigation";
 import { useDirectMember } from "@/hooks/useDirectMember";
+import { useAudioSetting } from "@/hooks/useAudioSetting";
 import { useSoundContext } from "@/contexts/SoundContext";
-import { useEffect, useCallback, useState, useRef } from "react";
 import AvatarComponent from "@/components/common/AvatarComponent";
+import DirectCallStreamIOPage from "@/components/common/DirectCall";
 import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
 
 export default function DirectCallPage() {
   const router = useRouter();
+  const { updateMicrophone } = useAudioSetting();
+  const { directMembers } = useDirectMember();
   const { channelId } = useParams<{ channelId: string }>();
-  const { directMembers } = useDirectMember()
   const userChatWith =  useMemo(() => {
     return directMembers.find((member) => member.conversationid === channelId)
   }, [directMembers, channelId]);
@@ -29,6 +31,9 @@ export default function DirectCallPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    if (meCallState.status === "connected") {
+      updateMicrophone(false)
+    }
     const audio = audioRef.current;
     if (!audio) return;
     if (!sound) return;
@@ -39,7 +44,7 @@ export default function DirectCallPage() {
     }
     audio.pause();
     audio.currentTime = 0;
-  }, [meCallState.status, sound]);
+  }, [meCallState.status, sound, updateMicrophone]);
 
   return (
     <div className="h-screen flex items-center justify-center bg-background w-full ">
@@ -188,7 +193,7 @@ export default function DirectCallPage() {
             Call with {meCallState.user_info?.display_name}
           </p>
           {meCallState.conversation_id && (
-            <CallPage callId={meCallState.conversation_id} endCall={endCall} />
+            <DirectCallStreamIOPage callId={meCallState.conversation_id} endCall={endCall} />
           )}
         </div>
       )}
