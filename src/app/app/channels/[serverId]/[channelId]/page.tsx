@@ -79,6 +79,7 @@ export default function ChannelMessagePage() {
     id: "",
     messageEdit: "",
   });
+  const [showJumpButton, setShowJumpButton] = useState(false);
   const {
     messages,
     send,
@@ -233,6 +234,9 @@ export default function ChannelMessagePage() {
       setLoadingMore(true);
       setCurrentPage((prev) => prev + 1);
     }
+    const isAtBottom =
+      element.scrollTop + element.clientHeight >= element.scrollHeight - 100;
+    setShowJumpButton(!isAtBottom);
   };
 
   useEffect(() => {
@@ -246,9 +250,9 @@ export default function ChannelMessagePage() {
       return;
     }
     if (isScrollRef.current) {
-    setLoadingMore(false);
-    element.scrollTop = currentScrollHeight - prevScrollHeightRef.current;
-    isScrollRef.current = false;
+      setLoadingMore(false);
+      element.scrollTop = currentScrollHeight - prevScrollHeightRef.current;
+      isScrollRef.current = false;
     } else if (currentScrollHeight < prevScrollHeightRef.current) {
       element.scrollTop -= prevScrollHeightRef.current - currentScrollHeight;
     }
@@ -294,7 +298,9 @@ export default function ChannelMessagePage() {
         serverId={serverId}
         channelId={channelId}
         setMessageSearchId={setMessageSearchId}
-        audioElement={<audio ref={audioRef} src="/sounds/ting.wav" preload="auto" />}
+        audioElement={
+          <audio ref={audioRef} src="/sounds/ting.wav" preload="auto" />
+        }
         debugInfo={undefined}
       />
 
@@ -499,6 +505,25 @@ export default function ChannelMessagePage() {
         </div>
         <ScrollBar orientation="vertical" />
       </ScrollArea>
+
+      {showJumpButton && (
+        <div className="flex items-center justify-center">
+          <Button
+            onClick={() => {
+              const element = listRef.current;
+              if (element) {
+                element.scrollTo({
+                  top: element.scrollHeight,
+                  behavior: "smooth",
+                });
+              }
+            }}
+            className="mb-5 bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            Jump to Present
+          </Button>
+        </div>
+      )}
 
       <DeleteMessageDialog
         open={deleteMessageModal}

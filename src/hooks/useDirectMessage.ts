@@ -25,7 +25,6 @@ export function useDirectMessage(conversationId: string) {
   const [err, setErr] = useState<string | null>(null);
   const socket = useRef(getDirectChatSocketIO()).current;
   const [messages, setMessages] = useState<Message[]>([]);
-  // console.log("dwedwedwedwedwedwqsqwsqwswed",messages);
 
   const latestConversationId = useRef<string | undefined>(conversationId);
   useEffect(() => {
@@ -136,7 +135,6 @@ export function useDirectMessage(conversationId: string) {
       }
       const response = await apiResponse.json();
       if (response.statusCode === 200 && response.message === "OK") {
-        // setMessages(prev => mergeMessages(prev, response.data.items || []));
         setMessages((prev) =>
           page === 0 ? response.data.items : [...response.data.items, ...prev]
         );

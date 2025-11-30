@@ -618,6 +618,17 @@ export default function DirectHistoryView({
         <MessageSkeleton />
       )}
 
+      <div className="flex items-center justify-center">
+        <Button
+          onClick={() => {
+            setMessageSearchId(null);
+          }}
+          className="mb-5 bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          Jump to Present
+        </Button>
+      </div>
+
       <DeleteMessageDialog
         open={deleteMessageModal}
         onOpenChange={(open) => {

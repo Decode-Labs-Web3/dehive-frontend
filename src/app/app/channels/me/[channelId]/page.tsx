@@ -71,6 +71,7 @@ export default function DirectMessagePage() {
   const [privateMode, setPrivateMode] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [editMessage, setEditMessage] = useState({ id: "", messageEdit: "" });
+  const [showJumpButton, setShowJumpButton] = useState(false);
 
   const {
     messages,
@@ -214,6 +215,9 @@ export default function DirectMessagePage() {
       setLoadingMore(true);
       setCurrentPage((prev) => prev + 1);
     }
+    const isAtBottom =
+      element.scrollTop + element.clientHeight >= element.scrollHeight - 100;
+    setShowJumpButton(!isAtBottom);
   };
 
   useEffect(() => {
@@ -513,6 +517,25 @@ export default function DirectMessagePage() {
         </div>
         <ScrollBar orientation="vertical" />
       </ScrollArea>
+
+      {showJumpButton && (
+        <div className="flex items-center justify-center">
+          <Button
+            onClick={() => {
+              const element = listRef.current;
+              if (element) {
+                element.scrollTo({
+                  top: element.scrollHeight,
+                  behavior: "smooth",
+                });
+              }
+            }}
+            className="mb-5 bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            Jump to Present
+          </Button>
+        </div>
+      )}
 
       <DeleteMessageDialog
         open={deleteMessageModal}
