@@ -63,9 +63,17 @@ export default function ChannelFileList({ serverId }: ChannelFileListProps) {
 
   useEffect(() => {
     if (open) {
+      setFileList([]);
+      setPage(0);
+      setIsLastPage(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open && !isLastPage) {
       fetchFileList();
     }
-  }, [open, fetchFileList]);
+  }, [page, open, isLastPage, fetchFileList]);
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const prevScrollHeightRef = useRef<number>(0);

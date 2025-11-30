@@ -194,12 +194,14 @@ export default function DirectMessagePage() {
 
   const prevScrollHeightRef = useRef(0);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const isScrollRef = useRef(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     const element = listRef.current;
     if (element && currentPage === 0 && messages.length > 0) {
       element.scrollTop = element.scrollHeight - element.clientHeight;
+      prevScrollHeightRef.current = element.scrollHeight;
     }
   }, [messages.length, currentPage]);
 
@@ -207,6 +209,7 @@ export default function DirectMessagePage() {
     const element = listRef.current;
     if (!element || isLastPage || loadingMore) return;
     if (element.scrollTop === 0) {
+      isScrollRef.current = true;
       prevScrollHeightRef.current = element.scrollHeight;
       setLoadingMore(true);
       setCurrentPage((prev) => prev + 1);
@@ -214,17 +217,23 @@ export default function DirectMessagePage() {
   };
 
   useEffect(() => {
-    setLoadingMore(false);
     const element = listRef.current;
     if (!element) return;
+    const currentScrollHeight = element.scrollHeight;
     if (newMessageRenderRef.current) {
-      element.scrollTop = element.scrollHeight;
+      element.scrollTop = currentScrollHeight - element.clientHeight;
       newMessageRenderRef.current = false;
+      prevScrollHeightRef.current = currentScrollHeight;
       return;
     }
-    const newScrollHeightRef = element.scrollHeight;
-    element.scrollTop = newScrollHeightRef - prevScrollHeightRef.current;
-    prevScrollHeightRef.current = newScrollHeightRef;
+    if (isScrollRef.current) {
+      setLoadingMore(false);
+      element.scrollTop = currentScrollHeight - prevScrollHeightRef.current;
+      isScrollRef.current = false;
+    } else if (currentScrollHeight < prevScrollHeightRef.current) {
+      element.scrollTop -= prevScrollHeightRef.current - currentScrollHeight;
+    }
+    prevScrollHeightRef.current = currentScrollHeight;
   }, [messages]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);

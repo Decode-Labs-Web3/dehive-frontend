@@ -1,66 +1,29 @@
 "use client";
 
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { getApiHeaders } from "@/utils/api.utils";
 import CallPage from "@/components/common/CallPage";
 import { useDirectCall } from "@/hooks/useDirectCall";
 import { useParams, useRouter } from "next/navigation";
-import { useFingerprint } from "@/hooks/useFingerprint";
+import { useDirectMember } from "@/hooks/useDirectMember";
 import { useSoundContext } from "@/contexts/SoundContext";
 import { useEffect, useCallback, useState, useRef } from "react";
 import AvatarComponent from "@/components/common/AvatarComponent";
-import { DirectUserChatWith } from "@/interfaces/direct-chat.interface";
 import { useDirectCallContext } from "@/contexts/DirectCallConetext.contexts";
 
 export default function DirectCallPage() {
   const router = useRouter();
-  const { fingerprintHash } = useFingerprint();
   const { channelId } = useParams<{ channelId: string }>();
-  const [userChatWith, setUserChatWith] = useState<DirectUserChatWith>({
-    id: "",
-    displayname: "",
-    username: "",
-    wallets: [],
-    avatar_ipfs_hash: "",
-  });
+  const { directMembers } = useDirectMember()
+  const userChatWith =  useMemo(() => {
+    return directMembers.find((member) => member.conversationid === channelId)
+  }, [directMembers, channelId]);
 
   const { sound } = useSoundContext();
 
-  // console.log("this is orther user info", userChatWith);
-
-  const fetchUserChatWith = useCallback(async () => {
-    // if (channelId) return;
-    try {
-      const apiResponse = await fetch("/api/user/chat-with", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ conversationId: channelId }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!apiResponse.ok) {
-        console.error(apiResponse);
-        return;
-      }
-      const response = await apiResponse.json();
-      if (response.statusCode === 200 && response.message === "OK") {
-        setUserChatWith(response.data);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Server get user chat with error");
-    }
-  }, [channelId, fingerprintHash]);
-
-  useEffect(() => {
-    fetchUserChatWith();
-  }, [fetchUserChatWith]);
-
   const { meCallState, setMeCallState } = useDirectCallContext();
   const { startCall, acceptCall, declineCall, endCall } = useDirectCall(
-    userChatWith.id
+    userChatWith?.user_id || ""
   );
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -98,10 +61,12 @@ export default function DirectCallPage() {
           <p className="text-muted-foreground text-sm mb-4">
             @{meCallState.user_info?.username}
           </p>
-          <AvatarComponent
-            avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
-            displayname={meCallState.user_info?.display_name}
-          />
+          <div className="flex justify-center my-4">
+            <AvatarComponent
+              avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
+              displayname={meCallState.user_info?.display_name}
+            />
+          </div>
           <Button
             onClick={() => {
               setMeCallState({
@@ -129,10 +94,12 @@ export default function DirectCallPage() {
           <p className="text-muted-foreground text-sm mb-4">
             @{meCallState.user_info?.username}
           </p>
-          <AvatarComponent
-            avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
-            displayname={meCallState.user_info?.display_name}
-          />
+          <div className="flex justify-center my-4">
+            <AvatarComponent
+              avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
+              displayname={meCallState.user_info?.display_name}
+            />
+          </div>
           <Button
             onClick={() => {
               setMeCallState({
@@ -160,10 +127,12 @@ export default function DirectCallPage() {
           <p className="text-muted-foreground text-sm mb-4">
             @{meCallState.user_info?.username}
           </p>
-          <AvatarComponent
-            avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
-            displayname={meCallState.user_info?.display_name}
-          />
+          <div className="flex justify-center my-4">
+            <AvatarComponent
+              avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
+              displayname={meCallState.user_info?.display_name}
+            />
+          </div>
 
           <div className="flex gap-4 justify-center">
             <Button
@@ -195,10 +164,12 @@ export default function DirectCallPage() {
           <p className="text-muted-foreground text-sm mb-4">
             @{meCallState.user_info?.username}
           </p>
-          <AvatarComponent
-            avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
-            displayname={meCallState.user_info?.display_name}
-          />
+          <div className="flex justify-center my-4">
+            <AvatarComponent
+              avatar_ipfs_hash={meCallState.user_info?.avatar_ipfs_hash}
+              displayname={meCallState.user_info?.display_name}
+            />
+          </div>
           <Button
             className="bg-red-500 text-white hover:bg-red-600"
             onClick={() => endCall()}
