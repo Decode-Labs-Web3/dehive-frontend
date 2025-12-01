@@ -162,6 +162,8 @@ export default function SmartContractMessagePage() {
   const sendSelectorRef = useRef<string>("0x");
   const sendViaRelayerSelectorRef = useRef<string>("0x");
   const rpcNewCountRef = useRef<number>(0);
+  const isCheckingStatusRef = useRef(false);
+  const isDecryptingRef = useRef(false);
 
   // Check conversation status and public keys (read-only, no on-chain writes)
   const checkConversationStatus = useCallback(async () => {
@@ -169,6 +171,14 @@ export default function SmartContractMessagePage() {
     if (!address) return;
     if (!isAddress(recipientWallet)) return;
     if (!publicClient) return;
+
+    // Prevent multiple simultaneous calls
+    if (isCheckingStatusRef.current) {
+      console.log("Already checking conversation status, skipping...");
+      return;
+    }
+
+    isCheckingStatusRef.current = true;
 
     const provider = getProvider();
 
@@ -193,8 +203,15 @@ export default function SmartContractMessagePage() {
       const exists = Boolean(createdAt && createdAt !== BigInt(0));
       setConversationExists(exists);
 
-      // If conversation exists, try to retrieve the key
-      if (exists && provider) {
+      // If conversation exists and we don't already have the key, try to retrieve it
+      // Only decrypt if we don't already have the key to avoid multiple MetaMask prompts
+      if (
+        exists &&
+        provider &&
+        !conversationKeyRef.current &&
+        !isDecryptingRef.current
+      ) {
+        isDecryptingRef.current = true;
         try {
           const key = await getMyConversationKey(
             publicClient as Parameters<typeof getMyConversationKey>[0],
@@ -209,6 +226,8 @@ export default function SmartContractMessagePage() {
           }
         } catch (err) {
           console.error("Error retrieving conversation key:", err);
+        } finally {
+          isDecryptingRef.current = false;
         }
       }
 
@@ -228,6 +247,8 @@ export default function SmartContractMessagePage() {
       }
     } catch (err) {
       console.error("Error checking conversation status:", err);
+    } finally {
+      isCheckingStatusRef.current = false;
     }
   }, [
     proxy,
@@ -729,6 +750,8 @@ export default function SmartContractMessagePage() {
     setRecipientPublicKey(null);
     setConversationKey(null);
     conversationKeyRef.current = null;
+    isCheckingStatusRef.current = false;
+    isDecryptingRef.current = false;
     void checkConversationStatus();
   }, [recipientWallet, checkConversationStatus]);
 
@@ -931,19 +954,25 @@ export default function SmartContractMessagePage() {
               <div className="flex justify-center gap-6 pt-4 border-t border-border">
                 <div className="flex items-center gap-2 text-xs">
                   <div
-                    className={`w-2 h-2 rounded-full ${myPublicKey ? "bg-green-500" : "bg-gray-500"}`}
+                    className={`w-2 h-2 rounded-full ${
+                      myPublicKey ? "bg-green-500" : "bg-gray-500"
+                    }`}
                   />
                   <span className="text-muted-foreground">Your key</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <div
-                    className={`w-2 h-2 rounded-full ${recipientPublicKey ? "bg-green-500" : "bg-gray-500"}`}
+                    className={`w-2 h-2 rounded-full ${
+                      recipientPublicKey ? "bg-green-500" : "bg-gray-500"
+                    }`}
                   />
                   <span className="text-muted-foreground">Recipient key</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <div
-                    className={`w-2 h-2 rounded-full ${conversationExists ? "bg-green-500" : "bg-gray-500"}`}
+                    className={`w-2 h-2 rounded-full ${
+                      conversationExists ? "bg-green-500" : "bg-gray-500"
+                    }`}
                   />
                   <span className="text-muted-foreground">On-chain</span>
                 </div>
@@ -1035,8 +1064,8 @@ export default function SmartContractMessagePage() {
                 !conversationExists
                   ? "Initialize private messaging first..."
                   : payAsYouGoFee
-                    ? `Message (fee ~ ${Number(payAsYouGoFee) / 1e18} ETH)`
-                    : "Message"
+                  ? `Message (fee ~ ${Number(payAsYouGoFee) / 1e18} ETH)`
+                  : "Message"
               }
               disabled={loading || !conversationExists || !conversationKey}
               className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border placeholder-muted-foreground"
