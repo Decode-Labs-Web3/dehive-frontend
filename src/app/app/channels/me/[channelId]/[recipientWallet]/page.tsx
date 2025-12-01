@@ -31,13 +31,20 @@ const PROXY_ADDRESS = process.env.NEXT_PUBLIC_PROXY_ADDRESS as
 
 import {
   computeConversationId,
-  mockEncryptMessage,
-  mockDecryptMessage,
+  encryptMessage,
+  decryptMessage,
   generateConversationKey,
-  encryptConversationKeyForAddress,
   deriveFunctionSelector,
   getMyConversationKey,
+  ensurePublicKeyExists,
+  fetchPublicKeyFromDB,
+  createEncryptedConversationKeys,
 } from "@/lib/scMessage";
+
+// Type for Ethereum provider (MetaMask)
+type EthereumProvider = {
+  request: (args: { method: string; params: unknown[] }) => Promise<unknown>;
+};
 
 export default function SmartContractMessagePage() {
   const { user } = useUser();
@@ -71,6 +78,20 @@ export default function SmartContractMessagePage() {
   const { switchChainAsync } = useSwitchChain();
   const [isRelayerMode, setIsRelayerMode] = useState(false);
   const [privateMode, setPrivateMode] = useState<boolean>(true);
+  const [recipientKeyError, setRecipientKeyError] = useState<string | null>(
+    null
+  );
+
+  // Get Ethereum provider (MetaMask)
+  const getProvider = useCallback((): EthereumProvider | null => {
+    if (
+      typeof window !== "undefined" &&
+      (window as { ethereum?: EthereumProvider }).ethereum
+    ) {
+      return (window as { ethereum?: EthereumProvider }).ethereum!;
+    }
+    return null;
+  }, []);
 
   useEffect(() => {
     if (!privateMode) {
@@ -139,10 +160,14 @@ export default function SmartContractMessagePage() {
     if (!isAddress(recipientWallet)) throw new Error("Invalid recipient");
     if (!publicClient) throw new Error("No public client");
 
+    const provider = getProvider();
+    if (!provider) throw new Error("No Ethereum provider (MetaMask) found");
+
     const cid = computeConversationId(address, recipientWallet);
     if (conversationId !== cid) setConversationId(cid);
 
-    const [, , , , createdAt] = (await publicClient.readContract({
+    // Read conversation from blockchain
+    const [smaller, , , , createdAt] = (await publicClient.readContract({
       address: proxy,
       abi: messageAbi,
       functionName: "conversations",
@@ -157,26 +182,50 @@ export default function SmartContractMessagePage() {
 
     let keyToUse = conversationKey;
 
+    // If conversation doesn't exist, create it
     if (!createdAt || createdAt === BigInt(0)) {
+      // Ensure sender's public key exists (may trigger MetaMask popup)
+      const senderPublicKey = await ensurePublicKeyExists(provider, address);
+
+      // Fetch recipient's public key from database
+      const recipientPublicKey = await fetchPublicKeyFromDB(recipientWallet);
+      if (!recipientPublicKey) {
+        setRecipientKeyError(
+          "Recipient has not registered their encryption key. They need to enable private messaging first."
+        );
+        throw new Error("Recipient public key not found");
+      }
+      setRecipientKeyError(null);
+
+      // Generate a new symmetric conversation key
       const convKey = generateConversationKey();
-      const encForSender = await encryptConversationKeyForAddress(
-        convKey,
-        address
-      );
-      const encForReceiver = await encryptConversationKeyForAddress(
-        convKey,
-        recipientWallet
-      );
+
+      // Encrypt the conversation key for both participants using their public keys
+      const { encryptedForSender, encryptedForRecipient } =
+        createEncryptedConversationKeys(
+          convKey,
+          senderPublicKey,
+          recipientPublicKey
+        );
+
+      // Determine the order based on address comparison
+      const me = getAddress(address);
+      const them = getAddress(recipientWallet);
+      const iAmSmaller = me.toLowerCase() < them.toLowerCase();
+
+      // Create conversation on blockchain
+      const encKeyForSmaller = (
+        iAmSmaller ? encryptedForSender : encryptedForRecipient
+      ) as `0x${string}`;
+      const encKeyForLarger = (
+        iAmSmaller ? encryptedForRecipient : encryptedForSender
+      ) as `0x${string}`;
 
       const txHash = await writeContractAsync({
         address: proxy,
         abi: messageAbi,
         functionName: "createConversation",
-        args: [
-          getAddress(recipientWallet),
-          `0x${encForSender}`,
-          `0x${encForReceiver}`,
-        ],
+        args: [them, encKeyForSmaller, encKeyForLarger],
         chainId: sepolia.id,
       });
 
@@ -184,8 +233,15 @@ export default function SmartContractMessagePage() {
       keyToUse = convKey;
     }
 
+    // If we don't have the key yet, retrieve and decrypt it
     if (!keyToUse) {
-      keyToUse = await getMyConversationKey(publicClient, proxy, cid, address);
+      keyToUse = await getMyConversationKey(
+        publicClient as Parameters<typeof getMyConversationKey>[0],
+        provider,
+        proxy,
+        cid,
+        address
+      );
     }
 
     if (!keyToUse) throw new Error("No conversation key available");
@@ -202,6 +258,7 @@ export default function SmartContractMessagePage() {
     conversationKey,
     recipientWallet,
     writeContractAsync,
+    getProvider,
   ]);
 
   // Derive function selectors for sendMessage and sendMessageViaRelayer from ABI (robust to type changes)
@@ -243,23 +300,27 @@ export default function SmartContractMessagePage() {
           for (const log of logs as Array<{
             transactionHash?: `0x${string}`;
             blockNumber?: bigint;
-            args?: any;
+            args?: unknown;
           }>) {
             const txHash = log.transactionHash as `0x${string}` | undefined;
             if (txHash && processedTxsRef.current.has(txHash)) continue;
 
-            const args = (log as any).args as {
-              conversationId: bigint;
-              from: `0x${string}`;
-              to: `0x${string}`;
-              encryptedMessage: string;
-            };
+            const args = (
+              log as {
+                args?: {
+                  conversationId: bigint;
+                  from: `0x${string}`;
+                  to: `0x${string}`;
+                  encryptedMessage: string;
+                };
+              }
+            ).args;
             if (!args) continue;
 
             const cid = args.conversationId;
             const from = args.from;
             const to = args.to;
-            const encryptedMessage = args.encryptedMessage;
+            const encryptedMessageContent = args.encryptedMessage;
 
             const cidMatch = conversationId ? cid === conversationId : false;
             const me = address ? getAddress(address) : undefined;
@@ -276,8 +337,8 @@ export default function SmartContractMessagePage() {
             let content = "(no conv key)";
             if (conversationKeyRef.current) {
               try {
-                content = mockDecryptMessage(
-                  encryptedMessage,
+                content = decryptMessage(
+                  encryptedMessageContent,
                   conversationKeyRef.current
                 );
               } catch {
@@ -288,21 +349,21 @@ export default function SmartContractMessagePage() {
             const block = await publicClient.getBlock({
               blockNumber: log.blockNumber,
             });
-            const createdAt = new Date(
+            const createdAtDate = new Date(
               Number(block.timestamp) * 1000
             ).toISOString();
             const id =
               txHash ||
               `${String(
                 log.blockNumber ?? BigInt(0)
-              )}:${from}:${to}:${encryptedMessage}`;
+              )}:${from}:${to}:${encryptedMessageContent}`;
             const newMsg = {
               id,
               blockNumber: String(Number(log.blockNumber ?? BigInt(0))),
               from: getAddress(from) as `0x${string}`,
               to: getAddress(to) as `0x${string}`,
               content,
-              createdAt,
+              createdAt: createdAtDate,
               sender: getAddress(from) as `0x${string}`,
             };
             setMessages((prev) => {
@@ -346,7 +407,7 @@ export default function SmartContractMessagePage() {
     try {
       setLoading(true);
       await ensureSepolia();
-      const ciphertext = mockEncryptMessage(msgToSend, conversationKey);
+      const ciphertext = encryptMessage(msgToSend, conversationKey);
       const sendTxHash = await writeContractAsync({
         address: proxy,
         abi: messageAbi,
@@ -417,10 +478,7 @@ export default function SmartContractMessagePage() {
         );
         return;
       }
-      const ciphertext = mockEncryptMessage(
-        newMessage,
-        conversationKey as string
-      );
+      const ciphertext = encryptMessage(newMessage, conversationKey as string);
       const res = await fetch("/api/sc-message/relayer", {
         method: "POST",
         headers: {
@@ -499,10 +557,7 @@ export default function SmartContractMessagePage() {
             let decText = "";
             if (conversationKey) {
               try {
-                decText = mockDecryptMessage(
-                  e.encryptedMessage,
-                  conversationKey
-                );
+                decText = decryptMessage(e.encryptedMessage, conversationKey);
               } catch {
                 decText = `(failed to decrypt)`;
               }
@@ -510,7 +565,7 @@ export default function SmartContractMessagePage() {
               decText = `(no conv key)`;
             }
             // Fetch block for timestamp
-            const createdAt = new Date(
+            const createdAtDate = new Date(
               Number(e.blockTimestamp) * 1000
             ).toISOString();
             return {
@@ -519,7 +574,7 @@ export default function SmartContractMessagePage() {
               from: getAddress(e.from as `0x${string}`) as `0x${string}`,
               to: getAddress(e.to as `0x${string}`) as `0x${string}`,
               content: decText,
-              createdAt,
+              createdAt: createdAtDate,
               sender: getAddress(e.from as `0x${string}`) as `0x${string}`,
             };
           })
@@ -671,8 +726,8 @@ export default function SmartContractMessagePage() {
           </Label>
         </div>
         <span className="text-xs text-muted-foreground">
-          Network {chainId ?? "?"}{" "}
-          CoversationId {conversationId?.toString() ?? "N/A"}{" "}
+          Network {chainId ?? "?"} CoversationId{" "}
+          {conversationId?.toString() ?? "N/A"}{" "}
           {chainId !== sepolia.id && "(switch to Sepolia)"}
           Proxy {proxy ? proxy : "N/A"}
         </span>
@@ -694,8 +749,16 @@ export default function SmartContractMessagePage() {
           {error ? (
             <span className="px-3 text-xs text-red-400">{error}</span>
           ) : null}
+          {recipientKeyError ? (
+            <div className="rounded-md bg-yellow-500/10 border border-yellow-500/50 p-4 text-yellow-200">
+              <p className="text-sm font-medium">
+                Cannot start private conversation
+              </p>
+              <p className="text-xs mt-1">{recipientKeyError}</p>
+            </div>
+          ) : null}
 
-          {messages.length === 0 ? (
+          {messages.length === 0 && !recipientKeyError ? (
             <div className="opacity-60 text-sm">No messages yet.</div>
           ) : (
             messages.map((message) => {
@@ -768,7 +831,7 @@ export default function SmartContractMessagePage() {
                   ? `Message (fee ~ ${Number(payAsYouGoFee) / 1e18} ETH)`
                   : "Message"
               }
-              disabled={loading}
+              disabled={loading || !!recipientKeyError}
               className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border placeholder-muted-foreground"
             />
           </div>
