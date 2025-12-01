@@ -14,11 +14,14 @@ const audioSlice = createSlice({
   name: 'audioSetting',
   initialState,
   reducers: {
-    
+
     setMicrophone(state, action: PayloadAction<boolean>) {
       state.microphone = action.payload;
     },
     setSpeaker(state, action: PayloadAction<boolean>) {
+      if (action.payload === false){
+        state.microphone = action.payload;
+      }
       state.speaker = action.payload;
     }
   },

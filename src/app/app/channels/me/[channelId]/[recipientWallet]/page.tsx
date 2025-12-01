@@ -336,6 +336,8 @@ export default function SmartContractMessagePage() {
     await switchChainAsync({ chainId: sepolia.id });
   };
 
+  const newMessageRef = useRef<boolean>(false);
+
   const sendPayAsYouGo = async (message?: string) => {
     const msgToSend = message || newMessage;
     if (!proxy) return alert("Proxy address missing");
@@ -357,6 +359,7 @@ export default function SmartContractMessagePage() {
       });
       await publicClient!.waitForTransactionReceipt({ hash: sendTxHash });
       if (!message) setNewMessage("");
+      newMessageRef.current = true;
       setError(null);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -440,6 +443,7 @@ export default function SmartContractMessagePage() {
       }
       setNewMessage("");
       setError(null);
+      newMessageRef.current = true;
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error("sendViaRelayer error", msg);
@@ -585,6 +589,7 @@ export default function SmartContractMessagePage() {
     }
   }, [first, isLastPage, fetchMessages, conversationId, conversationKey]);
 
+
   const handleComposerKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
   ) => {
@@ -611,6 +616,8 @@ export default function SmartContractMessagePage() {
     }
   }, [messages.length, first, loadingMore]);
 
+  const isScroll = useRef(false);
+
   const handleScroll = () => {
     const element = listRef.current;
     if (
@@ -623,6 +630,7 @@ export default function SmartContractMessagePage() {
       return;
     if (element.scrollTop === 0) {
       prevScrollHeightRef.current = element.scrollHeight;
+      isScroll.current = true;
       setLoadingMore(true);
       setFirst((prev) => prev + 20);
       console.log("Loading more messages...");
@@ -630,8 +638,15 @@ export default function SmartContractMessagePage() {
   };
 
   useEffect(() => {
-    setLoadingMore(false);
     const element = listRef.current;
+    if (!element) return;
+    if (newMessageRef.current) {
+      element.scrollTop = element.scrollHeight - element.clientHeight;
+      newMessageRef.current = false;
+      return;
+    }
+    if (!isScroll.current) return;
+    setLoadingMore(false);
     if (element) {
       const newScrollHeight = element.scrollHeight;
       element.scrollTop = newScrollHeight - prevScrollHeightRef.current;
