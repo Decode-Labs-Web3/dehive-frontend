@@ -1,5 +1,6 @@
 import { encodePacked, getAddress, keccak256 } from "viem";
 import { messageAbi } from "@/abi/messageAbi";
+import CryptoJS from 'crypto-js';
 
 // ===== Conversation / Selector helpers =====
 export function computeConversationId(a: string, b: string): bigint {
@@ -42,21 +43,30 @@ export function base64DecodeUnicode(b64: string): string {
 
 // Equivalent to mock encryptMessage: prefix + base64(message)
 export function mockEncryptMessage(message: string, key: string): string {
-  const keyPrefix = base64EncodeUnicode(key.substring(0, 8)).substring(0, 8);
-  const encoded = base64EncodeUnicode(message);
-  return `${keyPrefix}${encoded}`;
+  // const keyPrefix = base64EncodeUnicode(key.substring(0, 8)).substring(0, 8);
+  // const encoded = base64EncodeUnicode(message);
+  // return `${keyPrefix}${encoded}`;
+  // Encrypts the message using AES. The output is a ciphertext string.
+  return CryptoJS.AES.encrypt(message, key).toString();
 }
 
 export function mockDecryptMessage(
   encryptedMessage: string,
   key: string
 ): string {
-  const keyPrefix = base64EncodeUnicode(key.substring(0, 8)).substring(0, 8);
-  if (!encryptedMessage.startsWith(keyPrefix)) {
-    throw new Error("Invalid encryption key or corrupted message");
+  // const keyPrefix = base64EncodeUnicode(key.substring(0, 8)).substring(0, 8);
+  // if (!encryptedMessage.startsWith(keyPrefix)) {
+  //   throw new Error("Invalid encryption key or corrupted message");
+  // }
+  // const encoded = encryptedMessage.substring(keyPrefix.length);
+  // return base64DecodeUnicode(encoded);
+  const bytes = CryptoJS.AES.decrypt(encryptedMessage, key);
+  const originalText = bytes.toString(CryptoJS.enc.Utf8);
+
+  if (!originalText) {
+     throw new Error("Invalid key or corrupted message");
   }
-  const encoded = encryptedMessage.substring(keyPrefix.length);
-  return base64DecodeUnicode(encoded);
+  return originalText;
 }
 
 // Simple conversation key generation (no persistent storage)
@@ -66,19 +76,7 @@ function hexFromBytes(buf: Uint8Array): string {
     .join("");
 }
 
-export function generateConversationKey(seed?: string): string {
-  if (seed) {
-    // Deterministic: non-crypto quick hash for demo only.
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++)
-      hash = (hash * 31 + seed.charCodeAt(i)) | 0;
-    const out: string[] = [];
-    for (let i = 0; i < 32; i++) {
-      hash = (hash * 1664525 + 1013904223) | 0;
-      out.push(((hash >>> 0) & 0xff).toString(16).padStart(2, "0"));
-    }
-    return out.join("");
-  }
+export function generateConversationKey(): string {
   const bytes = new Uint8Array(32);
   if (typeof crypto !== "undefined" && crypto.getRandomValues) {
     crypto.getRandomValues(bytes);
