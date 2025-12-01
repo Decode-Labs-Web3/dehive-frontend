@@ -6,19 +6,23 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { getChannelChatSocketIO } from "@/lib/socketioChannelChatSingleton";
 import { MessageChannel } from "@/interfaces/websocketChannelChat.interface";
 
-// function mergeMessages(
-//   prev: MessageChannel[],
-//   incoming: MessageChannel[]
-// ): MessageChannel[] {
-//   const map = new Map<string, MessageChannel>();
-//   prev.forEach((message) => map.set(message._id, message));
-//   // console.log("edwedhjbwehdjewbdhjwedjhwedwed", map);
-//   incoming.forEach((message) => {
-//     const existing = map.get(message._id);
-//     map.set(message._id, existing ? { ...existing, ...message } : message);
-//   });
-//   return Array.from(map.values());
-// }
+function mergeHistoryMessages(
+  newItems: MessageChannel[],
+  prev: MessageChannel[],
+  isFirstPage: boolean
+): MessageChannel[] {
+  if (isFirstPage) {
+    const map = new Map<string, MessageChannel>();
+    for (const m of newItems) map.set(m._id, m);
+    return Array.from(map.values());
+  }
+  const existingIds = new Set(prev.map((m) => m._id));
+  const uniqueNew: MessageChannel[] = [];
+  for (const m of newItems) {
+    if (!existingIds.has(m._id)) uniqueNew.push(m);
+  }
+  return [...uniqueNew, ...prev];
+}
 
 export function useChannelMessage(channelId: string) {
   const { fingerprintHash } = useFingerprint();
@@ -129,9 +133,8 @@ export function useChannelMessage(channelId: string) {
       }
       const response = await apiResponse.json();
       if (response.statusCode === 200 && response.message === "OK") {
-        // setMessages((prev) => mergeMessages(prev, response.data.items || []));
         setMessages((prev) =>
-          page === 0 ? response.data.items : [...response.data.items, ...prev]
+          mergeHistoryMessages(response.data.items || [], prev, page === 0)
         );
         setIsLastPage(response.data.metadata.is_last_page);
       }

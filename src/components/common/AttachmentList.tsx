@@ -44,7 +44,6 @@ function AttachmentItem({ att }: { att: Attachment }) {
   const isVid = mime.startsWith("video/");
   const isAud = mime.startsWith("audio/");
 
-  // If we cannot resolve a valid media URL, don't render the element
   if (!href) return null;
 
   if (isImg) {

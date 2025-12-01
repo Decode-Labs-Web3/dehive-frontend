@@ -6,16 +6,23 @@ import { Message } from "@/interfaces/websocketDirectChat.interface";
 import { getDirectChatSocketIO } from "@/lib/socketioDirectChatSingleton";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 
-// function mergeMessages(prev: Message[], incoming: Message[]): Message[] {
-//   const map = new Map<string, Message>();
-//   prev.forEach(message => map.set(message._id, message));
-//   // console.log("edwedhjbwehdjewbdhjwedjhwedwed", map)
-//   incoming.forEach(message => {
-//     const existing = map.get(message._id);
-//     map.set(message._id, existing ? { ...existing, ...message } : message);
-//   });
-//   return Array.from(map.values());
-// }
+function mergeHistoryMessages(
+  newItems: Message[],
+  prev: Message[],
+  isFirstPage: boolean
+): Message[] {
+  if (isFirstPage) {
+    const map = new Map<string, Message>();
+    for (const m of newItems) map.set(m._id, m);
+    return Array.from(map.values());
+  }
+  const existingIds = new Set(prev.map((m) => m._id));
+  const uniqueNew = [] as Message[];
+  for (const m of newItems) {
+    if (!existingIds.has(m._id)) uniqueNew.push(m);
+  }
+  return [...uniqueNew, ...prev];
+}
 
 export function useDirectMessage(conversationId: string) {
   const { fingerprintHash } = useFingerprint();
@@ -136,26 +143,8 @@ export function useDirectMessage(conversationId: string) {
       const response = await apiResponse.json();
       if (response.statusCode === 200 && response.message === "OK") {
         setMessages((prev) =>
-          page === 0 ? response.data.items : [...response.data.items, ...prev]
+          mergeHistoryMessages(response.data.items, prev, page === 0)
         );
-        // setMessages((prev) => {
-        //   const incoming: Message[] = response.data.items || [];
-        //   if (page === 0) {
-        //     const map = new Map<string, Message>();
-        //     incoming.forEach((message) => map.set(message._id, message));
-        //     prev.forEach((message) => {
-        //       if (map.has(message._id)) {
-        //         map.set(message._id, { ...message, ...map.get(message._id)! });
-        //       } else {
-        //         map.set(message._id, message);
-        //       }
-        //     });
-        //     return Array.from(map.values());
-        //   }
-        //   const existingIds = new Set(prev.map((m) => m._id));
-        //   const older = incoming.filter((m) => !existingIds.has(m._id));
-        //   return [...older, ...prev];
-        // });
         setIsLastPage(response.data.metadata.is_last_page);
       }
     } catch (error) {
