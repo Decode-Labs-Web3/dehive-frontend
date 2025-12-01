@@ -81,6 +81,15 @@ export default function SmartContractMessagePage() {
   const [recipientKeyError, setRecipientKeyError] = useState<string | null>(
     null
   );
+  // State for private messaging initialization
+  const [conversationExists, setConversationExists] = useState<boolean | null>(
+    null
+  );
+  const [myPublicKey, setMyPublicKey] = useState<string | null>(null);
+  const [recipientPublicKey, setRecipientPublicKey] = useState<string | null>(
+    null
+  );
+  const [isInitializing, setIsInitializing] = useState(false);
 
   // Get Ethereum provider (MetaMask)
   const getProvider = useCallback((): EthereumProvider | null => {
@@ -154,57 +163,158 @@ export default function SmartContractMessagePage() {
   const sendViaRelayerSelectorRef = useRef<string>("0x");
   const rpcNewCountRef = useRef<number>(0);
 
-  const ensureConversationAndKey = useCallback(async () => {
-    if (!proxy) throw new Error("Proxy address missing");
-    if (!address) throw new Error("No account");
-    if (!isAddress(recipientWallet)) throw new Error("Invalid recipient");
-    if (!publicClient) throw new Error("No public client");
+  // Check conversation status and public keys (read-only, no on-chain writes)
+  const checkConversationStatus = useCallback(async () => {
+    if (!proxy) return;
+    if (!address) return;
+    if (!isAddress(recipientWallet)) return;
+    if (!publicClient) return;
 
     const provider = getProvider();
-    if (!provider) throw new Error("No Ethereum provider (MetaMask) found");
 
     const cid = computeConversationId(address, recipientWallet);
     if (conversationId !== cid) setConversationId(cid);
 
-    // Read conversation from blockchain
-    const [smaller, , , , createdAt] = (await publicClient.readContract({
-      address: proxy,
-      abi: messageAbi,
-      functionName: "conversations",
-      args: [cid],
-    })) as readonly [
-      `0x${string}`,
-      `0x${string}`,
-      `0x${string}`,
-      `0x${string}`,
-      bigint
-    ];
+    try {
+      // Read conversation from blockchain
+      const [, , , , createdAt] = (await publicClient.readContract({
+        address: proxy,
+        abi: messageAbi,
+        functionName: "conversations",
+        args: [cid],
+      })) as readonly [
+        `0x${string}`,
+        `0x${string}`,
+        `0x${string}`,
+        `0x${string}`,
+        bigint
+      ];
 
-    let keyToUse = conversationKey;
+      const exists = Boolean(createdAt && createdAt !== BigInt(0));
+      setConversationExists(exists);
 
-    // If conversation doesn't exist, create it
-    if (!createdAt || createdAt === BigInt(0)) {
-      // Ensure sender's public key exists (may trigger MetaMask popup)
-      const senderPublicKey = await ensurePublicKeyExists(provider, address);
+      // If conversation exists, try to retrieve the key
+      if (exists && provider) {
+        try {
+          const key = await getMyConversationKey(
+            publicClient as Parameters<typeof getMyConversationKey>[0],
+            provider,
+            proxy,
+            cid,
+            address
+          );
+          if (key) {
+            setConversationKey(key);
+            conversationKeyRef.current = key;
+          }
+        } catch (err) {
+          console.error("Error retrieving conversation key:", err);
+        }
+      }
 
-      // Fetch recipient's public key from database
-      const recipientPublicKey = await fetchPublicKeyFromDB(recipientWallet);
-      if (!recipientPublicKey) {
+      // Check public keys availability
+      const myKey = await fetchPublicKeyFromDB(address);
+      setMyPublicKey(myKey);
+
+      const theirKey = await fetchPublicKeyFromDB(recipientWallet);
+      setRecipientPublicKey(theirKey);
+
+      if (!theirKey) {
         setRecipientKeyError(
           "Recipient has not registered their encryption key. They need to enable private messaging first."
         );
-        throw new Error("Recipient public key not found");
+      } else {
+        setRecipientKeyError(null);
       }
-      setRecipientKeyError(null);
+    } catch (err) {
+      console.error("Error checking conversation status:", err);
+    }
+  }, [
+    proxy,
+    address,
+    publicClient,
+    recipientWallet,
+    conversationId,
+    getProvider,
+  ]);
+
+  // Register my public key if not already registered
+  const registerMyPublicKey = useCallback(async () => {
+    if (!address) return;
+
+    const provider = getProvider();
+    if (!provider) {
+      setError("No Ethereum provider (MetaMask) found");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const key = await ensurePublicKeyExists(provider, address);
+      setMyPublicKey(key);
+      setError(null);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`Failed to register public key: ${msg}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [address, getProvider]);
+
+  // Initialize private messaging - creates conversation on-chain
+  const initializePrivateMessaging = useCallback(async () => {
+    if (!proxy) {
+      setError("Proxy address missing");
+      return;
+    }
+    if (!address) {
+      setError("No account connected");
+      return;
+    }
+    if (!isAddress(recipientWallet)) {
+      setError("Invalid recipient");
+      return;
+    }
+    if (!publicClient) {
+      setError("No public client");
+      return;
+    }
+
+    const provider = getProvider();
+    if (!provider) {
+      setError("No Ethereum provider (MetaMask) found");
+      return;
+    }
+
+    // Ensure both parties have public keys
+    if (!myPublicKey) {
+      setError("You need to register your encryption key first");
+      return;
+    }
+    if (!recipientPublicKey) {
+      setError("Recipient has not registered their encryption key");
+      return;
+    }
+
+    try {
+      setIsInitializing(true);
+      setError(null);
+
+      // Ensure on Sepolia
+      if (chainId !== sepolia.id) {
+        await switchChainAsync({ chainId: sepolia.id });
+      }
+
+      const cid = computeConversationId(address, recipientWallet);
 
       // Generate a new symmetric conversation key
       const convKey = generateConversationKey();
 
-      // Encrypt the conversation key for both participants using their public keys
+      // Encrypt the conversation key for both participants
       const { encryptedForSender, encryptedForRecipient } =
         createEncryptedConversationKeys(
           convKey,
-          senderPublicKey,
+          myPublicKey,
           recipientPublicKey
         );
 
@@ -230,33 +340,28 @@ export default function SmartContractMessagePage() {
       });
 
       await publicClient.waitForTransactionReceipt({ hash: txHash });
-      keyToUse = convKey;
-    }
 
-    // If we don't have the key yet, retrieve and decrypt it
-    if (!keyToUse) {
-      keyToUse = await getMyConversationKey(
-        publicClient as Parameters<typeof getMyConversationKey>[0],
-        provider,
-        proxy,
-        cid,
-        address
-      );
-    }
-
-    if (!keyToUse) throw new Error("No conversation key available");
-
-    if (keyToUse !== conversationKey) {
-      setConversationKey(keyToUse);
-      conversationKeyRef.current = keyToUse;
+      // Update state
+      setConversationKey(convKey);
+      conversationKeyRef.current = convKey;
+      setConversationExists(true);
+      setConversationId(cid);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("initializePrivateMessaging error:", msg);
+      setError(`Failed to initialize private messaging: ${msg}`);
+    } finally {
+      setIsInitializing(false);
     }
   }, [
     proxy,
     address,
     publicClient,
-    conversationId,
-    conversationKey,
     recipientWallet,
+    myPublicKey,
+    recipientPublicKey,
+    chainId,
+    switchChainAsync,
     writeContractAsync,
     getProvider,
   ]);
@@ -619,8 +724,13 @@ export default function SmartContractMessagePage() {
     setFirst(20);
     rpcNewCountRef.current = 0;
     setMessages([]);
-    void ensureConversationAndKey().catch(console.error);
-  }, [recipientWallet, ensureConversationAndKey]);
+    setConversationExists(null);
+    setMyPublicKey(null);
+    setRecipientPublicKey(null);
+    setConversationKey(null);
+    conversationKeyRef.current = null;
+    void checkConversationStatus();
+  }, [recipientWallet, checkConversationStatus]);
 
   useEffect(() => {
     if (initialFetched) return;
@@ -749,18 +859,114 @@ export default function SmartContractMessagePage() {
           {error ? (
             <span className="px-3 text-xs text-red-400">{error}</span>
           ) : null}
-          {recipientKeyError ? (
-            <div className="rounded-md bg-yellow-500/10 border border-yellow-500/50 p-4 text-yellow-200">
-              <p className="text-sm font-medium">
-                Cannot start private conversation
-              </p>
-              <p className="text-xs mt-1">{recipientKeyError}</p>
-            </div>
-          ) : null}
+          {/* Private Messaging Initialization Panel */}
+          {conversationExists === false && (
+            <div className="rounded-lg border border-border bg-card p-6 text-center space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Initialize Private Messaging
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Private messaging uses end-to-end encryption. Messages are
+                  encrypted with keys stored on the blockchain.
+                </p>
+              </div>
 
-          {messages.length === 0 && !recipientKeyError ? (
+              {/* Step 1: Register your encryption key */}
+              {!myPublicKey && (
+                <div className="rounded-md bg-blue-500/10 border border-blue-500/50 p-4">
+                  <p className="text-sm text-blue-200 mb-3">
+                    Step 1: Register your encryption key
+                  </p>
+                  <button
+                    onClick={registerMyPublicKey}
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-md text-sm font-medium transition-colors"
+                  >
+                    {loading ? "Registering..." : "Register Encryption Key"}
+                  </button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    This will prompt MetaMask to share your encryption public
+                    key
+                  </p>
+                </div>
+              )}
+
+              {/* Step 2: Check recipient's key */}
+              {myPublicKey && !recipientPublicKey && (
+                <div className="rounded-md bg-yellow-500/10 border border-yellow-500/50 p-4">
+                  <p className="text-sm font-medium text-yellow-200">
+                    Waiting for recipient
+                  </p>
+                  <p className="text-xs text-yellow-200/70 mt-1">
+                    {recipientKeyError ||
+                      "The recipient needs to register their encryption key first."}
+                  </p>
+                </div>
+              )}
+
+              {/* Step 3: Initialize conversation */}
+              {myPublicKey && recipientPublicKey && (
+                <div className="rounded-md bg-green-500/10 border border-green-500/50 p-4">
+                  <p className="text-sm text-green-200 mb-3">
+                    Both parties have encryption keys. Ready to initialize!
+                  </p>
+                  <button
+                    onClick={initializePrivateMessaging}
+                    disabled={isInitializing}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 text-white rounded-md text-sm font-medium transition-colors"
+                  >
+                    {isInitializing
+                      ? "Creating on-chain..."
+                      : "Initialize Private Messaging"}
+                  </button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    This will create an on-chain conversation and store
+                    encrypted keys
+                  </p>
+                </div>
+              )}
+
+              {/* Status indicators */}
+              <div className="flex justify-center gap-6 pt-4 border-t border-border">
+                <div className="flex items-center gap-2 text-xs">
+                  <div
+                    className={`w-2 h-2 rounded-full ${myPublicKey ? "bg-green-500" : "bg-gray-500"}`}
+                  />
+                  <span className="text-muted-foreground">Your key</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <div
+                    className={`w-2 h-2 rounded-full ${recipientPublicKey ? "bg-green-500" : "bg-gray-500"}`}
+                  />
+                  <span className="text-muted-foreground">Recipient key</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <div
+                    className={`w-2 h-2 rounded-full ${conversationExists ? "bg-green-500" : "bg-gray-500"}`}
+                  />
+                  <span className="text-muted-foreground">On-chain</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Loading state while checking */}
+          {conversationExists === null && (
+            <div className="text-center py-8">
+              <Skeleton className="h-6 w-48 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">
+                Checking conversation status...
+              </p>
+            </div>
+          )}
+
+          {/* Show messages when conversation exists */}
+          {conversationExists === true && messages.length === 0 && (
             <div className="opacity-60 text-sm">No messages yet.</div>
-          ) : (
+          )}
+
+          {conversationExists === true &&
             messages.map((message) => {
               const isMe = message.sender === getAddress(address!);
               return (
@@ -804,8 +1010,7 @@ export default function SmartContractMessagePage() {
                   </div>
                 </div>
               );
-            })
-          )}
+            })}
         </div>
         <ScrollBar orientation="vertical" />
       </ScrollArea>
@@ -827,11 +1032,13 @@ export default function SmartContractMessagePage() {
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleComposerKeyDown}
               placeholder={
-                payAsYouGoFee
-                  ? `Message (fee ~ ${Number(payAsYouGoFee) / 1e18} ETH)`
-                  : "Message"
+                !conversationExists
+                  ? "Initialize private messaging first..."
+                  : payAsYouGoFee
+                    ? `Message (fee ~ ${Number(payAsYouGoFee) / 1e18} ETH)`
+                    : "Message"
               }
-              disabled={loading || !!recipientKeyError}
+              disabled={loading || !conversationExists || !conversationKey}
               className="min-h-5 max-h-50 resize-none bg-input text-foreground border-border placeholder-muted-foreground"
             />
           </div>
